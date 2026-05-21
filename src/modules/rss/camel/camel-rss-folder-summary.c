@@ -386,6 +386,33 @@ camel_rss_folder_summary_add_or_update_feed_sync (CamelRssFolderSummary *self,
 		camel_medium_set_content (CAMEL_MEDIUM (message), body_wrapper);
 	}
 
+#if EDS_CHECK_VERSION (3, 61, 0)
+	if (success) {
+		CamelRssFolder *rss_folder;
+		GIOStream *io_stream;
+		const gchar *folder_id;
+
+		rss_folder = CAMEL_RSS_FOLDER (camel_folder_summary_get_folder (CAMEL_FOLDER_SUMMARY (self)));
+		folder_id = camel_rss_folder_get_id (rss_folder);
+
+		io_stream = camel_data_cache_add_atomic (rss_cache, folder_id, uid, error);
+		success = io_stream != NULL;
+
+		if (io_stream) {
+			success = camel_data_wrapper_write_to_output_stream_sync (CAMEL_DATA_WRAPPER (message),
+				g_io_stream_get_output_stream (io_stream), cancellable, error);
+
+			if (success) {
+				GIOStream *committed;
+
+				committed = camel_data_cache_commit_atomic (rss_cache, g_steal_pointer (&io_stream), error);
+				g_clear_object (&committed);
+			} else {
+				camel_data_cache_discard_atomic (rss_cache, g_steal_pointer (&io_stream));
+			}
+		}
+	}
+#else
 	if (success) {
 		CamelRssFolder *rss_folder;
 		GIOStream *io_stream;
@@ -429,6 +456,7 @@ camel_rss_folder_summary_add_or_update_feed_sync (CamelRssFolderSummary *self,
 
 		g_free (uid_tmp);
 	}
+#endif
 
 	if (success) {
 		if (!*inout_changes)

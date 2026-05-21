@@ -401,6 +401,74 @@ e_http_request_process_sync (EContentRequest *request,
 			goto cleanup;
 		}
 
+#if EDS_CHECK_VERSION (3, 61, 0)
+		if (cache) {
+			GError *local_error = NULL;
+
+			cache_stream = camel_data_cache_add_atomic (
+				cache, "http", uri_md5, &local_error);
+			if (local_error) {
+				g_warning (
+					"Failed to create cache file for '%s': %s",
+					uri, local_error->message);
+				g_clear_error (&local_error);
+			} else {
+				GOutputStream *output_stream;
+				gssize bytes_copied;
+
+				output_stream = g_io_stream_get_output_stream (cache_stream);
+				bytes_copied = g_output_stream_splice (output_stream, input_stream, G_OUTPUT_STREAM_SPLICE_NONE, cancellable, &local_error);
+
+				if (local_error != NULL) {
+					if (!g_error_matches (local_error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+						g_warning ("Failed to write data to cache stream: %s", local_error->message);
+					g_clear_error (&local_error);
+					camel_data_cache_discard_atomic (cache, g_steal_pointer (&cache_stream));
+					g_clear_object (&input_stream);
+					g_object_unref (message);
+					g_object_unref (temp_session);
+					goto cleanup;
+				}
+
+				if (bytes_copied >= 0) {
+					GIOStream *committed;
+
+					committed = camel_data_cache_commit_atomic (cache, g_steal_pointer (&cache_stream), &local_error);
+
+					if (committed != NULL) {
+						GFile *file;
+						gchar *http_filename;
+
+						g_clear_object (&committed);
+
+						http_filename = camel_data_cache_get_filename (cache, "http", uri_md5);
+						file = g_file_new_for_path (http_filename);
+						g_free (http_filename);
+
+						*out_stream = G_INPUT_STREAM (g_file_read (file, cancellable, &local_error));
+						g_clear_object (&file);
+
+						if (*out_stream) {
+							*out_stream_length = bytes_copied;
+							*out_mime_type = g_strdup (soup_message_headers_get_content_type (soup_message_get_response_headers (message), NULL));
+
+							success = TRUE;
+						} else {
+							g_warning ("%s: Failed to open committed cache file for '%s': %s",
+							           G_STRFUNC, uri, local_error ? local_error->message : "Unknown error");
+							g_clear_error (&local_error);
+						}
+					} else {
+						g_warning ("%s: Failed to commit cache file for '%s': %s",
+						           G_STRFUNC, uri, local_error ? local_error->message : "Unknown error");
+						g_clear_error (&local_error);
+					}
+				} else {
+					camel_data_cache_discard_atomic (cache, g_steal_pointer (&cache_stream));
+				}
+			}
+		}
+#else
 		if (cache) {
 			GError *local_error = NULL;
 
@@ -474,6 +542,7 @@ e_http_request_process_sync (EContentRequest *request,
 				}
 			}
 		}
+#endif
 
 		g_clear_object (&input_stream);
 		g_object_unref (message);
