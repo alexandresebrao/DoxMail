@@ -112,6 +112,7 @@ mail_formatter_vcard_format (EMailFormatterExtension *extension,
 		const gchar *info = NULL;
 		gchar *access_key = NULL;
 		gchar *html_label;
+		const gchar *page_token;
 
 		length = g_slist_length ((GSList *) contacts);
 
@@ -119,6 +120,7 @@ mail_formatter_vcard_format (EMailFormatterExtension *extension,
 		message_uid = e_mail_part_list_get_message_uid (context->part_list);
 		default_charset = e_mail_formatter_get_default_charset (formatter);
 		charset = e_mail_formatter_get_charset (formatter);
+		page_token = e_mail_formatter_ensure_page_token (formatter);
 
 		if (!default_charset)
 			default_charset = "";
@@ -159,10 +161,11 @@ mail_formatter_vcard_format (EMailFormatterExtension *extension,
 				"class=\"org-gnome-vcard-display-mode-button\" "
 				"value=\"%d\" "
 				"evo-iframe-uri=\"%s\" "
+				"evo-token=\"%s\" "
 				"style=\"margin-left: 0px\""
 				"accesskey=\"%s\">%s</button>",
 			e_mail_part_get_id (part),
-			EAB_CONTACT_DISPLAY_RENDER_NORMAL, button_iframe_uri, access_key,
+			EAB_CONTACT_DISPLAY_RENDER_NORMAL, button_iframe_uri, page_token, access_key,
 			html_label);
 		g_output_stream_write_all (
 			stream, str, strlen (str), NULL, cancellable, NULL);
@@ -189,10 +192,11 @@ mail_formatter_vcard_format (EMailFormatterExtension *extension,
 				"class=\"org-gnome-vcard-display-mode-button\" "
 				"value=\"%d\" "
 				"evo-iframe-uri=\"%s\" "
+				"evo-token=\"%s\" "
 				"style=\"margin-left: 0px\""
 				"accesskey=\"%s\" hidden>%s</button>",
 			e_mail_part_get_id (part),
-			EAB_CONTACT_DISPLAY_RENDER_COMPACT, button_iframe_uri, access_key,
+			EAB_CONTACT_DISPLAY_RENDER_COMPACT, button_iframe_uri, page_token, access_key,
 			html_label);
 		g_output_stream_write_all (
 			stream, str, strlen (str), NULL, cancellable, NULL);
