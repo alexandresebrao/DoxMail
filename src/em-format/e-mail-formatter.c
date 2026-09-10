@@ -23,6 +23,7 @@
 
 #include <gdk/gdk.h>
 #include <libebackend/libebackend.h>
+#include <camel/camel.h>
 
 #include <e-util/e-util.h>
 #include <shell/e-shell.h>
@@ -49,7 +50,7 @@ struct _EMailFormatterPrivate {
 
 	gchar *charset;
 	gchar *default_charset;
-	gchar *page_token;
+	const gchar *page_token; /* in camel string pool */
 
 	GdkRGBA colors[E_MAIL_FORMATTER_NUM_COLOR_TYPES];
 };
@@ -372,7 +373,7 @@ e_mail_formatter_finalize (GObject *object)
 
 	g_free (self->priv->charset);
 	g_free (self->priv->default_charset);
-	g_free (self->priv->page_token);
+	g_clear_pointer (&self->priv->page_token, camel_pstring_free);
 
 	g_mutex_clear (&self->priv->property_lock);
 
@@ -1507,30 +1508,34 @@ e_mail_formatter_set_default_charset (EMailFormatter *formatter,
 	g_object_notify (G_OBJECT (formatter), "default-charset");
 }
 
-const gchar *
+const gchar * /* (transfer full) use camel_pstring_free() to unref/free it */
 e_mail_formatter_ensure_page_token (EMailFormatter *formatter)
 {
+	const gchar *page_token;
+
 	g_return_val_if_fail (E_IS_MAIL_FORMATTER (formatter), NULL);
 
 	g_mutex_lock (&formatter->priv->property_lock);
 
 	if (!formatter->priv->page_token)
-		formatter->priv->page_token = e_util_generate_uid ();
+		formatter->priv->page_token = camel_pstring_add (e_util_generate_uid (), TRUE);
+
+	page_token = camel_pstring_strdup (formatter->priv->page_token);
 
 	g_mutex_unlock (&formatter->priv->property_lock);
 
-	return formatter->priv->page_token;
+	return page_token;
 }
 
-const gchar *
-e_mail_formatter_peek_page_token (EMailFormatter *formatter)
+const gchar * /* (transfer full) use camel_pstring_free() to unref/free it */
+e_mail_formatter_dup_page_token (EMailFormatter *formatter)
 {
 	const gchar *result;
 
 	g_return_val_if_fail (E_IS_MAIL_FORMATTER (formatter), NULL);
 
 	g_mutex_lock (&formatter->priv->property_lock);
-	result = formatter->priv->page_token;
+	result = camel_pstring_strdup (formatter->priv->page_token);
 	g_mutex_unlock (&formatter->priv->property_lock);
 
 	return result;
@@ -1543,7 +1548,7 @@ e_mail_formatter_reset_page_token (EMailFormatter *formatter)
 
 	g_mutex_lock (&formatter->priv->property_lock);
 
-	g_clear_pointer (&formatter->priv->page_token, g_free);
+	g_clear_pointer (&formatter->priv->page_token, camel_pstring_free);
 
 	g_mutex_unlock (&formatter->priv->property_lock);
 }
