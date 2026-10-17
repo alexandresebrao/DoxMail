@@ -1,3 +1,11 @@
+# DoxMail: with WITH_GTK4 only the directories already ported to GTK 4 are
+# built; add each one here as it compiles (doxmail/PORTING-GTK4.md).
+if(WITH_GTK4)
+	add_subdirectory(libgnomecanvas)
+	add_subdirectory(doxmail-tests)
+	return()
+endif(WITH_GTK4)
+
 add_subdirectory(addressbook)
 add_subdirectory(calendar)
 add_subdirectory(composer)

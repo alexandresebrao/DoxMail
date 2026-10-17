@@ -80,10 +80,12 @@
 #include <string.h>
 #include <stdio.h>
 #include <glib/gi18n-lib.h>
-#include <gdk/gdkprivate.h>
 #include <gtk/gtk.h>
 #include <cairo-gobject.h>
+#if !GTK_CHECK_VERSION (4, 0, 0)
+#include <gdk/gdkprivate.h>
 #include "gailcanvas.h"
+#endif
 #include "gnome-canvas.h"
 #include "gnome-canvas-util.h"
 
@@ -120,7 +122,8 @@ enum {
 	ITEM_LAST_SIGNAL
 };
 
-static gint  emit_event                       (GnomeCanvas *canvas, GdkEvent *event);
+static gint  emit_event                       (GnomeCanvas *canvas, GnomeCanvasEvent *event);
+static void canvas_release_grab              (GnomeCanvas *canvas, guint32 etime);
 
 static guint item_signals[ITEM_LAST_SIGNAL];
 
@@ -310,10 +313,7 @@ gnome_canvas_item_dispose (GObject *object)
 	if (item->canvas && item == item->canvas->grabbed_item) {
 		item->canvas->grabbed_item = NULL;
 
-		gdk_device_ungrab (
-			item->canvas->grabbed_device, GDK_CURRENT_TIME);
-		g_object_unref (item->canvas->grabbed_device);
-		item->canvas->grabbed_device = NULL;
+		canvas_release_grab (item->canvas, GDK_CURRENT_TIME);
 	}
 
 	if (item->canvas && item == item->canvas->focused_item)
@@ -427,7 +427,7 @@ gnome_canvas_item_bounds (GnomeCanvasItem *item,
 
 static gboolean
 gnome_canvas_item_event (GnomeCanvasItem *item,
-                         GdkEvent *event)
+                         GnomeCanvasEvent *event)
 {
 	/* Placeholder so subclasses can safely chain up. */
 
@@ -887,33 +887,36 @@ gnome_canvas_item_grab (GnomeCanvasItem *item,
                         GdkDevice *device,
                         guint32 etime)
 {
-	GtkLayout *layout;
-	GdkWindow *bin_window;
 	gint retval;
 
 	g_return_val_if_fail (
-		GNOME_IS_CANVAS_ITEM (item), GDK_GRAB_NOT_VIEWABLE);
+		GNOME_IS_CANVAS_ITEM (item), GNOME_CANVAS_GRAB_NOT_VIEWABLE);
 	g_return_val_if_fail (
 		gtk_widget_get_mapped (GTK_WIDGET (item->canvas)),
-		GDK_GRAB_NOT_VIEWABLE);
+		GNOME_CANVAS_GRAB_NOT_VIEWABLE);
 	g_return_val_if_fail (
-		GDK_IS_DEVICE (device), GDK_GRAB_NOT_VIEWABLE);
+		GDK_IS_DEVICE (device), GNOME_CANVAS_GRAB_NOT_VIEWABLE);
 
 	if (item->canvas->grabbed_item)
-		return GDK_GRAB_ALREADY_GRABBED;
+		return GNOME_CANVAS_GRAB_ALREADY_GRABBED;
 
 	if (!(item->flags & GNOME_CANVAS_ITEM_VISIBLE))
-		return GDK_GRAB_NOT_VIEWABLE;
+		return GNOME_CANVAS_GRAB_NOT_VIEWABLE;
 
-	layout = GTK_LAYOUT (item->canvas);
-	bin_window = gtk_layout_get_bin_window (layout);
-
+#if GTK_CHECK_VERSION (4, 0, 0)
+	/* GTK 4 has only the implicit grab of a pressed button, which keeps
+	 * the pointer on the canvas; the item grab just routes the events
+	 * and shows the cursor. */
+	gtk_widget_set_cursor (GTK_WIDGET (item->canvas), cursor);
+	retval = GNOME_CANVAS_GRAB_SUCCESS;
+#else
 	retval = gdk_device_grab (
-		device, bin_window, GDK_OWNERSHIP_NONE,
-		FALSE, event_mask, cursor, etime);
+		device, gtk_layout_get_bin_window (GTK_LAYOUT (item->canvas)),
+		GDK_OWNERSHIP_NONE, FALSE, event_mask, cursor, etime);
 
 	if (retval != GDK_GRAB_SUCCESS)
 		return retval;
+#endif
 
 	item->canvas->grabbed_item = item;
 	item->canvas->grabbed_device = g_object_ref (device);
@@ -943,10 +946,7 @@ gnome_canvas_item_ungrab (GnomeCanvasItem *item,
 	item->canvas->grabbed_item = NULL;
 
 	g_return_if_fail (item->canvas->grabbed_device != NULL);
-	gdk_device_ungrab (item->canvas->grabbed_device, etime);
-
-	g_object_unref (item->canvas->grabbed_device);
-	item->canvas->grabbed_device = NULL;
+	canvas_release_grab (item->canvas, etime);
 }
 
 void
@@ -1101,6 +1101,21 @@ gnome_canvas_item_reparent (GnomeCanvasItem *item,
 	g_object_unref (item);
 }
 
+static void
+focus_change_event_init (GnomeCanvas *canvas,
+                         GnomeCanvasEvent *ev,
+                         gboolean in)
+{
+#if GTK_CHECK_VERSION (4, 0, 0)
+	gnome_canvas_event_set_from_gdk (ev, GNOME_CANVAS_FOCUS_CHANGE, NULL, 0, 0);
+#else
+	ev->focus_change.type = GDK_FOCUS_CHANGE;
+	ev->focus_change.window = gtk_layout_get_bin_window (GTK_LAYOUT (canvas));
+	ev->focus_change.send_event = FALSE;
+#endif
+	ev->focus_change.in = in;
+}
+
 /**
  * gnome_canvas_item_grab_focus:
  * @item: A canvas item.
@@ -1113,25 +1128,19 @@ void
 gnome_canvas_item_grab_focus (GnomeCanvasItem *item)
 {
 	GnomeCanvasItem *focused_item;
-	GdkEvent ev;
+	GnomeCanvasEvent ev;
 
 	g_return_if_fail (GNOME_IS_CANVAS_ITEM (item));
+#if GTK_CHECK_VERSION (4, 0, 0)
+	g_return_if_fail (gtk_widget_get_focusable (GTK_WIDGET (item->canvas)));
+#else
 	g_return_if_fail (gtk_widget_get_can_focus (GTK_WIDGET (item->canvas)));
+#endif
 
 	focused_item = item->canvas->focused_item;
 
 	if (focused_item) {
-		GtkLayout *layout;
-		GdkWindow *bin_window;
-
-		layout = GTK_LAYOUT (item->canvas);
-		bin_window = gtk_layout_get_bin_window (layout);
-
-		ev.focus_change.type = GDK_FOCUS_CHANGE;
-		ev.focus_change.window = bin_window;
-		ev.focus_change.send_event = FALSE;
-		ev.focus_change.in = FALSE;
-
+		focus_change_event_init (item->canvas, &ev, FALSE);
 		emit_event (item->canvas, &ev);
 	}
 
@@ -1139,17 +1148,7 @@ gnome_canvas_item_grab_focus (GnomeCanvasItem *item)
 	gtk_widget_grab_focus (GTK_WIDGET (item->canvas));
 
 	if (focused_item) {
-		GtkLayout *layout;
-		GdkWindow *bin_window;
-
-		layout = GTK_LAYOUT (item->canvas);
-		bin_window = gtk_layout_get_bin_window (layout);
-
-		ev.focus_change.type = GDK_FOCUS_CHANGE;
-		ev.focus_change.window = bin_window;
-		ev.focus_change.send_event = FALSE;
-		ev.focus_change.in = TRUE;
-
+		focus_change_event_init (item->canvas, &ev, TRUE);
 		emit_event (item->canvas, &ev);
 	}
 }
@@ -1763,11 +1762,44 @@ enum {
 	LAST_SIGNAL
 };
 
+#if GTK_CHECK_VERSION (4, 0, 0)
+
+/* GTK 4 has no GtkLayout: the canvas is a plain widget implementing
+ * GtkScrollable and keeps the layout size and child widgets itself. */
+
+typedef struct {
+	GtkWidget *widget;
+	gint x, y; /* canvas window (scrolled) coordinates */
+} CanvasChild;
+
+typedef struct {
+	GtkAdjustment *hadjustment;
+	GtkAdjustment *vadjustment;
+	guint hscroll_policy : 1;
+	guint vscroll_policy : 1;
+
+	guint layout_width;
+	guint layout_height;
+
+	GList *children; /* CanvasChild */
+
+	/* GTK 4 reports the click count only through GtkGestureClick, which
+	 * gives up on drags; count presses here to send the GTK 3 style
+	 * GNOME_CANVAS_2BUTTON_PRESS and GNOME_CANVAS_3BUTTON_PRESS. */
+	guint32 last_press_time;
+	guint last_press_button;
+	gdouble last_press_x, last_press_y;
+	gint n_press;
+} GnomeCanvasPrivate;
+
+#endif
+
 static void gnome_canvas_dispose             (GObject          *object);
 static void gnome_canvas_map                 (GtkWidget        *widget);
 static void gnome_canvas_unmap               (GtkWidget        *widget);
 static void gnome_canvas_realize             (GtkWidget        *widget);
 static void gnome_canvas_unrealize           (GtkWidget        *widget);
+#if !GTK_CHECK_VERSION (4, 0, 0)
 static void gnome_canvas_size_allocate       (GtkWidget        *widget,
 					      GtkAllocation    *allocation);
 static gint gnome_canvas_draw                (GtkWidget        *widget,
@@ -1786,6 +1818,7 @@ static gint gnome_canvas_focus_in            (GtkWidget        *widget,
 					      GdkEventFocus    *event);
 static gint gnome_canvas_focus_out           (GtkWidget        *widget,
 					      GdkEventFocus    *event);
+#endif
 static void gnome_canvas_request_update_real (GnomeCanvas      *canvas);
 static void gnome_canvas_draw_background     (GnomeCanvas      *canvas,
 					      cairo_t          *cr,
@@ -1799,12 +1832,113 @@ static guint canvas_signals[LAST_SIGNAL];
 enum {
         PROP_0,
 	PROP_FOCUSED_ITEM,
+#if GTK_CHECK_VERSION (4, 0, 0)
+	PROP_HADJUSTMENT,
+	PROP_VADJUSTMENT,
+	PROP_HSCROLL_POLICY,
+	PROP_VSCROLL_POLICY
+#endif
 };
 
+#if GTK_CHECK_VERSION (4, 0, 0)
+G_DEFINE_TYPE_WITH_CODE (
+	GnomeCanvas,
+	gnome_canvas,
+	GTK_TYPE_WIDGET,
+	G_ADD_PRIVATE (GnomeCanvas)
+	G_IMPLEMENT_INTERFACE (GTK_TYPE_SCROLLABLE, NULL))
+
+#define CANVAS_PRIV(canvas) \
+	((GnomeCanvasPrivate *) gnome_canvas_get_instance_private (canvas))
+#else
 G_DEFINE_TYPE (
 	GnomeCanvas,
 	gnome_canvas,
 	GTK_TYPE_LAYOUT)
+#endif
+
+static void
+canvas_get_widget_size (GnomeCanvas *canvas,
+                        gint *width,
+                        gint *height)
+{
+#if GTK_CHECK_VERSION (4, 0, 0)
+	*width = gtk_widget_get_width (GTK_WIDGET (canvas));
+	*height = gtk_widget_get_height (GTK_WIDGET (canvas));
+#else
+	GtkAllocation allocation;
+
+	gtk_widget_get_allocation (GTK_WIDGET (canvas), &allocation);
+	*width = allocation.width;
+	*height = allocation.height;
+#endif
+}
+
+static void
+canvas_get_layout_size (GnomeCanvas *canvas,
+                        guint *width,
+                        guint *height)
+{
+#if GTK_CHECK_VERSION (4, 0, 0)
+	*width = CANVAS_PRIV (canvas)->layout_width;
+	*height = CANVAS_PRIV (canvas)->layout_height;
+#else
+	gtk_layout_get_size (GTK_LAYOUT (canvas), width, height);
+#endif
+}
+
+#if GTK_CHECK_VERSION (4, 0, 0)
+/* What GtkLayout's set_adjustment_upper() and set_hadjustment_values() did
+ * with GTK 3: the adjustment spans the larger of the layout and the widget. */
+static void
+canvas_configure_adjustment (GtkAdjustment *adjustment,
+                             gint widget_size,
+                             guint layout_size)
+{
+	gdouble upper = MAX (widget_size, (gint) layout_size);
+	gdouble value = gtk_adjustment_get_value (adjustment);
+
+	value = CLAMP (value, 0, MAX (0, upper - widget_size));
+
+	gtk_adjustment_configure (
+		adjustment, value, 0, upper,
+		widget_size * 0.1, widget_size / 2, widget_size);
+}
+
+static void
+canvas_configure_adjustments (GnomeCanvas *canvas)
+{
+	GnomeCanvasPrivate *priv = CANVAS_PRIV (canvas);
+	gint width, height;
+
+	canvas_get_widget_size (canvas, &width, &height);
+
+	if (priv->hadjustment)
+		canvas_configure_adjustment (priv->hadjustment, width, priv->layout_width);
+	if (priv->vadjustment)
+		canvas_configure_adjustment (priv->vadjustment, height, priv->layout_height);
+}
+#endif
+
+static void
+canvas_set_layout_size (GnomeCanvas *canvas,
+                        guint width,
+                        guint height)
+{
+#if GTK_CHECK_VERSION (4, 0, 0)
+	GnomeCanvasPrivate *priv = CANVAS_PRIV (canvas);
+
+	if (priv->layout_width == width && priv->layout_height == height)
+		return;
+
+	priv->layout_width = width;
+	priv->layout_height = height;
+
+	canvas_configure_adjustments (canvas);
+#else
+	gtk_layout_set_size (GTK_LAYOUT (canvas), width, height);
+#endif
+}
 
 static void
 gnome_canvas_paint_rect (GnomeCanvas *canvas,
@@ -1814,11 +1948,10 @@ gnome_canvas_paint_rect (GnomeCanvas *canvas,
                          gint x1,
                          gint y1)
 {
-	GtkWidget *widget;
-	GtkAllocation allocation;
 	GtkScrollable *scrollable;
 	GtkAdjustment *hadjustment;
 	GtkAdjustment *vadjustment;
+	gint width, height;
 	gint draw_x1, draw_y1;
 	gint draw_x2, draw_y2;
 	gint draw_width, draw_height;
@@ -1827,8 +1960,7 @@ gnome_canvas_paint_rect (GnomeCanvas *canvas,
 
 	g_return_if_fail (!canvas->need_update);
 
-	widget = GTK_WIDGET (canvas);
-	gtk_widget_get_allocation (widget, &allocation);
+	canvas_get_widget_size (canvas, &width, &height);
 
 	scrollable = GTK_SCROLLABLE (canvas);
 	hadjustment = gtk_scrollable_get_hadjustment (scrollable);
@@ -1839,8 +1971,8 @@ gnome_canvas_paint_rect (GnomeCanvas *canvas,
 
 	draw_x1 = MAX (x0, hadjustment_value - canvas->zoom_xofs);
 	draw_y1 = MAX (y0, vadjustment_value - canvas->zoom_yofs);
-	draw_x2 = MIN (draw_x1 + allocation.width, x1);
-	draw_y2 = MIN (draw_y1 + allocation.height, y1);
+	draw_x2 = MIN (draw_x1 + width, x1);
+	draw_y2 = MIN (draw_y1 + height, y1);
 
 	draw_width = draw_x2 - draw_x1;
 	draw_height = draw_y2 - draw_y1;
@@ -1875,6 +2007,54 @@ gnome_canvas_paint_rect (GnomeCanvas *canvas,
 	}
 }
 
+#if GTK_CHECK_VERSION (4, 0, 0)
+static void
+canvas_adjustment_value_changed_cb (GtkAdjustment *adjustment,
+                                    GnomeCanvas *canvas)
+{
+	/* GtkLayout moved its bin window; we move the children and repaint */
+	gtk_widget_queue_allocate (GTK_WIDGET (canvas));
+	gtk_widget_queue_draw (GTK_WIDGET (canvas));
+}
+
+static void
+canvas_set_adjustment (GnomeCanvas *canvas,
+                       GtkOrientation orientation,
+                       GtkAdjustment *adjustment)
+{
+	GnomeCanvasPrivate *priv = CANVAS_PRIV (canvas);
+	GtkAdjustment **slot;
+
+	slot = orientation == GTK_ORIENTATION_HORIZONTAL ?
+		&priv->hadjustment : &priv->vadjustment;
+
+	if (adjustment && *slot == adjustment)
+		return;
+
+	if (*slot) {
+		g_signal_handlers_disconnect_by_func (
+			*slot, canvas_adjustment_value_changed_cb, canvas);
+		g_clear_object (slot);
+	}
+
+	if (!adjustment)
+		adjustment = gtk_adjustment_new (0, 0, 0, 0, 0, 0);
+
+	*slot = g_object_ref_sink (adjustment);
+
+	g_signal_connect (
+		adjustment, "value-changed",
+		G_CALLBACK (canvas_adjustment_value_changed_cb), canvas);
+
+	canvas_configure_adjustments (canvas);
+
+	g_object_notify (
+		G_OBJECT (canvas),
+		orientation == GTK_ORIENTATION_HORIZONTAL ?
+		"hadjustment" : "vadjustment");
+}
+#endif
+
 static void
 gnome_canvas_get_property (GObject *object,
                            guint property_id,
@@ -1885,6 +2065,20 @@ gnome_canvas_get_property (GObject *object,
 	case PROP_FOCUSED_ITEM:
 		g_value_set_object (value, GNOME_CANVAS (object)->focused_item);
 		break;
+#if GTK_CHECK_VERSION (4, 0, 0)
+	case PROP_HADJUSTMENT:
+		g_value_set_object (value, CANVAS_PRIV (GNOME_CANVAS (object))->hadjustment);
+		break;
+	case PROP_VADJUSTMENT:
+		g_value_set_object (value, CANVAS_PRIV (GNOME_CANVAS (object))->vadjustment);
+		break;
+	case PROP_HSCROLL_POLICY:
+		g_value_set_enum (value, CANVAS_PRIV (GNOME_CANVAS (object))->hscroll_policy);
+		break;
+	case PROP_VSCROLL_POLICY:
+		g_value_set_enum (value, CANVAS_PRIV (GNOME_CANVAS (object))->vscroll_policy);
+		break;
+#endif
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
 		break;
@@ -1901,11 +2095,41 @@ gnome_canvas_set_property (GObject *object,
 	case PROP_FOCUSED_ITEM:
 		GNOME_CANVAS (object)->focused_item = g_value_get_object (value);
 		break;
+#if GTK_CHECK_VERSION (4, 0, 0)
+	case PROP_HADJUSTMENT:
+		canvas_set_adjustment (
+			GNOME_CANVAS (object), GTK_ORIENTATION_HORIZONTAL,
+			g_value_get_object (value));
+		break;
+	case PROP_VADJUSTMENT:
+		canvas_set_adjustment (
+			GNOME_CANVAS (object), GTK_ORIENTATION_VERTICAL,
+			g_value_get_object (value));
+		break;
+	case PROP_HSCROLL_POLICY:
+		CANVAS_PRIV (GNOME_CANVAS (object))->hscroll_policy = g_value_get_enum (value);
+		gtk_widget_queue_resize (GTK_WIDGET (object));
+		break;
+	case PROP_VSCROLL_POLICY:
+		CANVAS_PRIV (GNOME_CANVAS (object))->vscroll_policy = g_value_get_enum (value);
+		gtk_widget_queue_resize (GTK_WIDGET (object));
+		break;
+#endif
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
 		break;
 	}
 }
+
+#if GTK_CHECK_VERSION (4, 0, 0)
+static void gnome_canvas_size_allocate_gtk4 (GtkWidget *widget,
+					     gint width,
+					     gint height,
+					     gint baseline);
+static void gnome_canvas_snapshot (GtkWidget *widget,
+				   GtkSnapshot *snapshot);
+static void canvas_setup_controllers (GnomeCanvas *canvas);
+#endif
 
 /* Class initialization function for GnomeCanvasClass */
 static void
@@ -1925,6 +2149,10 @@ gnome_canvas_class_init (GnomeCanvasClass *class)
 	widget_class->unmap = gnome_canvas_unmap;
 	widget_class->realize = gnome_canvas_realize;
 	widget_class->unrealize = gnome_canvas_unrealize;
+#if GTK_CHECK_VERSION (4, 0, 0)
+	widget_class->size_allocate = gnome_canvas_size_allocate_gtk4;
+	widget_class->snapshot = gnome_canvas_snapshot;
+#else
 	widget_class->size_allocate = gnome_canvas_size_allocate;
 	widget_class->draw = gnome_canvas_draw;
 	widget_class->drag_end = gnome_canvas_drag_end;
@@ -1937,6 +2165,7 @@ gnome_canvas_class_init (GnomeCanvasClass *class)
 	widget_class->leave_notify_event = gnome_canvas_crossing;
 	widget_class->focus_in_event = gnome_canvas_focus_in;
 	widget_class->focus_out_event = gnome_canvas_focus_out;
+#endif
 
 	class->draw_background = gnome_canvas_draw_background;
 	class->request_update = gnome_canvas_request_update_real;
@@ -1952,6 +2181,13 @@ gnome_canvas_class_init (GnomeCanvasClass *class)
 			G_PARAM_READABLE |
 			G_PARAM_WRITABLE));
 
+#if GTK_CHECK_VERSION (4, 0, 0)
+	g_object_class_override_property (object_class, PROP_HADJUSTMENT, "hadjustment");
+	g_object_class_override_property (object_class, PROP_VADJUSTMENT, "vadjustment");
+	g_object_class_override_property (object_class, PROP_HSCROLL_POLICY, "hscroll-policy");
+	g_object_class_override_property (object_class, PROP_VSCROLL_POLICY, "vscroll-policy");
+#endif
+
 	canvas_signals[DRAW_BACKGROUND] = g_signal_new (
 		"draw_background",
 		G_TYPE_FROM_CLASS (object_class),
@@ -1965,8 +2201,14 @@ gnome_canvas_class_init (GnomeCanvasClass *class)
 		G_TYPE_INT,
 		G_TYPE_INT);
 
+#if GTK_CHECK_VERSION (4, 0, 0)
+	/* FIXME: GAIL is gone with GTK 4; items need GtkAccessible support */
+	gtk_widget_class_set_css_name (widget_class, "canvas");
+	gtk_widget_class_set_accessible_role (widget_class, GTK_ACCESSIBLE_ROLE_GROUP);
+#else
 	gtk_widget_class_set_accessible_type (widget_class, GAIL_TYPE_CANVAS);
 	gail_canvas_a11y_init ();
+#endif
 }
 
 /* Callback used when the root item of a canvas is destroyed.  The user should
@@ -1983,13 +2225,20 @@ panic_root_finalized (gpointer data,
 static void
 gnome_canvas_init (GnomeCanvas *canvas)
 {
-	GtkLayout *layout;
 	guint layout_width, layout_height;
 
-	layout = GTK_LAYOUT (canvas);
-	gtk_layout_get_size (layout, &layout_width, &layout_height);
+#if GTK_CHECK_VERSION (4, 0, 0)
+	/* GtkLayout's default size */
+	CANVAS_PRIV (canvas)->layout_width = 100;
+	CANVAS_PRIV (canvas)->layout_height = 100;
 
+	gtk_widget_set_focusable (GTK_WIDGET (canvas), TRUE);
+	gtk_widget_set_overflow (GTK_WIDGET (canvas), GTK_OVERFLOW_HIDDEN);
+#else
 	gtk_widget_set_can_focus (GTK_WIDGET (canvas), TRUE);
+#endif
+
+	canvas_get_layout_size (canvas, &layout_width, &layout_height);
 
 	canvas->need_update = FALSE;
 	canvas->idle_id = 0;
@@ -1999,12 +2248,19 @@ gnome_canvas_init (GnomeCanvas *canvas)
 	canvas->scroll_x2 = layout_width;
 	canvas->scroll_y2 = layout_height;
 
-	canvas->pick_event.type = GDK_LEAVE_NOTIFY;
+	canvas->pick_event.type = GNOME_CANVAS_LEAVE_NOTIFY;
 	canvas->pick_event.crossing.x = 0;
 	canvas->pick_event.crossing.y = 0;
 
+#if GTK_CHECK_VERSION (4, 0, 0)
+	canvas_set_adjustment (canvas, GTK_ORIENTATION_HORIZONTAL, NULL);
+	canvas_set_adjustment (canvas, GTK_ORIENTATION_VERTICAL, NULL);
+
+	canvas_setup_controllers (canvas);
+#else
 	gtk_scrollable_set_hadjustment (GTK_SCROLLABLE (canvas), NULL);
 	gtk_scrollable_set_vadjustment (GTK_SCROLLABLE (canvas), NULL);
+#endif
 
 	/* Create the root item as a special case */
 
@@ -2030,15 +2286,28 @@ remove_idle (GnomeCanvas *canvas)
 	canvas->idle_id = 0;
 }
 
+/* Drops the grab state; GTK 4 only has implicit grabs, so there all a grab
+ * leaves behind is its cursor. */
+static void
+canvas_release_grab (GnomeCanvas *canvas,
+                     guint32 etime)
+{
+	if (canvas->grabbed_device != NULL) {
+#if GTK_CHECK_VERSION (4, 0, 0)
+		gtk_widget_set_cursor (GTK_WIDGET (canvas), NULL);
+#else
+		gdk_device_ungrab (canvas->grabbed_device, etime);
+#endif
+		g_object_unref (canvas->grabbed_device);
+		canvas->grabbed_device = NULL;
+	}
+}
+
 /* Removes the transient state of the canvas (idle handler, grabs). */
 static void
 shutdown_transients (GnomeCanvas *canvas)
 {
-	if (canvas->grabbed_device != NULL) {
-		gdk_device_ungrab (canvas->grabbed_device, GDK_CURRENT_TIME);
-		g_object_unref (canvas->grabbed_device);
-		canvas->grabbed_device = NULL;
-	}
+	canvas_release_grab (canvas, GDK_CURRENT_TIME);
 
 	canvas->grabbed_item = NULL;
 
@@ -2064,6 +2333,30 @@ gnome_canvas_dispose (GObject *object)
 	}
 
 	shutdown_transients (canvas);
+
+#if GTK_CHECK_VERSION (4, 0, 0)
+	{
+		GnomeCanvasPrivate *priv = CANVAS_PRIV (canvas);
+
+		while (priv->children) {
+			CanvasChild *child = priv->children->data;
+
+			gnome_canvas_remove_widget (canvas, child->widget);
+		}
+
+		if (priv->hadjustment) {
+			g_signal_handlers_disconnect_by_func (
+				priv->hadjustment, canvas_adjustment_value_changed_cb, canvas);
+			g_clear_object (&priv->hadjustment);
+		}
+
+		if (priv->vadjustment) {
+			g_signal_handlers_disconnect_by_func (
+				priv->vadjustment, canvas_adjustment_value_changed_cb, canvas);
+			g_clear_object (&priv->vadjustment);
+		}
+	}
+#endif
 
 	/* Chain up to parent's dispose() method. */
 	G_OBJECT_CLASS (gnome_canvas_parent_class)->dispose (object);
@@ -2141,8 +2434,6 @@ gnome_canvas_realize (GtkWidget *widget)
 {
 	GnomeCanvas *canvas;
 	GnomeCanvasItemClass *klass;
-	GtkLayout *layout;
-	GdkWindow *bin_window;
 
 	g_return_if_fail (GNOME_IS_CANVAS (widget));
 
@@ -2152,22 +2443,27 @@ gnome_canvas_realize (GtkWidget *widget)
 
 	canvas = GNOME_CANVAS (widget);
 
-	layout = GTK_LAYOUT (canvas);
-	bin_window = gtk_layout_get_bin_window (layout);
+#if !GTK_CHECK_VERSION (4, 0, 0)
+	{
+		GdkWindow *bin_window;
 
-	gdk_window_set_events (
-		bin_window,
-		(gdk_window_get_events (bin_window)
-		| GDK_EXPOSURE_MASK
-		| GDK_SCROLL_MASK
-		| GDK_BUTTON_PRESS_MASK
-		| GDK_BUTTON_RELEASE_MASK
-		| GDK_POINTER_MOTION_MASK
-		| GDK_KEY_PRESS_MASK
-		| GDK_KEY_RELEASE_MASK
-		| GDK_ENTER_NOTIFY_MASK
-		| GDK_LEAVE_NOTIFY_MASK
-		| GDK_FOCUS_CHANGE_MASK));
+		bin_window = gtk_layout_get_bin_window (GTK_LAYOUT (canvas));
+
+		gdk_window_set_events (
+			bin_window,
+			(gdk_window_get_events (bin_window)
+			| GDK_EXPOSURE_MASK
+			| GDK_SCROLL_MASK
+			| GDK_BUTTON_PRESS_MASK
+			| GDK_BUTTON_RELEASE_MASK
+			| GDK_POINTER_MOTION_MASK
+			| GDK_KEY_PRESS_MASK
+			| GDK_KEY_RELEASE_MASK
+			| GDK_ENTER_NOTIFY_MASK
+			| GDK_LEAVE_NOTIFY_MASK
+			| GDK_FOCUS_CHANGE_MASK));
+	}
+#endif
 
 	klass = GNOME_CANVAS_ITEM_GET_CLASS (canvas->root);
 	g_return_if_fail (klass != NULL);
@@ -2208,8 +2504,6 @@ scroll_to (GnomeCanvas *canvas,
            gint cx,
            gint cy)
 {
-	GtkWidget *widget;
-	GtkAllocation allocation;
 	GtkScrollable *scrollable;
 	GtkAdjustment *hadjustment;
 	GtkAdjustment *vadjustment;
@@ -2219,17 +2513,13 @@ scroll_to (GnomeCanvas *canvas,
 	gint old_zoom_xofs, old_zoom_yofs;
 	gint canvas_width, canvas_height;
 
-	widget = GTK_WIDGET (canvas);
-	gtk_widget_get_allocation (widget, &allocation);
+	canvas_get_widget_size (canvas, &canvas_width, &canvas_height);
 
 	scrollable = GTK_SCROLLABLE (canvas);
 	hadjustment = gtk_scrollable_get_hadjustment (scrollable);
 	vadjustment = gtk_scrollable_get_vadjustment (scrollable);
 
-	gtk_layout_get_size (GTK_LAYOUT (canvas), &layout_width, &layout_height);
-
-	canvas_width = allocation.width;
-	canvas_height = allocation.height;
+	canvas_get_layout_size (canvas, &layout_width, &layout_height);
 
 	scroll_width =
 		floor ((canvas->scroll_x2 - canvas->scroll_x1) + 0.5);
@@ -2293,8 +2583,107 @@ scroll_to (GnomeCanvas *canvas,
 
 	if ((scroll_width != (gint) layout_width)
 	    || (scroll_height != (gint) layout_height))
-		gtk_layout_set_size (GTK_LAYOUT (canvas), scroll_width, scroll_height);
+		canvas_set_layout_size (canvas, scroll_width, scroll_height);
 }
+
+#if GTK_CHECK_VERSION (4, 0, 0)
+
+static void
+gnome_canvas_size_allocate_gtk4 (GtkWidget *widget,
+                                 gint width,
+                                 gint height,
+                                 gint baseline)
+{
+	GnomeCanvas *canvas = GNOME_CANVAS (widget);
+	GnomeCanvasPrivate *priv = CANVAS_PRIV (canvas);
+	gdouble hvalue, vvalue;
+	GList *link;
+
+	g_object_freeze_notify (G_OBJECT (priv->hadjustment));
+	g_object_freeze_notify (G_OBJECT (priv->vadjustment));
+
+	canvas_configure_adjustments (canvas);
+
+	/* Recenter the view, if appropriate */
+	scroll_to (
+		canvas,
+		gtk_adjustment_get_value (priv->hadjustment),
+		gtk_adjustment_get_value (priv->vadjustment));
+
+	g_object_thaw_notify (G_OBJECT (priv->hadjustment));
+	g_object_thaw_notify (G_OBJECT (priv->vadjustment));
+
+	hvalue = gtk_adjustment_get_value (priv->hadjustment);
+	vvalue = gtk_adjustment_get_value (priv->vadjustment);
+
+	/* Children get their natural size, like with GtkLayout */
+	for (link = priv->children; link; link = g_list_next (link)) {
+		CanvasChild *child = link->data;
+		GtkRequisition natural;
+		GtkAllocation allocation;
+
+		if (!gtk_widget_get_visible (child->widget))
+			continue;
+
+		gtk_widget_get_preferred_size (child->widget, NULL, &natural);
+
+		allocation.x = child->x - hvalue;
+		allocation.y = child->y - vvalue;
+		allocation.width = natural.width;
+		allocation.height = natural.height;
+
+		gtk_widget_size_allocate (child->widget, &allocation, -1);
+	}
+}
+
+static void
+gnome_canvas_snapshot (GtkWidget *widget,
+                       GtkSnapshot *snapshot)
+{
+	GnomeCanvas *canvas = GNOME_CANVAS (widget);
+	GnomeCanvasPrivate *priv = CANVAS_PRIV (canvas);
+	gint width, height;
+	gdouble hvalue, vvalue;
+	cairo_t *cr;
+
+	canvas_get_widget_size (canvas, &width, &height);
+
+	if (width < 1 || height < 1)
+		return;
+
+	if (canvas->need_update) {
+		cairo_matrix_t w2c;
+
+		/* We start updating root with w2c matrix */
+		gnome_canvas_w2c_matrix (canvas, &w2c);
+
+		gnome_canvas_item_invoke_update (canvas->root, &w2c, 0);
+
+		canvas->need_update = FALSE;
+	}
+
+	hvalue = gtk_adjustment_get_value (priv->hadjustment);
+	vvalue = gtk_adjustment_get_value (priv->vadjustment);
+
+	/* GTK 4 repaints the whole widget; there is no expose rectangle */
+	cr = gtk_snapshot_append_cairo (
+		snapshot, &GRAPHENE_RECT_INIT (0, 0, width, height));
+
+	cairo_translate (cr, -canvas->zoom_xofs, -canvas->zoom_yofs);
+
+	gnome_canvas_paint_rect (
+		canvas, cr,
+		hvalue, vvalue,
+		hvalue + width,
+		vvalue + height);
+
+	cairo_destroy (cr);
+
+	/* Child widgets on top, like the GtkLayout children were */
+	GTK_WIDGET_CLASS (gnome_canvas_parent_class)->snapshot (widget, snapshot);
+}
+
+#else /* GTK 3 */
 
 /* Size allocation handler for the canvas */
 static void
@@ -2404,15 +2793,17 @@ gnome_canvas_drag_end (GtkWidget *widget,
 		GTK_WIDGET_CLASS (gnome_canvas_parent_class)->drag_end (widget, context);
 }
 
+#endif /* GTK 3 */
+
 /* Emits an event for an item in the canvas, be it the current item, grabbed
  * item, or focused item, as appropriate.
  */
 
 static gint
 emit_event (GnomeCanvas *canvas,
-            GdkEvent *event)
+            GnomeCanvasEvent *event)
 {
-	GdkEvent *ev;
+	GnomeCanvasEvent *ev;
 	gint finished;
 	GnomeCanvasItem *item;
 	GnomeCanvasItem *parent;
@@ -2431,38 +2822,38 @@ emit_event (GnomeCanvas *canvas,
 
 	if (canvas->grabbed_item) {
 		switch (event->type) {
-		case GDK_ENTER_NOTIFY:
-			mask = GDK_ENTER_NOTIFY_MASK;
+		case GNOME_CANVAS_ENTER_NOTIFY:
+			mask = GNOME_CANVAS_ENTER_NOTIFY_MASK;
 			break;
 
-		case GDK_LEAVE_NOTIFY:
-			mask = GDK_LEAVE_NOTIFY_MASK;
+		case GNOME_CANVAS_LEAVE_NOTIFY:
+			mask = GNOME_CANVAS_LEAVE_NOTIFY_MASK;
 			break;
 
-		case GDK_MOTION_NOTIFY:
-			mask = GDK_POINTER_MOTION_MASK;
+		case GNOME_CANVAS_MOTION_NOTIFY:
+			mask = GNOME_CANVAS_POINTER_MOTION_MASK;
 			break;
 
-		case GDK_BUTTON_PRESS:
-		case GDK_2BUTTON_PRESS:
-		case GDK_3BUTTON_PRESS:
-			mask = GDK_BUTTON_PRESS_MASK;
+		case GNOME_CANVAS_BUTTON_PRESS:
+		case GNOME_CANVAS_2BUTTON_PRESS:
+		case GNOME_CANVAS_3BUTTON_PRESS:
+			mask = GNOME_CANVAS_BUTTON_PRESS_MASK;
 			break;
 
-		case GDK_BUTTON_RELEASE:
-			mask = GDK_BUTTON_RELEASE_MASK;
+		case GNOME_CANVAS_BUTTON_RELEASE:
+			mask = GNOME_CANVAS_BUTTON_RELEASE_MASK;
 			break;
 
-		case GDK_KEY_PRESS:
-			mask = GDK_KEY_PRESS_MASK;
+		case GNOME_CANVAS_KEY_PRESS:
+			mask = GNOME_CANVAS_KEY_PRESS_MASK;
 			break;
 
-		case GDK_KEY_RELEASE:
-			mask = GDK_KEY_RELEASE_MASK;
+		case GNOME_CANVAS_KEY_RELEASE:
+			mask = GNOME_CANVAS_KEY_RELEASE_MASK;
 			break;
 
-		case GDK_SCROLL:
-			mask = GDK_SCROLL_MASK;
+		case GNOME_CANVAS_SCROLL:
+			mask = GNOME_CANVAS_SCROLL_MASK;
 			break;
 
 		default:
@@ -2478,23 +2869,23 @@ emit_event (GnomeCanvas *canvas,
 	 * offsets of the fields in the event structures.
 	 */
 
-	ev = gdk_event_copy (event);
+	ev = gnome_canvas_event_copy (event);
 
 	switch (ev->type)
 	{
-	case GDK_ENTER_NOTIFY:
-	case GDK_LEAVE_NOTIFY:
+	case GNOME_CANVAS_ENTER_NOTIFY:
+	case GNOME_CANVAS_LEAVE_NOTIFY:
 		gnome_canvas_window_to_world (
 			canvas,
 			ev->crossing.x, ev->crossing.y,
 			&ev->crossing.x, &ev->crossing.y);
 		break;
 
-	case GDK_MOTION_NOTIFY:
-	case GDK_BUTTON_PRESS:
-	case GDK_2BUTTON_PRESS:
-	case GDK_3BUTTON_PRESS:
-	case GDK_BUTTON_RELEASE:
+	case GNOME_CANVAS_MOTION_NOTIFY:
+	case GNOME_CANVAS_BUTTON_PRESS:
+	case GNOME_CANVAS_2BUTTON_PRESS:
+	case GNOME_CANVAS_3BUTTON_PRESS:
+	case GNOME_CANVAS_BUTTON_RELEASE:
 		gnome_canvas_window_to_world (
 			canvas,
 			ev->motion.x, ev->motion.y,
@@ -2510,9 +2901,9 @@ emit_event (GnomeCanvas *canvas,
 	item = canvas->current_item;
 
 	if (canvas->focused_item
-	    && ((event->type == GDK_KEY_PRESS) ||
-		(event->type == GDK_KEY_RELEASE) ||
-		(event->type == GDK_FOCUS_CHANGE)))
+	    && ((event->type == GNOME_CANVAS_KEY_PRESS) ||
+		(event->type == GNOME_CANVAS_KEY_RELEASE) ||
+		(event->type == GNOME_CANVAS_FOCUS_CHANGE)))
 		item = canvas->focused_item;
 
 	/* The event is propagated up the hierarchy (for if someone connected to
@@ -2535,7 +2926,7 @@ emit_event (GnomeCanvas *canvas,
 		item = parent;
 	}
 
-	gdk_event_free (ev);
+	gnome_canvas_event_free (ev);
 
 	return finished;
 }
@@ -2545,7 +2936,7 @@ emit_event (GnomeCanvas *canvas,
  */
 static gint
 pick_current_item (GnomeCanvas *canvas,
-                   GdkEvent *event)
+                   GnomeCanvasEvent *event)
 {
 	gint button_down;
 	gdouble x, y;
@@ -2572,6 +2963,20 @@ pick_current_item (GnomeCanvas *canvas,
 	 * synthesize an enter event.
 	 */
 	if (event != &canvas->pick_event) {
+#if GTK_CHECK_VERSION (4, 0, 0)
+		/* All members share the common fields, so a plain copy works;
+		 * the GdkEvent is only borrowed, so it is not kept. */
+		canvas->pick_event = *event;
+		canvas->pick_event.any.gdk_event = NULL;
+
+		if ((event->type == GNOME_CANVAS_MOTION_NOTIFY) ||
+		    (event->type == GNOME_CANVAS_BUTTON_RELEASE)) {
+			canvas->pick_event.crossing.type = GNOME_CANVAS_ENTER_NOTIFY;
+			canvas->pick_event.crossing.mode = GDK_CROSSING_NORMAL;
+			canvas->pick_event.crossing.detail = GDK_NOTIFY_NONLINEAR;
+			canvas->pick_event.crossing.focus = FALSE;
+		}
+#else
 		if ((event->type == GDK_MOTION_NOTIFY) ||
 		    (event->type == GDK_BUTTON_RELEASE)) {
 			/* these fields have the same offsets in both types of events */
@@ -2598,6 +3003,7 @@ pick_current_item (GnomeCanvas *canvas,
 			}
 		} else
 			canvas->pick_event = *event;
+#endif
 	}
 
 	/* Don't do anything else if this is a recursive call */
@@ -2607,10 +3013,10 @@ pick_current_item (GnomeCanvas *canvas,
 
 	/* LeaveNotify means that there is no current item, so we don't look for one */
 
-	if (canvas->pick_event.type != GDK_LEAVE_NOTIFY) {
+	if (canvas->pick_event.type != GNOME_CANVAS_LEAVE_NOTIFY) {
 		/* these fields don't have the same offsets in both types of events */
 
-		if (canvas->pick_event.type == GDK_ENTER_NOTIFY) {
+		if (canvas->pick_event.type == GNOME_CANVAS_ENTER_NOTIFY) {
 			x = canvas->pick_event.crossing.x - canvas->zoom_xofs;
 			y = canvas->pick_event.crossing.y - canvas->zoom_yofs;
 		} else {
@@ -2648,13 +3054,15 @@ pick_current_item (GnomeCanvas *canvas,
 	if ((canvas->new_current_item != canvas->current_item)
 	    && (canvas->current_item != NULL)
 	    && !canvas->left_grabbed_item) {
-		GdkEvent new_event;
+		GnomeCanvasEvent new_event;
 
 		new_event = canvas->pick_event;
-		new_event.type = GDK_LEAVE_NOTIFY;
+		new_event.type = GNOME_CANVAS_LEAVE_NOTIFY;
 
 		new_event.crossing.detail = GDK_NOTIFY_ANCESTOR;
+#if !GTK_CHECK_VERSION (4, 0, 0)
 		new_event.crossing.subwindow = NULL;
+#endif
 		canvas->in_repick = TRUE;
 		retval = emit_event (canvas, &new_event);
 		canvas->in_repick = FALSE;
@@ -2674,47 +3082,33 @@ pick_current_item (GnomeCanvas *canvas,
 	canvas->current_item = canvas->new_current_item;
 
 	if (canvas->current_item != NULL) {
-		GdkEvent new_event;
+		GnomeCanvasEvent new_event;
 
 		new_event = canvas->pick_event;
-		new_event.type = GDK_ENTER_NOTIFY;
+		new_event.type = GNOME_CANVAS_ENTER_NOTIFY;
 		new_event.crossing.detail = GDK_NOTIFY_ANCESTOR;
+#if !GTK_CHECK_VERSION (4, 0, 0)
 		new_event.crossing.subwindow = NULL;
+#endif
 		retval = emit_event (canvas, &new_event);
 	}
 
 	return retval;
 }
 
-/* Button event handler for the canvas */
-static gint
-gnome_canvas_button (GtkWidget *widget,
-                     GdkEventButton *event)
+/* The handlers below hold what both GTK versions share; the GTK 3 event
+ * vfuncs and the GTK 4 event controllers feed them. */
+
+static gboolean
+canvas_handle_button (GnomeCanvas *canvas,
+                      GnomeCanvasEvent *event)
 {
-	GnomeCanvas *canvas;
-	GtkLayout *layout;
-	GdkWindow *bin_window;
 	gint mask;
 	gint retval;
 
-	g_return_val_if_fail (GNOME_IS_CANVAS (widget), FALSE);
-	g_return_val_if_fail (event != NULL, FALSE);
-
 	retval = FALSE;
 
-	canvas = GNOME_CANVAS (widget);
-
-	layout = GTK_LAYOUT (canvas);
-	bin_window = gtk_layout_get_bin_window (layout);
-
-	/*
-	 * dispatch normally regardless of the event's window if an item has
-	 * has a pointer grab in effect
-	 */
-	if (!canvas->grabbed_item && event->window != bin_window)
-		return retval;
-
-	switch (event->button) {
+	switch (event->button.button) {
 		case 1:
 			mask = GDK_BUTTON1_MASK;
 			break;
@@ -2735,26 +3129,26 @@ gnome_canvas_button (GtkWidget *widget,
 	}
 
 	switch (event->type) {
-		case GDK_BUTTON_PRESS:
-		case GDK_2BUTTON_PRESS:
-		case GDK_3BUTTON_PRESS:
+		case GNOME_CANVAS_BUTTON_PRESS:
+		case GNOME_CANVAS_2BUTTON_PRESS:
+		case GNOME_CANVAS_3BUTTON_PRESS:
 			/* Pick the current item as if the button were
 			 * not pressed, and then process the event. */
-			canvas->state = event->state;
-			pick_current_item (canvas, (GdkEvent *) event);
+			canvas->state = event->button.state;
+			pick_current_item (canvas, event);
 			canvas->state ^= mask;
-			retval = emit_event (canvas, (GdkEvent *) event);
+			retval = emit_event (canvas, event);
 			break;
 
-		case GDK_BUTTON_RELEASE:
+		case GNOME_CANVAS_BUTTON_RELEASE:
 			/* Process the event as if the button were pressed,
 			 * then repick after the button has been released. */
-			canvas->state = event->state;
-			retval = emit_event (canvas, (GdkEvent *) event);
-			event->state ^= mask;
-			canvas->state = event->state;
-			pick_current_item (canvas, (GdkEvent *) event);
-			event->state ^= mask;
+			canvas->state = event->button.state;
+			retval = emit_event (canvas, event);
+			event->button.state ^= mask;
+			canvas->state = event->button.state;
+			pick_current_item (canvas, event);
+			event->button.state ^= mask;
 			break;
 
 		default:
@@ -2762,6 +3156,389 @@ gnome_canvas_button (GtkWidget *widget,
 	}
 
 	return retval;
+}
+
+static gboolean
+canvas_handle_motion (GnomeCanvas *canvas,
+                      GnomeCanvasEvent *event)
+{
+	canvas->state = event->motion.state;
+	pick_current_item (canvas, event);
+	return emit_event (canvas, event);
+}
+
+static gboolean
+canvas_handle_crossing (GnomeCanvas *canvas,
+                        GnomeCanvasEvent *event)
+{
+	canvas->state = event->crossing.state;
+	return pick_current_item (canvas, event);
+}
+
+static gboolean
+canvas_handle_focus (GnomeCanvas *canvas,
+                     GnomeCanvasEvent *event)
+{
+	if (canvas->focused_item)
+		return emit_event (canvas, event);
+	else
+		return FALSE;
+}
+
+#if GTK_CHECK_VERSION (4, 0, 0)
+
+/* Event coordinates in the canvas window, i.e. the widget coordinates plus
+ * the scroll offset, which is what GtkLayout's bin window reported. */
+static gboolean
+canvas_widget_to_window (GnomeCanvas *canvas,
+                         gdouble widget_x,
+                         gdouble widget_y,
+                         gdouble *x,
+                         gdouble *y)
+{
+	GnomeCanvasPrivate *priv = CANVAS_PRIV (canvas);
+
+	*x = widget_x + gtk_adjustment_get_value (priv->hadjustment);
+	*y = widget_y + gtk_adjustment_get_value (priv->vadjustment);
+
+	return TRUE;
+}
+
+static gboolean
+canvas_event_widget_coords (GnomeCanvas *canvas,
+                            GdkEvent *gdk_event,
+                            gdouble *x,
+                            gdouble *y)
+{
+	GtkWidget *widget = GTK_WIDGET (canvas);
+	GtkNative *native;
+	gdouble ex, ey, nx, ny;
+	graphene_point_t point;
+
+	*x = *y = 0;
+
+	if (!gdk_event_get_position (gdk_event, &ex, &ey))
+		return FALSE;
+
+	native = gtk_widget_get_native (widget);
+	if (!native)
+		return FALSE;
+
+	gtk_native_get_surface_transform (native, &nx, &ny);
+
+	if (!gtk_widget_compute_point (
+		GTK_WIDGET (native), widget,
+		&GRAPHENE_POINT_INIT (ex - nx, ey - ny), &point))
+		return FALSE;
+
+	*x = point.x;
+	*y = point.y;
+
+	return TRUE;
+}
+
+/* GTK 3 sent BUTTON_PRESS for every press and then 2BUTTON_PRESS or
+ * 3BUTTON_PRESS for the second and third one of a multi-click. */
+static gint
+canvas_count_press (GnomeCanvas *canvas,
+                    guint button,
+                    guint32 time,
+                    gdouble x,
+                    gdouble y)
+{
+	GnomeCanvasPrivate *priv = CANVAS_PRIV (canvas);
+	GtkSettings *settings;
+	gint double_click_time = 400, double_click_distance = 5;
+
+	settings = gtk_widget_get_settings (GTK_WIDGET (canvas));
+	g_object_get (
+		settings,
+		"gtk-double-click-time", &double_click_time,
+		"gtk-double-click-distance", &double_click_distance,
+		NULL);
+
+	if (priv->n_press > 0 && priv->n_press < 3 &&
+	    button == priv->last_press_button &&
+	    time - priv->last_press_time <= (guint32) double_click_time &&
+	    ABS (x - priv->last_press_x) <= double_click_distance &&
+	    ABS (y - priv->last_press_y) <= double_click_distance)
+		priv->n_press++;
+	else
+		priv->n_press = 1;
+
+	priv->last_press_button = button;
+	priv->last_press_time = time;
+	priv->last_press_x = x;
+	priv->last_press_y = y;
+
+	return priv->n_press;
+}
+
+static gboolean
+canvas_legacy_event_cb (GtkEventControllerLegacy *controller,
+                        GdkEvent *gdk_event,
+                        GnomeCanvas *canvas)
+{
+	GtkWidget *widget = GTK_WIDGET (canvas);
+	GnomeCanvasEvent event;
+	GdkEventType type;
+	gdouble wx = 0, wy = 0, x = 0, y = 0;
+	gboolean retval = FALSE;
+
+	type = gdk_event_get_event_type (gdk_event);
+
+	switch (type) {
+	case GDK_BUTTON_PRESS:
+	case GDK_BUTTON_RELEASE:
+	case GDK_MOTION_NOTIFY:
+		if (!canvas_event_widget_coords (canvas, gdk_event, &wx, &wy))
+			return FALSE;
+
+		/* Dispatch normally regardless of the event's target if an
+		 * item has a pointer grab in effect; otherwise events meant
+		 * for child widgets are not ours. */
+		if (!canvas->grabbed_item &&
+		    gtk_widget_pick (widget, wx, wy, GTK_PICK_DEFAULT) != widget)
+			return FALSE;
+
+		canvas_widget_to_window (canvas, wx, wy, &x, &y);
+		break;
+	default:
+		break;
+	}
+
+	switch (type) {
+	case GDK_BUTTON_PRESS:
+		gnome_canvas_event_set_from_gdk (
+			&event, GNOME_CANVAS_BUTTON_PRESS, gdk_event, x, y);
+		event.button.button = gdk_button_event_get_button (gdk_event);
+
+		retval = canvas_handle_button (canvas, &event);
+
+		switch (canvas_count_press (canvas, event.button.button, event.button.time, wx, wy)) {
+		case 2:
+			event.type = GNOME_CANVAS_2BUTTON_PRESS;
+			retval = canvas_handle_button (canvas, &event) || retval;
+			break;
+		case 3:
+			event.type = GNOME_CANVAS_3BUTTON_PRESS;
+			retval = canvas_handle_button (canvas, &event) || retval;
+			break;
+		default:
+			break;
+		}
+		break;
+
+	case GDK_BUTTON_RELEASE:
+		gnome_canvas_event_set_from_gdk (
+			&event, GNOME_CANVAS_BUTTON_RELEASE, gdk_event, x, y);
+		event.button.button = gdk_button_event_get_button (gdk_event);
+
+		retval = canvas_handle_button (canvas, &event);
+		break;
+
+	case GDK_MOTION_NOTIFY:
+		gnome_canvas_event_set_from_gdk (
+			&event, GNOME_CANVAS_MOTION_NOTIFY, gdk_event, x, y);
+
+		retval = canvas_handle_motion (canvas, &event);
+		break;
+
+	case GDK_KEY_PRESS:
+	case GDK_KEY_RELEASE:
+		gnome_canvas_event_set_from_gdk (
+			&event,
+			type == GDK_KEY_PRESS ?
+			GNOME_CANVAS_KEY_PRESS : GNOME_CANVAS_KEY_RELEASE,
+			gdk_event, 0, 0);
+		event.key.keyval = gdk_key_event_get_keyval (gdk_event);
+		event.key.hardware_keycode = gdk_key_event_get_keycode (gdk_event);
+		event.key.group = gdk_key_event_get_layout (gdk_event);
+		event.key.is_modifier = gdk_key_event_is_modifier (gdk_event);
+
+		retval = emit_event (canvas, &event);
+		break;
+
+	default:
+		/* Scroll events go to the scrolled window, as with GTK 3 */
+		break;
+	}
+
+	return retval;
+}
+
+static void
+canvas_crossing (GnomeCanvas *canvas,
+                 GtkEventController *controller,
+                 GnomeCanvasEventType type,
+                 gdouble widget_x,
+                 gdouble widget_y)
+{
+	GnomeCanvasEvent event;
+	gdouble x, y;
+
+	canvas_widget_to_window (canvas, widget_x, widget_y, &x, &y);
+
+	gnome_canvas_event_set_from_gdk (
+		&event, type,
+		gtk_event_controller_get_current_event (controller),
+		x, y);
+	event.crossing.state = gtk_event_controller_get_current_event_state (controller);
+	event.crossing.mode = GDK_CROSSING_NORMAL;
+	event.crossing.detail = GDK_NOTIFY_NONLINEAR;
+
+	canvas_handle_crossing (canvas, &event);
+}
+
+static void
+canvas_motion_enter_cb (GtkEventControllerMotion *controller,
+                        gdouble x,
+                        gdouble y,
+                        GnomeCanvas *canvas)
+{
+	canvas_crossing (
+		canvas, GTK_EVENT_CONTROLLER (controller),
+		GNOME_CANVAS_ENTER_NOTIFY, x, y);
+}
+
+static void
+canvas_motion_leave_cb (GtkEventControllerMotion *controller,
+                        GnomeCanvas *canvas)
+{
+	/* No position on leave; GTK 3 gave the last one, which the pick
+	 * event still holds. */
+	GnomeCanvasEvent event;
+
+	gnome_canvas_event_set_from_gdk (
+		&event, GNOME_CANVAS_LEAVE_NOTIFY,
+		gtk_event_controller_get_current_event (GTK_EVENT_CONTROLLER (controller)),
+		canvas->pick_event.any.x, canvas->pick_event.any.y);
+	event.crossing.state = gtk_event_controller_get_current_event_state (
+		GTK_EVENT_CONTROLLER (controller));
+	event.crossing.mode = GDK_CROSSING_NORMAL;
+	event.crossing.detail = GDK_NOTIFY_NONLINEAR;
+
+	canvas_handle_crossing (canvas, &event);
+}
+
+static void
+canvas_focus_change (GnomeCanvas *canvas,
+                     gboolean in)
+{
+	GnomeCanvasEvent event;
+
+	gnome_canvas_event_set_from_gdk (&event, GNOME_CANVAS_FOCUS_CHANGE, NULL, 0, 0);
+	event.focus_change.in = in;
+
+	canvas_handle_focus (canvas, &event);
+}
+
+static void
+canvas_focus_enter_cb (GtkEventControllerFocus *controller,
+                       GnomeCanvas *canvas)
+{
+	canvas_focus_change (canvas, TRUE);
+}
+
+static void
+canvas_focus_leave_cb (GtkEventControllerFocus *controller,
+                       GnomeCanvas *canvas)
+{
+	canvas_focus_change (canvas, FALSE);
+}
+
+static void
+canvas_setup_controllers (GnomeCanvas *canvas)
+{
+	GtkWidget *widget = GTK_WIDGET (canvas);
+	GtkEventController *controller;
+
+	/* Raw events: GtkGestureClick cancels itself on drags and the item
+	 * code needs press, motion and release like GTK 3 delivered them. */
+	controller = gtk_event_controller_legacy_new ();
+	g_signal_connect (
+		controller, "event",
+		G_CALLBACK (canvas_legacy_event_cb), canvas);
+	gtk_widget_add_controller (widget, controller);
+
+	controller = gtk_event_controller_motion_new ();
+	g_signal_connect (
+		controller, "enter",
+		G_CALLBACK (canvas_motion_enter_cb), canvas);
+	g_signal_connect (
+		controller, "leave",
+		G_CALLBACK (canvas_motion_leave_cb), canvas);
+	gtk_widget_add_controller (widget, controller);
+
+	controller = gtk_event_controller_focus_new ();
+	g_signal_connect (
+		controller, "enter",
+		G_CALLBACK (canvas_focus_enter_cb), canvas);
+	g_signal_connect (
+		controller, "leave",
+		G_CALLBACK (canvas_focus_leave_cb), canvas);
+	gtk_widget_add_controller (widget, controller);
+}
+
+static void
+gnome_canvas_draw_background (GnomeCanvas *canvas,
+                              cairo_t *cr,
+                              gint x,
+                              gint y,
+                              gint width,
+                              gint height)
+{
+	/* The "canvas" CSS node draws the theme background before the
+	 * snapshot; GtkStyleContext colors are deprecated with GTK 4. */
+}
+
+static CanvasChild *
+canvas_find_child (GnomeCanvas *canvas,
+                   GtkWidget *widget,
+                   GList **out_link)
+{
+	GList *link;
+
+	for (link = CANVAS_PRIV (canvas)->children; link; link = g_list_next (link)) {
+		CanvasChild *child = link->data;
+
+		if (child->widget == widget) {
+			if (out_link)
+				*out_link = link;
+			return child;
+		}
+	}
+
+	return NULL;
+}
+
+#else /* GTK 3 */
+
+/* Button event handler for the canvas */
+static gint
+gnome_canvas_button (GtkWidget *widget,
+                     GdkEventButton *event)
+{
+	GnomeCanvas *canvas;
+	GtkLayout *layout;
+	GdkWindow *bin_window;
+
+	g_return_val_if_fail (GNOME_IS_CANVAS (widget), FALSE);
+	g_return_val_if_fail (event != NULL, FALSE);
+
+	canvas = GNOME_CANVAS (widget);
+
+	layout = GTK_LAYOUT (canvas);
+	bin_window = gtk_layout_get_bin_window (layout);
+
+	/*
+	 * dispatch normally regardless of the event's window if an item has
+	 * has a pointer grab in effect
+	 */
+	if (!canvas->grabbed_item && event->window != bin_window)
+		return FALSE;
+
+	return canvas_handle_button (canvas, (GdkEvent *) event);
 }
 
 /* Motion event handler for the canvas */
@@ -2784,9 +3561,7 @@ gnome_canvas_motion (GtkWidget *widget,
 	if (event->window != bin_window)
 		return FALSE;
 
-	canvas->state = event->state;
-	pick_current_item (canvas, (GdkEvent *) event);
-	return emit_event (canvas, (GdkEvent *) event);
+	return canvas_handle_motion (canvas, (GdkEvent *) event);
 }
 
 /* Key event handler for the canvas */
@@ -2847,8 +3622,7 @@ gnome_canvas_crossing (GtkWidget *widget,
 	    event->x_root == 0 && event->y_root == 0)
 		return FALSE;
 
-	canvas->state = event->state;
-	return pick_current_item (canvas, (GdkEvent *) event);
+	return canvas_handle_crossing (canvas, (GdkEvent *) event);
 }
 
 /* Focus in handler for the canvas */
@@ -2856,20 +3630,13 @@ static gint
 gnome_canvas_focus_in (GtkWidget *widget,
                        GdkEventFocus *event)
 {
-	GnomeCanvas *canvas;
-
 	/* XXX Can't access flags directly anymore, but is it really needed?
 	 *     If so, could we call gtk_widget_send_focus_change() instead? */
 #if 0
 	GTK_WIDGET_SET_FLAGS (widget, GTK_HAS_FOCUS);
 #endif
 
-	canvas = GNOME_CANVAS (widget);
-
-	if (canvas->focused_item)
-		return emit_event (canvas, (GdkEvent *) event);
-	else
-		return FALSE;
+	return canvas_handle_focus (GNOME_CANVAS (widget), (GdkEvent *) event);
 }
 
 /* Focus out handler for the canvas */
@@ -2877,20 +3644,13 @@ static gint
 gnome_canvas_focus_out (GtkWidget *widget,
                         GdkEventFocus *event)
 {
-	GnomeCanvas *canvas;
-
 	/* XXX Can't access flags directly anymore, but is it really needed?
 	 *     If so, could we call gtk_widget_send_focus_change() instead? */
 #if 0
 	GTK_WIDGET_UNSET_FLAGS (widget, GTK_HAS_FOCUS);
 #endif
 
-	canvas = GNOME_CANVAS (widget);
-
-	if (canvas->focused_item)
-		return emit_event (canvas, (GdkEvent *) event);
-	else
-		return FALSE;
+	return canvas_handle_focus (GNOME_CANVAS (widget), (GdkEvent *) event);
 }
 
 static void
@@ -2912,6 +3672,112 @@ gnome_canvas_draw_background (GnomeCanvas *canvas,
 	gdk_cairo_set_source_rgba (cr, &rgba);
 	cairo_paint (cr);
 	cairo_restore (cr);
+}
+
+#endif /* GTK 3 */
+
+/**
+ * gnome_canvas_put_widget:
+ * @canvas: A canvas.
+ * @child: widget to add
+ * @x: X position in canvas window coordinates
+ * @y: Y position in canvas window coordinates
+ **/
+void
+gnome_canvas_put_widget (GnomeCanvas *canvas,
+                         GtkWidget *child,
+                         gint x,
+                         gint y)
+{
+	g_return_if_fail (GNOME_IS_CANVAS (canvas));
+	g_return_if_fail (GTK_IS_WIDGET (child));
+
+#if GTK_CHECK_VERSION (4, 0, 0)
+	{
+		CanvasChild *canvas_child;
+
+		g_return_if_fail (gtk_widget_get_parent (child) == NULL);
+
+		canvas_child = g_new0 (CanvasChild, 1);
+		canvas_child->widget = child;
+		canvas_child->x = x;
+		canvas_child->y = y;
+
+		CANVAS_PRIV (canvas)->children = g_list_append (
+			CANVAS_PRIV (canvas)->children, canvas_child);
+
+		gtk_widget_set_parent (child, GTK_WIDGET (canvas));
+	}
+#else
+	gtk_layout_put (GTK_LAYOUT (canvas), child, x, y);
+#endif
+}
+
+/**
+ * gnome_canvas_move_widget:
+ * @canvas: A canvas.
+ * @child: a widget added with gnome_canvas_put_widget()
+ * @x: X position in canvas window coordinates
+ * @y: Y position in canvas window coordinates
+ **/
+void
+gnome_canvas_move_widget (GnomeCanvas *canvas,
+                          GtkWidget *child,
+                          gint x,
+                          gint y)
+{
+	g_return_if_fail (GNOME_IS_CANVAS (canvas));
+	g_return_if_fail (GTK_IS_WIDGET (child));
+
+#if GTK_CHECK_VERSION (4, 0, 0)
+	{
+		CanvasChild *canvas_child;
+
+		canvas_child = canvas_find_child (canvas, child, NULL);
+		g_return_if_fail (canvas_child != NULL);
+
+		if (canvas_child->x == x && canvas_child->y == y)
+			return;
+
+		canvas_child->x = x;
+		canvas_child->y = y;
+
+		gtk_widget_queue_allocate (GTK_WIDGET (canvas));
+	}
+#else
+	gtk_layout_move (GTK_LAYOUT (canvas), child, x, y);
+#endif
+}
+
+/**
+ * gnome_canvas_remove_widget:
+ * @canvas: A canvas.
+ * @child: a widget added with gnome_canvas_put_widget()
+ **/
+void
+gnome_canvas_remove_widget (GnomeCanvas *canvas,
+                            GtkWidget *child)
+{
+	g_return_if_fail (GNOME_IS_CANVAS (canvas));
+	g_return_if_fail (GTK_IS_WIDGET (child));
+
+#if GTK_CHECK_VERSION (4, 0, 0)
+	{
+		CanvasChild *canvas_child;
+		GList *link = NULL;
+
+		canvas_child = canvas_find_child (canvas, child, &link);
+		g_return_if_fail (canvas_child != NULL);
+
+		CANVAS_PRIV (canvas)->children = g_list_delete_link (
+			CANVAS_PRIV (canvas)->children, link);
+
+		gtk_widget_unparent (child);
+		g_free (canvas_child);
+	}
+#else
+	gtk_container_remove (GTK_CONTAINER (canvas), child);
+#endif
 }
 
 static void
@@ -3195,14 +4061,14 @@ static inline void
 get_visible_rect (GnomeCanvas *canvas,
                   GdkRectangle *visible)
 {
-	GtkAllocation allocation;
+	gint width, height;
 	GtkScrollable *scrollable;
 	GtkAdjustment *hadjustment;
 	GtkAdjustment *vadjustment;
 	gdouble hadjustment_value;
 	gdouble vadjustment_value;
 
-	gtk_widget_get_allocation (GTK_WIDGET (canvas), &allocation);
+	canvas_get_widget_size (canvas, &width, &height);
 
 	scrollable = GTK_SCROLLABLE (canvas);
 	hadjustment = gtk_scrollable_get_hadjustment (scrollable);
@@ -3213,8 +4079,8 @@ get_visible_rect (GnomeCanvas *canvas,
 
 	visible->x = hadjustment_value - canvas->zoom_xofs;
 	visible->y = vadjustment_value - canvas->zoom_yofs;
-	visible->width = allocation.width;
-	visible->height = allocation.height;
+	visible->width = width;
+	visible->height = height;
 }
 
 /**
@@ -3252,9 +4118,14 @@ gnome_canvas_request_redraw (GnomeCanvas *canvas,
 	if (!gdk_rectangle_intersect (&area, &clip, &area))
 		return;
 
+#if GTK_CHECK_VERSION (4, 0, 0)
+	/* GTK 4 cannot invalidate part of a widget */
+	gtk_widget_queue_draw (GTK_WIDGET (canvas));
+#else
 	gdk_window_invalidate_rect (
 		gtk_layout_get_bin_window (GTK_LAYOUT (canvas)),
 		&area, FALSE);
+#endif
 }
 
 /**
@@ -3489,7 +4360,7 @@ gnome_canvas_item_class_init (GnomeCanvasItemClass *class)
 		G_STRUCT_OFFSET (GnomeCanvasItemClass, event),
 		boolean_handled_accumulator, NULL, NULL,
 		G_TYPE_BOOLEAN, 1,
-		GDK_TYPE_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
+		GNOME_TYPE_CANVAS_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
 
 	gobject_class->dispose = gnome_canvas_item_dispose;
 

@@ -55,6 +55,12 @@ set(glib_encoded_version GLIB_VERSION_2_70)
 set(gdk_minimum_version 3.22)
 set(gdk_encoded_version GDK_VERSION_3_22)
 
+# DoxMail GTK 4 port (WITH_GTK4 is declared below; this needs it from -D)
+set(gtk4_minimum_version 4.12)
+if(WITH_GTK4)
+	set(gdk_encoded_version GDK_VERSION_4_12)
+endif(WITH_GTK4)
+
 # Keep these two definitions in agreement.
 set(soup_minimum_version 3.0)
 set(soup_encoded_version SOUP_VERSION_3_0)
@@ -210,6 +216,17 @@ if(OVERRIDE_APPLICATION_ID STREQUAL "")
 endif(OVERRIDE_APPLICATION_ID STREQUAL "")
 
 add_printable_option(ENABLE_MAINTAINER_MODE "Enable maintainer mode" OFF)
+
+# DoxMail: the GTK 4 port builds only the parts already ported (see
+# doxmail/PORTING-GTK4.md); everything else stays on GTK 3 until it moves.
+add_printable_option(WITH_GTK4 "Build the GTK 4 port (only the ported parts)" OFF)
+if(WITH_GTK4)
+	# These pull GTK 3 libraries; each comes back with its GTK 4 port
+	foreach(_gtk3_only ENABLE_GNOME_DESKTOP ENABLE_CANBERRA ENABLE_GSPELL ENABLE_CONTACT_MAPS ENABLE_AUTOAR WITH_HELP)
+		set(${_gtk3_only} OFF CACHE BOOL "Not available with WITH_GTK4 yet" FORCE)
+	endforeach()
+	unset(_gtk3_only)
+endif(WITH_GTK4)
 add_printable_variable(VERSION_SUBSTRING "Version substring, for packagers" "")
 add_printable_variable(VERSION_COMMENT "Define if you want a comment appended to the version number" "")
 
@@ -257,6 +274,20 @@ else(ENABLE_GNOME_DESKTOP)
 	set(HAVE_GNOME_DESKTOP OFF)
 endif(ENABLE_GNOME_DESKTOP)
 
+if(WITH_GTK4)
+pkg_check_modules(GNOME_PLATFORM REQUIRED
+	cairo-gobject
+	gdk-pixbuf-2.0>=${gdk_pixbuf_minimum_version}
+	gio-2.0>=${glib_minimum_version}
+	${GIO_UNIX_REQUIREMENT}
+	gmodule-2.0>=${glib_minimum_version}
+	gsettings-desktop-schemas>=${gsettings_desktop_schemas_minimum_version}
+	gtk4>=${gtk4_minimum_version}
+	libxml-2.0>=${libxml_minimum_version}
+	shared-mime-info>=${shared_mime_info_minimum_version}
+	webkitgtk-6.0>=${webkit2gtk_minimum_version}
+)
+else(WITH_GTK4)
 pkg_check_modules(GNOME_PLATFORM REQUIRED
 	cairo-gobject
 	gail-3.0>=${gdk_minimum_version}
@@ -271,20 +302,31 @@ pkg_check_modules(GNOME_PLATFORM REQUIRED
 	shared-mime-info>=${shared_mime_info_minimum_version}
 	webkit2gtk-4.1>=${webkit2gtk_minimum_version}
 )
+endif(WITH_GTK4)
+
+if(WITH_GTK4)
+	set(EDS_UI_MODULE libedataserverui4-1.0)
+else(WITH_GTK4)
+	set(EDS_UI_MODULE libedataserverui-1.2)
+endif(WITH_GTK4)
 
 pkg_check_modules(EVOLUTION_DATA_SERVER REQUIRED
 	camel-1.2>=${eds_minimum_version}
 	libebook-1.2>=${eds_minimum_version}
 	libecal-2.0>=${eds_minimum_version}
 	libedataserver-1.2>=${eds_minimum_version}
-	libedataserverui-1.2>=${eds_minimum_version}
+	${EDS_UI_MODULE}>=${eds_minimum_version}
 	libebackend-1.2>=${eds_minimum_version}
 )
 
-pkg_check_modules(A11Y REQUIRED atk)
+if(WITH_GTK4)
+	pkg_check_modules(WEB_EXTENSION REQUIRED webkitgtk-web-process-extension-6.0>=${webkit2gtk_minimum_version})
+else(WITH_GTK4)
+	pkg_check_modules(A11Y REQUIRED atk)
+	pkg_check_modules(WEB_EXTENSION REQUIRED webkit2gtk-4.1>=${webkit2gtk_minimum_version})
+endif(WITH_GTK4)
 pkg_check_modules(LIBSECRET REQUIRED libsecret-1>=${libsecret_minimum_version})
 pkg_check_modules(LIBSOUP REQUIRED libsoup-3.0>=${soup_minimum_version})
-pkg_check_modules(WEB_EXTENSION REQUIRED webkit2gtk-4.1>=${webkit2gtk_minimum_version})
 pkg_check_modules(SQLITE3 REQUIRED sqlite3>=${sqlite_minimum_version})
 
 pkg_check_variable(EDS_SOURCES_DBUS_SERVICE_NAME evolution-data-server-1.2 sourcesdbusservicename)
@@ -847,6 +889,11 @@ endif(NOT WIN32)
 add_pkgconfig_file(evolution-calendar.pc.in evolution-calendar-${INTERFACE_VERSION}.pc)
 add_pkgconfig_file(evolution-mail.pc.in evolution-mail-${INTERFACE_VERSION}.pc)
 add_pkgconfig_file(evolution-shell.pc.in evolution-shell-${INTERFACE_VERSION}.pc)
+
+if(WITH_GTK4)
+	add_subdirectory(src)
+	return()
+endif(WITH_GTK4)
 
 add_subdirectory(data)
 add_subdirectory(po)

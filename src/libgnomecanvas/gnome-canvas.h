@@ -36,6 +36,7 @@
 
 #include <gtk/gtk.h>
 #include <stdarg.h>
+#include <libgnomecanvas/gnome-canvas-event.h>
 
 G_BEGIN_DECLS
 
@@ -159,7 +160,7 @@ struct _GnomeCanvasItemClass {
 	/* Signal: an event occurred for an item of this type.  The (x, y)
 	 * coordinates are in the canvas world coordinate system.
 	 */
-	gboolean (* event)                (GnomeCanvasItem *item, GdkEvent *event);
+	gboolean (* event)                (GnomeCanvasItem *item, GnomeCanvasEvent *event);
 
 	/* Reserved for future expansion */
 	gpointer spare_vmethods[4];
@@ -332,7 +333,11 @@ GType gnome_canvas_group_get_type (void) G_GNUC_CONST;
 #define GNOME_CANVAS_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), GNOME_TYPE_CANVAS, GnomeCanvasClass))
 
 struct _GnomeCanvas {
+#if GTK_CHECK_VERSION (4, 0, 0)
+	GtkWidget widget;
+#else
 	GtkLayout layout;
+#endif
 
 	/* Root canvas group */
 	GnomeCanvasItem *root;
@@ -353,7 +358,7 @@ struct _GnomeCanvas {
 	GnomeCanvasItem *focused_item;
 
 	/* Event on which selection of current item is based */
-	GdkEvent pick_event;
+	GnomeCanvasEvent pick_event;
 
 	/* Scrolling region */
 	gdouble scroll_x1, scroll_y1;
@@ -388,7 +393,11 @@ struct _GnomeCanvas {
 };
 
 struct _GnomeCanvasClass {
+#if GTK_CHECK_VERSION (4, 0, 0)
+	GtkWidgetClass parent_class;
+#else
 	GtkLayoutClass parent_class;
+#endif
 
 	/* Draw the background for the area given. This method is only used
 	 * for non-antialiased canvases.
@@ -469,6 +478,12 @@ void gnome_canvas_window_to_world (GnomeCanvas *canvas,
 /* This is the inverse of gnome_canvas_window_to_world() */
 void gnome_canvas_world_to_window (GnomeCanvas *canvas,
 				   gdouble worldx, gdouble worldy, gdouble *winx, gdouble *winy);
+
+/* Child widgets placed at canvas window coordinates (what gtk_layout_put()
+ * and friends did with GTK 3); used by GnomeCanvasWidget. */
+void gnome_canvas_put_widget (GnomeCanvas *canvas, GtkWidget *child, gint x, gint y);
+void gnome_canvas_move_widget (GnomeCanvas *canvas, GtkWidget *child, gint x, gint y);
+void gnome_canvas_remove_widget (GnomeCanvas *canvas, GtkWidget *child);
 
 G_END_DECLS
 

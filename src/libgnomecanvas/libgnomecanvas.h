@@ -24,6 +24,7 @@
 #ifndef LIBGNOMECANVAS_H
 #define LIBGNOMECANVAS_H
 
+#include <libgnomecanvas/gnome-canvas-event.h>
 #include <libgnomecanvas/gnome-canvas.h>
 #include <libgnomecanvas/gnome-canvas-pixbuf.h>
 #include <libgnomecanvas/gnome-canvas-widget.h>

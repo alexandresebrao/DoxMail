@@ -173,7 +173,13 @@ gnome_canvas_widget_dispose (GnomeCanvasItem *object)
 
 	if (witem->widget && !witem->in_destroy) {
 		g_object_weak_unref (G_OBJECT (witem->widget), do_destroy, witem);
+#if GTK_CHECK_VERSION (4, 0, 0)
+		/* The canvas holds the only reference GTK 4 cares about */
+		if (gtk_widget_get_parent (witem->widget) == GTK_WIDGET (object->canvas))
+			gnome_canvas_remove_widget (object->canvas, witem->widget);
+#else
 		gtk_widget_destroy (witem->widget);
+#endif
 		witem->widget = NULL;
 	}
 
@@ -181,6 +187,7 @@ gnome_canvas_widget_dispose (GnomeCanvasItem *object)
 		dispose (object);
 }
 
+#if !GTK_CHECK_VERSION (4, 0, 0)
 static gboolean
 reposition_widget_cb (gpointer user_data)
 {
@@ -193,6 +200,7 @@ reposition_widget_cb (gpointer user_data)
 
 	return FALSE;
 }
+#endif
 
 static void
 recalc_bounds (GnomeCanvasWidget *witem)
@@ -219,6 +227,15 @@ recalc_bounds (GnomeCanvasWidget *witem)
 	item->x2 = witem->cx + witem->cwidth;
 	item->y2 = witem->cy + witem->cheight;
 
+#if GTK_CHECK_VERSION (4, 0, 0)
+	/* Moving a child only queues an allocation of the canvas, which GTK 4
+	 * does not lose inside size-allocate, so no reposition idle here. */
+	if (witem->widget)
+		gnome_canvas_move_widget (
+			item->canvas, witem->widget,
+			witem->cx + item->canvas->zoom_xofs,
+			witem->cy + item->canvas->zoom_yofs);
+#else
 	if (witem->widget) {
 		gint current_x = 0, current_y = 0;
 
@@ -241,6 +258,7 @@ recalc_bounds (GnomeCanvasWidget *witem)
 				reposition_widget_cb, g_object_ref (witem), g_object_unref);
 		}
 	}
+#endif
 }
 
 static void
@@ -268,15 +286,15 @@ gnome_canvas_widget_set_property (GObject *object,
 	case PROP_WIDGET:
 		if (witem->widget) {
 			g_object_weak_unref (G_OBJECT (witem->widget), do_destroy, witem);
-			gtk_container_remove (GTK_CONTAINER (item->canvas), witem->widget);
+			gnome_canvas_remove_widget (item->canvas, witem->widget);
 		}
 
 		obj = g_value_get_object (value);
 		if (obj) {
 			witem->widget = GTK_WIDGET (obj);
 			g_object_weak_ref (obj, do_destroy, witem);
-			gtk_layout_put (
-				GTK_LAYOUT (item->canvas), witem->widget,
+			gnome_canvas_put_widget (
+				item->canvas, witem->widget,
 				witem->cx + item->canvas->zoom_xofs,
 				witem->cy + item->canvas->zoom_yofs);
 		}
