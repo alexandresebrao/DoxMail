@@ -556,7 +556,7 @@ e_content_editor_default_init (EContentEditorInterface *iface)
 		G_TYPE_NONE, 3,
 		G_TYPE_INT,
 		G_TYPE_STRING,
-		GDK_TYPE_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
+		G_TYPE_POINTER /* GdkEvent */);
 
 	/**
 	 * EContentEditor::find-done

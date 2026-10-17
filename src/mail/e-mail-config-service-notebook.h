@@ -19,6 +19,7 @@
 #define E_MAIL_CONFIG_SERVICE_NOTEBOOK_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-util.h>
 #include <mail/e-mail-config-service-backend.h>
 
 /* Standard GObject macros */

@@ -29,7 +29,7 @@
 #include "e-editor-web-extension.h"
 
 struct _EEditorWebExtensionPrivate {
-	WebKitWebExtension *wk_extension;
+	WebKitWebProcessExtension *wk_extension;
 	ESpellChecker *spell_checker;
 	GSList *known_plugins; /* gchar * - full filename to known plugins */
 };
@@ -676,7 +676,7 @@ web_page_document_loaded_cb (WebKitWebPage *web_page,
 }
 
 static void
-web_page_created_cb (WebKitWebExtension *wk_extension,
+web_page_created_cb (WebKitWebProcessExtension *wk_extension,
 		     WebKitWebPage *web_page,
 		     EEditorWebExtension *extension)
 {
@@ -696,7 +696,7 @@ web_page_created_cb (WebKitWebExtension *wk_extension,
 
 void
 e_editor_web_extension_initialize (EEditorWebExtension *extension,
-				   WebKitWebExtension *wk_extension)
+				   WebKitWebProcessExtension *wk_extension)
 {
 	WebKitScriptWorld *script_world;
 

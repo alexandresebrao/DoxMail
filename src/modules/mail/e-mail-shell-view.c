@@ -480,7 +480,7 @@ mail_shell_view_notify_active_view_cb (GObject *object,
 	EMailShellView *self = user_data;
 	EMailDisplay *mail_display;
 	EUIManager *ui_manager;
-	EGtkAccelGroup *accel_group;
+	GtkEventController *shortcuts;
 
 	mail_display = e_mail_reader_get_mail_display (E_MAIL_READER (e_mail_shell_content_get_mail_view (self->priv->mail_shell_content)));
 	if (!mail_display)
@@ -490,17 +490,23 @@ mail_shell_view_notify_active_view_cb (GObject *object,
 	if (!ui_manager)
 		return;
 
-	accel_group = e_ui_manager_get_accel_group (ui_manager);
+	/* GTK 4 has no accel groups: the display's shortcuts are a controller,
+	 * kept with the UI manager and put on the window while active */
+	shortcuts = g_object_get_data (G_OBJECT (ui_manager), "mail-shell-view-shortcuts");
+	if (!shortcuts) {
+		shortcuts = e_ui_manager_create_shortcut_controller (ui_manager);
+		g_object_set_data_full (G_OBJECT (ui_manager), "mail-shell-view-shortcuts", shortcuts, g_object_unref);
+	}
 
 	/* to enable attachment inline toggle actions' accels from the mail display (like "<Primary><Alt>1") */
 	if (e_shell_view_is_active (E_SHELL_VIEW (self))) {
 		if (!self->priv->web_view_accel_group_added) {
 			self->priv->web_view_accel_group_added = TRUE;
-			e_gtk_window_add_accel_group (GTK_WINDOW (object), accel_group);
+			gtk_widget_add_controller (GTK_WIDGET (object), g_object_ref (shortcuts));
 		}
 	} else if (self->priv->web_view_accel_group_added) {
 		self->priv->web_view_accel_group_added = FALSE;
-		e_gtk_window_remove_accel_group (GTK_WINDOW (object), accel_group);
+		gtk_widget_remove_controller (GTK_WIDGET (object), shortcuts);
 	}
 }
 
@@ -657,7 +663,7 @@ mail_shell_view_constructed (GObject *object)
 	customizer = e_ui_manager_get_customizer (ui_manager);
 
 	ui_item = e_ui_manager_create_item (ui_manager, "mail-preview-toolbar");
-	e_util_setup_toolbar_icon_size (ui_item, E_GTK_ICON_SIZE_SMALL_TOOLBAR);
+	e_util_setup_toolbar_icon_size (GTK_WIDGET (ui_item), E_GTK_ICON_SIZE_SMALL_TOOLBAR);
 	e_mail_paned_view_take_preview_toolbar (E_MAIL_PANED_VIEW (e_mail_shell_content_get_mail_view (self->priv->mail_shell_content)), GTK_WIDGET (ui_item));
 
 	e_ui_customizer_util_attach_toolbar_context_menu (GTK_WIDGET (ui_item), "mail-preview-toolbar",

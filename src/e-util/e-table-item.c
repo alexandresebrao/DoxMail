@@ -1786,7 +1786,7 @@ e_table_item_init (ETableItem *eti)
 
 static gboolean
 eti_tree_unfreeze (GtkWidget *widget,
-                   GnomeCanvasEvent *event,
+                   GdkEvent *event,
                    ETableItem *eti)
 {
 

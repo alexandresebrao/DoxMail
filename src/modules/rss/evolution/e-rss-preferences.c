@@ -369,32 +369,11 @@ e_rss_preferences_entry_changed_cb (GtkEntry *entry,
 	gtk_widget_set_sensitive (pd->save_button, sensitive);
 }
 
+/* GTK 4 images draw at their pixel size, scaled; up to 48 like GTK 3 did */
 static void
 e_rss_preferences_maybe_scale_image (GtkImage *image)
 {
-	if (gtk_image_get_storage_type (image) == GTK_IMAGE_PIXBUF) {
-		GdkPixbuf *pixbuf;
-
-		pixbuf = gtk_image_get_pixbuf (image);
-		if (pixbuf && (gdk_pixbuf_get_width (pixbuf) > 48 || gdk_pixbuf_get_height (pixbuf) > 48)) {
-			gint width, height;
-
-			width = gdk_pixbuf_get_width (pixbuf);
-			height = gdk_pixbuf_get_height (pixbuf);
-
-			if (width > height) {
-				height = height * 48 / width;
-				width = 48;
-			} else {
-				width = width * 48 / height;
-				height = 48;
-			}
-
-			pixbuf = e_icon_factory_pixbuf_scale (pixbuf, width, height);
-			gtk_image_set_from_pixbuf (image, pixbuf);
-			g_object_unref (pixbuf);
-		}
-	}
+	gtk_image_set_pixel_size (image, 48);
 }
 
 static void
@@ -609,8 +588,19 @@ e_rss_preferences_icon_clicked_cb (GtkWidget *button,
 	} else {
 		gtk_image_set_from_icon_name (pd->icon_image, "rss");
 	}
+}
 
-	e_gtk_widget_destroy (dialog);
+/* GTK 4 has no gtk_icon_theme_rescan_if_needed(); setting the search
+ * path again makes the theme look at the directories anew */
+static void
+e_rss_preferences_icon_theme_rescan (void)
+{
+	GtkIconTheme *icon_theme = e_gtk_icon_theme_get_default ();
+	gchar **paths;
+
+	paths = gtk_icon_theme_get_search_path (icon_theme);
+	gtk_icon_theme_set_search_path (icon_theme, (const gchar * const *) paths);
+	g_strfreev (paths);
 }
 
 /* Copy icon to the private directory */
@@ -666,9 +656,9 @@ e_rss_preferences_maybe_copy_icon (const gchar *feed_id,
 	}
 
 	if (pixbuf)
-		gtk_icon_theme_rescan_if_needed (e_gtk_icon_theme_get_default ());
+		e_rss_preferences_icon_theme_rescan ();
 	else if (g_file_copy (src, des, G_FILE_COPY_OVERWRITE, NULL, NULL, NULL, &error))
-		gtk_icon_theme_rescan_if_needed (e_gtk_icon_theme_get_default ());
+		e_rss_preferences_icon_theme_rescan ();
 	else
 		g_warning ("Failed to copy icon file '%s' to '%s': %s", icon_filename, filename, error ? error->message : "Unknown error");
 

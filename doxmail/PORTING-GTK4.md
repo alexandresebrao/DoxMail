@@ -187,6 +187,27 @@ the pressed widget implicitly; item grabs use `gnome_canvas_item_grab()`).
 `e_gtk_widget_get_modifier_state()`. Not verified at runtime: any of the
 calendar views' mouse handling.
 
+### 6. modules, web extensions, data: Evolution runs
+
+`src/modules`, `src/web-extensions` (WebKitGTK 6 web process extensions)
+and `data/` build with GTK 4, and `evolution` starts with the mail view
+and the first-run assistant (`doxmail/screenshot-gtk4-first-run.png`).
+`doxmail/port/run-evolution.sh [--gdb] [SECONDS]` installs the build into
+`_inst-gtk4` (configure `_build-gtk4` with
+`-DCMAKE_INSTALL_PREFIX=$PWD/_inst-gtk4` and `camel_providerdir`,
+`edsuimoduledir` inside it, so nothing goes to system directories) and runs
+it isolated; `SHOT=file.png` takes a screenshot.
+
+Found at runtime: signals with a `GdkEvent` parameter must declare it as
+`G_TYPE_POINTER` (GdkEvent is a fundamental type the generic marshaller
+cannot pass), and handlers of legacy widget event signals must take
+GdkEvent, not GnomeCanvasEvent (`doxmail/port/legacy-audit.py` lists them).
+Runtime warnings still to fix: `map-event`, `size_allocate`, `deactivate`
+signal connections, `GtkCheckButton` used as `GtkToggleButton`, `EPaned`
+cast to `GtkPaned`, WebKit `enable-java` and `initialize-web-extensions`
+(WebKitGTK 6), the web extension not finding libevolution-util, duplicate
+GtkStack names in menus, empty alert/activity bars shown, assistant size.
+
 ## Next
 
  → modules (they give the shell its views) → plugins;

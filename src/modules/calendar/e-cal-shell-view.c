@@ -23,7 +23,6 @@
 
 #include "e-cal-shell-view-private.h"
 
-#include "calendar/gui/ea-calendar.h"
 #include "calendar/gui/calendar-view.h"
 #include "calendar/gui/e-year-view.h"
 
@@ -751,8 +750,6 @@ e_cal_shell_view_class_init (ECalShellViewClass *class)
 	g_type_ensure (GAL_TYPE_VIEW_CALENDAR_MONTH);
 	g_type_ensure (GAL_TYPE_VIEW_CALENDAR_YEAR);
 	g_type_ensure (GAL_TYPE_VIEW_ETABLE);
-
-	e_calendar_a11y_init ();
 }
 
 static void

@@ -19,6 +19,7 @@
 #define E_MAIL_CONFIG_WELCOME_PAGE_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-util.h>
 
 #include <mail/e-mail-config-page.h>
 

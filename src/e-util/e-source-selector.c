@@ -2007,7 +2007,7 @@ e_source_selector_class_init (ESourceSelectorClass *class)
 		G_STRUCT_OFFSET (ESourceSelectorClass, popup_event),
 		ess_bool_accumulator, NULL, NULL,
 		G_TYPE_BOOLEAN, 2, G_TYPE_OBJECT,
-		GDK_TYPE_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
+		G_TYPE_POINTER /* GdkEvent */);
 
 	signals[DATA_DROPPED] = g_signal_new (
 		"data-dropped",

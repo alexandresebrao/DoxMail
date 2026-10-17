@@ -1238,9 +1238,9 @@ e_calendar_view_class_init (ECalendarViewClass *class)
 		G_SIGNAL_RUN_FIRST,
 		G_STRUCT_OFFSET (ECalendarViewClass, popup_event),
 		NULL, NULL,
-		g_cclosure_marshal_VOID__BOXED,
+		g_cclosure_marshal_VOID__POINTER,
 		G_TYPE_NONE, 1,
-		GDK_TYPE_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
+		G_TYPE_POINTER /* GdkEvent */);
 
 	signals[SELECTION_CHANGED] = g_signal_new (
 		"selection-changed",

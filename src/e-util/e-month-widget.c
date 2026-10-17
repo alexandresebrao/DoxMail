@@ -676,7 +676,7 @@ e_month_widget_class_init (EMonthWidgetClass *klass)
 		G_STRUCT_OFFSET (EMonthWidgetClass, day_clicked),
 		NULL, NULL, NULL,
 		G_TYPE_NONE, 4,
-		GDK_TYPE_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE,
+		G_TYPE_POINTER /* GdkEvent */,
 		G_TYPE_UINT,
 		G_TYPE_INT,
 		G_TYPE_UINT);

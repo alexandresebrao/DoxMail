@@ -704,14 +704,9 @@ mark_all_read_prompt_user (EMailShellView *mail_shell_view,
 
 	if (with_subfolders) {
 		GSettings *settings;
-		GdkDisplay *display;
-		GdkKeymap *keymap;
-
-		display = gtk_widget_get_display (GTK_WIDGET (e_shell_view_get_shell_window (E_SHELL_VIEW (mail_shell_view))));
-		keymap = gdk_keymap_get_for_display (display);
 
 		settings = e_util_ref_settings ("org.gnome.evolution.mail");
-		if ((gdk_keymap_get_modifier_state (keymap) & (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_ALT_MASK)) != GDK_SHIFT_MASK &&
+		if ((e_gtk_widget_get_modifier_state (GTK_WIDGET (e_shell_view_get_shell_window (E_SHELL_VIEW (mail_shell_view)))) & (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_ALT_MASK)) != GDK_SHIFT_MASK &&
 		    !g_settings_get_boolean (settings, "prompt-on-mark-all-read")) {
 			g_object_unref (settings);
 			return MARK_ALL_READ_CURRENT_ONLY;

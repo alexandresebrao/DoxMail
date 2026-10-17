@@ -33,7 +33,7 @@
 #include "e-web-extension.h"
 
 struct _EWebExtensionPrivate {
-	WebKitWebExtension *wk_extension;
+	WebKitWebProcessExtension *wk_extension;
 	GSList *known_plugins; /* gchar * - full filename to known plugins */
 
 	gboolean initialized;
@@ -132,7 +132,7 @@ web_page_send_request_cb (WebKitWebPage *web_page,
 }
 
 static void
-web_page_created_cb (WebKitWebExtension *wk_extension,
+web_page_created_cb (WebKitWebProcessExtension *wk_extension,
                      WebKitWebPage *web_page,
                      EWebExtension *extension)
 {
@@ -376,7 +376,7 @@ window_object_cleared_cb (WebKitScriptWorld *world,
 
 void
 e_web_extension_initialize (EWebExtension *extension,
-                            WebKitWebExtension *wk_extension)
+                            WebKitWebProcessExtension *wk_extension)
 {
 	WebKitScriptWorld *script_world;
 
@@ -399,7 +399,7 @@ e_web_extension_initialize (EWebExtension *extension,
 		G_CALLBACK (window_object_cleared_cb), extension);
 }
 
-WebKitWebExtension *
+WebKitWebProcessExtension *
 e_web_extension_get_webkit_extension (EWebExtension *extension)
 {
 	g_return_val_if_fail (E_IS_WEB_EXTENSION (extension), NULL);

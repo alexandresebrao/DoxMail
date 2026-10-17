@@ -1258,8 +1258,18 @@ main (gint argc,
 	/* to pair the tool with the main app in the desktop environment (like in the GNOME shell) */
 	g_set_prgname ("org.gnome.Evolution");
 
-	gtk_init_with_args (
-		&argc, &argv, NULL, options, GETTEXT_PACKAGE, &error);
+	/* gtk_init_with_args() is gone with GTK 4 */
+	{
+		GOptionContext *context;
+
+		context = g_option_context_new (NULL);
+		g_option_context_add_main_entries (context, options, GETTEXT_PACKAGE);
+
+		if (g_option_context_parse (context, &argc, &argv, &error) && !gtk_init_check ())
+			g_set_error_literal (&error, G_IO_ERROR, G_IO_ERROR_FAILED, "Cannot open display");
+
+		g_option_context_free (context);
+	}
 
 	if (error != NULL) {
 		if (gui_arg)

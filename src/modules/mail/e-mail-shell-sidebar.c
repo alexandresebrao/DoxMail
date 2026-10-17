@@ -282,11 +282,14 @@ guess_screen_width (EMailShellSidebar *sidebar)
 	if (toplevel && gtk_widget_get_realized (toplevel)) {
 		GdkMonitor *monitor;
 
-		monitor = gdk_display_get_monitor_at_window (
+		/* GTK 4 has no work area; the monitor geometry is close */
+		monitor = gdk_display_get_monitor_at_surface (
 			display, e_gtk_widget_get_surface (toplevel));
-		gdk_monitor_get_workarea (monitor, &rect);
+		if (monitor) {
+			gdk_monitor_get_geometry (monitor, &rect);
 
-		return rect.width;
+			return rect.width;
+		}
 	}
 
 	return 1024;

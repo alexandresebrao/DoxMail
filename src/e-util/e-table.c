@@ -1326,7 +1326,7 @@ et_canvas_root_event (GnomeCanvasItem *root,
  */
 static gint
 table_canvas_focus_event_cb (GtkWidget *widget,
-                             GnomeCanvasEvent *event,
+                             GdkEvent *event,
                              gpointer data)
 {
 	GnomeCanvas *canvas;
@@ -1337,7 +1337,8 @@ table_canvas_focus_event_cb (GtkWidget *widget,
 	canvas = GNOME_CANVAS (widget);
 	ecanvas = E_CANVAS (widget);
 
-	if (!event->focus_change.in) {
+	/* the event can be NULL with GTK 4; the focus tells in or out */
+	if (!gtk_widget_has_focus (widget)) {
 		gtk_im_context_focus_out (ecanvas->im_context);
 		return FALSE;
 	} else {

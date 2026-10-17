@@ -1340,20 +1340,13 @@ quit_calendar_cb (EUIAction *action,
 	ECalShellView *cal_shell_view = user_data;
 	EShellView *shell_view;
 	EShellWindow *shell_window;
-	GdkSurface *window;
-	GdkEvent *event;
 
 	shell_view = E_SHELL_VIEW (cal_shell_view);
 	shell_window = e_shell_view_get_shell_window (shell_view);
 
-	/* Synthesize a delete_event on this window. */
-	event = gdk_event_new (GDK_DELETE);
-	window = e_gtk_widget_get_surface (GTK_WIDGET (shell_window));
-	event->any.window = g_object_ref (window);
-	event->any.send_event = TRUE;
-	gtk_main_do_event (event);
-	gdk_event_unref (event);
-
+	/* GTK 4 cannot synthesize a delete event; closing the window emits
+	 * close-request, which is the delete-event of GTK 3 */
+	gtk_window_close (GTK_WINDOW (shell_window));
 }
 
 static void

@@ -60,6 +60,13 @@ GType e_startup_wizard_get_type (void);
 
 G_DEFINE_DYNAMIC_TYPE (EStartupWizard, e_startup_wizard, E_TYPE_EXTENSION)
 
+/* gtk_false() is gone with GTK 4 */
+static gboolean
+startup_wizard_idle_false (gpointer user_data)
+{
+	return G_SOURCE_REMOVE;
+}
+
 static EShell *
 startup_wizard_get_shell (EStartupWizard *extension)
 {
@@ -198,7 +205,7 @@ startup_wizard_load_accounts (EStartupWizard *extension)
 	 * then it will be a very short-lived main loop. */
 	source = g_idle_source_new ();
 	g_source_set_callback (
-		source, (GSourceFunc) gtk_false,
+		source, startup_wizard_idle_false,
 		activity, (GDestroyNotify) g_object_unref);
 	g_source_attach (source, context);
 	g_source_unref (source);

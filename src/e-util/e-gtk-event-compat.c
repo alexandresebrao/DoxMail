@@ -64,7 +64,7 @@ e_gtk_event_register_signals (void)
 			G_SIGNAL_RUN_LAST, 0,
 			g_signal_accumulator_true_handled, NULL, NULL,
 			G_TYPE_BOOLEAN, 1,
-			GDK_TYPE_EVENT);
+			G_TYPE_POINTER /* GdkEvent */);
 	}
 
 	signals[POPUP_MENU] = g_signal_new (
@@ -78,7 +78,7 @@ e_gtk_event_register_signals (void)
 		G_SIGNAL_RUN_LAST, 0,
 		g_signal_accumulator_true_handled, NULL, NULL,
 		G_TYPE_BOOLEAN, 1,
-		GDK_TYPE_EVENT);
+		G_TYPE_POINTER /* GdkEvent */);
 
 	signals[STYLE_UPDATED] = g_signal_new (
 		"style-updated", GTK_TYPE_WIDGET,
@@ -369,8 +369,10 @@ e_gtk_widget_chain_legacy_event (GtkWidget *widget,
 
 	g_value_init (&params[0], G_TYPE_FROM_INSTANCE (widget));
 	g_value_set_object (&params[0], widget);
-	g_value_init (&params[1], GDK_TYPE_EVENT);
-	g_value_set_boxed (&params[1], event);
+	/* GdkEvent is a fundamental type the signal marshallers cannot pass,
+	 * thus the legacy signals take a pointer */
+	g_value_init (&params[1], G_TYPE_POINTER);
+	g_value_set_pointer (&params[1], event);
 	g_value_init (&ret, G_TYPE_BOOLEAN);
 
 	g_signal_chain_from_overridden (params, &ret);

@@ -4158,15 +4158,15 @@ webkit_editor_get_link_to_text (EWebKitEditor *wk_editor)
 
 static void
 webkit_editor_clipboard_owner_changed_cb (GdkClipboard *clipboard,
-					  GdkEventOwnerChange *event,
+					  gpointer event,
 					  gpointer user_data)
 {
 	gboolean *out_is_from_self = user_data;
 
 	g_return_if_fail (out_is_from_self != NULL);
 
-	*out_is_from_self = event && event->owner && event->reason == GDK_OWNER_CHANGE_NEW_OWNER &&
-		gdk_window_get_window_type (event->owner) != GDK_WINDOW_FOREIGN;
+	/* GTK 4 says directly whether this process owns the content */
+	*out_is_from_self = gdk_clipboard_is_local (clipboard);
 }
 
 static gboolean wk_editor_clipboard_owner_is_from_self = FALSE;
@@ -4924,14 +4924,9 @@ webkit_editor_get_property (GObject *object,
 static void
 webkit_editor_move_caret_on_current_coordinates (GtkWidget *widget)
 {
-	gint x, y;
-	GdkDeviceManager *device_manager;
-	GdkDevice *pointer;
+	gdouble x = 0, y = 0;
 
-	device_manager = gdk_display_get_device_manager (gtk_widget_get_display (widget));
-	pointer = gdk_device_manager_get_client_pointer (device_manager);
-	gdk_window_get_device_position (
-		e_gtk_widget_get_surface (widget), pointer, &x, &y, NULL);
+	e_gtk_widget_get_pointer_position (widget, &x, &y);
 	webkit_editor_move_caret_on_coordinates
 		(E_CONTENT_EDITOR (widget), x, y, FALSE);
 }
@@ -5325,12 +5320,15 @@ webkit_editor_drag_begin_cb (EWebKitEditor *wk_editor,
 	wk_editor->priv->performing_drag = TRUE;
 }
 
-static void
+/* the result is a GdkDragCancelReason with GTK 4 */
+static gboolean
 webkit_editor_drag_failed_cb (EWebKitEditor *wk_editor,
                               EGtkDragContext *context,
-                              GtkDragResult result)
+                              gint result)
 {
 	wk_editor->priv->performing_drag = FALSE;
+
+	return FALSE;
 }
 
 static void
@@ -5362,17 +5360,10 @@ webkit_editor_drag_data_received_cb (GtkWidget *widget,
 	if (wk_editor->priv->performing_drag ||
 	    info == E_DND_TARGET_TYPE_UTF8_STRING || info == E_DND_TARGET_TYPE_STRING ||
 	    info == E_DND_TARGET_TYPE_TEXT_PLAIN || info == E_DND_TARGET_TYPE_TEXT_PLAIN_UTF8) {
+		/* GTK 4 has no drag_drop vfunc of WebKit to pass the drop to,
+		 * once it reached this drop target */
 		e_gtk_drag_status (context, e_gtk_drag_context_get_selected_action (context), time);
-		if (!GTK_WIDGET_CLASS (e_webkit_editor_parent_class)->drag_drop ||
-		    !GTK_WIDGET_CLASS (e_webkit_editor_parent_class)->drag_drop (widget, context, x, y, time)) {
-			goto process_ourselves;
-		} else {
-			if (GTK_WIDGET_CLASS (e_webkit_editor_parent_class)->drag_leave)
-				GTK_WIDGET_CLASS (e_webkit_editor_parent_class)->drag_leave (widget, context, time);
-			g_signal_stop_emission_by_name (widget, "drag-data-received");
-			e_content_editor_emit_drop_handled (E_CONTENT_EDITOR (widget));
-		}
-		return;
+		goto process_ourselves;
 	}
 
 	if (info == E_DND_TARGET_TYPE_TEXT_HTML) {
@@ -5687,7 +5678,7 @@ webkit_editor_button_press_event (GtkWidget *widget,
 
 				last_button_press_time_ms = wk_editor->priv->last_button_press_time_ms;
 
-				settings = gtk_settings_get_for_screen (gtk_widget_get_screen (widget));
+				settings = gtk_settings_get_for_display (gtk_widget_get_display (widget));
 				if (settings) {
 					gint double_click_time_ms = 0;
 
@@ -5735,8 +5726,7 @@ webkit_editor_button_press_event (GtkWidget *widget,
 	}
 
 	/* Chain up to parent's button_press_event() method. */
-	return GTK_WIDGET_CLASS (e_webkit_editor_parent_class)->button_press_event &&
-	       e_gtk_widget_chain_legacy_event (widget, event);
+	return e_gtk_widget_chain_legacy_event (widget, event);
 }
 
 static gboolean
@@ -5761,20 +5751,31 @@ static gboolean
 webkit_editor_key_press_event (GtkWidget *widget,
                                GdkEvent *event)
 {
-	GdkKeymapKey key = { 0, 0, 0 };
-	guint keyval;
+	GdkKeymapKey *keys = NULL;
+	guint *keyvals = NULL;
+	gint n_entries = 0, ii;
+	guint keyval = 0;
 	gboolean is_shift, is_ctrl;
 	gboolean is_webkit_keypress = FALSE;
 
-	key.keycode = e_gdk_event_keycode (event);
-
 	/* Translate the keyval to the base group, thus it's independent of the current user keyboard layout */
-	keyval = gdk_keymap_lookup_key (gdk_keymap_get_for_display (gtk_widget_get_display (widget)), &key);
+	if (gdk_display_map_keycode (gtk_widget_get_display (widget), e_gdk_event_keycode (event), &keys, &keyvals, &n_entries)) {
+		for (ii = 0; ii < n_entries; ii++) {
+			if (keys[ii].group == 0 && keys[ii].level == 0) {
+				keyval = keyvals[ii];
+				break;
+			}
+		}
+
+		g_free (keys);
+		g_free (keyvals);
+	}
+
 	if (!keyval)
 		keyval = e_gdk_event_keyval (event);
 
-	is_shift = ((event)->state & GDK_SHIFT_MASK) != 0;
-	is_ctrl = ((event)->state & GDK_CONTROL_MASK) != 0;
+	is_shift = (e_gdk_event_state (event) & GDK_SHIFT_MASK) != 0;
+	is_ctrl = (e_gdk_event_state (event) & GDK_CONTROL_MASK) != 0;
 
 	/* Copy */
 	if (is_ctrl && !is_shift && (keyval == GDK_KEY_c || keyval == GDK_KEY_C))
@@ -5827,8 +5828,7 @@ webkit_editor_key_press_event (GtkWidget *widget,
 		return FALSE;
 
 	/* Chain up to parent's key_press_event() method. */
-	return GTK_WIDGET_CLASS (e_webkit_editor_parent_class)->key_press_event &&
-	       e_gtk_widget_chain_legacy_event (widget, event);
+	return e_gtk_widget_chain_legacy_event (widget, event);
 }
 
 static gdouble

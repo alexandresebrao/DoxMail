@@ -18,7 +18,8 @@
  * SECTION:gweatherlocationentry
  * @Title: EWeatherLocationEntry
  *
- * A subclass of #GtkSearchEntry that provides autocompletion on
+ * A subclass of #GtkEntry (#GtkSearchEntry is final with GTK 4) that
+ * provides autocompletion on
  * #GWeatherLocation<!-- -->s
  */
 
@@ -31,7 +32,7 @@ struct _EWeatherLocationEntryPrivate {
 	GtkTreeModel     *model;
 };
 
-G_DEFINE_TYPE_WITH_PRIVATE (EWeatherLocationEntry, e_weather_location_entry, GTK_TYPE_SEARCH_ENTRY)
+G_DEFINE_TYPE_WITH_PRIVATE (EWeatherLocationEntry, e_weather_location_entry, GTK_TYPE_ENTRY)
 
 enum {
     PROP_0,
@@ -76,6 +77,18 @@ enum PLACE
 	PLACE_E_WEATHER_LOCATION_ENTRY_COL_LOCAL_COMPARE_NAME
 };
 
+/* GTK 4 completions have no action rows: the "Loading…" row became
+ * a secondary icon of the entry */
+static void
+weather_location_entry_set_loading (GtkWidget *entry,
+				    gboolean loading)
+{
+	gtk_entry_set_icon_from_icon_name (GTK_ENTRY (entry), GTK_ENTRY_ICON_SECONDARY,
+		loading ? "process-working-symbolic" : NULL);
+	if (loading)
+		gtk_entry_set_icon_tooltip_text (GTK_ENTRY (entry), GTK_ENTRY_ICON_SECONDARY, _("Loading…"));
+}
+
 static gboolean matcher (GtkEntryCompletion *completion, const char *key,
 			 GtkTreeIter *iter, gpointer user_data);
 static gboolean match_selected (GtkEntryCompletion *completion,
@@ -108,6 +121,8 @@ e_weather_location_entry_init (EWeatherLocationEntry *entry)
 
 	gtk_entry_set_completion (GTK_ENTRY (entry), completion);
 	g_object_unref (completion);
+
+	gtk_entry_set_icon_from_icon_name (GTK_ENTRY (entry), GTK_ENTRY_ICON_PRIMARY, "edit-find-symbolic");
 
 	priv->custom_text = FALSE;
 	g_signal_connect (entry, "changed",
@@ -294,7 +309,7 @@ entry_changed (EWeatherLocationEntry *entry)
 		g_cancellable_cancel (entry->priv->cancellable);
 		g_object_unref (entry->priv->cancellable);
 		entry->priv->cancellable = NULL;
-		gtk_entry_completion_delete_action (completion, 0);
+		weather_location_entry_set_loading (GTK_WIDGET (entry), FALSE);
 	}
 
 	gtk_entry_completion_set_match_func (gtk_entry_get_completion (GTK_ENTRY (entry)), matcher, NULL, NULL);
@@ -873,7 +888,7 @@ _got_places (GObject *source_object,
 		g_object_unref (store);
 	}
 
-	gtk_entry_completion_delete_action (completion, 0);
+	weather_location_entry_set_loading (GTK_WIDGET (user_data), FALSE);
 	g_clear_object (&self->priv->cancellable);
 }
 
@@ -889,7 +904,7 @@ _no_matches (GtkEntryCompletion *completion,
 		g_object_unref (entry->priv->cancellable);
 		entry->priv->cancellable = NULL;
 	} else {
-		gtk_entry_completion_insert_action_text (completion, 0, _("Loading…"));
+		weather_location_entry_set_loading (GTK_WIDGET (entry), TRUE);
 	}
 
 	entry->priv->cancellable = g_cancellable_new ();

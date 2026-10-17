@@ -781,7 +781,7 @@ e_contact_card_container_class_init (EContactCardContainerClass *klass)
 		g_signal_accumulator_true_handled, NULL, NULL,
 		G_TYPE_BOOLEAN, 2,
 		E_TYPE_CONTACT_CARD,
-		GDK_TYPE_EVENT);
+		G_TYPE_POINTER /* GdkEvent */);
 
 	container_signals[CONTAINER_CARD_POPUP_MENU] = g_signal_new (
 		"card-popup-menu",
@@ -1735,7 +1735,7 @@ e_contact_card_box_class_init (EContactCardBoxClass *klass)
 		g_signal_accumulator_true_handled, NULL, NULL,
 		G_TYPE_BOOLEAN, 2,
 		G_TYPE_UINT,
-		GDK_TYPE_EVENT);
+		G_TYPE_POINTER /* GdkEvent */);
 
 	box_signals[BOX_CARD_POPUP_MENU] = g_signal_new (
 		"card-popup-menu",

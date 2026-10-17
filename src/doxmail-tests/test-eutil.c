@@ -303,6 +303,18 @@ style_updated_cb (GtkWidget *widget,
 	return FALSE;
 }
 
+static gboolean
+legacy_event_cb (GtkWidget *widget,
+		 GdkEvent *event,
+		 gpointer user_data)
+{
+	GdkEvent **out_event = user_data;
+
+	*out_event = event;
+
+	return TRUE;
+}
+
 static void
 test_legacy_signals (void)
 {
@@ -324,6 +336,18 @@ test_legacy_signals (void)
 	g_object_set (gtk_settings_get_default (), "gtk-application-prefer-dark-theme", TRUE, NULL);
 	g_object_set (gtk_settings_get_default (), "gtk-application-prefer-dark-theme", FALSE, NULL);
 	g_assert_cmpint (count, ==, 2);
+
+	/* the event reaches handlers; GdkEvent is a fundamental type the
+	 * generic marshaller cannot pass, thus the signal takes a pointer */
+	{
+		GdkEvent *fake_event = (GdkEvent *) &count, *got_event = NULL;
+		gboolean handled = FALSE;
+
+		g_signal_connect (widget, "focus-in-event", G_CALLBACK (legacy_event_cb), &got_event);
+		g_signal_emit_by_name (widget, "focus-in-event", fake_event, &handled);
+		g_assert_true (handled);
+		g_assert_true (got_event == fake_event);
+	}
 
 	g_object_unref (widget);
 }

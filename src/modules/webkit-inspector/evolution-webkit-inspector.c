@@ -37,8 +37,8 @@
 #define WEBKIT_INSPECTOR_KEY2  (GDK_KEY_D)
 
 #define WEBKIT_INSPECTOR_SHORTCUT_SHOW(event) \
-	((((event)->state & WEBKIT_INSPECTOR_MOD) == WEBKIT_INSPECTOR_MOD) && \
-	 (((event)->keyval == WEBKIT_INSPECTOR_KEY1) || ((event)->keyval == WEBKIT_INSPECTOR_KEY2)))
+	(((e_gdk_event_state (event) & WEBKIT_INSPECTOR_MOD) == WEBKIT_INSPECTOR_MOD) && \
+	 ((e_gdk_event_keyval (event) == WEBKIT_INSPECTOR_KEY1) || (e_gdk_event_keyval (event) == WEBKIT_INSPECTOR_KEY2)))
 
 typedef struct _EWebKitInspector EWebKitInspector;
 typedef struct _EWebKitInspectorClass EWebKitInspectorClass;

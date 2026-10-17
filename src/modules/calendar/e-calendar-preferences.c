@@ -348,52 +348,70 @@ update_day_second_zone_caption (ECalendarPreferences *prefs)
 	gtk_button_set_label (GTK_BUTTON (prefs->priv->day_second_zone), caption);
 }
 
+/* the state is the location, an empty string for none */
 static void
-on_set_day_second_zone (GtkWidget *item,
-                        ECalendarPreferences *prefs)
+on_set_day_second_zone (GSimpleAction *action,
+                        GVariant *state,
+                        gpointer user_data)
 {
-	if (!e_gtk_toggle_button_get_active (item))
-		return;
+	ECalendarPreferences *prefs = user_data;
+	const gchar *location;
 
-	calendar_config_set_day_second_zone (g_object_get_data (G_OBJECT (item), "timezone"));
+	g_simple_action_set_state (action, state);
+
+	location = g_variant_get_string (state, NULL);
+	calendar_config_set_day_second_zone (location && *location ? location : NULL);
 	update_day_second_zone_caption (prefs);
 }
 
 static void
-on_select_day_second_zone (GtkWidget *item,
-                           ECalendarPreferences *prefs)
+on_select_day_second_zone (GSimpleAction *action,
+                           GVariant *parameter,
+                           gpointer user_data)
 {
+	ECalendarPreferences *prefs = user_data;
+
 	g_return_if_fail (prefs != NULL);
 
-	calendar_config_select_day_second_zone (e_gtk_widget_get_toplevel (item));
+	calendar_config_select_day_second_zone (e_gtk_widget_get_toplevel (prefs->priv->day_second_zone));
 	update_day_second_zone_caption (prefs);
 }
 
+/* GtkMenu is gone with GTK 4: a GMenu over "prefs-zone" actions */
 static void
 day_second_zone_clicked (GtkWidget *widget,
                          ECalendarPreferences *prefs)
 {
-	GtkWidget *menu, *item;
-	GSList *group = NULL, *recent_zones, *s;
+	const GActionEntry entries[] = {
+		{ "second-zone", NULL, "s", "''", on_set_day_second_zone },
+		{ "select-zone", on_select_day_second_zone, NULL, NULL, NULL }
+	};
+	GSimpleActionGroup *group;
+	GMenu *menu, *section;
+	GMenuItem *item;
+	GtkWidget *popover;
+	GSList *recent_zones, *s;
 	gchar *location;
-	ICalTimezone *zone, *second_zone = NULL;
-
-	menu = gtk_menu_new ();
+	ICalTimezone *zone;
 
 	location = calendar_config_get_day_second_zone ();
-	if (location && *location)
-		second_zone = i_cal_timezone_get_builtin_timezone (location);
+
+	group = g_simple_action_group_new ();
+	g_action_map_add_action_entries (G_ACTION_MAP (group), entries, G_N_ELEMENTS (entries), prefs);
+	g_simple_action_set_state (G_SIMPLE_ACTION (g_action_map_lookup_action (G_ACTION_MAP (group), "second-zone")),
+		g_variant_new_string (location && i_cal_timezone_get_builtin_timezone (location) ? location : ""));
+	gtk_widget_insert_action_group (widget, "prefs-zone", G_ACTION_GROUP (group));
+	g_object_unref (group);
+
 	g_free (location);
 
-	group = NULL;
-	item = gtk_radio_menu_item_new_with_label (group, C_("cal-second-zone", "None"));
-	group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (item));
-	if (!second_zone)
-		e_gtk_toggle_button_set_active (item, TRUE);
-	gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
-	g_signal_connect (
-		item, "toggled",
-		G_CALLBACK (on_set_day_second_zone), prefs);
+	menu = g_menu_new ();
+
+	section = g_menu_new ();
+	item = g_menu_item_new (C_("cal-second-zone", "None"), NULL);
+	g_menu_item_set_action_and_target_value (item, "prefs-zone.second-zone", g_variant_new_string (""));
+	g_menu_append_item (section, item);
+	g_object_unref (item);
 
 	recent_zones = calendar_config_get_day_second_zones ();
 	for (s = recent_zones; s != NULL; s = s->next) {
@@ -401,33 +419,24 @@ day_second_zone_clicked (GtkWidget *widget,
 		if (!zone)
 			continue;
 
-		item = gtk_radio_menu_item_new_with_label (group, i_cal_timezone_get_display_name (zone));
-		group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (item));
-		/* both comes from builtin, thus no problem to compare pointers */
-		if (zone == second_zone)
-			e_gtk_toggle_button_set_active (item, TRUE);
-		gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
-		g_object_set_data_full (G_OBJECT (item), "timezone", g_strdup (s->data), g_free);
-		g_signal_connect (
-			item, "toggled",
-			G_CALLBACK (on_set_day_second_zone), prefs);
+		item = g_menu_item_new (i_cal_timezone_get_display_name (zone), NULL);
+		g_menu_item_set_action_and_target_value (item, "prefs-zone.second-zone", g_variant_new_string (s->data));
+		g_menu_append_item (section, item);
+		g_object_unref (item);
 	}
 	calendar_config_free_day_second_zones (recent_zones);
+	g_menu_append_section (menu, NULL, G_MENU_MODEL (section));
+	g_object_unref (section);
 
-	item = gtk_separator_menu_item_new ();
-	gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+	section = g_menu_new ();
+	g_menu_append (section, _("Select…"), "prefs-zone.select-zone");
+	g_menu_append_section (menu, NULL, G_MENU_MODEL (section));
+	g_object_unref (section);
 
-	item = gtk_menu_item_new_with_label (_("Select…"));
-	g_signal_connect (
-		item, "activate",
-		G_CALLBACK (on_select_day_second_zone), prefs);
-	gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+	popover = gtk_popover_menu_new_from_model (G_MENU_MODEL (menu));
+	g_object_unref (menu);
 
-	gtk_widget_set_visible (menu, TRUE);
-
-	gtk_menu_attach_to_widget (GTK_MENU (menu), widget, NULL);
-	g_signal_connect (menu, "deactivate", G_CALLBACK (gtk_menu_detach), NULL);
-	gtk_menu_popup_at_pointer (GTK_MENU (menu), NULL);
+	e_util_popup_menu (popover, widget, -1, -1);
 }
 
 static void

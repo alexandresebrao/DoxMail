@@ -65,6 +65,6 @@ EEditorWebExtension *
 
 void		e_editor_web_extension_initialize
 						(EEditorWebExtension *extension,
-						 WebKitWebExtension *wk_extension);
+						 WebKitWebProcessExtension *wk_extension);
 
 #endif /* E_EDITOR_WEB_EXTENSION_H */

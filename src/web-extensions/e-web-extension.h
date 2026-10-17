@@ -62,9 +62,9 @@ GType		e_web_extension_get_type	(void) G_GNUC_CONST;
 EWebExtension *	e_web_extension_get		(void);
 
 void		e_web_extension_initialize	(EWebExtension *extension,
-						 WebKitWebExtension *wk_extension);
+						 WebKitWebProcessExtension *wk_extension);
 
-WebKitWebExtension *
+WebKitWebProcessExtension *
 		e_web_extension_get_webkit_extension
 						(EWebExtension *extension);
 G_END_DECLS

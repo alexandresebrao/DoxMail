@@ -2534,7 +2534,7 @@ e_web_view_class_init (EWebViewClass *class)
 		G_STRUCT_OFFSET (EWebViewClass, popup_event),
 		g_signal_accumulator_true_handled, NULL,
 		NULL,
-		G_TYPE_BOOLEAN, 2, G_TYPE_STRING, GDK_TYPE_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
+		G_TYPE_BOOLEAN, 2, G_TYPE_STRING, G_TYPE_POINTER /* GdkEvent */);
 
 	signals[BEFORE_POPUP_EVENT] = g_signal_new (
 		"before-popup-event",

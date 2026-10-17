@@ -24,14 +24,14 @@ typedef struct _EWeatherLocationEntryPrivate EWeatherLocationEntryPrivate;
 #define E_WEATHER_LOCATION_ENTRY_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), E_WEATHER_TYPE_LOCATION_ENTRY, EWeatherLocationEntryClass))
 
 struct _EWeatherLocationEntry {
-	GtkSearchEntry parent;
+	GtkEntry parent;
 
 	/*< private >*/
 	EWeatherLocationEntryPrivate *priv;
 };
 
 struct _EWeatherLocationEntryClass {
-	GtkSearchEntryClass parent_class;
+	GtkEntryClass parent_class;
 };
 
 GType             e_weather_location_entry_get_type     (void);

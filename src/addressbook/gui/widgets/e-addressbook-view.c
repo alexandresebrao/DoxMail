@@ -1217,9 +1217,9 @@ e_addressbook_view_class_init (EAddressbookViewClass *class)
 		G_SIGNAL_RUN_LAST,
 		G_STRUCT_OFFSET (EAddressbookViewClass, popup_event),
 		NULL, NULL,
-		g_cclosure_marshal_VOID__BOXED,
+		g_cclosure_marshal_VOID__POINTER,
 		G_TYPE_NONE, 1,
-		GDK_TYPE_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
+		G_TYPE_POINTER /* GdkEvent */);
 
 	signals[COMMAND_STATE_CHANGE] = g_signal_new (
 		"command-state-change",

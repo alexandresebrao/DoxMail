@@ -1252,7 +1252,7 @@ et_canvas_root_event (GnomeCanvasItem *root,
  */
 static gboolean
 table_canvas_focus_event_cb (GtkWidget *widget,
-                             GnomeCanvasEvent *event,
+                             GdkEvent *event,
                              gpointer data)
 {
 	GnomeCanvas *canvas;
@@ -1260,7 +1260,8 @@ table_canvas_focus_event_cb (GtkWidget *widget,
 
 	gtk_widget_queue_draw (widget);
 
-	if (!event->focus_change.in)
+	/* the event can be NULL with GTK 4; the focus tells in or out */
+	if (!gtk_widget_has_focus (widget))
 		return TRUE;
 
 	canvas = GNOME_CANVAS (widget);

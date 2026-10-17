@@ -21,11 +21,11 @@
 #include "e-editor-web-extension.h"
 
 /* Forward declaration */
-G_MODULE_EXPORT void webkit_web_extension_initialize_with_user_data (WebKitWebExtension *wk_extension,
+G_MODULE_EXPORT void webkit_web_process_extension_initialize_with_user_data (WebKitWebProcessExtension *wk_extension,
 								     GVariant *user_data);
 
 G_MODULE_EXPORT void
-webkit_web_extension_initialize_with_user_data (WebKitWebExtension *wk_extension,
+webkit_web_process_extension_initialize_with_user_data (WebKitWebProcessExtension *wk_extension,
 						GVariant *user_data)
 {
 	EEditorWebExtension *extension;

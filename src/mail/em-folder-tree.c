@@ -1873,9 +1873,9 @@ em_folder_tree_class_init (EMFolderTreeClass *class)
 		G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION,
 		G_STRUCT_OFFSET (EMFolderTreeClass, popup_event),
 		NULL, NULL,
-		g_cclosure_marshal_VOID__BOXED,
+		g_cclosure_marshal_VOID__POINTER,
 		G_TYPE_NONE, 1,
-		GDK_TYPE_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
+		G_TYPE_POINTER /* GdkEvent */);
 
 	signals[HIDDEN_KEY_EVENT] = g_signal_new (
 		"hidden-key-event",
@@ -1883,9 +1883,9 @@ em_folder_tree_class_init (EMFolderTreeClass *class)
 		G_SIGNAL_RUN_LAST,
 		G_STRUCT_OFFSET (EMFolderTreeClass, hidden_key_event),
 		NULL, NULL,
-		g_cclosure_marshal_VOID__BOXED,
+		g_cclosure_marshal_VOID__POINTER,
 		G_TYPE_NONE, 1,
-		GDK_TYPE_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
+		G_TYPE_POINTER /* GdkEvent */);
 }
 
 static void
