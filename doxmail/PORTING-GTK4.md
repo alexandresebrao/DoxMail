@@ -1,27 +1,18 @@
 # Porting DoxMail to GTK 4
 
 Evolution is about 630k lines of C on GTK 3, WebKitGTK 4.1 and a bundled
-copy of libgnomecanvas. GTK 3 and GTK 4 cannot live in one process, so the
-port goes bottom-up, one library at a time:
+copy of libgnomecanvas. GTK 3 and GTK 4 cannot live in one process.
 
-- every ported directory compiles with **both** GTK 3 and GTK 4
-  (`#if GTK_CHECK_VERSION (4, 0, 0)` where they differ), so the GTK 3
-  DoxMail keeps working the whole time;
-- `-DWITH_GTK4=ON` builds only the directories listed in
-  `src/CMakeLists.txt` under `if(WITH_GTK4)`; a directory joins the list once
-  it builds and its checks pass;
-- when the whole tree builds with GTK 4, the GTK 3 side is deleted.
+The port first went bottom-up with every ported directory building with
+both GTK versions (that was libgnomecanvas, tag `doxmail-gtk3-last`).
+After that it is **GTK 4 only**: keeping two code paths through e-util
+cost more than it saved. `-DWITH_GTK4=ON` builds the directories listed in
+`src/CMakeLists.txt` under `if(WITH_GTK4)`; a directory joins the list
+when it is the next one to port, and the compiler tells what is left.
 
-Progress is measured with `doxmail/gtk4-audit.sh`, which counts uses of
-GTK 3-only API outside the ported directories:
-
-| step | GTK 3-only uses |
-|------|----------------:|
-| Evolution 3.60.2 | 5467 |
-| libgnomecanvas ported | 5390 |
-
-`doxmail/gtk4-audit.sh --dirs` shows where they are (e-util is half of it),
-`--where <pattern>` lists the files for one pattern.
+Most of the work is mechanical and done by tools in `doxmail/port/`, with
+compat layers in `src/e-util` that keep GTK 3 call shapes working on GTK 4
+(see below). What the tools cannot do is done by hand, file by file.
 
 ## Building and testing
 
@@ -95,52 +86,70 @@ canvas) runs without warnings. **Not checked yet: real mouse and keyboard
 input on GTK 4** — no input injection in headless weston; use
 `test-canvas --interactive`.
 
+### 2. e-util
+
+`libevolution-util` builds and links with GTK 4 (no unresolved symbols),
+and `test-eutil` checks the compat layers, `EAssistant` and some ported
+widgets in headless weston. Compile errors went 3803 → 0.
+
+**Compat layers** (`src/e-util`):
+
+- `e-gtk4-compat.[ch]`: containers (`e_gtk_container_add`, box packing,
+  bin child, child properties onto `GtkNotebookPage`/`GtkStackPage`/grid
+  layout children/paned), dialogs run in a nested loop, the current event,
+  icons (`GtkIconInfo` as `GtkIconPaintable`, sizes, pixbufs), stock
+  buttons, `GtkCalendar` with GTK 3 months, radio buttons as grouped check
+  buttons, toggle getters that take check buttons, `GtkAccelGroup` as a
+  shortcut controller, header bar title, popovers, a font override, entry
+  text index at a position, the pointer position, GtkScrollable forwarding
+  for wrapper widgets, accessible names and labelled-by;
+- `e-gtk-event-compat.[ch]`: the GTK 3 widget event signals
+  (`key-press-event`, `button-press-event`, ..., `popup-menu`,
+  `style-updated`) registered on GtkWidget and emitted from controllers
+  for widgets set up with `e_gtk_widget_legacy_events()`; event vfunc
+  overrides become class handler overrides; `e_gdk_event_*()` getters
+  replace `event->field` and give widget coordinates, like GTK 3;
+- `e-gtk-dnd-compat.[ch]`: GTK 3 drag and drop, selection data and
+  clipboard on top of GtkDragSource/GtkDropTarget/GdkClipboard;
+- `e-gtk-file-chooser-compat.[ch]`: a file chooser button, filename
+  based API, no-op previews, extra widgets below dialogs;
+- `e-assistant.[ch]`: a derivable stand-in for the final `GtkAssistant`.
+
+**Tools** (`doxmail/port/`): `gtk4-rewrite.py` (renames, call rewrites,
+dropped calls; `rewrite-all.sh` runs it on the tree), `measure.py`
+(get_preferred_* → measure), `canvas-events.py` and
+`canvas-event-fields.py` (canvas code → GnomeCanvasEvent),
+`gdk-event-fields.py` (GdkEvent fields → getters), `errs.sh`/`cc.sh`
+(errors of one file, compile one file), `gdb-test.sh` (backtrace of a
+failing test).
+
+**Patterns done by hand**: subclasses of types that are final with GTK 4
+became wrappers (EPaned, EHeaderBar, EAttachmentIconView, EPictureGallery,
+EColorChooserWidget, ECollectionAccountWizard, EMonthWidget, EAlertBar,
+EActivityBar) or plain instances (EEllipsizedComboBoxText); GtkMenu became
+GMenu + actions + GtkPopoverMenu (context menus of entries go through
+`gtk_entry_set_extra_menu`); popup windows with grabs became popovers
+(EDateEdit, ECellPopup, ENameSelectorList); toolbars are boxes.
+
+**Known gaps** (to check when the app runs):
+
+- accessibility: the ATK factories (ea-*, gal-a11y-*) are not built;
+- keyboard-opened context menus of ESpellEntry/ENameSelectorEntry miss the
+  extra items (they are built on right-button press);
+- `e_gtk_entry_get_index_at_position()` assumes unscrolled entry text;
+- no window placement (`window-position` dropped);
+- real mouse and keyboard input is not tested automatically.
+
 ## Next
 
-### 2. Canvas items in e-util and the apps → `GnomeCanvasEvent`
+In dependency order: shell → libemail-engine (no GTK) → em-format →
+composer → mail → addressbook → calendar → smime → modules → plugins.
+For each: add it to the `WITH_GTK4` list, rerun `rewrite-all.sh`, run
+`canvas-events.py` on canvas code and `gdk-event-fields.py` on the rest,
+then fix what the compiler reports. Calendar views mix canvas and widget
+events; they need care.
 
-46 files have `GnomeCanvasItem` event handlers. Switch them to
-`GnomeCanvasEvent`, `GNOME_CANVAS_*` and `gnome_canvas_event_get_*()`.
-This builds and runs with GTK 3, so it can land and be tested on the
-current app before anything else. Watch for:
-
-- `gdk_event_new()` in `e-table-item.c` and `e-text.c` (made-up events:
-  build a `GnomeCanvasEvent` instead) and `event->*.window` (gone);
-- about 25 `gtk_layout_get_bin_window()` calls on canvases (e-canvas,
-  e-day-view, e-week-view, e-meeting-time-sel, e-calendar, e-cell-tree,
-  the gal-a11y cells): `doxmail/gtk4-audit.sh --where layout`;
-- `gdk_device_grab()` next to them (e-day-view, e-week-view, e-cell-combo,
-  e-dateedit, e-name-selector-list): with GTK 4 the canvas items should use
-  `gnome_canvas_item_grab()`, popups a `GtkPopover`.
-
-`doxmail/gtk4-audit.sh --where canvas_event` lists what still uses the
-GTK 3 names.
-
-### 3. e-util on GTK 3, prepared for GTK 4
-
-The GNOME porting guide's "preparation in GTK 3" steps, done in e-util
-while it still runs on GTK 3, then the switch:
-
-- `gtk_widget_show_all` / `gtk_widget_destroy` / `gtk_container_*` /
-  `gtk_box_pack_*` (the bulk; mostly mechanical);
-- `gtk_dialog_run` → async responses (121 uses);
-- `GtkMenu`, `GtkToolbar` → `GMenuModel` + `GtkPopoverMenu`, boxes
-  (Evolution 3.56 already moved actions to `EUIManager`/`GAction`, which
-  helps a lot);
-- `GtkClipboard` → `GdkClipboard`, DnD → `GtkDragSource`/`GtkDropTarget`;
-- event signals → event controllers; `GdkWindow` → `GdkSurface`;
-- `EWebView`: WebKitGTK 6.0, and the web extensions in
-  `src/web-extensions` and `src/modules/webkit-editor/web-extension`
-  become a web process extension.
-
-Then add `e-util` to the `WITH_GTK4` list.
-
-### 4. The rest, in dependency order
-
-shell → libemail-engine (no GTK) → em-format → composer → mail →
-addressbook → calendar → smime → modules → plugins.
-
-### 5. DoxIA
+### DoxIA
 
 - application ID and binary name (`org.doxia.DoxMail`, `doxmail`) once it
   runs on GTK 4 — renaming earlier would only make upstream merges harder;
