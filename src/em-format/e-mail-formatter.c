@@ -507,19 +507,13 @@ static void
 mail_formatter_update_style (EMailFormatter *formatter,
                              GtkStateFlags state)
 {
-	GtkStyleContext *style_context;
-	GtkWidgetPath *widget_path;
 	GdkRGBA rgba;
 
+	/* GTK 4 has no style context without a widget; the formatter has
+	 * no widget, so it takes the default theme colors */
 	g_object_freeze_notify (G_OBJECT (formatter));
 
-	style_context = gtk_style_context_new ();
-	widget_path = gtk_widget_path_new ();
-	gtk_widget_path_append_type (widget_path, GTK_TYPE_WINDOW);
-	gtk_style_context_set_path (style_context, widget_path);
-
-	if (!gtk_style_context_lookup_color (style_context, "theme_bg_color", &rgba))
-		gdk_rgba_parse (&rgba, E_UTILS_DEFAULT_THEME_BG_COLOR);
+	gdk_rgba_parse (&rgba, E_UTILS_DEFAULT_THEME_BG_COLOR);
 
 	e_mail_formatter_set_color (formatter, E_MAIL_FORMATTER_COLOR_BODY, &rgba);
 
@@ -529,23 +523,17 @@ mail_formatter_update_style (EMailFormatter *formatter,
 	e_mail_formatter_set_color (
 		formatter, E_MAIL_FORMATTER_COLOR_FRAME, &rgba);
 
-	if (!gtk_style_context_lookup_color (style_context, "theme_fg_color", &rgba))
-		gdk_rgba_parse (&rgba, E_UTILS_DEFAULT_THEME_FG_COLOR);
+	gdk_rgba_parse (&rgba, E_UTILS_DEFAULT_THEME_FG_COLOR);
 
 	e_mail_formatter_set_color (formatter, E_MAIL_FORMATTER_COLOR_HEADER, &rgba);
 
-	if (!gtk_style_context_lookup_color (style_context, "theme_base_color", &rgba))
-		gdk_rgba_parse (&rgba, E_UTILS_DEFAULT_THEME_BASE_COLOR);
+	gdk_rgba_parse (&rgba, E_UTILS_DEFAULT_THEME_BASE_COLOR);
 
 	e_mail_formatter_set_color  (formatter, E_MAIL_FORMATTER_COLOR_CONTENT, &rgba);
 
-	if (!gtk_style_context_lookup_color (style_context, "theme_fg_color", &rgba))
-		gdk_rgba_parse (&rgba, E_UTILS_DEFAULT_THEME_FG_COLOR);
+	gdk_rgba_parse (&rgba, E_UTILS_DEFAULT_THEME_FG_COLOR);
 
 	e_mail_formatter_set_color (formatter, E_MAIL_FORMATTER_COLOR_TEXT, &rgba);
-
-	gtk_widget_path_free (widget_path);
-	g_object_unref (style_context);
 
 	g_object_thaw_notify (G_OBJECT (formatter));
 }
