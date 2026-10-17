@@ -1578,7 +1578,7 @@ e_contact_card_box_constructed (GObject *object)
 
 	self->priv->css_provider = gtk_css_provider_new ();
 
-	if (!gtk_css_provider_load_from_string (self->priv->css_provider, "EContactCard .econtent {"
+	gtk_css_provider_load_from_string (self->priv->css_provider, "EContactCard .econtent {"
 		"   border-width:1px;"
 		"   border-color:darker(@theme_fg_color);"
 		"   border-style:solid;"
@@ -1622,10 +1622,7 @@ e_contact_card_box_constructed (GObject *object)
 		"}"
 		"EContactCard .erowvalue {"
 		"   padding:0px 12px 0px 0px;"
-		"}")) {
-		g_warning ("%s: Failed to parse CSS: %s", G_STRFUNC, local_error ? local_error->message : "Unknown error");
-		g_clear_error (&local_error);
-	}
+		"}");
 
 	gtk_widget_add_css_class (GTK_WIDGET (self), "view");
 	gtk_style_context_add_provider (gtk_widget_get_style_context (GTK_WIDGET (self)),

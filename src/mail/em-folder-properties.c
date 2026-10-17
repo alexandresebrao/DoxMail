@@ -128,7 +128,7 @@ tweaks_custom_icon_check_toggled_cb (GtkToggleButton *toggle_button,
 
 	g_return_if_fail (ftd != NULL);
 
-	if (!gtk_toggle_button_get_active (toggle_button)) {
+	if (!e_gtk_toggle_button_get_active (toggle_button)) {
 		e_mail_folder_tweaks_set_icon_filename (ftd->tweaks, ftd->folder_uri, NULL);
 		return;
 	}
@@ -230,7 +230,7 @@ emfp_add_tweaks_custom_icon_row (GtkBox *vbox,
 
 		g_clear_object (&file);
 
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (checkbox), TRUE);
+		e_gtk_toggle_button_set_active (checkbox, TRUE);
 		gtk_image_set_from_gicon (GTK_IMAGE (image), custom_icon);
 
 		g_clear_object (&custom_icon);
@@ -263,7 +263,7 @@ tweaks_text_color_check_toggled_cb (GtkToggleButton *toggle_button,
 {
 	g_return_if_fail (ftd != NULL);
 
-	if (gtk_toggle_button_get_active (toggle_button)) {
+	if (e_gtk_toggle_button_get_active (toggle_button)) {
 		GdkRGBA rgba;
 
 		gtk_color_chooser_get_rgba (GTK_COLOR_CHOOSER (ftd->widget), &rgba);
@@ -312,7 +312,7 @@ emfp_add_tweaks_text_color_row (GtkBox *vbox,
 	e_gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
 
 	if (e_mail_folder_tweaks_get_color (tweaks, folder_uri, &rgba)) {
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (checkbox), TRUE);
+		e_gtk_toggle_button_set_active (checkbox, TRUE);
 		gtk_color_chooser_set_rgba (GTK_COLOR_CHOOSER (button), &rgba);
 	}
 
@@ -443,14 +443,14 @@ emfp_three_state_toggled_cb (GtkToggleButton *widget,
 
 	g_signal_handler_block (widget, tsd->handler_id);
 
-	if (gtk_toggle_button_get_inconsistent (widget) &&
-	    gtk_toggle_button_get_active (widget)) {
-		gtk_toggle_button_set_active (widget, FALSE);
-		gtk_toggle_button_set_inconsistent (widget, FALSE);
+	if (e_gtk_toggle_button_get_inconsistent (widget) &&
+	    e_gtk_toggle_button_get_active (widget)) {
+		e_gtk_toggle_button_set_active (widget, FALSE);
+		e_gtk_toggle_button_set_inconsistent (widget, FALSE);
 		set_to = CAMEL_THREE_STATE_OFF;
-	} else if (!gtk_toggle_button_get_active (widget)) {
-		gtk_toggle_button_set_inconsistent (widget, TRUE);
-		gtk_toggle_button_set_active (widget, FALSE);
+	} else if (!e_gtk_toggle_button_get_active (widget)) {
+		e_gtk_toggle_button_set_inconsistent (widget, TRUE);
+		e_gtk_toggle_button_set_active (widget, FALSE);
 		set_to = CAMEL_THREE_STATE_INCONSISTENT;
 	} else {
 		set_to = CAMEL_THREE_STATE_ON;
@@ -886,16 +886,16 @@ emfp_autoarchive_commit_cb (EConfig *ec,
 	mail_backend = E_MAIL_BACKEND (e_shell_get_backend_by_name (shell, "mail"));
 	g_return_if_fail (mail_backend != NULL);
 
-	if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (aad->move_to_default_radio)))
+	if (e_gtk_toggle_button_get_active (aad->move_to_default_radio))
 		config = E_AUTO_ARCHIVE_CONFIG_MOVE_TO_ARCHIVE;
-	else if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (aad->move_to_custom_radio)))
+	else if (e_gtk_toggle_button_get_active (aad->move_to_custom_radio))
 		config = E_AUTO_ARCHIVE_CONFIG_MOVE_TO_CUSTOM;
-	else if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (aad->delete_radio)))
+	else if (e_gtk_toggle_button_get_active (aad->delete_radio))
 		config = E_AUTO_ARCHIVE_CONFIG_DELETE;
 	else
 		g_warn_if_reached ();
 
-	enabled = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (aad->enabled_check));
+	enabled = e_gtk_toggle_button_get_active (aad->enabled_check);
 	n_units = gtk_spin_button_get_value (GTK_SPIN_BUTTON (aad->n_units_spin));
 	unit = emfp_autoarchive_unit_from_string (gtk_combo_box_get_active_id (GTK_COMBO_BOX (aad->unit_combo)));
 	custom_target_folder_uri = em_folder_selection_button_get_folder_uri (EM_FOLDER_SELECTION_BUTTON (aad->custom_folder_butt));
@@ -973,14 +973,14 @@ emfp_get_autoarchive_item (EConfig *ec,
 
 	e_binding_bind_property (check, "active", widget, "sensitive", G_BINDING_DEFAULT | G_BINDING_SYNC_CREATE);
 
-	radio = gtk_radio_button_new_with_mnemonic (NULL, _("Move messages to the default archive _folder"));
+	radio = e_gtk_radio_button_new_with_mnemonic (NULL, _("Move messages to the default archive _folder"));
 	gtk_grid_attach (grid, radio, 1, 2, 2, 1);
 	aad->move_to_default_radio = radio;
 
 	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 2);
 	gtk_grid_attach (grid, hbox, 1, 3, 2, 1);
 
-	widget = gtk_radio_button_new_with_mnemonic_from_widget (GTK_RADIO_BUTTON (radio), _("_Move messages to:"));
+	widget = e_gtk_radio_button_new_with_mnemonic_from_widget (GTK_CHECK_BUTTON (radio), _("_Move messages to:"));
 	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 	aad->move_to_custom_radio = widget;
 
@@ -988,7 +988,7 @@ emfp_get_autoarchive_item (EConfig *ec,
 	e_gtk_box_pack_start (GTK_BOX (hbox), widget, TRUE, FALSE, 0);
 	aad->custom_folder_butt = widget;
 
-	widget = gtk_radio_button_new_with_mnemonic_from_widget (GTK_RADIO_BUTTON (radio), _("_Delete messages"));
+	widget = e_gtk_radio_button_new_with_mnemonic_from_widget (GTK_CHECK_BUTTON (radio), _("_Delete messages"));
 	gtk_grid_attach (grid, widget, 1, 4, 2, 1);
 	aad->delete_radio = widget;
 
@@ -1000,20 +1000,20 @@ emfp_get_autoarchive_item (EConfig *ec,
 		&enabled, &config, &n_units, &unit, &custom_target_folder_uri)) {
 		switch (config) {
 			case E_AUTO_ARCHIVE_CONFIG_MOVE_TO_ARCHIVE:
-				gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (aad->move_to_default_radio), TRUE);
+				e_gtk_toggle_button_set_active (aad->move_to_default_radio, TRUE);
 				break;
 			case E_AUTO_ARCHIVE_CONFIG_MOVE_TO_CUSTOM:
-				gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (aad->move_to_custom_radio), TRUE);
+				e_gtk_toggle_button_set_active (aad->move_to_custom_radio, TRUE);
 				break;
 			case E_AUTO_ARCHIVE_CONFIG_DELETE:
-				gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (aad->delete_radio), TRUE);
+				e_gtk_toggle_button_set_active (aad->delete_radio, TRUE);
 				break;
 			default:
 				g_warn_if_reached ();
 				break;
 		}
 
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (aad->enabled_check), enabled);
+		e_gtk_toggle_button_set_active (aad->enabled_check, enabled);
 		gtk_spin_button_set_value (GTK_SPIN_BUTTON (aad->n_units_spin), n_units);
 		g_warn_if_fail (gtk_combo_box_set_active_id (GTK_COMBO_BOX (aad->unit_combo),
 			emfp_autoarchive_unit_to_string (unit)));
@@ -1024,8 +1024,8 @@ emfp_get_autoarchive_item (EConfig *ec,
 
 		g_free (custom_target_folder_uri);
 	} else {
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (aad->enabled_check), FALSE);
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (aad->move_to_default_radio), TRUE);
+		e_gtk_toggle_button_set_active (aad->enabled_check, FALSE);
+		e_gtk_toggle_button_set_active (aad->move_to_default_radio, TRUE);
 		gtk_spin_button_set_value (GTK_SPIN_BUTTON (aad->n_units_spin), 12.0);
 		g_warn_if_fail (gtk_combo_box_set_active_id (GTK_COMBO_BOX (aad->unit_combo),
 			emfp_autoarchive_unit_to_string (E_AUTO_ARCHIVE_UNIT_MONTHS)));

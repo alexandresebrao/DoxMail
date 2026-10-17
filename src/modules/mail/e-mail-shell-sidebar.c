@@ -398,6 +398,7 @@ e_mail_shell_sidebar_class_init (EMailShellSidebarClass *class)
 	object_class->constructed = mail_shell_sidebar_constructed;
 
 	widget_class = GTK_WIDGET_CLASS (class);
+	widget_class->measure = e_mail_shell_sidebar_measure;
 
 	shell_sidebar_class = E_SHELL_SIDEBAR_CLASS (class);
 	shell_sidebar_class->check_state = mail_shell_sidebar_check_state;

@@ -116,7 +116,7 @@ struct _EMeetingTimeSelector {
 
 	/* This contains our keyboard accelerators, which need to be added to
 	 * the toplevel window. */
-	GtkAccelGroup *accel_group;
+	EGtkAccelGroup *accel_group;
 
 	/* The vbox in the top-left corner, containing the 'All Attendees'
 	 * title bar packed at the end. Extra widgets can be added here

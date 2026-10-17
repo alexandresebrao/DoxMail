@@ -155,7 +155,7 @@ e_attachment_popover_refresh (EAttachmentPopover *self)
 	gtk_editable_set_text (GTK_EDITABLE (self->filename_entry), display_name ? display_name : "");
 	gtk_editable_set_text (GTK_EDITABLE (self->uri_entry), "");
 	gtk_editable_set_text (GTK_EDITABLE (self->description_entry), description ? description : "");
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (self->prefer_inline_check), g_strcmp0 (disposition, "inline") == 0);
+	e_gtk_toggle_button_set_active (self->prefer_inline_check, g_strcmp0 (disposition, "inline") == 0);
 
 	if (is_uri) {
 		GFile *file;
@@ -231,7 +231,7 @@ e_attachment_popover_save_changes_cb (EAttachmentPopover *self)
 		if (mime_part)
 			camel_mime_part_set_description (mime_part, gtk_editable_get_text (GTK_EDITABLE (self->description_entry)));
 
-		disposition = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (self->prefer_inline_check)) ? "inline" : "attachment";
+		disposition = e_gtk_toggle_button_get_active (self->prefer_inline_check) ? "inline" : "attachment";
 		e_attachment_set_disposition (self->attachment, disposition);
 
 		if (mime_part)

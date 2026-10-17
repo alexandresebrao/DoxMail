@@ -27,12 +27,24 @@
 /**
  * EColorChooserWidget:
  *
- * This widget wrapps around #GtkColorChooserWidget and allows the widget to be
+ * This widget wraps a #GtkColorChooserWidget and allows the widget to be
  * used as a delegate for #GtkComboBox for instance.
+ *
+ * GtkColorChooserWidget is final with GTK 4, so the inner chooser is a
+ * child and the #GtkColorChooser interface is forwarded to it.
  */
 
 struct _EColorChooserWidgetPrivate {
+	GtkWidget *chooser;
+	GtkWidget *pressed_swatch;
 	gboolean showing_editor;
+};
+
+enum {
+	PROP_0,
+	PROP_RGBA,
+	PROP_USE_ALPHA,
+	PROP_SHOW_EDITOR
 };
 
 enum {
@@ -42,56 +54,70 @@ enum {
 
 static guint signals[LAST_SIGNAL];
 
-G_DEFINE_TYPE_WITH_PRIVATE (EColorChooserWidget, e_color_chooser_widget, GTK_TYPE_COLOR_CHOOSER_WIDGET);
+static void	e_color_chooser_widget_color_chooser_init
+						(GtkColorChooserInterface *iface);
 
-static gboolean (* origin_swatch_button_press_event) (GtkWidget *widget, GdkEvent *event);
+G_DEFINE_TYPE_WITH_CODE (EColorChooserWidget, e_color_chooser_widget, GTK_TYPE_WIDGET,
+	G_ADD_PRIVATE (EColorChooserWidget)
+	G_IMPLEMENT_INTERFACE (GTK_TYPE_COLOR_CHOOSER, e_color_chooser_widget_color_chooser_init))
 
-/* UGLY UGLY UGLY!
- * GtkColorChooserWidget sends "color-activated" signal
- * only when user double-clicks the color. This is totally stupid
- * and since we want to use it in a combobox-like widget, we need
- * to be notified upon single click (which by default only selects the color).
- *
- * Unfortunatelly the GtkColorSwatch widget, which handles the button-press
- * event is a non-public widget embedded within the GtkColorChooserWidget,
- * so we can't just subclass it and fix the behavior.
- *
- * Here we override button_press_event of the GtkColorSwatch and manually
- * emit the 'activate' signal on single click. This is stupid, ugly and I
- * want to punch someone for such a stupid design...
- */
-static gboolean
-color_chooser_widget_button_press_event (GtkWidget *widget,
-                                         GdkEvent *event)
+/* GtkColorChooserWidget sends "color-activated" only when the user
+ * double-clicks a color, but in a combobox-like widget a single click
+ * should do.  The swatches are private widgets, so watch clicks on the
+ * chooser in the capture phase: a swatch that is selected once the
+ * button is released was the one clicked. */
+static GtkWidget *
+color_chooser_widget_find_swatch (GtkWidget *widget,
+				  GtkWidget *stop)
 {
-	GtkWidget *parent;
-
-	g_return_val_if_fail (origin_swatch_button_press_event != NULL, FALSE);
-
-	/* Override the behaviour only for GtkColorSwatch which is part of the EColorChooserWidget */
-	parent = widget;
-	while (parent && !E_IS_COLOR_CHOOSER_WIDGET (parent))
-		parent = gtk_widget_get_parent (parent);
-
-	if (parent &&
-	    event->type == GDK_BUTTON_PRESS &&
-	    event->button == GDK_BUTTON_PRIMARY) {
-		g_signal_emit_by_name (widget, "activate");
-		return TRUE;
+	while (widget && widget != stop) {
+		if (g_strcmp0 (G_OBJECT_TYPE_NAME (widget), "GtkColorSwatch") == 0)
+			return widget;
+		widget = gtk_widget_get_parent (widget);
 	}
 
-	return origin_swatch_button_press_event (widget, event);
+	return NULL;
 }
 
 static void
-color_chooser_widget_color_activated (GtkColorChooser *chooser,
-                                      GdkRGBA *color,
-                                      gpointer user_data)
+color_chooser_widget_pressed_cb (GtkGestureClick *gesture,
+				 gint n_press,
+				 gdouble x,
+				 gdouble y,
+				 EColorChooserWidget *self)
 {
-	/* Because we are simulating the double-click by accepting only
-	 * single click, the color in the swatch is actually not selected,
-	 * so we must do it manually */
-	gtk_color_chooser_set_rgba (chooser, color);
+	GtkWidget *picked;
+
+	picked = gtk_widget_pick (self->priv->chooser, x, y, GTK_PICK_DEFAULT);
+	self->priv->pressed_swatch = n_press == 1 ?
+		color_chooser_widget_find_swatch (picked, self->priv->chooser) : NULL;
+}
+
+static void
+color_chooser_widget_released_cb (GtkGestureClick *gesture,
+				  gint n_press,
+				  gdouble x,
+				  gdouble y,
+				  EColorChooserWidget *self)
+{
+	GtkWidget *swatch = self->priv->pressed_swatch;
+
+	self->priv->pressed_swatch = NULL;
+
+	if (swatch && (gtk_widget_get_state_flags (swatch) & GTK_STATE_FLAG_SELECTED) != 0) {
+		GdkRGBA color;
+
+		gtk_color_chooser_get_rgba (GTK_COLOR_CHOOSER (self->priv->chooser), &color);
+		g_signal_emit_by_name (self, "color-activated", &color);
+	}
+}
+
+static void
+color_chooser_widget_inner_activated_cb (GtkColorChooser *chooser,
+					 const GdkRGBA *color,
+					 EColorChooserWidget *self)
+{
+	g_signal_emit_by_name (self, "color-activated", color);
 }
 
 static gboolean
@@ -104,9 +130,10 @@ run_color_chooser_dialog (gpointer user_data)
 	GtkWidget *chooser;
 
 	parent_chooser = user_data;
+	self = E_COLOR_CHOOSER_WIDGET (parent_chooser);
 
 	g_object_set (
-		G_OBJECT (parent_chooser), "show-editor", FALSE, NULL);
+		G_OBJECT (self->priv->chooser), "show-editor", FALSE, NULL);
 
 	parent_window = g_object_get_data (G_OBJECT (parent_chooser), "window");
 	if (!GTK_IS_WINDOW (parent_window))
@@ -122,8 +149,6 @@ run_color_chooser_dialog (gpointer user_data)
 	g_object_set (G_OBJECT (chooser), "show-editor", TRUE, NULL);
 	e_gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area (GTK_DIALOG (dialog))), chooser, TRUE, TRUE, 5);
 
-	gtk_widget_set_visible (chooser, TRUE);
-
 	if (e_gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT) {
 		GdkRGBA color;
 
@@ -135,20 +160,21 @@ run_color_chooser_dialog (gpointer user_data)
 
 	e_gtk_widget_destroy (dialog);
 
-	self = E_COLOR_CHOOSER_WIDGET (parent_chooser);
 	self->priv->showing_editor = FALSE;
 
 	return FALSE;
 }
 
 static void
-color_chooser_show_editor_notify_cb (EColorChooserWidget *chooser,
+color_chooser_show_editor_notify_cb (GtkWidget *inner,
                                      GParamSpec *pspec,
-                                     gpointer user_data)
+                                     EColorChooserWidget *chooser)
 {
 	gboolean show_editor;
 
-	g_object_get (G_OBJECT (chooser), "show-editor", &show_editor, NULL);
+	g_object_get (G_OBJECT (inner), "show-editor", &show_editor, NULL);
+
+	g_object_notify (G_OBJECT (chooser), "show-editor");
 
 	/* Nothing to do here... */
 	if ((show_editor == FALSE) || (chooser->priv->showing_editor == TRUE))
@@ -164,9 +190,127 @@ color_chooser_show_editor_notify_cb (EColorChooserWidget *chooser,
 	g_signal_emit (chooser, signals[SIGNAL_EDITOR_ACTIVATED], 0);
 }
 
-void
+static void
+color_chooser_widget_forward_notify_cb (GObject *inner,
+					GParamSpec *pspec,
+					GObject *self)
+{
+	g_object_notify (self, pspec->name);
+}
+
+static void
+color_chooser_widget_set_property (GObject *object,
+				   guint property_id,
+				   const GValue *value,
+				   GParamSpec *pspec)
+{
+	switch (property_id) {
+		case PROP_RGBA:
+		case PROP_USE_ALPHA:
+		case PROP_SHOW_EDITOR:
+			g_object_set_property (G_OBJECT (E_COLOR_CHOOSER_WIDGET (object)->priv->chooser),
+				pspec->name, value);
+			return;
+	}
+
+	G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+}
+
+static void
+color_chooser_widget_get_property (GObject *object,
+				   guint property_id,
+				   GValue *value,
+				   GParamSpec *pspec)
+{
+	switch (property_id) {
+		case PROP_RGBA:
+		case PROP_USE_ALPHA:
+		case PROP_SHOW_EDITOR:
+			g_object_get_property (G_OBJECT (E_COLOR_CHOOSER_WIDGET (object)->priv->chooser),
+				pspec->name, value);
+			return;
+	}
+
+	G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+}
+
+static void
+color_chooser_widget_dispose (GObject *object)
+{
+	EColorChooserWidget *self = E_COLOR_CHOOSER_WIDGET (object);
+
+	g_clear_pointer (&self->priv->chooser, gtk_widget_unparent);
+
+	/* Chain up to parent's dispose() method. */
+	G_OBJECT_CLASS (e_color_chooser_widget_parent_class)->dispose (object);
+}
+
+static gboolean
+color_chooser_widget_grab_focus (GtkWidget *widget)
+{
+	return gtk_widget_grab_focus (E_COLOR_CHOOSER_WIDGET (widget)->priv->chooser);
+}
+
+static void
+color_chooser_widget_get_rgba (GtkColorChooser *chooser,
+			       GdkRGBA *color)
+{
+	gtk_color_chooser_get_rgba (GTK_COLOR_CHOOSER (E_COLOR_CHOOSER_WIDGET (chooser)->priv->chooser), color);
+}
+
+static void
+color_chooser_widget_set_rgba (GtkColorChooser *chooser,
+			       const GdkRGBA *color)
+{
+	gtk_color_chooser_set_rgba (GTK_COLOR_CHOOSER (E_COLOR_CHOOSER_WIDGET (chooser)->priv->chooser), color);
+}
+
+static void
+color_chooser_widget_add_palette (GtkColorChooser *chooser,
+				  GtkOrientation orientation,
+				  gint colors_per_line,
+				  gint n_colors,
+				  GdkRGBA *colors)
+{
+	gtk_color_chooser_add_palette (GTK_COLOR_CHOOSER (E_COLOR_CHOOSER_WIDGET (chooser)->priv->chooser),
+		orientation, colors_per_line, n_colors, colors);
+}
+
+static void
+e_color_chooser_widget_color_chooser_init (GtkColorChooserInterface *iface)
+{
+	iface->get_rgba = color_chooser_widget_get_rgba;
+	iface->set_rgba = color_chooser_widget_set_rgba;
+	iface->add_palette = color_chooser_widget_add_palette;
+}
+
+static void
 e_color_chooser_widget_class_init (EColorChooserWidgetClass *class)
 {
+	GObjectClass *object_class;
+	GtkWidgetClass *widget_class;
+
+	object_class = G_OBJECT_CLASS (class);
+	object_class->set_property = color_chooser_widget_set_property;
+	object_class->get_property = color_chooser_widget_get_property;
+	object_class->dispose = color_chooser_widget_dispose;
+
+	widget_class = GTK_WIDGET_CLASS (class);
+	widget_class->grab_focus = color_chooser_widget_grab_focus;
+	gtk_widget_class_set_layout_manager_type (widget_class, GTK_TYPE_BIN_LAYOUT);
+
+	g_object_class_override_property (object_class, PROP_RGBA, "rgba");
+	g_object_class_override_property (object_class, PROP_USE_ALPHA, "use-alpha");
+
+	g_object_class_install_property (
+		object_class,
+		PROP_SHOW_EDITOR,
+		g_param_spec_boolean (
+			"show-editor",
+			NULL, NULL,
+			FALSE,
+			G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
 	signals[SIGNAL_EDITOR_ACTIVATED] = g_signal_new (
 		"editor-activated",
 		E_TYPE_COLOR_CHOOSER_WIDGET,
@@ -178,71 +322,34 @@ e_color_chooser_widget_class_init (EColorChooserWidgetClass *class)
 		G_TYPE_NONE, 0);
 }
 
-/* Recursively go through GtkContainers within the GtkColorChooserWidget
- * and try to find GtkColorSwatch widget. */
-static GtkWidget *
-find_swatch (GtkContainer *container)
-{
-	GList *children, *child;
-
-	children = e_gtk_widget_get_children (container);
-	for (child = children; child; child = g_list_next (child)) {
-		GtkWidget *widget = child->data;
-		GtkWidget *swatch;
-
-		if (!widget)
-			continue;
-
-		if (GTK_IS_WIDGET (widget)) {
-			swatch = find_swatch (GTK_CONTAINER (widget));
-
-			if (swatch != NULL) {
-				g_list_free (children);
-				return swatch;
-			}
-		}
-
-		if (g_strcmp0 (G_OBJECT_TYPE_NAME (widget), "GtkColorSwatch") == 0) {
-			g_list_free (children);
-			return widget;
-		}
-	}
-
-	g_list_free (children);
-
-	return NULL;
-}
-
-void
+static void
 e_color_chooser_widget_init (EColorChooserWidget *widget)
 {
-	GtkWidget *swatch;
+	GtkGesture *gesture;
 
 	widget->priv = e_color_chooser_widget_get_instance_private (widget);
 	widget->priv->showing_editor = FALSE;
 
-	swatch = find_swatch (GTK_CONTAINER (widget));
+	widget->priv->chooser = gtk_color_chooser_widget_new ();
+	gtk_widget_set_parent (widget->priv->chooser, GTK_WIDGET (widget));
 
-	/* If swatch is NULL then GTK changed something and this widget
-	 * becomes broken... */
-	g_return_if_fail (swatch != NULL);
-
-	if (swatch) {
-		GtkWidgetClass *swatch_class;
-		swatch_class = GTK_WIDGET_GET_CLASS (swatch);
-		if (swatch_class->button_press_event != color_chooser_widget_button_press_event) {
-			origin_swatch_button_press_event = swatch_class->button_press_event;
-			swatch_class->button_press_event = color_chooser_widget_button_press_event;
-		}
-	}
+	gesture = gtk_gesture_click_new ();
+	gtk_event_controller_set_propagation_phase (GTK_EVENT_CONTROLLER (gesture), GTK_PHASE_CAPTURE);
+	g_signal_connect (gesture, "pressed", G_CALLBACK (color_chooser_widget_pressed_cb), widget);
+	g_signal_connect (gesture, "released", G_CALLBACK (color_chooser_widget_released_cb), widget);
+	gtk_widget_add_controller (widget->priv->chooser, GTK_EVENT_CONTROLLER (gesture));
 
 	g_signal_connect (
-		widget, "color-activated",
-		G_CALLBACK (color_chooser_widget_color_activated), NULL);
+		widget->priv->chooser, "color-activated",
+		G_CALLBACK (color_chooser_widget_inner_activated_cb), widget);
 
 	g_signal_connect (
-		widget, "notify::show-editor",
-		G_CALLBACK (color_chooser_show_editor_notify_cb), NULL);
+		widget->priv->chooser, "notify::show-editor",
+		G_CALLBACK (color_chooser_show_editor_notify_cb), widget);
+
+	g_signal_connect (
+		widget->priv->chooser, "notify::rgba",
+		G_CALLBACK (color_chooser_widget_forward_notify_cb), widget);
 }
 
 GtkWidget *

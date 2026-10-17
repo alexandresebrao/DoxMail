@@ -4083,6 +4083,7 @@ message_list_class_init (MessageListClass *class)
 	}
 
 	widget_class = GTK_WIDGET_CLASS (class);
+	widget_class->measure = message_list_measure;
 
 	gtk_widget_class_set_css_name (widget_class, "MessageList");
 

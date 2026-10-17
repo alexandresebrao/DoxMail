@@ -26,6 +26,7 @@
 #define E_IMPORT_ASSISTANT_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-assistant.h>
 #include <e-util/e-gtk4-compat.h>
 
 /* Standard GObject macros */
@@ -54,12 +55,12 @@ typedef struct _EImportAssistantClass EImportAssistantClass;
 typedef struct _EImportAssistantPrivate EImportAssistantPrivate;
 
 struct _EImportAssistant {
-	GtkAssistant parent;
+	EAssistant parent;
 	EImportAssistantPrivate *priv;
 };
 
 struct _EImportAssistantClass {
-	GtkAssistantClass parent_class;
+	EAssistantClass parent_class;
 };
 
 GType		e_import_assistant_get_type	(void) G_GNUC_CONST;

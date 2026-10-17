@@ -126,9 +126,9 @@ ca_trust_dialog_set_trust (GtkWidget *widget,
 	if (!ctd_data)
 		return;
 
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ctd_data->ssl_checkbutton), ssl);
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ctd_data->email_checkbutton), email);
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ctd_data->objsign_checkbutton), objsign);
+	e_gtk_toggle_button_set_active (ctd_data->ssl_checkbutton, ssl);
+	e_gtk_toggle_button_set_active (ctd_data->email_checkbutton, email);
+	e_gtk_toggle_button_set_active (ctd_data->objsign_checkbutton, objsign);
 }
 
 void
@@ -143,7 +143,7 @@ ca_trust_dialog_get_trust (GtkWidget *widget,
 	if (!ctd_data)
 		return;
 
-	*ssl = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ctd_data->ssl_checkbutton));
-	*email = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ctd_data->email_checkbutton));
-	*objsign = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ctd_data->objsign_checkbutton));
+	*ssl = e_gtk_toggle_button_get_active (ctd_data->ssl_checkbutton);
+	*email = e_gtk_toggle_button_get_active (ctd_data->email_checkbutton);
+	*objsign = e_gtk_toggle_button_get_active (ctd_data->objsign_checkbutton);
 }

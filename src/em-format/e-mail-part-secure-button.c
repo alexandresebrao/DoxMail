@@ -48,7 +48,7 @@ secure_button_view_certificate (GtkWindow *parent,
 
 		g_signal_connect (
 			dialog, "response",
-			G_CALLBACK (gtk_widget_destroy), NULL);
+			G_CALLBACK (e_gtk_widget_destroy), NULL);
 
 		gtk_widget_show (dialog);
 

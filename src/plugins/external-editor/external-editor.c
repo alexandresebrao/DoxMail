@@ -86,7 +86,7 @@ ee_editor_immediate_launch_changed (GtkWidget *checkbox)
 	gboolean immediately;
 	GSettings *settings;
 
-	immediately = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (checkbox));
+	immediately = e_gtk_toggle_button_get_active (checkbox);
 	d (printf ("\n\aimmediate launch is : [%d] \n\a", immediately));
 
 	settings = e_util_ref_settings ("org.gnome.evolution.plugin.external-editor");
@@ -119,7 +119,7 @@ e_plugin_lib_get_configure_widget (EPlugin *epl)
 		_("_Automatically launch when a new mail is edited"));
 	checked = g_settings_get_boolean (settings, "launch-on-key-press");
 	if (checked)
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (checkbox), TRUE);
+		e_gtk_toggle_button_set_active (checkbox, TRUE);
 	g_object_unref (settings);
 
 	e_gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);

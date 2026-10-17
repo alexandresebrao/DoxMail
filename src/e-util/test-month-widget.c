@@ -82,7 +82,7 @@ bold_toggled_cb (GtkToggleButton *toggle_button,
 		 guint *p_set_mark)
 {
 	*p_set_mark = (*p_set_mark & ~1) |
-		(gtk_toggle_button_get_active (toggle_button) ? 1 : 0);
+		(e_gtk_toggle_button_get_active (toggle_button) ? 1 : 0);
 }
 
 static void
@@ -90,7 +90,7 @@ italic_toggled_cb (GtkToggleButton *toggle_button,
 		   guint *p_set_mark)
 {
 	*p_set_mark = (*p_set_mark & ~2) |
-		(gtk_toggle_button_get_active (toggle_button) ? 2 : 0);
+		(e_gtk_toggle_button_get_active (toggle_button) ? 2 : 0);
 }
 
 static void
@@ -98,7 +98,7 @@ underline_toggled_cb (GtkToggleButton *toggle_button,
 		      guint *p_set_mark)
 {
 	*p_set_mark = (*p_set_mark & ~4) |
-		(gtk_toggle_button_get_active (toggle_button) ? 4 : 0);
+		(e_gtk_toggle_button_get_active (toggle_button) ? 4 : 0);
 }
 
 
@@ -107,7 +107,7 @@ highlight_toggled_cb (GtkToggleButton *toggle_button,
 		      guint *p_set_mark)
 {
 	*p_set_mark = (*p_set_mark & ~8) |
-		(gtk_toggle_button_get_active (toggle_button) ? 8 : 0);
+		(e_gtk_toggle_button_get_active (toggle_button) ? 8 : 0);
 }
 
 static void

@@ -27,110 +27,26 @@ struct _EMonthWidgetPrivate {
 	guint button_press_day;
 };
 
-/* A "day label", whose minimum size is always square */
+/* Day labels are plain GtkLabel-s (final on GTK 4) with a square size
+ * request; the day number they show is kept as object data */
 
-#define E_TYPE_MONTH_WIDGET_DAY_LABEL (e_month_widget_day_label_get_type ())
-
-G_DECLARE_FINAL_TYPE (EMonthWidgetDayLabel, e_month_widget_day_label, E, MONTH_WIDGET_DAY_LABEL, GtkLabel)
-
-struct _EMonthWidgetDayLabel
-{
-	GtkLabel parent_instance;
-
-	EMonthWidget *month_widget;
-	guint day;
-};
-
-G_DEFINE_TYPE (EMonthWidgetDayLabel, e_month_widget_day_label, GTK_TYPE_LABEL)
-
-static GtkSizeRequestMode
-e_month_widget_day_label_get_request_mode (GtkWidget *widget)
-{
-	EMonthWidgetDayLabel *self = E_MONTH_WIDGET_DAY_LABEL (widget);
-
-	if (self->month_widget->priv->calculating_min_day_size)
-		return GTK_WIDGET_CLASS (e_month_widget_day_label_parent_class)->get_request_mode (widget);
-
-	return GTK_SIZE_REQUEST_CONSTANT_SIZE;
-}
+#define DAY_KEY "emw-day"
 
 static void
-e_month_widget_day_label_get_preferred_height (GtkWidget *widget,
-					       gint *minimum_height,
-					       gint *natural_height)
+e_month_widget_day_label_set_day (GtkWidget *label,
+				  guint day)
 {
-	EMonthWidgetDayLabel *self = E_MONTH_WIDGET_DAY_LABEL (widget);
-
-	if (self->month_widget->priv->calculating_min_day_size) {
-		GTK_WIDGET_CLASS (e_month_widget_day_label_parent_class)->measure (widget, GTK_ORIENTATION_VERTICAL, -1, minimum_height, natural_height, NULL, NULL);
-		return;
-	}
-
-	if (minimum_height)
-		*minimum_height = self->month_widget->priv->min_day_size;
-
-	if (natural_height)
-		*natural_height = self->month_widget->priv->min_day_size;
+	g_object_set_data (G_OBJECT (label), DAY_KEY, GUINT_TO_POINTER (day));
 }
 
-static void
-e_month_widget_day_label_get_preferred_width (GtkWidget *widget,
-					      gint *minimum_width,
-					      gint *natural_width)
+static guint
+e_month_widget_day_label_get_day (GtkWidget *label)
 {
-	EMonthWidgetDayLabel *self = E_MONTH_WIDGET_DAY_LABEL (widget);
-
-	if (self->month_widget->priv->calculating_min_day_size) {
-		GTK_WIDGET_CLASS (e_month_widget_day_label_parent_class)->measure (widget, GTK_ORIENTATION_HORIZONTAL, -1, minimum_width, natural_width, NULL, NULL);
-		return;
-	}
-
-	if (minimum_width)
-		*minimum_width = self->month_widget->priv->min_day_size;
-
-	if (natural_width)
-		*natural_width = self->month_widget->priv->min_day_size;
+	return GPOINTER_TO_UINT (g_object_get_data (G_OBJECT (label), DAY_KEY));
 }
 
-static void
-e_month_widget_day_label_measure (GtkWidget *widget,
-		GtkOrientation orientation,
-		gint for_size,
-		gint *minimum,
-		gint *natural,
-		gint *minimum_baseline,
-		gint *natural_baseline)
-{
-	if (orientation == GTK_ORIENTATION_HORIZONTAL) {
-		e_month_widget_day_label_get_preferred_width (widget, minimum, natural);
-		return;
-	}
-
-	if (orientation == GTK_ORIENTATION_VERTICAL) {
-		e_month_widget_day_label_get_preferred_height (widget, minimum, natural);
-		return;
-	}
-
-	GTK_WIDGET_CLASS (e_month_widget_day_label_parent_class)->measure (widget, orientation, for_size,
-		minimum, natural, minimum_baseline, natural_baseline);
-}
-
-static void
-e_month_widget_day_label_class_init (EMonthWidgetDayLabelClass *klass)
-{
-	GtkWidgetClass *widget_class;
-
-	widget_class = GTK_WIDGET_CLASS (klass);
-	widget_class->measure = e_month_widget_day_label_measure;
-	widget_class->get_request_mode = e_month_widget_day_label_get_request_mode;
-}
-
-static void
-e_month_widget_day_label_init (EMonthWidgetDayLabel *self)
-{
-}
-
-G_DEFINE_TYPE_WITH_PRIVATE (EMonthWidget, e_month_widget, GTK_TYPE_EVENT_BOX)
+/* was a GtkEventBox; now a widget holding the grid */
+G_DEFINE_TYPE_WITH_PRIVATE (EMonthWidget, e_month_widget, GTK_TYPE_WIDGET)
 
 enum {
 	PROP_0,
@@ -225,20 +141,17 @@ e_month_widget_update (EMonthWidget *self)
 
 	for (jj = 0; jj < MAX_WEEKS; jj++) {
 		for (ii = 0; ii < 7; ii++) {
-			EMonthWidgetDayLabel *day_label;
-
 			widget = gtk_grid_get_child_at (self->priv->grid, ii + 1, jj + 1);
-			day_label = E_MONTH_WIDGET_DAY_LABEL (widget);
 
 			if (jj == 0 && g_date_compare (&tmp_date, date) < 0) {
 				g_date_add_days (&tmp_date, 1);
 				gtk_widget_set_visible (widget, FALSE);
-				day_label->day = 0;
+				e_month_widget_day_label_set_day (widget, 0);
 			} else if (month_day <= max_month_days) {
 				g_snprintf (buffer, sizeof (buffer), digit_format, month_day);
 				gtk_label_set_text (GTK_LABEL (widget), buffer);
 				gtk_widget_set_visible (widget, TRUE);
-				day_label->day = month_day;
+				e_month_widget_day_label_set_day (widget, month_day);
 				month_day++;
 
 				if (ii == 0 && self->priv->show_week_numbers) {
@@ -248,7 +161,7 @@ e_month_widget_update (EMonthWidget *self)
 				}
 			} else {
 				gtk_widget_set_visible (widget, FALSE);
-				day_label->day = 0;
+				e_month_widget_day_label_set_day (widget, 0);
 
 				if (ii == 0 && self->priv->show_week_numbers) {
 					/* Hide the week number */
@@ -295,7 +208,7 @@ e_month_widget_get_day_widget (EMonthWidget *self,
 }
 
 static void
-e_month_widget_style_updated (GtkWidget *widget)
+e_month_widget_update_day_size (GtkWidget *widget)
 {
 	static const gchar *digit_format = NULL;
 	EMonthWidget *self = E_MONTH_WIDGET (widget);
@@ -316,6 +229,9 @@ e_month_widget_style_updated (GtkWidget *widget)
 		digit_format = get_digit_format ();
 
 	self->priv->calculating_min_day_size = TRUE;
+
+	/* measure the labels without the square size set below */
+	gtk_widget_set_size_request (gtk_grid_get_child_at (self->priv->grid, 1, 1), -1, -1);
 
 	/* It does not matter what date it is, as it's used to get day names only */
 	date = g_date_new_dmy (1, 1, 2000);
@@ -396,54 +312,64 @@ e_month_widget_style_updated (GtkWidget *widget)
 	/* Padding 2 pixels on each side */
 	value += 4;
 
+	gtk_widget_set_size_request (gtk_grid_get_child_at (self->priv->grid, 1, 1),
+		self->priv->min_day_size, self->priv->min_day_size);
+
 	if (value != self->priv->min_day_size) {
+		guint jj;
+
 		self->priv->min_day_size = value;
-		gtk_widget_queue_resize (widget);
+
+		for (jj = 0; jj < MAX_WEEKS; jj++) {
+			for (ii = 0; ii < 7; ii++) {
+				gtk_widget_set_size_request (gtk_grid_get_child_at (self->priv->grid, ii + 1, jj + 1),
+					value, value);
+			}
+		}
 	}
 }
 
 static void
-e_month_widget_show_all (GtkWidget *widget)
+e_month_widget_css_changed (GtkWidget *widget,
+			    GtkCssStyleChange *change)
 {
-	EMonthWidget *self = E_MONTH_WIDGET (widget);
+	GTK_WIDGET_CLASS (e_month_widget_parent_class)->css_changed (widget, change);
 
-	gtk_widget_show (widget);
-
-	if (self->priv->grid)
-		gtk_widget_show (GTK_WIDGET (self->priv->grid));
+	e_month_widget_update_day_size (widget);
 }
 
-static gboolean
-e_month_widget_button_press_event_cb (GtkWidget *widget,
-				      GdkEvent *event,
-				      gpointer user_data)
+static void
+e_month_widget_pressed_cb (GtkGestureClick *gesture,
+			   gint n_press,
+			   gdouble x,
+			   gdouble y,
+			   gpointer user_data)
 {
-	EMonthWidget *self = E_MONTH_WIDGET (widget);
+	EMonthWidget *self = user_data;
 
-	self->priv->button_press_day = event->type == GDK_BUTTON_PRESS ?
-		e_month_widget_get_day_at_position (self, event->x, event->y) : 0;
-
-	return FALSE;
+	self->priv->button_press_day = n_press == 1 ?
+		e_month_widget_get_day_at_position (self, x, y) : 0;
 }
 
-static gboolean
-e_month_widget_button_release_event_cb (GtkWidget *widget,
-					GdkEvent *event,
-					gpointer user_data)
+static void
+e_month_widget_released_cb (GtkGestureClick *gesture,
+			    gint n_press,
+			    gdouble x,
+			    gdouble y,
+			    gpointer user_data)
 {
-	EMonthWidget *self = E_MONTH_WIDGET (widget);
+	EMonthWidget *self = user_data;
 	guint day;
 
-	day = event->type == GDK_BUTTON_RELEASE ?
-		e_month_widget_get_day_at_position (self, event->x, event->y) : 0;
+	day = e_month_widget_get_day_at_position (self, x, y);
 
 	if (day && self->priv->button_press_day == day) {
+		GdkEvent *event = gtk_event_controller_get_current_event (GTK_EVENT_CONTROLLER (gesture));
+
 		g_signal_emit (self, signals[DAY_CLICKED], 0, event, self->priv->year, self->priv->month, day, NULL);
 	}
 
 	self->priv->button_press_day = 0;
-
-	return FALSE;
 }
 
 static void
@@ -511,16 +437,11 @@ e_month_widget_constructed (GObject *object)
 	PangoAttrList *attrs_small, *attrs_tnum, *attrs_small_tnum;
 	GtkStyleProvider *style_provider;
 	GtkStyleContext *style_context;
+	GtkGesture *gesture;
 	guint ii, jj;
-	GError *error = NULL;
 
 	/* Chain up to parent's method. */
 	G_OBJECT_CLASS (e_month_widget_parent_class)->constructed (object);
-
-	g_object_set (object,
-		"above-child", TRUE,
-		"visible-window", TRUE,
-		NULL);
 
 	self->priv->grid = GTK_GRID (gtk_grid_new ());
 
@@ -532,11 +453,11 @@ e_month_widget_constructed (GObject *object)
 		"visible", TRUE,
 		NULL);
 
-	e_gtk_container_add (self, GTK_WIDGET (self->priv->grid));
+	gtk_widget_set_parent (GTK_WIDGET (self->priv->grid), GTK_WIDGET (self));
 
 	self->priv->css_provider = gtk_css_provider_new ();
 
-	if (!gtk_css_provider_load_from_string (self->priv->css_provider, "EMonthWidget ." CSS_CLASS_SELECTED " {"
+	gtk_css_provider_load_from_string (self->priv->css_provider, "EMonthWidget ." CSS_CLASS_SELECTED " {"
 		"   background-color:@theme_selected_bg_color;"
 		"   color:@theme_selected_fg_color;"
 		"   border-radius:4px;"
@@ -561,10 +482,7 @@ e_month_widget_constructed (GObject *object)
 		"   border-width:2px;"
 		"   border-color:darker(@theme_selected_bg_color);"
 		"   border-style:solid;"
-		"}")) {
-		g_warning ("%s: Failed to parse CSS: %s", G_STRFUNC, error ? error->message : "Unknown error");
-		g_clear_error (&error);
-	}
+		"}");
 
 	style_provider = GTK_STYLE_PROVIDER (self->priv->css_provider);
 
@@ -597,16 +515,7 @@ e_month_widget_constructed (GObject *object)
 			else
 				attrs = attrs_tnum;
 
-			if (ii != 0 && jj != 0) {
-				EMonthWidgetDayLabel *day_label;
-
-				day_label = g_object_new (E_TYPE_MONTH_WIDGET_DAY_LABEL, NULL);
-				day_label->month_widget = self;
-
-				widget = GTK_WIDGET (day_label);
-			} else {
-				widget = gtk_label_new ("");
-			}
+			widget = gtk_label_new ("");
 
 			g_object_set (G_OBJECT (widget),
 				"halign", GTK_ALIGN_FILL,
@@ -640,11 +549,25 @@ e_month_widget_constructed (GObject *object)
 	pango_attr_list_unref (attrs_tnum);
 	pango_attr_list_unref (attrs_small_tnum);
 
-	g_signal_connect (self, "button-press-event",
-		G_CALLBACK (e_month_widget_button_press_event_cb), NULL);
+	gesture = gtk_gesture_click_new ();
+	gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (gesture), 0);
+	g_signal_connect (gesture, "pressed", G_CALLBACK (e_month_widget_pressed_cb), self);
+	g_signal_connect (gesture, "released", G_CALLBACK (e_month_widget_released_cb), self);
+	gtk_widget_add_controller (GTK_WIDGET (self), GTK_EVENT_CONTROLLER (gesture));
+}
 
-	g_signal_connect (self, "button-release-event",
-		G_CALLBACK (e_month_widget_button_release_event_cb), NULL);
+static void
+e_month_widget_dispose (GObject *object)
+{
+	EMonthWidget *self = E_MONTH_WIDGET (object);
+
+	if (self->priv->grid) {
+		gtk_widget_unparent (GTK_WIDGET (self->priv->grid));
+		self->priv->grid = NULL;
+	}
+
+	/* Chain up to parent's method. */
+	G_OBJECT_CLASS (e_month_widget_parent_class)->dispose (object);
 }
 
 static void
@@ -665,16 +588,17 @@ e_month_widget_class_init (EMonthWidgetClass *klass)
 	GtkWidgetClass *widget_class;
 
 	widget_class = GTK_WIDGET_CLASS (klass);
-	widget_class->style_updated = e_month_widget_style_updated;
-	widget_class->show_all = e_month_widget_show_all;
+	widget_class->css_changed = e_month_widget_css_changed;
 
-	gtk_widget_class_set_accessible_role (widget_class, ATK_ROLE_CALENDAR);
+	gtk_widget_class_set_layout_manager_type (widget_class, GTK_TYPE_BIN_LAYOUT);
+	gtk_widget_class_set_accessible_role (widget_class, GTK_ACCESSIBLE_ROLE_GRID);
 	gtk_widget_class_set_css_name (widget_class, "EMonthWidget");
 
 	object_class = G_OBJECT_CLASS (klass);
 	object_class->get_property = e_month_widget_get_property;
 	object_class->set_property = e_month_widget_set_property;
 	object_class->constructed = e_month_widget_constructed;
+	object_class->dispose = e_month_widget_dispose;
 	object_class->finalize = e_month_widget_finalize;
 
 	/**
@@ -1284,9 +1208,7 @@ e_month_widget_get_day_at_position (EMonthWidget *self,
 
 				if (x_win >= allocation.x && x_win < allocation.x + allocation.width &&
 				    y_win >= allocation.y && y_win < allocation.y + allocation.height) {
-					EMonthWidgetDayLabel *day_label = E_MONTH_WIDGET_DAY_LABEL (day_widget);
-
-					return day_label->day;
+					return e_month_widget_day_label_get_day (day_widget);
 				}
 			}
 		}

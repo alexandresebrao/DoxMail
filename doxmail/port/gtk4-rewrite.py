@@ -143,6 +143,18 @@ def call(name, args):
 
 # name -> (new name, casts to strip from the first argument)
 RENAMES = {
+    # GtkCheckButton is no GtkToggleButton on GTK 4; these take either
+    'gtk_toggle_button_get_active': ('e_gtk_toggle_button_get_active', ['GTK_TOGGLE_BUTTON']),
+    'gtk_toggle_button_set_active': ('e_gtk_toggle_button_set_active', ['GTK_TOGGLE_BUTTON']),
+    'gtk_toggle_button_get_inconsistent': ('e_gtk_toggle_button_get_inconsistent', ['GTK_TOGGLE_BUTTON']),
+    'gtk_toggle_button_set_inconsistent': ('e_gtk_toggle_button_set_inconsistent', ['GTK_TOGGLE_BUTTON']),
+    # radio buttons are grouped GtkCheckButton-s
+    'gtk_radio_button_new_with_mnemonic': ('e_gtk_radio_button_new_with_mnemonic', []),
+    'gtk_radio_button_new_with_label': ('e_gtk_radio_button_new_with_label', []),
+    'gtk_radio_button_new_with_mnemonic_from_widget': ('e_gtk_radio_button_new_with_mnemonic_from_widget', ['GTK_RADIO_BUTTON']),
+    'gtk_radio_button_new_with_label_from_widget': ('e_gtk_radio_button_new_with_label_from_widget', ['GTK_RADIO_BUTTON']),
+    'gtk_radio_button_get_group': ('e_gtk_radio_button_get_group', ['GTK_RADIO_BUTTON']),
+    'gtk_radio_button_join_group': ('e_gtk_radio_button_join_group', ['GTK_RADIO_BUTTON']),
     'gtk_container_add': ('e_gtk_container_add', ['GTK_CONTAINER']),
     'gtk_container_remove': ('e_gtk_container_remove', ['GTK_CONTAINER']),
     'gtk_container_get_children': ('e_gtk_widget_get_children', ['GTK_CONTAINER']),
@@ -445,6 +457,9 @@ REGEX_RENAMES = [
     (r'\bgtk_window_new \(GTK_WINDOW_TOPLEVEL\)', 'gtk_window_new ()'),
     (r'g_signal_connect \(\s*([^,]+),\s*"delete[-_]event",\s*G_CALLBACK \(gtk_widget_hide_on_delete\),\s*NULL\);', r'gtk_window_set_hide_on_close (GTK_WINDOW (\1), TRUE);'),
     (r'G_CALLBACK \(gtk_widget_destroyed\)', 'G_CALLBACK (e_gtk_widget_destroyed)'),
+    (r'G_CALLBACK \(gtk_widget_destroy\)', 'G_CALLBACK (e_gtk_widget_destroy)'),
+    (r'\(GDestroyNotify\) gtk_widget_destroy\b', '(GDestroyNotify) e_gtk_widget_destroy'),
+    (r'(g_clear_pointer \([^,]+, )gtk_widget_destroy\)', r'\1e_gtk_widget_destroy)'),
     (r'\bGTK_IS_CONTAINER\b', 'GTK_IS_WIDGET'),
     # WebKitGTK 6.0
     (r'\bWebKitJavascriptResult \*', 'JSCValue *'),
@@ -461,6 +476,20 @@ REGEX_RENAMES = [
     (r'\bgtk_widget_get_accessible\s*\(', 'GTK_WIDGET ('),
     (r'\batk_object_set_name\s*\(', 'e_gtk_widget_set_accessible_name ('),
     (r'\batk_object_set_description\s*\(', 'e_gtk_widget_set_accessible_description ('),
+    (r'\bGtkRadioButton\b', 'GtkCheckButton'),
+    (r'\bGtkAccelGroup\b', 'EGtkAccelGroup'),
+    (r'\bGTK_ACCEL_VISIBLE\b', '0'),
+    (r'\bgtk_accel_group_new\s*\(', 'e_gtk_accel_group_new ('),
+    (r'\bgtk_widget_add_accelerator\s*\(', 'e_gtk_widget_add_accelerator ('),
+    (r'\bgtk_window_(add|remove)_accel_group\s*\(', r'e_gtk_window_\1_accel_group ('),
+    (r'\bGTK_RADIO_BUTTON\s*\(', 'GTK_CHECK_BUTTON ('),
+    (r'\bGTK_IS_RADIO_BUTTON\s*\(', 'GTK_IS_CHECK_BUTTON ('),
+    (r'\bGTK_TYPE_RADIO_BUTTON\b', 'GTK_TYPE_CHECK_BUTTON'),
+    # GtkAssistant is final -> EAssistant (src/e-util/e-assistant.[ch])
+    (r'\bGtkAssistant(Class|PageFunc)?\b', r'EAssistant\1'),
+    (r'\bGTK_TYPE_ASSISTANT\b', 'E_TYPE_ASSISTANT'),
+    (r'\bGTK_(IS_)?ASSISTANT(_CLASS)?\s*\(', r'E_\1ASSISTANT\2 ('),
+    (r'\bgtk_assistant_([a-z_]+)\s*\(', r'e_assistant_\1 ('),
     (r'\bGTK_STYLE_CLASS_([A-Z_]+)\b', lambda m: '"%s"' % m.group(1).lower().replace('_', '-')),
 ]
 

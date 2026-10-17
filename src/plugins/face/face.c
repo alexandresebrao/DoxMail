@@ -332,7 +332,7 @@ static void
 toggled_check_include_by_default_cb (GtkWidget *widget,
                                      gpointer data)
 {
-	set_include_face_by_default (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget)));
+	set_include_face_by_default (e_gtk_toggle_button_get_active (widget));
 }
 
 static EAlert *
@@ -385,7 +385,7 @@ get_cfg_widget (void)
 	vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
 
 	check = gtk_check_button_new_with_mnemonic (_("_Insert Face picture by default"));
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (check), get_include_face_by_default ());
+	e_gtk_toggle_button_set_active (check, get_include_face_by_default ());
 	g_signal_connect (
 		check, "toggled",
 		G_CALLBACK (toggled_check_include_by_default_cb), NULL);

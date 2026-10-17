@@ -65,7 +65,7 @@ mail_config_restore_page_update_filename (EMailConfigRestorePage *page)
 
 	e_alert_bar_clear (E_ALERT_BAR (page->priv->alert_bar));
 
-	if (gtk_toggle_button_get_active (toggle_button))
+	if (e_gtk_toggle_button_get_active (toggle_button))
 		filename = e_gtk_file_chooser_get_filename (file_chooser);
 
 	if (!evolution_backup_restore_validate_backup_file (filename, &local_error)) {
@@ -261,7 +261,7 @@ mail_config_restore_page_check_complete (EMailConfigPage *page)
 	toggle_button = GTK_TOGGLE_BUTTON (self->priv->toggle_button);
 
 	complete =
-		!gtk_toggle_button_get_active (toggle_button) ||
+		!e_gtk_toggle_button_get_active (toggle_button) ||
 		(self->priv->filename != NULL && *self->priv->filename != '\0');
 
 	return complete;

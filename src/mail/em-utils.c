@@ -2162,8 +2162,7 @@ em_utils_import_pgp_key (GtkWindow *parent,
 	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 
 	for (ii = 0; ii < G_N_ELEMENTS (trust_options); ii++) {
-		widget = gtk_radio_button_new_with_mnemonic_from_widget (GTK_RADIO_BUTTON (trust_options[0].button),
-			g_dpgettext2 (GETTEXT_PACKAGE, "trust", trust_options[ii].label));
+		widget = e_gtk_radio_button_new_with_mnemonic_from_widget (GTK_CHECK_BUTTON (trust_options[0].button), g_dpgettext2 (GETTEXT_PACKAGE, "trust", trust_options[ii].label));
 		gtk_widget_set_margin_start (widget, 12);
 		e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 
@@ -2173,7 +2172,7 @@ em_utils_import_pgp_key (GtkWindow *parent,
 	/* Preselect the 'full' trust level, thus the key can be used to encrypt messages */
 	g_warn_if_fail (ii > 3);
 	g_warn_if_fail (trust_options[3].trust == CAMEL_GPG_TRUST_FULL);
-	gtk_toggle_button_set_active (trust_options[3].button, TRUE);
+	e_gtk_toggle_button_set_active (trust_options[3].button, TRUE);
 
 	gtk_widget_set_visible (container, TRUE);
 
@@ -2181,7 +2180,7 @@ em_utils_import_pgp_key (GtkWindow *parent,
 		CamelGpgTrust trust = CAMEL_GPG_TRUST_NONE;
 
 		for (ii = 0; ii < G_N_ELEMENTS (trust_options); ii++) {
-			if (gtk_toggle_button_get_active (trust_options[ii].button)) {
+			if (e_gtk_toggle_button_get_active (trust_options[ii].button)) {
 				trust = trust_options[ii].trust;
 				break;
 			}

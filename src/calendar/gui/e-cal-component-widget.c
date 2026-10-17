@@ -102,8 +102,7 @@ e_cal_component_widget_update_styles (ECalComponentWidget *self)
 
 	#undef color_hex
 
-	if (!gtk_css_provider_load_from_string (self->css_provider, str))
-		g_warning ("%s: Failed to set CSS \"%s\": %s", G_STRFUNC, str, local_error ? local_error->message : "Unknown error");
+	gtk_css_provider_load_from_string (self->css_provider, str);
 
 	g_clear_error (&local_error);
 	g_free (str);

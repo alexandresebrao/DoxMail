@@ -374,7 +374,7 @@ pass_response (GtkDialog *dialog,
 		if (type != E_PASSWORDS_REMEMBER_NEVER) {
 			gint noreply = msg->noreply;
 
-			*msg->remember = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (msg->check));
+			*msg->remember = e_gtk_toggle_button_get_active (msg->check);
 
 			msg->noreply = 1;
 
@@ -597,8 +597,7 @@ ep_ask_password (EPassMsg *msg)
 				" the remainder of this session"));
 		}
 
-		gtk_toggle_button_set_active (
-			GTK_TOGGLE_BUTTON (widget), *msg->remember);
+		e_gtk_toggle_button_set_active (widget, *msg->remember);
 		if (msg->flags & E_PASSWORDS_DISABLE_REMEMBER)
 			gtk_widget_set_sensitive (widget, FALSE);
 		g_object_set (

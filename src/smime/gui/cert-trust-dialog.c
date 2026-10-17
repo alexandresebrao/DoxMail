@@ -64,16 +64,16 @@ cert_trust_dialog_refresh (CertTrustDialogData *ctd_data)
 	icert = e_cert_get_internal_cert (ctd_data->cert);
 	if (e_cert_trust_has_peer (icert->trust, FALSE, TRUE, FALSE)) {
 		if (e_cert_trust_has_trusted_peer (icert->trust, FALSE, TRUE, FALSE))
-			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ctd_data->trust_button), TRUE);
+			e_gtk_toggle_button_set_active (ctd_data->trust_button, TRUE);
 		else
-			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ctd_data->notrust_button), TRUE);
+			e_gtk_toggle_button_set_active (ctd_data->notrust_button, TRUE);
 	} else {
 		/* when the trust is not set, it's inherited from the certificate authority trust */
 		icert = e_cert_get_internal_cert (ctd_data->cacert);
 		if (e_cert_trust_has_trusted_ca (icert->trust, FALSE, TRUE, FALSE))
-			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ctd_data->trust_button), TRUE);
+			e_gtk_toggle_button_set_active (ctd_data->trust_button, TRUE);
 		else
-			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ctd_data->notrust_button), TRUE);
+			e_gtk_toggle_button_set_active (ctd_data->notrust_button, TRUE);
 	}
 
 	icert = e_cert_get_internal_cert (ctd_data->cacert);
@@ -104,7 +104,7 @@ ctd_response (GtkWidget *w,
 		e_cert_trust_set_valid_peer (&trust);
 		e_cert_trust_add_peer_trust (
 			&trust, FALSE,
-			gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (data->trust_button)),
+			e_gtk_toggle_button_get_active (data->trust_button),
 			FALSE);
 		e_cert_db_change_cert_trust (icert, &trust);
 		break;

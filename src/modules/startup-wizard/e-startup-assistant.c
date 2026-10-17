@@ -146,21 +146,21 @@ startup_assistant_constructed (GObject *object)
 
 	/* Additional tweaks. */
 
-	n_pages = gtk_assistant_get_n_pages (GTK_ASSISTANT (assistant));
+	n_pages = e_assistant_get_n_pages (E_ASSISTANT (assistant));
 	for (ii = 0; ii < n_pages; ii++) {
 		GtkWidget *nth_page, *checkbox, *label;
 		GtkBox *main_box;
 		GSettings *settings;
 		gchar *text, *linkified;
 
-		nth_page = gtk_assistant_get_nth_page (
-			GTK_ASSISTANT (assistant), ii);
+		nth_page = e_assistant_get_nth_page (
+			E_ASSISTANT (assistant), ii);
 
 		if (!E_IS_MAIL_CONFIG_WELCOME_PAGE (nth_page))
 			continue;
 
-		gtk_assistant_set_page_title (
-			GTK_ASSISTANT (assistant), nth_page, _("Welcome"));
+		e_assistant_set_page_title (
+			E_ASSISTANT (assistant), nth_page, _("Welcome"));
 
 		e_mail_config_welcome_page_set_text (
 			E_MAIL_CONFIG_WELCOME_PAGE (nth_page),
@@ -212,13 +212,13 @@ startup_assistant_constructed (GObject *object)
 }
 
 static void
-startup_assistant_prepare (GtkAssistant *assistant,
+startup_assistant_prepare (EAssistant *assistant,
                            GtkWidget *page)
 {
 	EStartupAssistant *self = E_STARTUP_ASSISTANT (assistant);
 
 	/* Chain up to parent's prepare() method. */
-	GTK_ASSISTANT_CLASS (e_startup_assistant_parent_class)->prepare (assistant, page);
+	E_ASSISTANT_CLASS (e_startup_assistant_parent_class)->prepare (assistant, page);
 
 	if (E_IS_MAIL_CONFIG_IMPORT_PROGRESS_PAGE (page)) {
 		EActivity *activity;
@@ -237,13 +237,13 @@ static void
 e_startup_assistant_class_init (EStartupAssistantClass *class)
 {
 	GObjectClass *object_class;
-	GtkAssistantClass *assistant_class;
+	EAssistantClass *assistant_class;
 
 	object_class = G_OBJECT_CLASS (class);
 	object_class->dispose = startup_assistant_dispose;
 	object_class->constructed = startup_assistant_constructed;
 
-	assistant_class = GTK_ASSISTANT_CLASS (class);
+	assistant_class = E_ASSISTANT_CLASS (class);
 	assistant_class->prepare = startup_assistant_prepare;
 }
 

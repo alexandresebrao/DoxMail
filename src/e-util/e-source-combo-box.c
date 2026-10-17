@@ -465,6 +465,7 @@ e_source_combo_box_class_init (ESourceComboBoxClass *class)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (class);
 	GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (class);
+	widget_class->measure = e_source_combo_box_measure;
 
 
 	object_class->set_property = source_combo_box_set_property;

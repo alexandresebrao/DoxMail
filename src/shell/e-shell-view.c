@@ -1709,7 +1709,7 @@ shell_view_notify_active_view_cb (GObject *object,
 				  gpointer user_data)
 {
 	EShellView *self = user_data;
-	GtkAccelGroup *accel_group;
+	EGtkAccelGroup *accel_group;
 
 	if (!self->priv->ui_manager)
 		return;
@@ -1724,11 +1724,11 @@ shell_view_notify_active_view_cb (GObject *object,
 	if (e_shell_view_is_active (self)) {
 		if (!self->priv->accel_group_added) {
 			self->priv->accel_group_added = TRUE;
-			gtk_window_add_accel_group (GTK_WINDOW (object), accel_group);
+			e_gtk_window_add_accel_group (GTK_WINDOW (object), accel_group);
 		}
 	} else if (self->priv->accel_group_added) {
 		self->priv->accel_group_added = FALSE;
-		gtk_window_remove_accel_group (GTK_WINDOW (object), accel_group);
+		e_gtk_window_remove_accel_group (GTK_WINDOW (object), accel_group);
 	}
 }
 
@@ -2818,8 +2818,7 @@ e_shell_view_init (EShellView *shell_view,
 
 	provider = gtk_css_provider_new ();
 
-	if (!gtk_css_provider_load_from_string (provider, "EShellView { padding:0px; margin:0px; border:0px; }"))
-		g_critical ("%s: Failed to load CSS data: %s", G_STRFUNC, local_error ? local_error->message : "Unknown error");
+	gtk_css_provider_load_from_string (provider, "EShellView { padding:0px; margin:0px; border:0px; }");
 
 	g_clear_error (&local_error);
 

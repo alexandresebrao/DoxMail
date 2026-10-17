@@ -1836,8 +1836,7 @@ e_contact_list_editor_get_contact (EContactListEditor *editor)
 
 	e_contact_set (
 		contact, E_CONTACT_LIST_SHOW_ADDRESSES,
-		GINT_TO_POINTER (!gtk_toggle_button_get_active (
-		GTK_TOGGLE_BUTTON (WIDGET (CHECK_BUTTON)))));
+		GINT_TO_POINTER (!e_gtk_toggle_button_get_active (WIDGET (CHECK_BUTTON))));
 
 	e_vcard_remove_attributes (E_VCARD (contact), "", EVC_EMAIL);
 	e_vcard_remove_attributes (E_VCARD (contact), "", EVC_CONTACT_LIST);
@@ -1891,9 +1890,7 @@ e_contact_list_editor_set_contact (EContactListEditor *editor,
 
 		gtk_editable_set_text (GTK_EDITABLE (WIDGET (LIST_NAME_ENTRY)), file_as);
 
-		gtk_toggle_button_set_active (
-			GTK_TOGGLE_BUTTON (WIDGET (CHECK_BUTTON)),
-			!show_addresses);
+		e_gtk_toggle_button_set_active (WIDGET (CHECK_BUTTON), !show_addresses);
 
 		e_contact_list_model_remove_all (
 			E_CONTACT_LIST_MODEL (priv->model));

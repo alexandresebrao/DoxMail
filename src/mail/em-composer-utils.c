@@ -4332,13 +4332,13 @@ emcu_three_state_toggled_cb (GtkToggleButton *widget,
 
 	g_signal_handler_block (widget, *phandlerid);
 
-	if (gtk_toggle_button_get_inconsistent (widget) &&
-	    gtk_toggle_button_get_active (widget)) {
-		gtk_toggle_button_set_active (widget, FALSE);
-		gtk_toggle_button_set_inconsistent (widget, FALSE);
-	} else if (!gtk_toggle_button_get_active (widget)) {
-		gtk_toggle_button_set_inconsistent (widget, TRUE);
-		gtk_toggle_button_set_active (widget, FALSE);
+	if (e_gtk_toggle_button_get_inconsistent (widget) &&
+	    e_gtk_toggle_button_get_active (widget)) {
+		e_gtk_toggle_button_set_active (widget, FALSE);
+		e_gtk_toggle_button_set_inconsistent (widget, FALSE);
+	} else if (!e_gtk_toggle_button_get_active (widget)) {
+		e_gtk_toggle_button_set_inconsistent (widget, TRUE);
+		e_gtk_toggle_button_set_active (widget, FALSE);
 	} else {
 	}
 
@@ -4366,14 +4366,14 @@ emcu_three_state_set_value (GtkToggleButton *toggle_button,
 	g_return_if_fail (GTK_IS_TOGGLE_BUTTON (toggle_button));
 
 	if (value == E_THREE_STATE_OFF) {
-		gtk_toggle_button_set_active (toggle_button, FALSE);
-		gtk_toggle_button_set_inconsistent (toggle_button, FALSE);
+		e_gtk_toggle_button_set_active (toggle_button, FALSE);
+		e_gtk_toggle_button_set_inconsistent (toggle_button, FALSE);
 	} else if (value == E_THREE_STATE_ON) {
-		gtk_toggle_button_set_active (toggle_button, TRUE);
-		gtk_toggle_button_set_inconsistent (toggle_button, FALSE);
+		e_gtk_toggle_button_set_active (toggle_button, TRUE);
+		e_gtk_toggle_button_set_inconsistent (toggle_button, FALSE);
 	} else {
-		gtk_toggle_button_set_active (toggle_button, FALSE);
-		gtk_toggle_button_set_inconsistent (toggle_button, TRUE);
+		e_gtk_toggle_button_set_active (toggle_button, FALSE);
+		e_gtk_toggle_button_set_inconsistent (toggle_button, TRUE);
 	}
 }
 
@@ -4382,9 +4382,9 @@ emcu_three_state_get_value (GtkToggleButton *toggle_button)
 {
 	g_return_val_if_fail (GTK_IS_TOGGLE_BUTTON (toggle_button), E_THREE_STATE_INCONSISTENT);
 
-	if (gtk_toggle_button_get_inconsistent (toggle_button))
+	if (e_gtk_toggle_button_get_inconsistent (toggle_button))
 		return E_THREE_STATE_INCONSISTENT;
-	else if (gtk_toggle_button_get_active (toggle_button))
+	else if (e_gtk_toggle_button_get_active (toggle_button))
 		return E_THREE_STATE_ON;
 
 	return E_THREE_STATE_OFF;
@@ -4491,9 +4491,9 @@ em_utils_reply_alternative (GtkWindow *parent,
 	GtkWidget *dialog, *widget, *style_label;
 	GtkBox *hbox, *vbox;
 	GtkGrid *grid;
-	GtkRadioButton *recip_sender, *recip_list, *recip_all;
+	GtkCheckButton *recip_sender, *recip_list, *recip_all;
 	GtkLabel *sender_label, *list_label, *all_label;
-	GtkRadioButton *style_default, *style_attach, *style_inline, *style_quote, *style_no_quote;
+	GtkCheckButton *style_default, *style_attach, *style_inline, *style_quote, *style_no_quote;
 	EActionComboBox *mode_combo;
 	GtkToggleButton *bottom_posting;
 	GtkToggleButton *top_signature;
@@ -4563,18 +4563,15 @@ em_utils_reply_alternative (GtkWindow *parent,
 			G_BINDING_SYNC_CREATE); \
 		add_with_indent (hbox, (_cols)); } G_STMT_END
 
-	recip_sender = GTK_RADIO_BUTTON (gtk_radio_button_new_with_mnemonic (
-		NULL, _("Reply to _Sender")));
+	recip_sender = GTK_CHECK_BUTTON (e_gtk_radio_button_new_with_mnemonic (NULL, _("Reply to _Sender")));
 	sender_label = GTK_LABEL (gtk_label_new (""));
 	add_with_label (recip_sender, sender_label, 2);
 
-	recip_list = GTK_RADIO_BUTTON (gtk_radio_button_new_with_mnemonic (
-		gtk_radio_button_get_group (recip_sender), _("Reply to _List")));
+	recip_list = GTK_CHECK_BUTTON (e_gtk_radio_button_new_with_mnemonic (e_gtk_radio_button_get_group (recip_sender), _("Reply to _List")));
 	list_label = GTK_LABEL (gtk_label_new (""));
 	add_with_label (recip_list, list_label, 2);
 
-	recip_all = GTK_RADIO_BUTTON (gtk_radio_button_new_with_mnemonic (
-		gtk_radio_button_get_group (recip_sender), _("Reply to _All")));
+	recip_all = GTK_CHECK_BUTTON (e_gtk_radio_button_new_with_mnemonic (e_gtk_radio_button_get_group (recip_sender), _("Reply to _All")));
 	all_label = GTK_LABEL (gtk_label_new (""));
 	add_with_label (recip_all, all_label, 2);
 
@@ -4595,24 +4592,19 @@ em_utils_reply_alternative (GtkWindow *parent,
 	gtk_grid_attach (grid, style_label, 0, row, 1, 1);
 	row++;
 
-	style_default = GTK_RADIO_BUTTON (gtk_radio_button_new_with_mnemonic (
-		NULL, _("_Default")));
+	style_default = GTK_CHECK_BUTTON (e_gtk_radio_button_new_with_mnemonic (NULL, _("_Default")));
 	add_with_indent (style_default, 1);
 
-	style_attach = GTK_RADIO_BUTTON (gtk_radio_button_new_with_mnemonic (
-		gtk_radio_button_get_group (style_default), _("Attach_ment")));
+	style_attach = GTK_CHECK_BUTTON (e_gtk_radio_button_new_with_mnemonic (e_gtk_radio_button_get_group (style_default), _("Attach_ment")));
 	add_with_indent (style_attach, 1);
 
-	style_inline = GTK_RADIO_BUTTON (gtk_radio_button_new_with_mnemonic (
-		gtk_radio_button_get_group (style_default), _("Inline (_Outlook style)")));
+	style_inline = GTK_CHECK_BUTTON (e_gtk_radio_button_new_with_mnemonic (e_gtk_radio_button_get_group (style_default), _("Inline (_Outlook style)")));
 	add_with_indent (style_inline, 1);
 
-	style_quote = GTK_RADIO_BUTTON (gtk_radio_button_new_with_mnemonic (
-		gtk_radio_button_get_group (style_default), _("_Quote")));
+	style_quote = GTK_CHECK_BUTTON (e_gtk_radio_button_new_with_mnemonic (e_gtk_radio_button_get_group (style_default), _("_Quote")));
 	add_with_indent (style_quote, 1);
 
-	style_no_quote = GTK_RADIO_BUTTON (gtk_radio_button_new_with_mnemonic (
-		gtk_radio_button_get_group (style_default), _("Do _Not Quote")));
+	style_no_quote = GTK_CHECK_BUTTON (e_gtk_radio_button_new_with_mnemonic (e_gtk_radio_button_get_group (style_default), _("Do _Not Quote")));
 	add_with_indent (style_no_quote, 1);
 
 	bottom_posting = GTK_TOGGLE_BUTTON (gtk_check_button_new_with_mnemonic (_("Start _typing at the bottom")));
@@ -4747,48 +4739,48 @@ em_utils_reply_alternative (GtkWindow *parent,
 	/* Prefer reply-to-list */
 	if (g_settings_get_boolean (settings, "composer-group-reply-to-list")) {
 		if (can_reply_list)
-			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (recip_list), TRUE);
+			e_gtk_toggle_button_set_active (recip_list, TRUE);
 		else if (n_addresses > 1)
-			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (recip_all), TRUE);
+			e_gtk_toggle_button_set_active (recip_all, TRUE);
 		else
-			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (recip_sender), TRUE);
+			e_gtk_toggle_button_set_active (recip_sender, TRUE);
 
 	/* Prefer reply-to-all */
 	} else {
 		if (n_addresses > 1)
-			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (recip_all), TRUE);
+			e_gtk_toggle_button_set_active (recip_all, TRUE);
 		else if (can_reply_list)
-			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (recip_list), TRUE);
+			e_gtk_toggle_button_set_active (recip_list, TRUE);
 		else
-			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (recip_sender), TRUE);
+			e_gtk_toggle_button_set_active (recip_sender, TRUE);
 	}
 
 	switch (g_settings_get_enum (settings, "alt-reply-style")) {
 	case E_MAIL_REPLY_STYLE_UNKNOWN:
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (style_default), TRUE);
+		e_gtk_toggle_button_set_active (style_default, TRUE);
 		break;
 	case E_MAIL_REPLY_STYLE_QUOTED:
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (style_quote), TRUE);
+		e_gtk_toggle_button_set_active (style_quote, TRUE);
 		break;
 	case E_MAIL_REPLY_STYLE_DO_NOT_QUOTE:
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (style_no_quote), TRUE);
+		e_gtk_toggle_button_set_active (style_no_quote, TRUE);
 		break;
 	case E_MAIL_REPLY_STYLE_ATTACH:
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (style_attach), TRUE);
+		e_gtk_toggle_button_set_active (style_attach, TRUE);
 		break;
 	case E_MAIL_REPLY_STYLE_OUTLOOK:
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (style_inline), TRUE);
+		e_gtk_toggle_button_set_active (style_inline, TRUE);
 		break;
 	}
 
 	e_action_combo_box_set_current_value (mode_combo, g_settings_get_enum (settings, "alt-reply-format-mode"));
 	emcu_three_state_set_value (bottom_posting, g_settings_get_enum (settings, "alt-reply-start-bottom"));
 	emcu_three_state_set_value (top_signature, g_settings_get_enum (settings, "alt-reply-top-signature"));
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (apply_template), g_settings_get_boolean (settings, "alt-reply-template-apply"));
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (preserve_message_subject), g_settings_get_boolean (settings, "alt-reply-template-preserve-subject"));
+	e_gtk_toggle_button_set_active (apply_template, g_settings_get_boolean (settings, "alt-reply-template-apply"));
+	e_gtk_toggle_button_set_active (preserve_message_subject, g_settings_get_boolean (settings, "alt-reply-template-preserve-subject"));
 
 	if (!gtk_widget_get_sensitive (GTK_WIDGET (templates)))
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (apply_template), FALSE);
+		e_gtk_toggle_button_set_active (apply_template, FALSE);
 
 	emcu_connect_three_state_changer (bottom_posting);
 	emcu_connect_three_state_changer (top_signature);
@@ -4870,13 +4862,13 @@ em_utils_reply_alternative (GtkWindow *parent,
 		context->validity_pgp_sum = validity_pgp_sum;
 		context->validity_smime_sum = validity_smime_sum;
 
-		if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (style_quote)))
+		if (e_gtk_toggle_button_get_active (style_quote))
 			context->style = E_MAIL_REPLY_STYLE_QUOTED;
-		else if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (style_no_quote)))
+		else if (e_gtk_toggle_button_get_active (style_no_quote))
 			context->style = E_MAIL_REPLY_STYLE_DO_NOT_QUOTE;
-		else if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (style_attach)))
+		else if (e_gtk_toggle_button_get_active (style_attach))
 			context->style = E_MAIL_REPLY_STYLE_ATTACH;
-		else if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (style_inline)))
+		else if (e_gtk_toggle_button_get_active (style_inline))
 			context->style = E_MAIL_REPLY_STYLE_OUTLOOK;
 		else
 			context->flags = context->flags & (~E_MAIL_REPLY_FLAG_FORCE_STYLE);
@@ -4924,8 +4916,8 @@ em_utils_reply_alternative (GtkWindow *parent,
 			context->flags |= E_MAIL_REPLY_FLAG_SKIP_INSECURE_PARTS;
 
 		g_settings_set_enum (settings, "alt-reply-style", context->style);
-		g_settings_set_boolean (settings, "alt-reply-template-apply", gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (apply_template)));
-		g_settings_set_boolean (settings, "alt-reply-template-preserve-subject", gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (preserve_message_subject)));
+		g_settings_set_boolean (settings, "alt-reply-template-apply", e_gtk_toggle_button_get_active (apply_template));
+		g_settings_set_boolean (settings, "alt-reply-template-preserve-subject", e_gtk_toggle_button_get_active (preserve_message_subject));
 
 		if (gtk_combo_box_get_active_iter (templates, &iter)) {
 			gtk_tree_model_get (gtk_combo_box_get_model (templates), &iter,
@@ -4944,11 +4936,11 @@ em_utils_reply_alternative (GtkWindow *parent,
 
 		g_settings_set_string (settings, "alt-reply-template-message-uid", template_message_uid ? template_message_uid : "");
 
-		if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (recip_sender)))
+		if (e_gtk_toggle_button_get_active (recip_sender))
 			context->type = E_MAIL_REPLY_TO_SENDER;
-		else if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (recip_list)))
+		else if (e_gtk_toggle_button_get_active (recip_list))
 			context->type = E_MAIL_REPLY_TO_LIST;
-		else if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (recip_all)))
+		else if (e_gtk_toggle_button_get_active (recip_all))
 			context->type = E_MAIL_REPLY_TO_ALL;
 		else
 			g_warn_if_reached ();
@@ -4956,9 +4948,9 @@ em_utils_reply_alternative (GtkWindow *parent,
 		if (context->style == E_MAIL_REPLY_STYLE_UNKNOWN)
 			context->style = default_style;
 
-		context->template_preserve_subject = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (preserve_message_subject));
+		context->template_preserve_subject = e_gtk_toggle_button_get_active (preserve_message_subject);
 
-		if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (apply_template))) {
+		if (e_gtk_toggle_button_get_active (apply_template)) {
 			e_mail_templates_apply (context->source_message, context->folder, message_uid, template_folder, template_message_uid,
 				NULL, alt_reply_template_applied_cb, context);
 

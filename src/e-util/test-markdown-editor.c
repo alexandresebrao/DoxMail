@@ -162,7 +162,7 @@ html_to_plain_text_cb (GObject *button,
 	tmp = gtk_text_buffer_get_text (html_buffer, &start_iter, &end_iter, FALSE);
 
 	new_text = e_markdown_utils_html_to_text (tmp, -1, E_MARKDOWN_HTML_TO_TEXT_FLAG_NONE |
-		(gtk_toggle_button_get_active (disallow_html_check) ? (E_MARKDOWN_HTML_TO_TEXT_FLAG_PLAIN_TEXT |
+		(e_gtk_toggle_button_get_active (disallow_html_check) ? (E_MARKDOWN_HTML_TO_TEXT_FLAG_PLAIN_TEXT |
 		e_markdown_utils_link_to_text_to_flags (link_to_text)) : 0));
 
 	gtk_text_buffer_set_text (plain_buffer, new_text ? new_text : "NULL", -1);

@@ -44,6 +44,7 @@
 #define FAKE_E_CONFIG_LOOKUP_RESULT_MAIL_IDENTITY E_CONFIG_LOOKUP_RESULT_UNKNOWN
 
 struct _ECollectionAccountWizardPrivate {
+	GtkWidget *notebook;
 	ESourceRegistry *registry;
 	EConfigLookup *config_lookup;
 	GHashTable *store_passwords; /* gchar *source-uid ~> gchar *password */
@@ -86,7 +87,8 @@ enum {
 
 static guint signals[LAST_SIGNAL];
 
-G_DEFINE_TYPE_WITH_PRIVATE (ECollectionAccountWizard, e_collection_account_wizard, GTK_TYPE_NOTEBOOK)
+/* GtkNotebook is final with GTK 4; the wizard holds a tab-less one */
+G_DEFINE_TYPE_WITH_PRIVATE (ECollectionAccountWizard, e_collection_account_wizard, GTK_TYPE_WIDGET)
 
 typedef struct _WizardWindowData {
 	GtkWidget *window;
@@ -100,7 +102,7 @@ collection_wizard_window_update_button_captions (WizardWindowData *wwd)
 {
 	g_return_if_fail (wwd != NULL);
 
-	gtk_widget_set_sensitive (wwd->prev_button, gtk_notebook_get_current_page (GTK_NOTEBOOK (wwd->collection_wizard)) > 0);
+	gtk_widget_set_sensitive (wwd->prev_button, gtk_notebook_get_current_page (e_collection_account_wizard_get_notebook (wwd->collection_wizard)) > 0);
 
 	if (e_collection_account_wizard_is_finish_page (wwd->collection_wizard))
 		gtk_button_set_label (wwd->next_button, _("_Finish"));
@@ -175,7 +177,7 @@ collection_account_wizard_create_window (GtkWindow *parent,
 {
 	GtkWidget *widget, *vbox, *hbox, *scrolled_window;
 	GtkWindow *window;
-	GtkAccelGroup *accel_group;
+	EGtkAccelGroup *accel_group;
 	WizardWindowData *wwd;
 
 	window = GTK_WINDOW (gtk_window_new ());
@@ -244,12 +246,12 @@ collection_account_wizard_create_window (GtkWindow *parent,
 		NULL);
 	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 
-	accel_group = gtk_accel_group_new ();
-	gtk_widget_add_accelerator (
+	accel_group = e_gtk_accel_group_new ();
+	e_gtk_widget_add_accelerator (
 		widget, "activate", accel_group,
 		GDK_KEY_Escape, (GdkModifierType) 0,
-		GTK_ACCEL_VISIBLE);
-	gtk_window_add_accel_group (GTK_WINDOW (window), accel_group);
+		0);
+	e_gtk_window_add_accel_group (GTK_WINDOW (window), accel_group);
 
 	g_signal_connect (widget, "clicked",
 		G_CALLBACK (collection_wizard_window_cancel_button_clicked_cb), wwd);
@@ -644,7 +646,7 @@ collection_account_wizard_try_again_clicked_cb (GtkButton *button,
 	params = e_named_parameters_new_clone (wd->restart_params);
 	g_return_if_fail (params != NULL);
 
-	wd->remember_password = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ppd->remember_check));
+	wd->remember_password = e_gtk_toggle_button_get_active (ppd->remember_check);
 
 	gtk_editable_set_text (GTK_EDITABLE (ppd->wizard->priv->email_entry), gtk_editable_get_text (GTK_EDITABLE (ppd->user_entry)));
 
@@ -719,7 +721,7 @@ collection_account_wizard_show_password_prompt (ECollectionAccountWizard *wizard
 	gtk_grid_attach (grid, widget, 0, 2, 2, 1);
 	check = widget;
 
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget), wd->remember_password);
+	e_gtk_toggle_button_set_active (widget, wd->remember_password);
 
 	widget = gtk_button_new_with_mnemonic (_("_Try Again"));
 	gtk_widget_set_halign (widget, GTK_ALIGN_END);
@@ -740,7 +742,7 @@ collection_account_wizard_show_password_prompt (ECollectionAccountWizard *wizard
 		password_prompt_data_free, 0);
 
 	g_signal_connect (widget, "closed",
-		G_CALLBACK (gtk_widget_destroy), NULL);
+		G_CALLBACK (e_gtk_widget_destroy), NULL);
 
 	gtk_widget_show (widget);
 
@@ -1668,11 +1670,6 @@ collection_account_wizard_constructed (GObject *object)
 	/* Chain up to parent's method. */
 	G_OBJECT_CLASS (e_collection_account_wizard_parent_class)->constructed (object);
 
-	g_object_set (object,
-		"show-border", FALSE,
-		"show-tabs", FALSE,
-		NULL);
-
 	wizard->priv->config_lookup = e_config_lookup_new (wizard->priv->registry);
 
 	g_signal_connect_swapped (wizard->priv->config_lookup, "get-source",
@@ -1820,7 +1817,7 @@ collection_account_wizard_constructed (GObject *object)
 
 	wizard->priv->results_label = label;
 
-	gtk_notebook_append_page (GTK_NOTEBOOK (wizard), GTK_WIDGET (vbox), NULL);
+	gtk_notebook_append_page (GTK_NOTEBOOK (wizard->priv->notebook), GTK_WIDGET (vbox), NULL);
 
 	vbox = GTK_BOX (gtk_box_new (GTK_ORIENTATION_VERTICAL, 4));
 	g_object_set (G_OBJECT (vbox),
@@ -2028,7 +2025,7 @@ collection_account_wizard_constructed (GObject *object)
 
 	e_gtk_container_add (scrolled_window, widget);
 
-	gtk_notebook_append_page (GTK_NOTEBOOK (wizard), GTK_WIDGET (vbox), NULL);
+	gtk_notebook_append_page (GTK_NOTEBOOK (wizard->priv->notebook), GTK_WIDGET (vbox), NULL);
 
 	/* Column: Description */
 
@@ -2198,9 +2195,9 @@ collection_account_wizard_constructed (GObject *object)
 
 	e_gtk_box_pack_start (hbox, widget, FALSE, FALSE, 0);
 
-	gtk_notebook_append_page (GTK_NOTEBOOK (wizard), GTK_WIDGET (vbox), NULL);
+	gtk_notebook_append_page (GTK_NOTEBOOK (wizard->priv->notebook), GTK_WIDGET (vbox), NULL);
 
-	gtk_notebook_set_current_page (GTK_NOTEBOOK (wizard), 0);
+	gtk_notebook_set_current_page (GTK_NOTEBOOK (wizard->priv->notebook), 0);
 }
 
 static void
@@ -2233,6 +2230,8 @@ collection_account_wizard_dispose (GObject *object)
 		g_clear_object (&wizard->priv->sources[ii]);
 	}
 
+	g_clear_pointer (&wizard->priv->notebook, gtk_widget_unparent);
+
 	/* Chain up to parent's method. */
 	G_OBJECT_CLASS (e_collection_account_wizard_parent_class)->dispose (object);
 }
@@ -2247,6 +2246,8 @@ e_collection_account_wizard_class_init (ECollectionAccountWizardClass *klass)
 	object_class->get_property = collection_account_wizard_get_property;
 	object_class->constructed = collection_account_wizard_constructed;
 	object_class->dispose = collection_account_wizard_dispose;
+
+	gtk_widget_class_set_layout_manager_type (GTK_WIDGET_CLASS (klass), GTK_TYPE_BIN_LAYOUT);
 
 	/**
 	 * ECollectionAccountWizard:registry:
@@ -2333,6 +2334,11 @@ e_collection_account_wizard_init (ECollectionAccountWizard *wizard)
 	wizard->priv->store_passwords = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 	wizard->priv->running_workers = 0;
 
+	wizard->priv->notebook = gtk_notebook_new ();
+	gtk_notebook_set_show_tabs (GTK_NOTEBOOK (wizard->priv->notebook), FALSE);
+	gtk_notebook_set_show_border (GTK_NOTEBOOK (wizard->priv->notebook), FALSE);
+	gtk_widget_set_parent (wizard->priv->notebook, GTK_WIDGET (wizard));
+
 	for (ii = 0; ii <= E_CONFIG_LOOKUP_RESULT_LAST_KIND; ii++) {
 		wizard->priv->sources[ii] = NULL;
 	}
@@ -2416,6 +2422,22 @@ e_collection_account_wizard_get_registry (ECollectionAccountWizard *wizard)
  *
  * Since: 3.28
  **/
+/**
+ * e_collection_account_wizard_get_notebook:
+ * @wizard: an #ECollectionAccountWizard
+ *
+ * Returns: (transfer none): the #GtkNotebook holding the wizard pages
+ *
+ * Since: DoxMail
+ **/
+GtkNotebook *
+e_collection_account_wizard_get_notebook (ECollectionAccountWizard *wizard)
+{
+	g_return_val_if_fail (E_IS_COLLECTION_ACCOUNT_WIZARD (wizard), NULL);
+
+	return GTK_NOTEBOOK (wizard->priv->notebook);
+}
+
 gboolean
 e_collection_account_wizard_get_can_run (ECollectionAccountWizard *wizard)
 {
@@ -2437,7 +2459,7 @@ e_collection_account_wizard_get_can_run (ECollectionAccountWizard *wizard)
 	if ((!email || !*email) && (!servers || !*servers))
 		return FALSE;
 
-	current_page = gtk_notebook_get_current_page (GTK_NOTEBOOK (wizard));
+	current_page = gtk_notebook_get_current_page (GTK_NOTEBOOK (wizard->priv->notebook));
 
 	if (current_page == 1) { /* Parts page */
 		GtkTreeModel *model;
@@ -2500,7 +2522,7 @@ e_collection_account_wizard_get_can_run (ECollectionAccountWizard *wizard)
 	while (g_hash_table_iter_next (&iter, NULL, &value)) {
 		WorkerData *wd = value;
 
-		if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (wd->enabled_check)))
+		if (e_gtk_toggle_button_get_active (wd->enabled_check))
 			return TRUE;
 	}
 
@@ -2533,7 +2555,7 @@ e_collection_account_wizard_reset (ECollectionAccountWizard *wizard)
 	while (g_hash_table_iter_next (&iter, NULL, &value)) {
 		WorkerData *wd = value;
 
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (wd->enabled_check), TRUE);
+		e_gtk_toggle_button_set_active (wd->enabled_check, TRUE);
 		gtk_widget_hide (wd->running_box);
 		e_named_parameters_free (wd->restart_params);
 		wd->restart_params = NULL;
@@ -2556,7 +2578,7 @@ e_collection_account_wizard_reset (ECollectionAccountWizard *wizard)
 		g_clear_object (&wizard->priv->sources[ii]);
 	}
 
-	gtk_notebook_set_current_page (GTK_NOTEBOOK (wizard), 0);
+	gtk_notebook_set_current_page (GTK_NOTEBOOK (wizard->priv->notebook), 0);
 
 	g_object_notify (G_OBJECT (wizard), "can-run");
 }
@@ -2587,7 +2609,7 @@ e_collection_account_wizard_next (ECollectionAccountWizard *wizard)
 
 	g_return_val_if_fail (E_IS_COLLECTION_ACCOUNT_WIZARD (wizard), FALSE);
 
-	switch (gtk_notebook_get_current_page (GTK_NOTEBOOK (wizard))) {
+	switch (gtk_notebook_get_current_page (GTK_NOTEBOOK (wizard->priv->notebook))) {
 	case 0: /* Lookup page */
 		if (wizard->priv->changed ||
 		    !e_config_lookup_count_results (wizard->priv->config_lookup)) {
@@ -2601,7 +2623,7 @@ e_collection_account_wizard_next (ECollectionAccountWizard *wizard)
 			e_collection_account_wizard_run (wizard, NULL, NULL);
 			changed = TRUE;
 		} else if (collection_account_wizard_fill_results (wizard)) {
-			gtk_notebook_set_current_page (GTK_NOTEBOOK (wizard), 1);
+			gtk_notebook_set_current_page (GTK_NOTEBOOK (wizard->priv->notebook), 1);
 			changed = TRUE;
 		}
 		break;
@@ -2644,7 +2666,7 @@ e_collection_account_wizard_next (ECollectionAccountWizard *wizard)
 			g_free (tmp);
 		}
 
-		gtk_notebook_set_current_page (GTK_NOTEBOOK (wizard), 2);
+		gtk_notebook_set_current_page (GTK_NOTEBOOK (wizard->priv->notebook), 2);
 		changed = TRUE;
 		break;
 	case 2: /* Finish page */
@@ -2680,12 +2702,12 @@ e_collection_account_wizard_prev (ECollectionAccountWizard *wizard)
 
 	g_return_val_if_fail (E_IS_COLLECTION_ACCOUNT_WIZARD (wizard), FALSE);
 
-	current_page = gtk_notebook_get_current_page (GTK_NOTEBOOK (wizard));
+	current_page = gtk_notebook_get_current_page (GTK_NOTEBOOK (wizard->priv->notebook));
 
 	if (current_page < 1)
 		return FALSE;
 
-	gtk_notebook_set_current_page (GTK_NOTEBOOK (wizard), current_page - 1);
+	gtk_notebook_set_current_page (GTK_NOTEBOOK (wizard->priv->notebook), current_page - 1);
 
 	/* To update sensitivity of the "Next"/"Finish" button */
 	g_object_notify (G_OBJECT (wizard), "can-run");
@@ -2706,7 +2728,7 @@ e_collection_account_wizard_is_finish_page (ECollectionAccountWizard *wizard)
 {
 	g_return_val_if_fail (E_IS_COLLECTION_ACCOUNT_WIZARD (wizard), FALSE);
 
-	return gtk_notebook_get_current_page (GTK_NOTEBOOK (wizard)) == gtk_notebook_get_n_pages (GTK_NOTEBOOK (wizard)) - 1;
+	return gtk_notebook_get_current_page (GTK_NOTEBOOK (wizard->priv->notebook)) == gtk_notebook_get_n_pages (GTK_NOTEBOOK (wizard->priv->notebook)) - 1;
 }
 
 /**
@@ -2745,7 +2767,7 @@ e_collection_account_wizard_run (ECollectionAccountWizard *wizard,
 		WorkerData *wd = value;
 
 		if (worker && wd &&
-		    gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (wd->enabled_check))) {
+		    e_gtk_toggle_button_get_active (wd->enabled_check)) {
 			ENamedParameters *params;
 
 			params = e_named_parameters_new_clone (wd->restart_params);

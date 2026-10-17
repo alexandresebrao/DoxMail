@@ -197,6 +197,62 @@ gboolean	e_gtk_show_uri_on_window	(GtkWindow *parent,
 						 guint32 timestamp,
 						 GError **error);
 
+/* GtkAccelGroup as a GtkShortcutController added to the window */
+typedef GtkShortcutController EGtkAccelGroup;
+
+EGtkAccelGroup *e_gtk_accel_group_new		(void);
+void		e_gtk_widget_add_accelerator	(GtkWidget *widget,
+						 const gchar *accel_signal,
+						 EGtkAccelGroup *accel_group,
+						 guint accel_key,
+						 GdkModifierType accel_mods,
+						 guint accel_flags);
+void		e_gtk_window_add_accel_group	(GtkWindow *window,
+						 EGtkAccelGroup *accel_group);
+void		e_gtk_window_remove_accel_group	(GtkWindow *window,
+						 EGtkAccelGroup *accel_group);
+
+/* GtkToggleButton or GtkCheckButton (no longer a toggle button) */
+gboolean	e_gtk_toggle_button_get_active	(gpointer button);
+void		e_gtk_toggle_button_set_active	(gpointer button,
+						 gboolean active);
+gboolean	e_gtk_toggle_button_get_inconsistent
+						(gpointer button);
+void		e_gtk_toggle_button_set_inconsistent
+						(gpointer button,
+						 gboolean inconsistent);
+
+/* GtkRadioButton as GtkCheckButton-s in a group; a "group" list holds one
+ * member of the group, owned by that button */
+GtkWidget *	e_gtk_radio_button_new_with_mnemonic
+						(GSList *group,
+						 const gchar *label);
+GtkWidget *	e_gtk_radio_button_new_with_label
+						(GSList *group,
+						 const gchar *label);
+GtkWidget *	e_gtk_radio_button_new_with_mnemonic_from_widget
+						(gpointer member,
+						 const gchar *label);
+GtkWidget *	e_gtk_radio_button_new_with_label_from_widget
+						(gpointer member,
+						 const gchar *label);
+GSList *	e_gtk_radio_button_get_group	(gpointer button);
+void		e_gtk_radio_button_join_group	(gpointer button,
+						 gpointer group_source);
+
+/* GtkScrollable implemented by a wrapper and forwarded to the wrapped child;
+ * the four properties take ids first_property_id .. first_property_id + 3 */
+void		e_gtk_scrollable_override_properties
+						(GObjectClass *object_class,
+						 guint first_property_id);
+gboolean	e_gtk_scrollable_forward_property
+						(GtkWidget *inner,
+						 guint first_property_id,
+						 guint property_id,
+						 GValue *value,
+						 gboolean set,
+						 GParamSpec *pspec);
+
 G_END_DECLS
 
 #endif /* E_GTK4_COMPAT_H */

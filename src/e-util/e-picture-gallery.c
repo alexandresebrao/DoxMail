@@ -26,6 +26,7 @@
 #include "e-misc-utils.h"
 
 struct _EPictureGalleryPrivate {
+	GtkWidget *icon_view;
 	gboolean initialized;
 	gchar *path;
 	GFileMonitor *monitor;
@@ -33,7 +34,11 @@ struct _EPictureGalleryPrivate {
 
 enum {
 	PROP_0,
-	PROP_PATH
+	PROP_PATH,
+	PROP_HADJUSTMENT,
+	PROP_VADJUSTMENT,
+	PROP_HSCROLL_POLICY,
+	PROP_VSCROLL_POLICY
 };
 
 enum {
@@ -42,7 +47,10 @@ enum {
 	COL_FILENAME_TEXT
 };
 
-G_DEFINE_TYPE_WITH_PRIVATE (EPictureGallery, e_picture_gallery, GTK_TYPE_ICON_VIEW)
+/* GtkIconView is final on GTK 4; the gallery wraps one */
+G_DEFINE_TYPE_WITH_CODE (EPictureGallery, e_picture_gallery, GTK_TYPE_WIDGET,
+	G_ADD_PRIVATE (EPictureGallery)
+	G_IMPLEMENT_INTERFACE (GTK_TYPE_SCROLLABLE, NULL))
 
 static gboolean
 update_file_iter (GtkListStore *list_store,
@@ -190,7 +198,7 @@ picture_gallery_dir_changed_cb (GFileMonitor *monitor,
 
 	g_return_if_fail (file != NULL);
 
-	list_store = GTK_LIST_STORE (gtk_icon_view_get_model (GTK_ICON_VIEW (gallery)));
+	list_store = GTK_LIST_STORE (gtk_icon_view_get_model (GTK_ICON_VIEW (gallery->priv->icon_view)));
 	g_return_if_fail (list_store != NULL);
 
 	uri = g_file_get_uri (file);
@@ -231,7 +239,7 @@ picture_gallery_start_loading_cb (EPictureGallery *gallery)
 	GDir *dir;
 	const gchar *dirname;
 
-	icon_view = GTK_ICON_VIEW (gallery);
+	icon_view = GTK_ICON_VIEW (gallery->priv->icon_view);
 	list_store = GTK_LIST_STORE (gtk_icon_view_get_model (icon_view));
 	g_return_val_if_fail (list_store != NULL, FALSE);
 
@@ -269,7 +277,7 @@ picture_gallery_start_loading_cb (EPictureGallery *gallery)
 				gallery);
 	}
 
-	g_object_unref (icon_view);
+	g_object_unref (gallery);
 
 	return FALSE;
 }
@@ -311,6 +319,10 @@ picture_gallery_get_property (GObject *object,
 		return;
 	}
 
+	if (e_gtk_scrollable_forward_property (E_PICTURE_GALLERY (object)->priv->icon_view,
+		PROP_HADJUSTMENT, property_id, value, FALSE, pspec))
+		return;
+
 	G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
 }
 
@@ -326,6 +338,10 @@ picture_gallery_set_property (GObject *object,
 		return;
 	}
 
+	if (e_gtk_scrollable_forward_property (E_PICTURE_GALLERY (object)->priv->icon_view,
+		PROP_HADJUSTMENT, property_id, (GValue *) value, TRUE, pspec))
+		return;
+
 	G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
 }
 
@@ -335,8 +351,43 @@ visible_cb (EPictureGallery *gallery)
 	if (!gallery->priv->initialized && gtk_widget_get_visible (GTK_WIDGET (gallery))) {
 		gallery->priv->initialized = TRUE;
 
-		g_idle_add ((GSourceFunc) picture_gallery_start_loading_cb, gallery);
+		g_idle_add ((GSourceFunc) picture_gallery_start_loading_cb, g_object_ref (gallery));
 	}
+}
+
+static GdkContentProvider *
+picture_gallery_drag_prepare_cb (GtkDragSource *source,
+				 gdouble x,
+				 gdouble y,
+				 EPictureGallery *gallery)
+{
+	GtkIconView *icon_view = GTK_ICON_VIEW (gallery->priv->icon_view);
+	GdkContentProvider *provider = NULL;
+	GtkTreeModel *model;
+	GtkTreePath *path;
+	GtkTreeIter iter;
+	gchar *uri = NULL;
+
+	path = gtk_icon_view_get_path_at_pos (icon_view, (gint) x, (gint) y);
+	if (!path)
+		return NULL;
+
+	model = gtk_icon_view_get_model (icon_view);
+	if (gtk_tree_model_get_iter (model, &iter, path))
+		gtk_tree_model_get (model, &iter, COL_URI, &uri, -1);
+
+	if (uri) {
+		GFile *file = g_file_new_for_uri (uri);
+
+		/* a GFile gives text/uri-list to the drop site */
+		provider = gdk_content_provider_new_typed (G_TYPE_FILE, file);
+		g_object_unref (file);
+		g_free (uri);
+	}
+
+	gtk_tree_path_free (path);
+
+	return provider;
 }
 
 static void
@@ -346,14 +397,12 @@ picture_gallery_constructed (GObject *object)
 	GtkCellLayout *cell_layout;
 	GtkCellRenderer *renderer;
 	GtkListStore *list_store;
-	EGtkTargetEntry *targets;
-	EGtkTargetList *list;
-	gint n_targets;
+	GtkDragSource *drag_source;
 
 	/* Chain up to parent's constructed() method. */
 	G_OBJECT_CLASS (e_picture_gallery_parent_class)->constructed (object);
 
-	icon_view = GTK_ICON_VIEW (object);
+	icon_view = GTK_ICON_VIEW (E_PICTURE_GALLERY (object)->priv->icon_view);
 
 	list_store = gtk_list_store_new (3, GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_STRING);
 	gtk_tree_sortable_set_sort_column_id (GTK_TREE_SORTABLE (list_store), COL_FILENAME_TEXT, GTK_SORT_ASCENDING);
@@ -392,18 +441,14 @@ picture_gallery_constructed (GObject *object)
 
 	gtk_cell_layout_add_attribute (cell_layout, renderer, "text", COL_FILENAME_TEXT);
 
-	list = e_gtk_target_list_new (NULL, 0);
-	e_gtk_target_list_add_uri_targets (list, 0);
-	targets = e_gtk_target_table_new_from_list (list, &n_targets);
+	drag_source = e_gtk_drag_source_new ();
+	e_gtk_drag_source_set_actions (drag_source, GDK_ACTION_COPY);
+	g_signal_connect_object (drag_source, "prepare",
+		G_CALLBACK (picture_gallery_drag_prepare_cb), object, 0);
+	gtk_widget_add_controller (GTK_WIDGET (icon_view), GTK_EVENT_CONTROLLER (drag_source));
 
-	gtk_icon_view_enable_model_drag_source (
-		icon_view, GDK_BUTTON1_MASK,
-		targets, n_targets, GDK_ACTION_COPY);
-
-	e_gtk_target_table_free (targets, n_targets);
-	e_gtk_target_list_unref (list);
-
-	e_signal_connect_notify (object, "notify::visible", G_CALLBACK (visible_cb), NULL);
+	/* widgets start visible on GTK 4; load once the gallery is shown */
+	g_signal_connect (object, "map", G_CALLBACK (visible_cb), NULL);
 }
 
 static void
@@ -416,6 +461,8 @@ picture_gallery_dispose (GObject *object)
 
 	g_free (gallery->priv->path);
 	gallery->priv->path = NULL;
+
+	g_clear_pointer (&gallery->priv->icon_view, gtk_widget_unparent);
 
 	/* Chain up to parent's dispose() method. */
 	G_OBJECT_CLASS (e_picture_gallery_parent_class)->dispose (object);
@@ -432,6 +479,8 @@ e_picture_gallery_class_init (EPictureGalleryClass *class)
 	object_class->constructed = picture_gallery_constructed;
 	object_class->dispose = picture_gallery_dispose;
 
+	gtk_widget_class_set_layout_manager_type (GTK_WIDGET_CLASS (class), GTK_TYPE_BIN_LAYOUT);
+
 	g_object_class_install_property (
 		object_class,
 		PROP_PATH,
@@ -441,6 +490,8 @@ e_picture_gallery_class_init (EPictureGalleryClass *class)
 			NULL,
 			NULL,
 			G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+
+	e_gtk_scrollable_override_properties (object_class, PROP_HADJUSTMENT);
 }
 
 static void
@@ -449,6 +500,8 @@ e_picture_gallery_init (EPictureGallery *gallery)
 	gallery->priv = e_picture_gallery_get_instance_private (gallery);
 	gallery->priv->initialized = FALSE;
 	gallery->priv->monitor = NULL;
+	gallery->priv->icon_view = gtk_icon_view_new ();
+	gtk_widget_set_parent (gallery->priv->icon_view, GTK_WIDGET (gallery));
 	picture_gallery_set_path (gallery, NULL);
 }
 
@@ -456,4 +509,20 @@ GtkWidget *
 e_picture_gallery_new (const gchar *path)
 {
 	return g_object_new (E_TYPE_PICTURE_GALLERY, "path", path, NULL);
+}
+
+/**
+ * e_picture_gallery_get_icon_view:
+ * @gallery: an #EPictureGallery
+ *
+ * Returns: (transfer none): the #GtkIconView showing the pictures
+ *
+ * Since: DoxMail
+ **/
+GtkIconView *
+e_picture_gallery_get_icon_view (EPictureGallery *gallery)
+{
+	g_return_val_if_fail (E_IS_PICTURE_GALLERY (gallery), NULL);
+
+	return GTK_ICON_VIEW (gallery->priv->icon_view);
 }

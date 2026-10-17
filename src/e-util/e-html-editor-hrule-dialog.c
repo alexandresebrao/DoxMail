@@ -148,8 +148,7 @@ html_editor_hrule_dialog_set_shading (EHTMLEditorHRuleDialog *dialog)
 	editor = e_html_editor_dialog_get_editor (E_HTML_EDITOR_DIALOG (dialog));
 	cnt_editor = e_html_editor_get_content_editor (editor);
 
-	value = !gtk_toggle_button_get_active (
-		GTK_TOGGLE_BUTTON (dialog->priv->shaded_check));
+	value = !e_gtk_toggle_button_get_active (dialog->priv->shaded_check);
 
 	e_content_editor_h_rule_set_no_shade (cnt_editor, value);
 }
@@ -165,8 +164,7 @@ html_editor_hrule_dialog_get_shading (EHTMLEditorHRuleDialog *dialog)
 	cnt_editor = e_html_editor_get_content_editor (editor);
 
 	value = e_content_editor_h_rule_get_no_shade (cnt_editor);
-	gtk_toggle_button_set_active (
-		GTK_TOGGLE_BUTTON (dialog->priv->shaded_check), !value);
+	e_gtk_toggle_button_set_active (dialog->priv->shaded_check, !value);
 }
 
 static void

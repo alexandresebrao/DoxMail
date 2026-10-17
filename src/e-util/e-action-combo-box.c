@@ -431,6 +431,7 @@ e_action_combo_box_class_init (EActionComboBoxClass *class)
 	object_class->constructed = action_combo_box_constructed;
 
 	widget_class = GTK_WIDGET_CLASS (class);
+	widget_class->measure = e_action_combo_box_measure;
 
 	combo_box_class = GTK_COMBO_BOX_CLASS (class);
 	combo_box_class->changed = action_combo_box_changed;

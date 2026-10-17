@@ -792,7 +792,7 @@ e_search_bar_get_case_sensitive (ESearchBar *search_bar)
 
 	button = GTK_TOGGLE_BUTTON (search_bar->priv->case_sensitive_button);
 
-	return gtk_toggle_button_get_active (button);
+	return e_gtk_toggle_button_get_active (button);
 }
 
 void
@@ -805,7 +805,7 @@ e_search_bar_set_case_sensitive (ESearchBar *search_bar,
 
 	button = GTK_TOGGLE_BUTTON (search_bar->priv->case_sensitive_button);
 
-	gtk_toggle_button_set_active (button, case_sensitive);
+	e_gtk_toggle_button_set_active (button, case_sensitive);
 
 	g_object_notify (G_OBJECT (search_bar), "case-sensitive");
 }

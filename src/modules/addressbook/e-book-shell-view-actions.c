@@ -531,7 +531,7 @@ action_address_book_map_cb (EUIAction *action,
 	/* Free the map_window automatically when it is closed */
 	g_signal_connect_swapped (
 		map_window, "hide",
-		G_CALLBACK (gtk_widget_destroy), GTK_WIDGET (map_window));
+		G_CALLBACK (e_gtk_widget_destroy), GTK_WIDGET (map_window));
 	g_signal_connect (
 		map_window, "show-contact-editor",
 		G_CALLBACK (map_window_show_contact_editor_cb), book_shell_view);

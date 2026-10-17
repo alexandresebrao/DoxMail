@@ -209,11 +209,11 @@ em_mailer_prefs_update_toggle_prompt_on_folder_drop (EMMailerPrefs *self,
 	g_signal_handlers_block_matched (button, G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, self);
 
 	if (state == -1) {
-		gtk_toggle_button_set_active (button, FALSE);
-		gtk_toggle_button_set_inconsistent (button, TRUE);
+		e_gtk_toggle_button_set_active (button, FALSE);
+		e_gtk_toggle_button_set_inconsistent (button, TRUE);
 	} else {
-		gtk_toggle_button_set_inconsistent (button, FALSE);
-		gtk_toggle_button_set_active (button, state == 1);
+		e_gtk_toggle_button_set_inconsistent (button, FALSE);
+		e_gtk_toggle_button_set_active (button, state == 1);
 	}
 
 	g_signal_handlers_unblock_matched (button, G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, self);
@@ -287,11 +287,11 @@ em_mailer_prefs_update_toggle_action_policy (EMMailerPrefs *self,
 	g_signal_handlers_block_matched (button, G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, self);
 
 	if (state == E_AUTOMATIC_ACTION_POLICY_ASK) {
-		gtk_toggle_button_set_active (button, FALSE);
-		gtk_toggle_button_set_inconsistent (button, TRUE);
+		e_gtk_toggle_button_set_active (button, FALSE);
+		e_gtk_toggle_button_set_inconsistent (button, TRUE);
 	} else {
-		gtk_toggle_button_set_inconsistent (button, FALSE);
-		gtk_toggle_button_set_active (button, state == E_AUTOMATIC_ACTION_POLICY_ALWAYS);
+		e_gtk_toggle_button_set_inconsistent (button, FALSE);
+		e_gtk_toggle_button_set_active (button, state == E_AUTOMATIC_ACTION_POLICY_ALWAYS);
 	}
 
 	g_signal_handlers_unblock_matched (button, G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, self);
@@ -1011,7 +1011,7 @@ toggle_button_toggled (GtkToggleButton *toggle,
 	key = g_object_get_data ((GObject *) toggle, "key");
 	g_settings_set_boolean (
 		prefs->priv->settings, key,
-		gtk_toggle_button_get_active (toggle));
+		e_gtk_toggle_button_get_active (toggle));
 }
 
 static void
@@ -1021,7 +1021,7 @@ junk_book_lookup_button_toggled (GtkToggleButton *toggle,
 	toggle_button_toggled (toggle, prefs);
 	gtk_widget_set_sensitive (
 		GTK_WIDGET (prefs->priv->junk_lookup_local_only),
-		gtk_toggle_button_get_active (toggle));
+		e_gtk_toggle_button_get_active (toggle));
 }
 
 static void
@@ -1029,7 +1029,7 @@ custom_junk_button_toggled (GtkToggleButton *toggle,
                             EMMailerPrefs *prefs)
 {
 	toggle_button_toggled (toggle, prefs);
-	if (gtk_toggle_button_get_active (toggle)) {
+	if (e_gtk_toggle_button_get_active (toggle)) {
 		gtk_widget_set_sensitive ((GtkWidget *) prefs->priv->junk_header_remove, TRUE);
 		gtk_widget_set_sensitive ((GtkWidget *) prefs->priv->junk_header_add, TRUE);
 		gtk_widget_set_sensitive ((GtkWidget *) prefs->priv->junk_header_tree, TRUE);
@@ -1051,7 +1051,7 @@ toggle_button_init (EMMailerPrefs *prefs,
 	gboolean v_bool;
 
 	v_bool = g_settings_get_boolean (prefs->priv->settings, key);
-	gtk_toggle_button_set_active (toggle, not ? !v_bool : v_bool);
+	e_gtk_toggle_button_set_active (toggle, not ? !v_bool : v_bool);
 
 	if (toggled) {
 		g_object_set_data ((GObject *) toggle, "key", (gpointer) key);
@@ -1166,7 +1166,7 @@ emmp_empty_junk_init (EMMailerPrefs *prefs,
 static void
 image_loading_policy_always_cb (GtkToggleButton *toggle_button)
 {
-	if (gtk_toggle_button_get_active (toggle_button)) {
+	if (e_gtk_toggle_button_get_active (toggle_button)) {
 		GSettings *settings;
 
 		settings = e_util_ref_settings ("org.gnome.evolution.mail");
@@ -1182,7 +1182,7 @@ image_loading_policy_always_cb (GtkToggleButton *toggle_button)
 static void
 image_loading_policy_sometimes_cb (GtkToggleButton *toggle_button)
 {
-	if (gtk_toggle_button_get_active (toggle_button)) {
+	if (e_gtk_toggle_button_get_active (toggle_button)) {
 		GSettings *settings;
 
 		settings = e_util_ref_settings ("org.gnome.evolution.mail");
@@ -1198,7 +1198,7 @@ image_loading_policy_sometimes_cb (GtkToggleButton *toggle_button)
 static void
 image_loading_policy_never_cb (GtkToggleButton *toggle_button)
 {
-	if (gtk_toggle_button_get_active (toggle_button)) {
+	if (e_gtk_toggle_button_get_active (toggle_button)) {
 		GSettings *settings;
 
 		settings = e_util_ref_settings ("org.gnome.evolution.mail");
@@ -1959,9 +1959,7 @@ em_mailer_prefs_construct (EMMailerPrefs *prefs,
 	val = g_settings_get_enum (prefs->priv->settings, "image-loading-policy");
 	widget = e_builder_get_widget (
 		prefs->priv->builder, "radImagesNever");
-	gtk_toggle_button_set_active (
-		GTK_TOGGLE_BUTTON (widget),
-		val == E_IMAGE_LOADING_POLICY_NEVER);
+	e_gtk_toggle_button_set_active (widget, val == E_IMAGE_LOADING_POLICY_NEVER);
 	gtk_widget_set_sensitive (widget, writable);
 
 	g_signal_connect (
@@ -1970,9 +1968,7 @@ em_mailer_prefs_construct (EMMailerPrefs *prefs,
 
 	widget = e_builder_get_widget (
 		prefs->priv->builder, "radImagesSometimes");
-	gtk_toggle_button_set_active (
-		GTK_TOGGLE_BUTTON (widget),
-		val == E_IMAGE_LOADING_POLICY_SOMETIMES);
+	e_gtk_toggle_button_set_active (widget, val == E_IMAGE_LOADING_POLICY_SOMETIMES);
 	gtk_widget_set_sensitive (widget, writable);
 
 	g_signal_connect (
@@ -1981,9 +1977,7 @@ em_mailer_prefs_construct (EMMailerPrefs *prefs,
 
 	widget = e_builder_get_widget (
 		prefs->priv->builder, "radImagesAlways");
-	gtk_toggle_button_set_active (
-		GTK_TOGGLE_BUTTON (widget),
-		val == E_IMAGE_LOADING_POLICY_ALWAYS);
+	e_gtk_toggle_button_set_active (widget, val == E_IMAGE_LOADING_POLICY_ALWAYS);
 	gtk_widget_set_sensitive (widget, writable);
 
 	g_signal_connect (

@@ -2435,7 +2435,7 @@ e_comp_editor_constructed (GObject *object)
 	g_signal_connect (comp_editor->priv->ui_manager, "create-gicon",
 		G_CALLBACK (comp_editor_ui_manager_create_gicon_cb), comp_editor);
 
-	gtk_window_add_accel_group (
+	e_gtk_window_add_accel_group (
 		GTK_WINDOW (comp_editor),
 		e_ui_manager_get_accel_group (comp_editor->priv->ui_manager));
 

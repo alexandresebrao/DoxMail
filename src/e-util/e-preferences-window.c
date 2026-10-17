@@ -302,7 +302,7 @@ e_preferences_window_init (EPreferencesWindow *window)
 	if (header) {
 		gtk_header_bar_pack_end (GTK_HEADER_BAR (header), widget);
 	} else {
-		GtkAccelGroup *accel_group;
+		EGtkAccelGroup *accel_group;
 		GtkWidget *bbox;
 
 		bbox = e_gtk_button_box_new (GTK_ORIENTATION_HORIZONTAL);
@@ -324,12 +324,12 @@ e_preferences_window_init (EPreferencesWindow *window)
 			widget, "clicked",
 			G_CALLBACK (gtk_widget_hide), window);
 		e_gtk_box_pack_start (GTK_BOX (bbox), widget, FALSE, FALSE, 0);
-		accel_group = gtk_accel_group_new ();
-		gtk_widget_add_accelerator (
+		accel_group = e_gtk_accel_group_new ();
+		e_gtk_widget_add_accelerator (
 			widget, "activate", accel_group,
 			GDK_KEY_Escape, (GdkModifierType) 0,
-			GTK_ACCEL_VISIBLE);
-		gtk_window_add_accel_group (GTK_WINDOW (window), accel_group);
+			0);
+		e_gtk_window_add_accel_group (GTK_WINDOW (window), accel_group);
 		e_gtk_widget_grab_default (widget);
 		gtk_widget_show (widget);
 	}

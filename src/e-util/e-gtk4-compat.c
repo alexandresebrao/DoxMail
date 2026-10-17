@@ -1290,3 +1290,244 @@ e_gtk_header_bar_set_title (GtkHeaderBar *header_bar,
 
 	gtk_label_set_text (GTK_LABEL (label), title);
 }
+
+void
+e_gtk_scrollable_override_properties (GObjectClass *object_class,
+				      guint first_property_id)
+{
+	g_object_class_override_property (object_class, first_property_id, "hadjustment");
+	g_object_class_override_property (object_class, first_property_id + 1, "vadjustment");
+	g_object_class_override_property (object_class, first_property_id + 2, "hscroll-policy");
+	g_object_class_override_property (object_class, first_property_id + 3, "vscroll-policy");
+}
+
+gboolean
+e_gtk_scrollable_forward_property (GtkWidget *inner,
+				   guint first_property_id,
+				   guint property_id,
+				   GValue *value,
+				   gboolean set,
+				   GParamSpec *pspec)
+{
+	if (property_id < first_property_id || property_id > first_property_id + 3)
+		return FALSE;
+
+	if (set)
+		g_object_set_property (G_OBJECT (inner), pspec->name, value);
+	else
+		g_object_get_property (G_OBJECT (inner), pspec->name, value);
+
+	return TRUE;
+}
+
+gboolean
+e_gtk_toggle_button_get_active (gpointer button)
+{
+	if (GTK_IS_CHECK_BUTTON (button))
+		return gtk_check_button_get_active (button);
+
+	g_return_val_if_fail (GTK_IS_TOGGLE_BUTTON (button), FALSE);
+
+	return gtk_toggle_button_get_active (button);
+}
+
+void
+e_gtk_toggle_button_set_active (gpointer button,
+				gboolean active)
+{
+	if (GTK_IS_CHECK_BUTTON (button)) {
+		gtk_check_button_set_active (button, active);
+		return;
+	}
+
+	g_return_if_fail (GTK_IS_TOGGLE_BUTTON (button));
+
+	gtk_toggle_button_set_active (button, active);
+}
+
+gboolean
+e_gtk_toggle_button_get_inconsistent (gpointer button)
+{
+	if (GTK_IS_CHECK_BUTTON (button))
+		return gtk_check_button_get_inconsistent (button);
+
+	g_return_val_if_fail (GTK_IS_WIDGET (button), FALSE);
+
+	/* GtkToggleButton has no inconsistent state on GTK 4 */
+	return GPOINTER_TO_INT (g_object_get_data (button, "e-inconsistent"));
+}
+
+void
+e_gtk_toggle_button_set_inconsistent (gpointer button,
+				      gboolean inconsistent)
+{
+	if (GTK_IS_CHECK_BUTTON (button)) {
+		gtk_check_button_set_inconsistent (button, inconsistent);
+		return;
+	}
+
+	g_return_if_fail (GTK_IS_WIDGET (button));
+
+	g_object_set_data (button, "e-inconsistent", GINT_TO_POINTER (inconsistent ? 1 : 0));
+
+	if (inconsistent)
+		gtk_widget_set_state_flags (button, GTK_STATE_FLAG_INCONSISTENT, FALSE);
+	else
+		gtk_widget_unset_state_flags (button, GTK_STATE_FLAG_INCONSISTENT);
+}
+
+#define RADIO_GROUP_KEY "e-gtk-radio-group"
+
+GSList *
+e_gtk_radio_button_get_group (gpointer button)
+{
+	GSList *group;
+
+	g_return_val_if_fail (GTK_IS_CHECK_BUTTON (button), NULL);
+
+	group = g_object_get_data (button, RADIO_GROUP_KEY);
+	if (!group) {
+		group = g_slist_prepend (NULL, button);
+		g_object_set_data_full (button, RADIO_GROUP_KEY, group, (GDestroyNotify) g_slist_free);
+	}
+
+	return group;
+}
+
+void
+e_gtk_radio_button_join_group (gpointer button,
+			       gpointer group_source)
+{
+	g_return_if_fail (GTK_IS_CHECK_BUTTON (button));
+
+	gtk_check_button_set_group (button, group_source);
+}
+
+static GtkWidget *
+radio_button_new (gpointer member,
+		  const gchar *label,
+		  gboolean mnemonic)
+{
+	GtkWidget *button;
+
+	button = mnemonic ? gtk_check_button_new_with_mnemonic (label) : gtk_check_button_new_with_label (label);
+
+	if (member)
+		gtk_check_button_set_group (GTK_CHECK_BUTTON (button), member);
+	else /* the first button of a GTK 3 group starts active */
+		gtk_check_button_set_active (GTK_CHECK_BUTTON (button), TRUE);
+
+	return button;
+}
+
+GtkWidget *
+e_gtk_radio_button_new_with_mnemonic (GSList *group,
+				      const gchar *label)
+{
+	return radio_button_new (group ? group->data : NULL, label, TRUE);
+}
+
+GtkWidget *
+e_gtk_radio_button_new_with_label (GSList *group,
+				   const gchar *label)
+{
+	return radio_button_new (group ? group->data : NULL, label, FALSE);
+}
+
+GtkWidget *
+e_gtk_radio_button_new_with_mnemonic_from_widget (gpointer member,
+						  const gchar *label)
+{
+	return radio_button_new (member, label, TRUE);
+}
+
+GtkWidget *
+e_gtk_radio_button_new_with_label_from_widget (gpointer member,
+					       const gchar *label)
+{
+	return radio_button_new (member, label, FALSE);
+}
+
+EGtkAccelGroup *
+e_gtk_accel_group_new (void)
+{
+	return GTK_SHORTCUT_CONTROLLER (gtk_shortcut_controller_new ());
+}
+
+typedef struct _AccelData {
+	GWeakRef widget;
+	gchar *signal_name;
+} AccelData;
+
+static gboolean
+accel_emit_signal_cb (GtkWidget *widget,
+		      GVariant *args,
+		      gpointer user_data)
+{
+	AccelData *data = user_data;
+	GtkWidget *target = g_weak_ref_get (&data->widget);
+
+	if (!target)
+		return FALSE;
+
+	/* "activate", "clicked" and the like take no arguments */
+	g_signal_emit_by_name (target, data->signal_name);
+	g_object_unref (target);
+
+	return TRUE;
+}
+
+static void
+accel_data_free (gpointer ptr)
+{
+	AccelData *data = ptr;
+
+	g_weak_ref_clear (&data->widget);
+	g_free (data->signal_name);
+	g_free (data);
+}
+
+void
+e_gtk_widget_add_accelerator (GtkWidget *widget,
+			      const gchar *accel_signal,
+			      EGtkAccelGroup *accel_group,
+			      guint accel_key,
+			      GdkModifierType accel_mods,
+			      guint accel_flags)
+{
+	AccelData *data;
+	GtkShortcut *shortcut;
+
+	g_return_if_fail (GTK_IS_WIDGET (widget));
+	g_return_if_fail (GTK_IS_SHORTCUT_CONTROLLER (accel_group));
+
+	data = g_new0 (AccelData, 1);
+	g_weak_ref_init (&data->widget, widget);
+	data->signal_name = g_strdup (accel_signal);
+
+	shortcut = gtk_shortcut_new (
+		gtk_keyval_trigger_new (accel_key, accel_mods),
+		gtk_callback_action_new (accel_emit_signal_cb, data, accel_data_free));
+	gtk_shortcut_controller_add_shortcut (accel_group, shortcut);
+}
+
+void
+e_gtk_window_add_accel_group (GtkWindow *window,
+			      EGtkAccelGroup *accel_group)
+{
+	g_return_if_fail (GTK_IS_WINDOW (window));
+	g_return_if_fail (GTK_IS_SHORTCUT_CONTROLLER (accel_group));
+
+	/* the window takes a reference, as with GTK 3 */
+	gtk_widget_add_controller (GTK_WIDGET (window), g_object_ref (GTK_EVENT_CONTROLLER (accel_group)));
+}
+
+void
+e_gtk_window_remove_accel_group (GtkWindow *window,
+				 EGtkAccelGroup *accel_group)
+{
+	g_return_if_fail (GTK_IS_WINDOW (window));
+	g_return_if_fail (GTK_IS_SHORTCUT_CONTROLLER (accel_group));
+
+	gtk_widget_remove_controller (GTK_WIDGET (window), GTK_EVENT_CONTROLLER (accel_group));
+}

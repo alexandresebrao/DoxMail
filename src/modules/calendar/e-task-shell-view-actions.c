@@ -643,7 +643,7 @@ action_task_purge_cb (EUIAction *action,
 	gtk_widget_show (widget);
 
 	response = e_gtk_dialog_run (GTK_DIALOG (dialog));
-	active = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
+	active = e_gtk_toggle_button_get_active (widget);
 	e_gtk_widget_destroy (dialog);
 
 	if (response != GTK_RESPONSE_YES)

@@ -300,14 +300,14 @@ mail_config_composing_page_three_state_toggled_cb (GtkToggleButton *widget,
 
 	g_signal_handler_block (widget, tsd->handler_id);
 
-	if (gtk_toggle_button_get_inconsistent (widget) &&
-	    gtk_toggle_button_get_active (widget)) {
-		gtk_toggle_button_set_active (widget, FALSE);
-		gtk_toggle_button_set_inconsistent (widget, FALSE);
+	if (e_gtk_toggle_button_get_inconsistent (widget) &&
+	    e_gtk_toggle_button_get_active (widget)) {
+		e_gtk_toggle_button_set_active (widget, FALSE);
+		e_gtk_toggle_button_set_inconsistent (widget, FALSE);
 		set_to = CAMEL_THREE_STATE_OFF;
-	} else if (!gtk_toggle_button_get_active (widget)) {
-		gtk_toggle_button_set_inconsistent (widget, TRUE);
-		gtk_toggle_button_set_active (widget, FALSE);
+	} else if (!e_gtk_toggle_button_get_active (widget)) {
+		e_gtk_toggle_button_set_inconsistent (widget, TRUE);
+		e_gtk_toggle_button_set_active (widget, FALSE);
 		set_to = CAMEL_THREE_STATE_INCONSISTENT;
 	} else {
 		set_to = CAMEL_THREE_STATE_ON;

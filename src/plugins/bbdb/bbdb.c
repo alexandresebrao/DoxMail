@@ -541,7 +541,7 @@ enable_toggled_cb (GtkWidget *widget,
 	gchar *addressbook;
 	GSettings *settings = e_util_ref_settings (CONF_SCHEMA);
 
-	active = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
+	active = e_gtk_toggle_button_get_active (widget);
 
 	/* Save the new setting to GSettings */
 	g_settings_set_boolean (settings, CONF_KEY_ENABLE, active);
@@ -578,7 +578,7 @@ enable_gaim_toggled_cb (GtkWidget *widget,
 	gchar *addressbook_gaim;
 	GSettings *settings = e_util_ref_settings (CONF_SCHEMA);
 
-	active = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
+	active = e_gtk_toggle_button_get_active (widget);
 
 	/* Save the new setting to GSettings */
 	g_settings_set_boolean (settings, CONF_KEY_ENABLE_GAIM, active);

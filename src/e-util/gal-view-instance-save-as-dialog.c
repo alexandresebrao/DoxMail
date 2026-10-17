@@ -117,7 +117,7 @@ gvisad_setup_radio_buttons (GalViewInstanceSaveAsDialog *dialog)
 	GtkWidget        *widget;
 
 	widget = dialog->scrolledwindow;
-	if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (dialog->radiobutton_replace))) {
+	if (e_gtk_toggle_button_get_active (dialog->radiobutton_replace)) {
 		GtkTreeIter       iter;
 		GtkTreeSelection *selection;
 
@@ -135,7 +135,7 @@ gvisad_setup_radio_buttons (GalViewInstanceSaveAsDialog *dialog)
 	}
 
 	widget = dialog->entry_create;
-	if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (dialog->radiobutton_create))) {
+	if (e_gtk_toggle_button_get_active (dialog->radiobutton_create)) {
 		gtk_widget_set_sensitive (widget, TRUE);
 		dialog->toggle = GAL_VIEW_INSTANCE_SAVE_AS_DIALOG_TOGGLE_CREATE;
 	} else {

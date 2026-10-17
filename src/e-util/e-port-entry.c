@@ -301,6 +301,7 @@ e_port_entry_class_init (EPortEntryClass *class)
 	object_class->constructed = port_entry_constructed;
 
 	widget_class = GTK_WIDGET_CLASS (class);
+	widget_class->measure = e_port_entry_measure;
 
 	g_object_class_install_property (
 		object_class,

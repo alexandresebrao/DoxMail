@@ -120,8 +120,7 @@ html_editor_table_dialog_set_width (EHTMLEditorTableDialog *dialog)
 	editor = e_html_editor_dialog_get_editor (E_HTML_EDITOR_DIALOG (dialog));
 	cnt_editor = e_html_editor_get_content_editor (editor);
 
-	if (gtk_toggle_button_get_active (
-			GTK_TOGGLE_BUTTON (dialog->priv->width_check))) {
+	if (e_gtk_toggle_button_get_active (dialog->priv->width_check)) {
 
 		e_content_editor_table_set_width (
 			cnt_editor,
@@ -170,9 +169,7 @@ html_editor_table_dialog_get_width (EHTMLEditorTableDialog *dialog)
 
 	width = e_content_editor_table_get_width (cnt_editor, &unit);
 
-	gtk_toggle_button_set_active (
-		GTK_TOGGLE_BUTTON (dialog->priv->width_check),
-		unit != E_CONTENT_EDITOR_UNIT_AUTO);
+	e_gtk_toggle_button_set_active (dialog->priv->width_check, unit != E_CONTENT_EDITOR_UNIT_AUTO);
 	gtk_spin_button_set_value (
 		GTK_SPIN_BUTTON (dialog->priv->width_edit),
 		unit == E_CONTENT_EDITOR_UNIT_AUTO ? 100 : width);
@@ -388,7 +385,7 @@ html_editor_table_dialog_reset_values (EHTMLEditorTableDialog *dialog)
 	gtk_spin_button_set_value (GTK_SPIN_BUTTON (dialog->priv->columns_edit), 3);
 	gtk_combo_box_set_active_id (GTK_COMBO_BOX (dialog->priv->alignment_combo), "left");
 
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (dialog->priv->width_check), TRUE);
+	e_gtk_toggle_button_set_active (dialog->priv->width_check, TRUE);
 	gtk_spin_button_set_value (GTK_SPIN_BUTTON (dialog->priv->width_edit), 100);
 	gtk_combo_box_set_active_id (GTK_COMBO_BOX (dialog->priv->width_units), "units-percent");
 

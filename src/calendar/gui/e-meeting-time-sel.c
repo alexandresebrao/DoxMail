@@ -307,7 +307,7 @@ e_meeting_time_selector_init (EMeetingTimeSelector *mts)
 	/* The shadow is drawn in the border so it must be >= 2 pixels. */
 	e_gtk_widget_set_border_width (mts, 2);
 
-	mts->accel_group = gtk_accel_group_new ();
+	mts->accel_group = e_gtk_accel_group_new ();
 
 	mts->working_hours_only = TRUE;
 
@@ -570,7 +570,7 @@ e_meeting_time_selector_construct (EMeetingTimeSelector *mts,
 	accel_key = gtk_label_get_mnemonic_keyval (GTK_LABEL (label));
 	e_gtk_box_pack_start (GTK_BOX (child_hbox), label, TRUE, TRUE, 6);
 	gtk_widget_show (label);
-	gtk_widget_add_accelerator (
+	e_gtk_widget_add_accelerator (
 		mts->options_button, "clicked", mts->accel_group,
 		accel_key, GDK_ALT_MASK, 0);
 
@@ -639,7 +639,7 @@ e_meeting_time_selector_construct (EMeetingTimeSelector *mts,
 	child = e_gtk_bin_get_child (mts->autopick_down_button);
 	gtk_label_set_text_with_mnemonic (GTK_LABEL (child), _("_<<"));
 	accel_key = gtk_label_get_mnemonic_keyval (GTK_LABEL (child));
-	gtk_widget_add_accelerator (
+	e_gtk_widget_add_accelerator (
 		mts->autopick_down_button, "clicked", mts->accel_group,
 		accel_key, GDK_ALT_MASK | GDK_SHIFT_MASK, 0);
 	e_gtk_box_pack_start (GTK_BOX (hbox), mts->autopick_down_button, TRUE, TRUE, 0);
@@ -660,7 +660,7 @@ e_meeting_time_selector_construct (EMeetingTimeSelector *mts,
 	accel_key = gtk_label_get_mnemonic_keyval (GTK_LABEL (label));
 	e_gtk_box_pack_start (GTK_BOX (child_hbox), label, TRUE, TRUE, 0);
 	gtk_widget_show (label);
-	gtk_widget_add_accelerator (
+	e_gtk_widget_add_accelerator (
 		mts->autopick_button, "clicked", mts->accel_group,
 		accel_key, GDK_ALT_MASK, 0);
 	g_signal_connect (
@@ -675,7 +675,7 @@ e_meeting_time_selector_construct (EMeetingTimeSelector *mts,
 	child = e_gtk_bin_get_child (mts->autopick_up_button);
 	gtk_label_set_text_with_mnemonic (GTK_LABEL (child), _(">_>"));
 	accel_key = gtk_label_get_mnemonic_keyval (GTK_LABEL (child));
-	gtk_widget_add_accelerator (
+	e_gtk_widget_add_accelerator (
 		mts->autopick_up_button, "clicked", mts->accel_group,
 		accel_key, GDK_ALT_MASK | GDK_SHIFT_MASK, 0);
 	e_gtk_box_pack_start (GTK_BOX (hbox), mts->autopick_up_button, TRUE, TRUE, 0);

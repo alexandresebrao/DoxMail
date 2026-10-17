@@ -42,7 +42,7 @@ after_save_cb (EVCardEditor *editor,
 	gtk_text_buffer_set_text (gtk_text_view_get_buffer (glob_vcard_text_view), text, -1);
 	g_free (text);
 
-	gtk_toggle_button_set_active (glob_is_new_check, FALSE);
+	e_gtk_toggle_button_set_active (glob_is_new_check, FALSE);
 }
 
 static gboolean
@@ -69,7 +69,7 @@ open_editor_clicked_cb (GtkWidget *button,
 	gchar *vcard_str;
 	EVCardEditorFlags flags = E_VCARD_EDITOR_FLAG_NONE;
 
-	if (gtk_toggle_button_get_active (glob_is_new_check))
+	if (e_gtk_toggle_button_get_active (glob_is_new_check))
 		flags |= E_VCARD_EDITOR_FLAG_IS_NEW;
 
 	if (!glob_client) {
@@ -104,7 +104,7 @@ open_editor_clicked_cb (GtkWidget *button,
 
 	g_signal_connect (editor, "after-save", G_CALLBACK (after_save_cb), registry);
 
-	if (gtk_toggle_button_get_active (glob_save_to_book_check)) {
+	if (e_gtk_toggle_button_get_active (glob_save_to_book_check)) {
 		/* nothing to do, saving to book does the editor itself */
 	} else {
 		g_signal_connect (editor, "custom-save", G_CALLBACK (custom_save_cb), registry);

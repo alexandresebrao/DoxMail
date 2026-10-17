@@ -333,7 +333,7 @@ cal_source_config_commit_changes (ESourceConfig *config,
 	 * then we have to inspect the old default.  If this ESource WAS
 	 * the default, reset the default to 'system'.  If this ESource
 	 * WAS NOT the old default, leave it alone. */
-	if (gtk_toggle_button_get_active (toggle_button))
+	if (e_gtk_toggle_button_get_active (toggle_button))
 		cal_source_config_set_default (config, scratch_source);
 	else if (e_source_equal (scratch_source, default_source))
 		cal_source_config_set_default (config, NULL);

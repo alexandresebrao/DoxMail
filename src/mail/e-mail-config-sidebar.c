@@ -43,7 +43,7 @@ static void
 mail_config_sidebar_button_toggled (GtkToggleButton *button,
                                     EMailConfigSidebar *sidebar)
 {
-	if (gtk_toggle_button_get_active (button)) {
+	if (e_gtk_toggle_button_get_active (button)) {
 		GHashTable *hash_table;
 		GtkNotebook *notebook;
 		GtkWidget *page;
@@ -65,22 +65,21 @@ mail_config_sidebar_notebook_page_added (GtkNotebook *notebook,
                                          guint page_num,
                                          EMailConfigSidebar *sidebar)
 {
-	GtkRadioButton *group_member;
+	GtkCheckButton *group_member;
 	GtkWidget *button;
 	GList *keys;
 	gchar *tab_label = NULL;
 
 	/* Grab another radio button if we have any. */
 	keys = g_hash_table_get_keys (sidebar->priv->buttons_to_pages);
-	group_member = (keys != NULL) ? GTK_RADIO_BUTTON (keys->data) : NULL;
+	group_member = (keys != NULL) ? GTK_CHECK_BUTTON (keys->data) : NULL;
 	g_list_free (keys);
 
 	gtk_container_child_get (
 		GTK_CONTAINER (notebook), page,
 		"tab-label", &tab_label, NULL);
 
-	button = gtk_radio_button_new_with_label_from_widget (
-		group_member, tab_label);
+	button = e_gtk_radio_button_new_with_label_from_widget (group_member, tab_label);
 	g_object_set (button, "draw-indicator", FALSE, NULL);
 	gtk_button_set_has_frame (GTK_BUTTON (button), FALSE);
 	e_gtk_box_pack_start (GTK_BOX (sidebar), button, FALSE, FALSE, 0);
@@ -388,7 +387,7 @@ e_mail_config_sidebar_set_active (EMailConfigSidebar *sidebar,
 
 		hash_table = sidebar->priv->pages_to_buttons;
 		button = g_hash_table_lookup (hash_table, page);
-		gtk_toggle_button_set_active (button, TRUE);
+		e_gtk_toggle_button_set_active (button, TRUE);
 	}
 }
 

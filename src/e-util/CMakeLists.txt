@@ -49,6 +49,7 @@ set(SOURCES
 	e-alert-bar.c
 	e-alert-dialog.c
 	e-alert-sink.c
+	e-assistant.c
 	e-alert.c
 	e-attachment-bar.c
 	e-attachment-handler-image.c
@@ -316,6 +317,7 @@ set(HEADERS
 	e-alert-bar.h
 	e-alert-dialog.h
 	e-alert-sink.h
+	e-assistant.h
 	e-alert.h
 	e-attachment-bar.h
 	e-attachment-handler-image.h

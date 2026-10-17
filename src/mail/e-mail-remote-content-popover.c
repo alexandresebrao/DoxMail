@@ -115,7 +115,7 @@ remote_content_menu_deactivate_cb (GtkMenuShell *popup_menu,
 {
 	g_return_if_fail (GTK_IS_TOGGLE_BUTTON (toggle_button));
 
-	gtk_toggle_button_set_active (toggle_button, FALSE);
+	e_gtk_toggle_button_set_active (toggle_button, FALSE);
 	gtk_menu_detach (GTK_MENU (popup_menu));
 }
 
@@ -268,7 +268,7 @@ show_remote_content_popup (EMailReader *reader,
 		gtk_menu_shell_append (GTK_MENU_SHELL (popup_menu), item);
 		g_signal_connect (item, "activate", G_CALLBACK (remote_content_disable_activate_cb), reader);
 
-		gtk_toggle_button_set_active (toggle_button, TRUE);
+		e_gtk_toggle_button_set_active (toggle_button, TRUE);
 
 		g_signal_connect (
 			popup_menu, "deactivate",
@@ -411,7 +411,7 @@ e_mail_remote_content_popover_run (EMailReader *reader,
 
 	gtk_widget_set_visible (hbox, TRUE);
 
-	g_object_set_data_full (G_OBJECT (reader), REMOTE_CONTENT_KEY_POPOVER, popover, (GDestroyNotify) gtk_widget_destroy);
+	g_object_set_data_full (G_OBJECT (reader), REMOTE_CONTENT_KEY_POPOVER, popover, (GDestroyNotify) e_gtk_widget_destroy);
 
 	g_signal_connect_object (popover, "closed",
 		G_CALLBACK (destroy_remote_content_popover), reader, G_CONNECT_SWAPPED);

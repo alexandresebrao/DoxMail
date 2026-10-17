@@ -347,6 +347,7 @@ e_mail_signature_combo_box_class_init (EMailSignatureComboBoxClass *class)
 	object_class->constructed = mail_signature_combo_box_constructed;
 
 	widget_class = GTK_WIDGET_CLASS (class);
+	widget_class->measure = e_mail_signature_combo_box_measure;
 
 	g_object_class_install_property (
 		object_class,

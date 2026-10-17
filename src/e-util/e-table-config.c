@@ -233,8 +233,7 @@ update_sort_and_group_config_dialog (ETableConfig *config,
 			else
 				toggle_button = widgets[i].radio_descending;
 
-			gtk_toggle_button_set_active (
-				GTK_TOGGLE_BUTTON (toggle_button), TRUE);
+			e_gtk_toggle_button_set_active (toggle_button, TRUE);
 
 		} else {
 			GtkToggleButton *t;
@@ -250,7 +249,7 @@ update_sort_and_group_config_dialog (ETableConfig *config,
 				g_return_if_fail (
 					widgets[i].radio_ascending !=
 					config->sort[i].radio_ascending);
-			gtk_toggle_button_set_active (t, 1);
+			e_gtk_toggle_button_set_active (t, 1);
 		}
 
 		/* Set the text */
@@ -580,7 +579,7 @@ sort_combo_changed (GtkComboBox *combo_box,
 		}
 
 		toggle_button = GTK_TOGGLE_BUTTON (sort->radio_ascending);
-		if (gtk_toggle_button_get_active (toggle_button))
+		if (e_gtk_toggle_button_get_active (toggle_button))
 			sort_type = GTK_SORT_ASCENDING;
 		else
 			sort_type = GTK_SORT_DESCENDING;
@@ -606,7 +605,7 @@ sort_ascending_toggled (GtkToggleButton *toggle_button,
 	GtkSortType sort_type;
 	gint idx = sort - base;
 
-	if (gtk_toggle_button_get_active (toggle_button))
+	if (e_gtk_toggle_button_get_active (toggle_button))
 		sort_type = GTK_SORT_ASCENDING;
 	else
 		sort_type = GTK_SORT_DESCENDING;
@@ -703,7 +702,7 @@ group_combo_changed (GtkComboBox *combo_box,
 
 		toggle_button = GTK_TOGGLE_BUTTON (
 			group->radio_ascending);
-		if (gtk_toggle_button_get_active (toggle_button))
+		if (e_gtk_toggle_button_get_active (toggle_button))
 			sort_type = GTK_SORT_ASCENDING;
 		else
 			sort_type = GTK_SORT_DESCENDING;
@@ -729,7 +728,7 @@ group_ascending_toggled (GtkToggleButton *toggle_button,
 	GtkSortType sort_type;
 	gint idx = group - base;
 
-	if (gtk_toggle_button_get_active (toggle_button))
+	if (e_gtk_toggle_button_get_active (toggle_button))
 		sort_type = GTK_SORT_ASCENDING;
 	else
 		sort_type = GTK_SORT_DESCENDING;

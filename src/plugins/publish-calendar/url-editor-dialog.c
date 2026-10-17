@@ -475,9 +475,9 @@ url_editor_dialog_construct (UrlEditorDialog *dialog)
 		if (uri->password) {
 			if (strlen (uri->password) != 0) {
 				gtk_editable_set_text (GTK_EDITABLE (dialog->password_entry), uri->password);
-				gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (dialog->remember_pw), TRUE);
+				e_gtk_toggle_button_set_active (dialog->remember_pw, TRUE);
 			} else {
-				gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (dialog->remember_pw), FALSE);
+				e_gtk_toggle_button_set_active (dialog->remember_pw, FALSE);
 			}
 		}
 	}
@@ -592,7 +592,7 @@ url_editor_dialog_run (UrlEditorDialog *dialog)
 
 		dialog->uri->password = g_strdup (gtk_editable_get_text (GTK_EDITABLE (dialog->password_entry)));
 
-		if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (dialog->remember_pw))) {
+		if (e_gtk_toggle_button_get_active (dialog->remember_pw)) {
 			e_passwords_add_password (dialog->uri->location, dialog->uri->password);
 			e_passwords_remember_password (dialog->uri->location);
 		} else {

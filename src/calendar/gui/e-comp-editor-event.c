@@ -155,7 +155,7 @@ ece_event_all_day_toggled_cb (ECompEditorEvent *event_editor)
 
 	edit_widget = e_comp_editor_property_part_get_edit_widget (event_editor->priv->dtstart);
 
-	if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (event_editor->priv->all_day_check))) {
+	if (e_gtk_toggle_button_get_active (event_editor->priv->all_day_check)) {
 		gint hour, minute;
 
 		if (!e_date_edit_get_time_of_day (E_DATE_EDIT (edit_widget), &hour, &minute))
@@ -499,7 +499,7 @@ ece_event_fill_widgets (ECompEditor *comp_editor,
 			E_COMP_EDITOR_PROPERTY_PART_DATETIME (event_editor->priv->dtend), dtend);
 	}
 
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (event_editor->priv->all_day_check), all_day_event);
+	e_gtk_toggle_button_set_active (event_editor->priv->all_day_check, all_day_event);
 
 	prop = i_cal_component_get_first_property (component, I_CAL_CLASS_PROPERTY);
 	if (prop && i_cal_property_get_class (prop) == I_CAL_CLASS_PRIVATE)
@@ -707,7 +707,7 @@ transform_action_to_timezone_visible_cb (GBinding *binding,
 
 	g_value_set_boolean (to_value,
 		g_value_get_boolean (from_value) &&
-		(!gtk_toggle_button_get_active (all_day_check) || ece_event_client_needs_all_day_as_time (E_COMP_EDITOR (event_editor))));
+		(!e_gtk_toggle_button_get_active (all_day_check) || ece_event_client_needs_all_day_as_time (E_COMP_EDITOR (event_editor))));
 
 	return TRUE;
 }

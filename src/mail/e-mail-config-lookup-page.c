@@ -84,7 +84,7 @@ static void
 e_mail_config_lookup_page_interface_init (EMailConfigPageInterface *iface)
 {
 	/* Do not set a title.  We don't want this
-	 * page listed in a GtkAssistant sidebar. */
+	 * page listed in a EAssistant sidebar. */
 	iface->title = "";
 	iface->sort_order = E_MAIL_CONFIG_LOOKUP_PAGE_SORT_ORDER;
 	iface->page_type = GTK_ASSISTANT_PAGE_CUSTOM;

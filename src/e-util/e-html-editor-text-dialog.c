@@ -49,8 +49,7 @@ html_editor_text_dialog_set_bold (EHTMLEditorTextDialog *dialog)
 
 	e_content_editor_set_bold (
 		cnt_editor,
-		gtk_toggle_button_get_active (
-			GTK_TOGGLE_BUTTON (dialog->priv->bold_check)));
+		e_gtk_toggle_button_get_active (dialog->priv->bold_check));
 }
 
 static void
@@ -64,8 +63,7 @@ html_editor_text_dialog_set_italic (EHTMLEditorTextDialog *dialog)
 
 	e_content_editor_set_italic (
 		cnt_editor,
-		gtk_toggle_button_get_active (
-			GTK_TOGGLE_BUTTON (dialog->priv->italic_check)));
+		e_gtk_toggle_button_get_active (dialog->priv->italic_check));
 }
 
 static void
@@ -79,8 +77,7 @@ html_editor_text_dialog_set_underline (EHTMLEditorTextDialog *dialog)
 
 	e_content_editor_set_underline (
 		cnt_editor,
-		gtk_toggle_button_get_active (
-			GTK_TOGGLE_BUTTON (dialog->priv->underline_check)));
+		e_gtk_toggle_button_get_active (dialog->priv->underline_check));
 }
 
 static void
@@ -94,8 +91,7 @@ html_editor_text_dialog_set_strikethrough (EHTMLEditorTextDialog *dialog)
 
 	e_content_editor_set_strikethrough (
 		cnt_editor,
-		gtk_toggle_button_get_active (
-			GTK_TOGGLE_BUTTON (dialog->priv->strikethrough_check)));
+		e_gtk_toggle_button_get_active (dialog->priv->strikethrough_check));
 }
 
 static void
@@ -139,18 +135,10 @@ html_editor_text_dialog_show (GtkWidget *widget)
 	editor = e_html_editor_dialog_get_editor (E_HTML_EDITOR_DIALOG (dialog));
 	cnt_editor = e_html_editor_get_content_editor (editor);
 
-	gtk_toggle_button_set_active (
-		GTK_TOGGLE_BUTTON (dialog->priv->bold_check),
-		e_content_editor_is_bold (cnt_editor));
-	gtk_toggle_button_set_active (
-		GTK_TOGGLE_BUTTON (dialog->priv->italic_check),
-		e_content_editor_is_italic (cnt_editor));
-	gtk_toggle_button_set_active (
-		GTK_TOGGLE_BUTTON (dialog->priv->underline_check),
-		e_content_editor_is_underline (cnt_editor));
-	gtk_toggle_button_set_active (
-		GTK_TOGGLE_BUTTON (dialog->priv->strikethrough_check),
-		e_content_editor_is_strikethrough (cnt_editor));
+	e_gtk_toggle_button_set_active (dialog->priv->bold_check, e_content_editor_is_bold (cnt_editor));
+	e_gtk_toggle_button_set_active (dialog->priv->italic_check, e_content_editor_is_italic (cnt_editor));
+	e_gtk_toggle_button_set_active (dialog->priv->underline_check, e_content_editor_is_underline (cnt_editor));
+	e_gtk_toggle_button_set_active (dialog->priv->strikethrough_check, e_content_editor_is_strikethrough (cnt_editor));
 
 	gtk_combo_box_set_active (
 		GTK_COMBO_BOX (dialog->priv->size_check),

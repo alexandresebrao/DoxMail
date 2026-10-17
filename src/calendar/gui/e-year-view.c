@@ -1906,7 +1906,7 @@ year_view_constructed (GObject *object)
 
 	self->priv->css_provider = gtk_css_provider_new ();
 
-	if (!gtk_css_provider_load_from_string (self->priv->css_provider, "EYearView .prev-year {"
+	gtk_css_provider_load_from_string (self->priv->css_provider, "EYearView .prev-year {"
 		"   font-size:90%;"
 		"}"
 		"EYearView .current-year {"
@@ -1922,10 +1922,7 @@ year_view_constructed (GObject *object)
 		"EYearView .calendar-flowbox {"
 		"   padding-top: 12px;"
 		"   padding-bottom: 12px;"
-		"}")) {
-		g_warning ("%s: Failed to parse CSS: %s", G_STRFUNC, error ? error->message : "Unknown error");
-		g_clear_error (&error);
-	}
+		"}");
 
 	model = e_calendar_view_get_model (E_CALENDAR_VIEW (self));
 	self->priv->data_model = g_object_ref (e_cal_model_get_data_model (model));

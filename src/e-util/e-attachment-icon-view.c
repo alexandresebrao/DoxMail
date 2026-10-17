@@ -39,7 +39,11 @@ enum {
 	PROP_0,
 	PROP_DRAGGING,
 	PROP_EDITABLE,
-	PROP_ALLOW_URI
+	PROP_ALLOW_URI,
+	PROP_HADJUSTMENT,
+	PROP_VADJUSTMENT,
+	PROP_HSCROLL_POLICY,
+	PROP_VSCROLL_POLICY
 };
 
 /* Forward Declarations */
@@ -49,7 +53,8 @@ static void	e_attachment_icon_view_interface_init
 G_DEFINE_TYPE_WITH_CODE (EAttachmentIconView, e_attachment_icon_view, GTK_TYPE_WIDGET,
 	G_ADD_PRIVATE (EAttachmentIconView)
 	G_IMPLEMENT_INTERFACE (E_TYPE_ATTACHMENT_VIEW, e_attachment_icon_view_interface_init)
-	G_IMPLEMENT_INTERFACE (E_TYPE_EXTENSIBLE, NULL))
+	G_IMPLEMENT_INTERFACE (E_TYPE_EXTENSIBLE, NULL)
+	G_IMPLEMENT_INTERFACE (GTK_TYPE_SCROLLABLE, NULL))
 
 static void
 attachment_icon_view_set_property (GObject *object,
@@ -76,6 +81,10 @@ attachment_icon_view_set_property (GObject *object,
 				g_value_get_boolean (value));
 			return;
 	}
+
+	if (e_gtk_scrollable_forward_property (E_ATTACHMENT_ICON_VIEW (object)->priv->icon_view,
+		PROP_HADJUSTMENT, property_id, (GValue *) value, TRUE, pspec))
+		return;
 
 	G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
 }
@@ -105,6 +114,10 @@ attachment_icon_view_get_property (GObject *object,
 				E_ATTACHMENT_VIEW (object)));
 			return;
 	}
+
+	if (e_gtk_scrollable_forward_property (E_ATTACHMENT_ICON_VIEW (object)->priv->icon_view,
+		PROP_HADJUSTMENT, property_id, value, FALSE, pspec))
+		return;
 
 	G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
 }
@@ -384,6 +397,8 @@ e_attachment_icon_view_class_init (EAttachmentIconViewClass *class)
 
 	g_object_class_override_property (
 		object_class, PROP_ALLOW_URI, "allow-uri");
+
+	e_gtk_scrollable_override_properties (object_class, PROP_HADJUSTMENT);
 }
 
 static void

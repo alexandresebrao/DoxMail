@@ -61,13 +61,13 @@ typedef struct _ECollectionAccountWizardPrivate ECollectionAccountWizardPrivate;
  **/
 struct _ECollectionAccountWizard {
 	/*< private >*/
-	GtkNotebook parent;
+	GtkWidget parent;
 	ECollectionAccountWizardPrivate *priv;
 };
 
 struct _ECollectionAccountWizardClass {
 	/*< private >*/
-	GtkNotebookClass parent_class;
+	GtkWidgetClass parent_class;
 
 	/* Signals */
 	void		(* done)		(ECollectionAccountWizard *wizard,
@@ -80,6 +80,7 @@ GtkWindow *	e_collection_account_wizard_new_window		(GtkWindow *parent,
 								 ESourceRegistry *registry);
 ESourceRegistry *
 		e_collection_account_wizard_get_registry	(ECollectionAccountWizard *wizard);
+GtkNotebook *	e_collection_account_wizard_get_notebook	(ECollectionAccountWizard *wizard);
 gboolean	e_collection_account_wizard_get_can_run		(ECollectionAccountWizard *wizard);
 void		e_collection_account_wizard_reset		(ECollectionAccountWizard *wizard);
 gboolean	e_collection_account_wizard_next		(ECollectionAccountWizard *wizard);

@@ -162,8 +162,7 @@ e_mail_reader_confirm_delete (EMailReader *reader)
 		g_settings_set_boolean (
 			settings,
 			"prompt-on-delete-in-vfolder",
-			!gtk_toggle_button_get_active (
-			GTK_TOGGLE_BUTTON (check_button)));
+			!e_gtk_toggle_button_get_active (check_button));
 
 	e_gtk_widget_destroy (dialog);
 
@@ -315,7 +314,7 @@ e_mail_reader_delete_folder (EMailReader *reader,
 		/* Destroy the dialog once the activity finishes. */
 		g_object_set_data_full (
 			G_OBJECT (activity), "delete-dialog",
-			dialog, (GDestroyNotify) gtk_widget_destroy);
+			dialog, (GDestroyNotify) e_gtk_widget_destroy);
 
 		e_mail_folder_remove (
 			folder,

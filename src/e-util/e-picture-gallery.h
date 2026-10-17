@@ -54,17 +54,18 @@ typedef struct _EPictureGalleryClass EPictureGalleryClass;
 typedef struct _EPictureGalleryPrivate EPictureGalleryPrivate;
 
 struct _EPictureGallery {
-	GtkIconView parent;
+	GtkWidget parent;
 	EPictureGalleryPrivate *priv;
 };
 
 struct _EPictureGalleryClass {
-	GtkIconViewClass parent_class;
+	GtkWidgetClass parent_class;
 };
 
 GType		e_picture_gallery_get_type	(void) G_GNUC_CONST;
 GtkWidget *	e_picture_gallery_new		(const gchar *path);
 const gchar *	e_picture_gallery_get_path	(EPictureGallery *gallery);
+GtkIconView *	e_picture_gallery_get_icon_view	(EPictureGallery *gallery);
 
 G_END_DECLS
 

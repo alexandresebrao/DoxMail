@@ -150,7 +150,7 @@ dialog_prompt_user (GtkWindow *parent,
 	container = e_alert_dialog_get_content_area (E_ALERT_DIALOG (dialog));
 
 	check = gtk_check_button_new_with_mnemonic (string);
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (check), TRUE);
+	e_gtk_toggle_button_set_active (check, TRUE);
 	e_gtk_box_pack_start (GTK_BOX (container), check, FALSE, FALSE, 0);
 	gtk_widget_show (check);
 
@@ -158,7 +158,7 @@ dialog_prompt_user (GtkWindow *parent,
 
 	if (button == GTK_RESPONSE_YES)
 		mask |= BR_OK;
-	if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (check)))
+	if (e_gtk_toggle_button_get_active (check))
 		mask |= BR_START;
 
 	e_gtk_widget_destroy (dialog);
@@ -495,7 +495,7 @@ evolution_backup_restore_filename_to_visible (GBinding *binding,
 }
 
 static void
-evolution_backup_restore_prepare_cb (GtkAssistant *assistant,
+evolution_backup_restore_prepare_cb (EAssistant *assistant,
                                      GtkWidget *page,
                                      EMailConfigRestorePage *restore_page)
 {

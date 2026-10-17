@@ -2022,7 +2022,7 @@ eve_read_emails (EVCardEditorSection *section,
 
 		value = e_contact_get (contact, E_CONTACT_WANTS_HTML);
 
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget), value != NULL && (g_ascii_strcasecmp (value, "TRUE") == 0 || g_strcmp0 (value, "1") == 0));
+		e_gtk_toggle_button_set_active (widget, value != NULL && (g_ascii_strcasecmp (value, "TRUE") == 0 || g_strcmp0 (value, "1") == 0));
 	}
 }
 
@@ -2038,7 +2038,7 @@ eve_write_emails (EVCardEditorSection *section,
 
 	widget = e_vcard_editor_section_get_widget (section, 0);
 
-	if (widget && gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget)))
+	if (widget && e_gtk_toggle_button_get_active (widget))
 		e_contact_set (contact, E_CONTACT_WANTS_HTML, GINT_TO_POINTER (TRUE));
 	else
 		e_vcard_remove_attributes (E_VCARD (contact), NULL, e_contact_vcard_attribute (E_CONTACT_WANTS_HTML));
@@ -4543,7 +4543,7 @@ e_vcard_editor_constructed (GObject *object)
 {
 	EVCardEditor *self = E_VCARD_EDITOR (object);
 	GApplication *application;
-	GtkAccelGroup *accel_group;
+	EGtkAccelGroup *accel_group;
 	GtkWidget *widget, *container;
 	GtkWidget *button_help;
 	GtkOverlay *overlay;
@@ -4632,9 +4632,9 @@ e_vcard_editor_constructed (GObject *object)
 		button_help = widget;
 	}
 
-	accel_group = gtk_accel_group_new ();
-	gtk_widget_add_accelerator (self->button_save, "clicked", accel_group, 's', GDK_CONTROL_MASK, 0);
-	gtk_window_add_accel_group (GTK_WINDOW (self), accel_group);
+	accel_group = e_gtk_accel_group_new ();
+	e_gtk_widget_add_accelerator (self->button_save, "clicked", accel_group, 's', GDK_CONTROL_MASK, 0);
+	e_gtk_window_add_accel_group (GTK_WINDOW (self), accel_group);
 	g_clear_object (&accel_group);
 
 	gtk_widget_set_sensitive (self->button_save, self->changed);

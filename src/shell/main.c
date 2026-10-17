@@ -164,7 +164,7 @@ show_development_warning (void)
 
 	e_gtk_dialog_run (GTK_DIALOG (warning_dialog));
 
-	skip = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (checkbox));
+	skip = e_gtk_toggle_button_get_active (checkbox);
 
 	e_gtk_widget_destroy (warning_dialog);
 

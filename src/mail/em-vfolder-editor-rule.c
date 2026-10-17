@@ -251,7 +251,7 @@ static void
 autoupdate_toggled_cb (GtkToggleButton *toggle,
                        struct _source_data *data)
 {
-	em_vfolder_rule_set_autoupdate (data->vr, gtk_toggle_button_get_active (toggle));
+	em_vfolder_rule_set_autoupdate (data->vr, e_gtk_toggle_button_get_active (toggle));
 }
 
 static void
@@ -541,7 +541,7 @@ tweaks_custom_icon_check_toggled_cb (GtkToggleButton *toggle_button,
 
 	ftd->changed = TRUE;
 
-	if (!gtk_toggle_button_get_active (toggle_button)) {
+	if (!e_gtk_toggle_button_get_active (toggle_button)) {
 		g_clear_pointer (&ftd->icon_filename, g_free);
 		return;
 	}
@@ -640,7 +640,7 @@ add_tweaks_custom_icon_row (GtkBox *vbox,
 
 		g_clear_object (&file);
 
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (checkbox), TRUE);
+		e_gtk_toggle_button_set_active (checkbox, TRUE);
 		gtk_image_set_from_gicon (GTK_IMAGE (image), custom_icon);
 
 		g_clear_object (&custom_icon);
@@ -671,7 +671,7 @@ tweaks_text_color_check_toggled_cb (GtkToggleButton *toggle_button,
 
 	ftd->changed = TRUE;
 
-	if (gtk_toggle_button_get_active (toggle_button)) {
+	if (e_gtk_toggle_button_get_active (toggle_button)) {
 		gtk_color_chooser_get_rgba (GTK_COLOR_CHOOSER (ftd->color_chooser), &ftd->text_color);
 		ftd->text_color_set = TRUE;
 	} else {
@@ -714,7 +714,7 @@ add_tweaks_text_color_row (GtkBox *vbox,
 	ftd->color_chooser = button;
 
 	if (ftd->text_color_set) {
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (checkbox), TRUE);
+		e_gtk_toggle_button_set_active (checkbox, TRUE);
 		gtk_color_chooser_set_rgba (GTK_COLOR_CHOOSER (button), &ftd->text_color);
 	}
 
@@ -867,7 +867,7 @@ get_widget (EFilterRule *fr,
 	autoupdate = gtk_check_button_new_with_mnemonic (_("Automatically update on any _source folder change"));
 	e_gtk_container_add (hgrid, autoupdate);
 
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (autoupdate), em_vfolder_rule_get_autoupdate (vr));
+	e_gtk_toggle_button_set_active (autoupdate, em_vfolder_rule_get_autoupdate (vr));
 	g_signal_connect (autoupdate, "toggled", G_CALLBACK (autoupdate_toggled_cb), data);
 
 	hgrid = gtk_grid_new ();

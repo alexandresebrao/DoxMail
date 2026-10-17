@@ -57,12 +57,10 @@ def convert(path):
     funcs = {kind: func for _, _, kind, func in assigns}
     indent, klass = assigns[0][0], assigns[0][1]
 
-    for ind, kl, kind, func in assigns:
+    first = '%s%s->%s = %s;\n' % assigns[0]
+    text = text.replace(first, '%s%s->measure = %s_measure;\n' % (indent, klass, prefix), 1)
+    for ind, kl, kind, func in assigns[1:]:
         text = text.replace('%s%s->%s = %s;\n' % (ind, kl, kind, func), '', 1)
-
-    text = text.replace(
-        '%s%s->' % (indent, klass),
-        '%s%s->measure = %s_measure;\n%s%s->' % (indent, klass, prefix, indent, klass), 1)
 
     text = chain_up(text)
 

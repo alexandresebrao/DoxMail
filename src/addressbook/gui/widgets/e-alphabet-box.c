@@ -114,7 +114,7 @@ e_alphabet_box_constructed (GObject *object)
 
 	self->css_provider = gtk_css_provider_new ();
 
-	if (!gtk_css_provider_load_from_string (self->css_provider, "EAlphabetBox row {"
+	gtk_css_provider_load_from_string (self->css_provider, "EAlphabetBox row {"
 		"   border-radius:0px;"
 		"   border-top-left-radius:8px;"
 		"   border-bottom-left-radius:8px;"
@@ -123,10 +123,7 @@ e_alphabet_box_constructed (GObject *object)
 		"   -gtk-outline-radius:0px;"
 		"   -gtk-outline-top-left-radius:6px;"
 		"   -gtk-outline-bottom-left-radius:6px;"
-		"}")) {
-		g_warning ("%s: Failed to parse CSS: %s", G_STRFUNC, local_error ? local_error->message : "Unknown error");
-		g_clear_error (&local_error);
-	}
+		"}");
 
 	gtk_style_context_add_provider (gtk_widget_get_style_context (GTK_WIDGET (self)),
 		GTK_STYLE_PROVIDER (self->css_provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);

@@ -831,14 +831,14 @@ sound_play_cb (GtkWidget *widget,
 {
 	gchar *file;
 
-	if (!gtk_toggle_button_get_active (scw->enable))
+	if (!e_gtk_toggle_button_get_active (scw->enable))
 		return;
 
 	file = e_gtk_file_chooser_get_filename (scw->filechooser);
 
 	do_play_sound (
-		gtk_toggle_button_get_active (scw->beep),
-		gtk_toggle_button_get_active (scw->use_theme),
+		e_gtk_toggle_button_get_active (scw->beep),
+		e_gtk_toggle_button_get_active (scw->use_theme),
 		file);
 
 	g_free (file);
@@ -966,7 +966,7 @@ get_config_widget_sound (void)
 	container = widget;
 
 	text = _("_Beep");
-	widget = gtk_radio_button_new_with_mnemonic (group, text);
+	widget = e_gtk_radio_button_new_with_mnemonic (group, text);
 	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
@@ -976,10 +976,10 @@ get_config_widget_sound (void)
 
 	scw->beep = GTK_TOGGLE_BUTTON (widget);
 
-	group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (widget));
+	group = e_gtk_radio_button_get_group (GTK_CHECK_BUTTON (widget));
 
 	text = _("Use sound _theme");
-	widget = gtk_radio_button_new_with_mnemonic (group, text);
+	widget = e_gtk_radio_button_new_with_mnemonic (group, text);
 	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
@@ -989,7 +989,7 @@ get_config_widget_sound (void)
 
 	scw->use_theme = GTK_TOGGLE_BUTTON (widget);
 
-	group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (widget));
+	group = e_gtk_radio_button_get_group (GTK_CHECK_BUTTON (widget));
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
 	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
@@ -998,7 +998,7 @@ get_config_widget_sound (void)
 	container = widget;
 
 	text = _("Play _file:");
-	widget = gtk_radio_button_new_with_mnemonic (group, text);
+	widget = e_gtk_radio_button_new_with_mnemonic (group, text);
 	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 

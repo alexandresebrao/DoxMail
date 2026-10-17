@@ -372,9 +372,7 @@ mail_config_smtp_backend_insert_widgets (EMailConfigServiceBackend *backend,
 	 * we have an authentication mechanism name. */
 	mechanism = camel_network_settings_get_auth_mechanism (
 		CAMEL_NETWORK_SETTINGS (settings));
-	gtk_toggle_button_set_active (
-		GTK_TOGGLE_BUTTON (self->priv->auth_required_toggle),
-		(mechanism != NULL && *mechanism != '\0'));
+	e_gtk_toggle_button_set_active (self->priv->auth_required_toggle, (mechanism != NULL && *mechanism != '\0'));
 
 	if (!existing_source) {
 		/* Default to TLS for new accounts */
@@ -418,9 +416,7 @@ mail_config_smtp_backend_auto_configure (EMailConfigServiceBackend *backend,
 	mechanism = camel_network_settings_get_auth_mechanism (
 		CAMEL_NETWORK_SETTINGS (settings));
 
-	gtk_toggle_button_set_active (
-		GTK_TOGGLE_BUTTON (self->priv->auth_required_toggle),
-		(mechanism != NULL));
+	e_gtk_toggle_button_set_active (self->priv->auth_required_toggle, (mechanism != NULL));
 
 	if (mechanism != NULL)
 		e_mail_config_auth_check_set_active_mechanism (
@@ -464,13 +460,13 @@ mail_config_smtp_backend_check_complete (EMailConfigServiceBackend *backend)
 
 	correct = TRUE;
 
-	if (gtk_toggle_button_get_active (toggle_button))
+	if (e_gtk_toggle_button_get_active (toggle_button))
 		if (user == NULL || *user == '\0')
 			correct = FALSE;
 
 	complete = complete && correct;
 	e_util_set_entry_issue_hint (self->priv->user_entry, correct ?
-		((!gtk_toggle_button_get_active (toggle_button) || camel_string_is_all_ascii (user)) ? NULL :
+		((!e_gtk_toggle_button_get_active (toggle_button) || camel_string_is_all_ascii (user)) ? NULL :
 		_("User name contains letters, which can prevent log in. Make sure the server accepts such written user name."))
 		: _("User name cannot be empty"));
 
@@ -493,7 +489,7 @@ mail_config_smtp_backend_commit_changes (EMailConfigServiceBackend *backend)
 
 	toggle_button = GTK_TOGGLE_BUTTON (self->priv->auth_required_toggle);
 
-	if (gtk_toggle_button_get_active (toggle_button))
+	if (e_gtk_toggle_button_get_active (toggle_button))
 		mechanism = e_mail_config_auth_check_get_active_mechanism (
 			E_MAIL_CONFIG_AUTH_CHECK (self->priv->auth_check));
 

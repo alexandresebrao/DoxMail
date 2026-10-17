@@ -193,7 +193,7 @@ e_weekday_chooser_get_selected (EWeekdayChooser *chooser,
 	g_return_val_if_fail (E_IS_WEEKDAY_CHOOSER (chooser), FALSE);
 	g_return_val_if_fail (g_date_valid_weekday (weekday), FALSE);
 
-	return gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (chooser->buttons[weekday - 1]));
+	return e_gtk_toggle_button_get_active (chooser->buttons[weekday - 1]);
 }
 
 /**
@@ -212,8 +212,8 @@ e_weekday_chooser_set_selected (EWeekdayChooser *chooser,
 	g_return_if_fail (E_IS_WEEKDAY_CHOOSER (chooser));
 	g_return_if_fail (g_date_valid_weekday (weekday));
 
-	if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (chooser->buttons[weekday - 1])) != selected) {
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (chooser->buttons[weekday - 1]), selected);
+	if (e_gtk_toggle_button_get_active (chooser->buttons[weekday - 1]) != selected) {
+		e_gtk_toggle_button_set_active (chooser->buttons[weekday - 1], selected);
 
 		g_signal_emit (chooser, chooser_signals[CHANGED], 0);
 	}

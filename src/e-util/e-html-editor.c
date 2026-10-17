@@ -738,7 +738,7 @@ html_editor_parent_changed (GtkWidget *widget,
 	/* If we now have a window, then install our accelerators to it */
 	top_level = e_gtk_widget_get_toplevel (widget);
 	if (GTK_IS_WINDOW (top_level)) {
-		gtk_window_add_accel_group (
+		e_gtk_window_add_accel_group (
 			GTK_WINDOW (top_level),
 			e_ui_manager_get_accel_group (editor->priv->ui_manager));
 		e_ui_manager_set_action_groups_widget (editor->priv->ui_manager, top_level);

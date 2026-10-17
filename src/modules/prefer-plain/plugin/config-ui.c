@@ -80,7 +80,7 @@ epp_show_suppressed_toggled (GtkToggleButton *check,
 {
 	g_return_if_fail (check != NULL);
 
-	epp_show_suppressed = gtk_toggle_button_get_active (check);
+	epp_show_suppressed = e_gtk_toggle_button_get_active (check);
 	g_settings_set_boolean (epp_settings, "show-suppressed", epp_show_suppressed);
 }
 
@@ -100,7 +100,7 @@ prefer_plain_page_factory (EPlugin *epl,
 
 	check = gtk_check_button_new_with_mnemonic (_("Show s_uppressed HTML parts as attachments"));
 	gtk_widget_set_halign (check, GTK_ALIGN_START);
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (check), epp_show_suppressed);
+	e_gtk_toggle_button_set_active (check, epp_show_suppressed);
 	gtk_widget_show (check);
 	g_signal_connect (
 		check, "toggled",

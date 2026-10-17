@@ -480,7 +480,7 @@ mail_shell_view_notify_active_view_cb (GObject *object,
 	EMailShellView *self = user_data;
 	EMailDisplay *mail_display;
 	EUIManager *ui_manager;
-	GtkAccelGroup *accel_group;
+	EGtkAccelGroup *accel_group;
 
 	mail_display = e_mail_reader_get_mail_display (E_MAIL_READER (e_mail_shell_content_get_mail_view (self->priv->mail_shell_content)));
 	if (!mail_display)
@@ -496,11 +496,11 @@ mail_shell_view_notify_active_view_cb (GObject *object,
 	if (e_shell_view_is_active (E_SHELL_VIEW (self))) {
 		if (!self->priv->web_view_accel_group_added) {
 			self->priv->web_view_accel_group_added = TRUE;
-			gtk_window_add_accel_group (GTK_WINDOW (object), accel_group);
+			e_gtk_window_add_accel_group (GTK_WINDOW (object), accel_group);
 		}
 	} else if (self->priv->web_view_accel_group_added) {
 		self->priv->web_view_accel_group_added = FALSE;
-		gtk_window_remove_accel_group (GTK_WINDOW (object), accel_group);
+		e_gtk_window_remove_accel_group (GTK_WINDOW (object), accel_group);
 	}
 }
 

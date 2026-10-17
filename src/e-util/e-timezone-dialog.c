@@ -142,7 +142,7 @@ e_timezone_dialog_dispose (GObject *object)
 	ETimezoneDialog *self = E_TIMEZONE_DIALOG (object);
 
 	/* Destroy the actual dialog. */
-	g_clear_pointer (&self->priv->app, gtk_widget_destroy);
+	g_clear_pointer (&self->priv->app, e_gtk_widget_destroy);
 
 	if (self->priv->timeout_id) {
 		g_source_remove (self->priv->timeout_id);

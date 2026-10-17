@@ -2993,7 +2993,7 @@ msg_composer_dispose (GObject *object)
 	EMsgComposer *composer = E_MSG_COMPOSER (object);
 	EShell *shell;
 
-	g_clear_pointer (&composer->priv->address_dialog, gtk_widget_destroy);
+	g_clear_pointer (&composer->priv->address_dialog, e_gtk_widget_destroy);
 
 	/* FIXME Our EShell is already unreferenced. */
 	shell = e_shell_get_default ();

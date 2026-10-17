@@ -166,35 +166,35 @@ static void
 checkbox_mail_toggle_cb (GtkToggleButton *tb,
                          EImportTarget *target)
 {
-	g_datalist_set_data (&target->data, "pst-do-mail", GINT_TO_POINTER (gtk_toggle_button_get_active (tb)));
+	g_datalist_set_data (&target->data, "pst-do-mail", GINT_TO_POINTER (e_gtk_toggle_button_get_active (tb)));
 }
 
 static void
 checkbox_addr_toggle_cb (GtkToggleButton *tb,
                          EImportTarget *target)
 {
-	g_datalist_set_data (&target->data, "pst-do-addr", GINT_TO_POINTER (gtk_toggle_button_get_active (tb)));
+	g_datalist_set_data (&target->data, "pst-do-addr", GINT_TO_POINTER (e_gtk_toggle_button_get_active (tb)));
 }
 
 static void
 checkbox_appt_toggle_cb (GtkToggleButton *tb,
                          EImportTarget *target)
 {
-	g_datalist_set_data (&target->data, "pst-do-appt", GINT_TO_POINTER (gtk_toggle_button_get_active (tb)));
+	g_datalist_set_data (&target->data, "pst-do-appt", GINT_TO_POINTER (e_gtk_toggle_button_get_active (tb)));
 }
 
 static void
 checkbox_task_toggle_cb (GtkToggleButton *tb,
                          EImportTarget *target)
 {
-	g_datalist_set_data (&target->data, "pst-do-task", GINT_TO_POINTER (gtk_toggle_button_get_active (tb)));
+	g_datalist_set_data (&target->data, "pst-do-task", GINT_TO_POINTER (e_gtk_toggle_button_get_active (tb)));
 }
 
 static void
 checkbox_journal_toggle_cb (GtkToggleButton *tb,
                             EImportTarget *target)
 {
-	g_datalist_set_data (&target->data, "pst-do-journal", GINT_TO_POINTER (gtk_toggle_button_get_active (tb)));
+	g_datalist_set_data (&target->data, "pst-do-journal", GINT_TO_POINTER (e_gtk_toggle_button_get_active (tb)));
 }
 
 static void
@@ -341,7 +341,7 @@ widget_sanitizer_cb (GtkToggleButton *button,
 	g_return_if_fail (button != NULL);
 	g_return_if_fail (source_combo != NULL);
 
-	gtk_widget_set_sensitive (source_combo, gtk_toggle_button_get_active (button));
+	gtk_widget_set_sensitive (source_combo, e_gtk_toggle_button_get_active (button));
 }
 
 static const gchar *
@@ -389,7 +389,7 @@ add_source_list_with_check (GtkWidget *frame,
 	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 2);
 
 	check = gtk_check_button_new_with_mnemonic (caption);
-	gtk_toggle_button_set_active ((GtkToggleButton *) check, active);
+	e_gtk_toggle_button_set_active ((GtkToggleButton *) check, active);
 	g_signal_connect (check, "toggled", toggle_callback, target);
 	e_gtk_box_pack_start ((GtkBox *) hbox, check, FALSE, FALSE, 0);
 
@@ -523,7 +523,7 @@ org_credativ_evolution_readpst_getwidget (EImport *ei,
 	/* Mail */
 	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
 	check = gtk_check_button_new_with_mnemonic (_("_Mail"));
-	gtk_toggle_button_set_active ((GtkToggleButton *) check, GPOINTER_TO_INT (g_datalist_get_data (&target->data, "pst-do-mail")));
+	e_gtk_toggle_button_set_active ((GtkToggleButton *) check, GPOINTER_TO_INT (g_datalist_get_data (&target->data, "pst-do-mail")));
 	g_signal_connect (
 		check, "toggled",
 		G_CALLBACK (checkbox_mail_toggle_cb), target);

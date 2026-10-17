@@ -249,19 +249,19 @@ ecep_reminders_sanitize_option_widgets (ECompEditorPageReminders *page_reminders
 	gtk_widget_set_visible (page_reminders->priv->options_label, any_selected && is_custom);
 	gtk_widget_set_visible (page_reminders->priv->options_notebook, any_selected && is_custom);
 
-	sensitive = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (page_reminders->priv->repeat_check));
+	sensitive = e_gtk_toggle_button_get_active (page_reminders->priv->repeat_check);
 	gtk_widget_set_sensitive (page_reminders->priv->repeat_times_spin, sensitive);
 	gtk_widget_set_sensitive (page_reminders->priv->repeat_every_label, sensitive);
 	gtk_widget_set_sensitive (page_reminders->priv->repeat_every_spin, sensitive);
 	gtk_widget_set_sensitive (page_reminders->priv->repeat_unit_combo, sensitive);
 
-	sensitive = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (page_reminders->priv->custom_message_check));
+	sensitive = e_gtk_toggle_button_get_active (page_reminders->priv->custom_message_check);
 	gtk_widget_set_sensitive (page_reminders->priv->custom_message_text_view, sensitive);
 
-	sensitive = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (page_reminders->priv->custom_sound_check));
+	sensitive = e_gtk_toggle_button_get_active (page_reminders->priv->custom_sound_check);
 	gtk_widget_set_sensitive (page_reminders->priv->custom_sound_chooser, sensitive);
 
-	sensitive = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (page_reminders->priv->custom_email_message_check));
+	sensitive = e_gtk_toggle_button_get_active (page_reminders->priv->custom_email_message_check);
 	gtk_widget_set_sensitive (page_reminders->priv->custom_email_message_text_view, sensitive);
 }
 
@@ -385,19 +385,19 @@ ecep_reminders_reset_alarm_widget (ECompEditorPageReminders *page_reminders)
 	gtk_combo_box_set_active (GTK_COMBO_BOX (page_reminders->priv->unit_combo), 0);
 	gtk_combo_box_set_active (GTK_COMBO_BOX (page_reminders->priv->relative_time_combo), 0);
 	gtk_combo_box_set_active (GTK_COMBO_BOX (page_reminders->priv->relative_to_combo), 0);
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (page_reminders->priv->repeat_check), FALSE);
+	e_gtk_toggle_button_set_active (page_reminders->priv->repeat_check, FALSE);
 	gtk_spin_button_set_value (GTK_SPIN_BUTTON (page_reminders->priv->repeat_times_spin), 1);
 	gtk_spin_button_set_value (GTK_SPIN_BUTTON (page_reminders->priv->repeat_every_spin), 5);
 	gtk_combo_box_set_active (GTK_COMBO_BOX (page_reminders->priv->repeat_unit_combo), 0);
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (page_reminders->priv->custom_message_check), FALSE);
+	e_gtk_toggle_button_set_active (page_reminders->priv->custom_message_check, FALSE);
 	ecep_reminders_set_text_view_text (page_reminders->priv->custom_message_text_view, NULL);
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (page_reminders->priv->custom_sound_check), FALSE);
+	e_gtk_toggle_button_set_active (page_reminders->priv->custom_sound_check, FALSE);
 	e_gtk_file_chooser_unselect_all (page_reminders->priv->custom_sound_chooser);
 	gtk_editable_set_text (GTK_EDITABLE (page_reminders->priv->custom_app_path_entry), "");
 	gtk_editable_set_text (GTK_EDITABLE (page_reminders->priv->custom_app_args_entry), "");
 	if (page_reminders->priv->custom_email_entry)
 		gtk_editable_set_text (GTK_EDITABLE (page_reminders->priv->custom_email_entry), "");
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (page_reminders->priv->custom_email_message_check), FALSE);
+	e_gtk_toggle_button_set_active (page_reminders->priv->custom_email_message_check, FALSE);
 	ecep_reminders_set_text_view_text (page_reminders->priv->custom_email_message_text_view, NULL);
 
 	e_comp_editor_page_set_updating (page, FALSE);
@@ -500,7 +500,7 @@ ecep_reminders_selected_to_widgets (ECompEditorPageReminders *page_reminders)
 	repeat = e_cal_component_alarm_get_repeat (alarm);
 
 	if (repeat && e_cal_component_alarm_repeat_get_repetitions (repeat)) {
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (page_reminders->priv->repeat_check), TRUE);
+		e_gtk_toggle_button_set_active (page_reminders->priv->repeat_check, TRUE);
 		gtk_spin_button_set_value (GTK_SPIN_BUTTON (page_reminders->priv->repeat_times_spin),
 			e_cal_component_alarm_repeat_get_repetitions (repeat));
 
@@ -524,7 +524,7 @@ ecep_reminders_selected_to_widgets (ECompEditorPageReminders *page_reminders)
 				i_cal_duration_get_days (duration));
 		}
 	} else {
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (page_reminders->priv->repeat_check), FALSE);
+		e_gtk_toggle_button_set_active (page_reminders->priv->repeat_check, FALSE);
 		gtk_spin_button_set_value (GTK_SPIN_BUTTON (page_reminders->priv->repeat_times_spin), 1);
 		gtk_spin_button_set_value (GTK_SPIN_BUTTON (page_reminders->priv->repeat_every_spin), 5);
 	}
@@ -546,10 +546,10 @@ ecep_reminders_selected_to_widgets (ECompEditorPageReminders *page_reminders)
 		}
 
 		if (url && *url) {
-			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (page_reminders->priv->custom_sound_check), TRUE);
+			e_gtk_toggle_button_set_active (page_reminders->priv->custom_sound_check, TRUE);
 			e_gtk_file_chooser_set_uri (page_reminders->priv->custom_sound_chooser, url);
 		} else {
-			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (page_reminders->priv->custom_sound_check), FALSE);
+			e_gtk_toggle_button_set_active (page_reminders->priv->custom_sound_check, FALSE);
 			e_gtk_file_chooser_unselect_all (page_reminders->priv->custom_sound_chooser);
 		}
 		} break;
@@ -562,10 +562,10 @@ ecep_reminders_selected_to_widgets (ECompEditorPageReminders *page_reminders)
 		differ = ecep_reminders_description_differs (page_reminders, description);
 
 		if (differ && description && e_cal_component_text_get_value (description) && e_cal_component_text_get_value (description)[0]) {
-			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (page_reminders->priv->custom_message_check), TRUE);
+			e_gtk_toggle_button_set_active (page_reminders->priv->custom_message_check, TRUE);
 			ecep_reminders_set_text_view_text (page_reminders->priv->custom_message_text_view, e_cal_component_text_get_value (description));
 		} else {
-			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (page_reminders->priv->custom_message_check), FALSE);
+			e_gtk_toggle_button_set_active (page_reminders->priv->custom_message_check, FALSE);
 			ecep_reminders_set_text_view_text (page_reminders->priv->custom_message_text_view, NULL);
 		}
 		} break;
@@ -606,10 +606,10 @@ ecep_reminders_selected_to_widgets (ECompEditorPageReminders *page_reminders)
 		differ = ecep_reminders_description_differs (page_reminders, description);
 
 		if (differ && description && e_cal_component_text_get_value (description) && e_cal_component_text_get_value (description)[0]) {
-			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (page_reminders->priv->custom_email_message_check), TRUE);
+			e_gtk_toggle_button_set_active (page_reminders->priv->custom_email_message_check, TRUE);
 			ecep_reminders_set_text_view_text (page_reminders->priv->custom_email_message_text_view, e_cal_component_text_get_value (description));
 		} else {
-			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (page_reminders->priv->custom_email_message_check), FALSE);
+			e_gtk_toggle_button_set_active (page_reminders->priv->custom_email_message_check, FALSE);
 			ecep_reminders_set_text_view_text (page_reminders->priv->custom_email_message_text_view, NULL);
 		}
 		} break;
@@ -704,7 +704,7 @@ ecep_reminders_widgets_to_selected (ECompEditorPageReminders *page_reminders)
 	e_cal_component_alarm_set_action (alarm, action);
 
 	/* Repeat stuff */
-	if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (page_reminders->priv->repeat_check))) {
+	if (e_gtk_toggle_button_get_active (page_reminders->priv->repeat_check)) {
 		duration = i_cal_duration_new_null_duration ();
 
 		switch (e_dialog_combo_box_get (page_reminders->priv->repeat_unit_combo, duration_units_map)) {
@@ -742,7 +742,7 @@ ecep_reminders_widgets_to_selected (ECompEditorPageReminders *page_reminders)
 		break;
 
 	case E_CAL_COMPONENT_ALARM_AUDIO:
-		if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (page_reminders->priv->custom_sound_check))) {
+		if (e_gtk_toggle_button_get_active (page_reminders->priv->custom_sound_check)) {
 			gchar *url;
 
 			url = e_gtk_file_chooser_get_uri (page_reminders->priv->custom_sound_chooser);
@@ -775,7 +775,7 @@ ecep_reminders_widgets_to_selected (ECompEditorPageReminders *page_reminders)
 		break;
 
 	case E_CAL_COMPONENT_ALARM_DISPLAY:
-		if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (page_reminders->priv->custom_message_check))) {
+		if (e_gtk_toggle_button_get_active (page_reminders->priv->custom_message_check)) {
 			gchar *text;
 
 			text = ecep_reminders_get_text_view_text (page_reminders->priv->custom_message_text_view);
@@ -830,7 +830,7 @@ ecep_reminders_widgets_to_selected (ECompEditorPageReminders *page_reminders)
 
 		g_list_free (destinations);
 
-		if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (page_reminders->priv->custom_email_message_check))) {
+		if (e_gtk_toggle_button_get_active (page_reminders->priv->custom_email_message_check)) {
 			gchar *text;
 
 			text = ecep_reminders_get_text_view_text (page_reminders->priv->custom_email_message_text_view);

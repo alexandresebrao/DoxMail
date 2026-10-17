@@ -34,7 +34,7 @@ struct _EColorComboPrivate {
 	GtkWidget *chooser_widget;	/* not referenced */
 
 	guint popup_shown	: 1;
-	guint popup_in_progress : 1;
+	guint press_on_frame	: 1;
 
 	guint default_transparent: 1;
 	GdkRGBA *current_color;
@@ -96,51 +96,6 @@ color_combo_popdown (EColorCombo *combo)
 	gtk_widget_hide (combo->priv->popover);
 }
 
-static gboolean
-color_combo_window_button_press_event_cb (EColorCombo *combo,
-                                          GdkEvent *event,
-                                          gpointer user_data)
-{
-	GtkWidget *event_widget;
-
-	event_widget = gtk_get_event_widget ((GdkEvent *) event);
-
-	if (event_widget == combo->priv->popover)
-		return TRUE;
-
-	if (combo->priv->popup_shown)
-		return FALSE;
-
-	combo->priv->popup_in_progress = TRUE;
-	color_combo_popup (combo);
-
-	return TRUE;
-}
-
-static gboolean
-color_combo_window_button_release_event_cb (EColorCombo *combo,
-                                            GdkEvent *event,
-                                            gpointer user_data)
-{
-	gboolean popup_in_progress;
-
-	popup_in_progress = combo->priv->popup_in_progress;
-	combo->priv->popup_in_progress = FALSE;
-
-	if (popup_in_progress)
-		return FALSE;
-
-	if (combo->priv->popup_shown)
-		goto popdown;
-
-	return FALSE;
-
-popdown:
-	color_combo_popdown (combo);
-
-	return TRUE;
-}
-
 static void
 color_combo_child_show_cb (EColorCombo *combo)
 {
@@ -156,61 +111,56 @@ color_combo_child_hide_cb (EColorCombo *combo)
 }
 
 static void
-color_combo_get_preferred_width (GtkWidget *widget,
-                                 gint *min_width,
-                                 gint *natural_width)
+color_combo_pressed_cb (GtkGestureClick *gesture,
+			gint n_press,
+			gdouble x,
+			gdouble y,
+			EColorCombo *combo)
 {
-	GtkWidgetClass *widget_class;
+	graphene_rect_t bounds;
 
-	widget_class = GTK_WIDGET_CLASS (e_color_combo_parent_class);
-	widget_class->measure = e_color_combo_measure;
-	widget_class->get_preferred_width (widget, min_width, natural_width);
-
-	/* Make sure the box with color sample is always visible */
-	if (min_width)
-		*min_width += 20;
-
-	if (natural_width)
-		*natural_width += 20;
+	/* the color frame applies the color without the popup;
+	 * take the whole height of the button for it */
+	combo->priv->press_on_frame =
+		gtk_widget_compute_bounds (combo->priv->color_frame, GTK_WIDGET (combo), &bounds) &&
+		x >= bounds.origin.x && x <= bounds.origin.x + bounds.size.width;
 }
 
-static gboolean
-color_combo_button_press_event_cb (GtkWidget *widget,
-                                   GdkEvent *event)
+static void
+color_combo_clicked (GtkButton *button)
 {
-	EColorCombo *combo = E_COLOR_COMBO (widget);
-	GdkSurface *window;
-	gint x, y, width, height;
+	EColorCombo *combo = E_COLOR_COMBO (button);
 
-	window = e_gtk_widget_get_surface (combo->priv->color_frame);
-	gdk_window_get_position (window, &x, &y);
-	/* Width - only width of the frame with color box */
-	width = gtk_widget_get_allocated_width (combo->priv->color_frame);
-
-	/* Height - height of the entire button (widget) */
-	height = gtk_widget_get_allocated_height (widget);
-
-	/* Check whether user clicked on the color frame - in such case
-	 * apply the color immediatelly without displaying the popup widget */
-	if ((event->x_root >= x) && (event->x_root <= x + width) &&
-	    (event->y_root >= y) && (event->y_root <= y + height)) {
+	if (combo->priv->press_on_frame) {
 		GdkRGBA color;
+
+		combo->priv->press_on_frame = FALSE;
 
 		e_color_combo_get_current_color (combo, &color);
 		g_signal_emit (combo, signals[ACTIVATED], 0, &color);
 
-		return TRUE;
+		return;
 	}
 
 	/* Otherwise display the popup widget */
-	if (combo->priv->popup_shown) {
+	if (combo->priv->popup_shown)
 		color_combo_popdown (combo);
-	} else {
-		combo->priv->popup_in_progress = TRUE;
+	else
 		color_combo_popup (combo);
-	}
+}
 
-	return FALSE;
+static void
+color_combo_size_allocate (GtkWidget *widget,
+			   gint width,
+			   gint height,
+			   gint baseline)
+{
+	EColorCombo *combo = E_COLOR_COMBO (widget);
+
+	GTK_WIDGET_CLASS (e_color_combo_parent_class)->size_allocate (widget, width, height, baseline);
+
+	if (combo->priv->popover)
+		gtk_popover_present (GTK_POPOVER (combo->priv->popover));
 }
 
 static void
@@ -264,20 +214,16 @@ draw_transparent_graphic (cairo_t *cr,
 }
 
 static void
-color_combo_draw_frame_cb (GtkWidget *widget,
+color_combo_draw_frame_cb (GtkDrawingArea *area,
                            cairo_t *cr,
+                           gint width,
+                           gint height,
                            gpointer user_data)
 {
 	EColorCombo *combo = user_data;
 	GdkRGBA rgba;
-	GtkAllocation allocation;
-	gint height, width;
 
 	e_color_combo_get_current_color (combo, &rgba);
-
-	gtk_widget_get_allocation (widget, &allocation);
-	width = allocation.width;
-	height = allocation.height;
 
 	if (rgba.alpha == 0) {
 		draw_transparent_graphic (cr, width, height);
@@ -395,7 +341,7 @@ color_combo_dispose (GObject *object)
 {
 	EColorCombo *self = E_COLOR_COMBO (object);
 
-	g_clear_pointer (&self->priv->popover, gtk_widget_destroy);
+	g_clear_pointer (&self->priv->popover, gtk_widget_unparent);
 	g_clear_pointer (&self->priv->current_color, gdk_rgba_free);
 	g_clear_pointer (&self->priv->default_color, gdk_rgba_free);
 
@@ -404,24 +350,6 @@ color_combo_dispose (GObject *object)
 
 	/* Chain up to parent's dispose() method. */
 	G_OBJECT_CLASS (e_color_combo_parent_class)->dispose (object);
-}
-
-static void
-e_color_combo_measure (GtkWidget *widget,
-		GtkOrientation orientation,
-		gint for_size,
-		gint *minimum,
-		gint *natural,
-		gint *minimum_baseline,
-		gint *natural_baseline)
-{
-	if (orientation == GTK_ORIENTATION_HORIZONTAL) {
-		color_combo_get_preferred_width (widget, minimum, natural);
-		return;
-	}
-
-	GTK_WIDGET_CLASS (e_color_combo_parent_class)->measure (widget, orientation, for_size,
-		minimum, natural, minimum_baseline, natural_baseline);
 }
 
 static void
@@ -436,7 +364,9 @@ e_color_combo_class_init (EColorComboClass *class)
 	object_class->dispose = color_combo_dispose;
 
 	widget_class = GTK_WIDGET_CLASS (class);
-	widget_class->button_press_event = color_combo_button_press_event_cb;
+	widget_class->size_allocate = color_combo_size_allocate;
+
+	GTK_BUTTON_CLASS (class)->clicked = color_combo_clicked;
 
 	class->popup = color_combo_popup;
 	class->popdown = color_combo_popdown;
@@ -530,22 +460,12 @@ e_color_combo_class_init (EColorComboClass *class)
 		g_cclosure_marshal_VOID__VOID,
 		G_TYPE_NONE, 0);
 
-	gtk_binding_entry_add_signal (
-		gtk_binding_set_by_class (class),
-		GDK_KEY_Down, GDK_ALT_MASK, "popup", 0);
-	gtk_binding_entry_add_signal (
-		gtk_binding_set_by_class (class),
-		GDK_KEY_KP_Down, GDK_ALT_MASK, "popup", 0);
+	gtk_widget_class_add_binding_signal (widget_class, GDK_KEY_Down, GDK_ALT_MASK, "popup", NULL);
+	gtk_widget_class_add_binding_signal (widget_class, GDK_KEY_KP_Down, GDK_ALT_MASK, "popup", NULL);
 
-	gtk_binding_entry_add_signal (
-		gtk_binding_set_by_class (class),
-		GDK_KEY_Up, GDK_ALT_MASK, "popdown", 0);
-	gtk_binding_entry_add_signal (
-		gtk_binding_set_by_class (class),
-		GDK_KEY_KP_Up, GDK_ALT_MASK, "popdown", 0);
-	gtk_binding_entry_add_signal (
-		gtk_binding_set_by_class (class),
-		GDK_KEY_Escape, 0, "popdown", 0);
+	gtk_widget_class_add_binding_signal (widget_class, GDK_KEY_Up, GDK_ALT_MASK, "popdown", NULL);
+	gtk_widget_class_add_binding_signal (widget_class, GDK_KEY_KP_Up, GDK_ALT_MASK, "popdown", NULL);
+	gtk_widget_class_add_binding_signal (widget_class, GDK_KEY_Escape, 0, "popdown", NULL);
 }
 
 static void
@@ -553,20 +473,28 @@ e_color_combo_init (EColorCombo *combo)
 {
 	GtkWidget *container;
 	GtkWidget *widget;
+	GtkGesture *gesture;
 
 	combo->priv = e_color_combo_get_instance_private (combo);
 
+	gesture = gtk_gesture_click_new ();
+	gtk_event_controller_set_propagation_phase (GTK_EVENT_CONTROLLER (gesture), GTK_PHASE_CAPTURE);
+	g_signal_connect (gesture, "pressed", G_CALLBACK (color_combo_pressed_cb), combo);
+	gtk_widget_add_controller (GTK_WIDGET (combo), GTK_EVENT_CONTROLLER (gesture));
+
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 4);
-	e_gtk_container_add (combo, widget);
+	gtk_button_set_child (GTK_BUTTON (combo), widget);
 
 	container = widget;
 
 	/* Build the combo button. */
-	widget = gtk_frame_new (NULL);
+	widget = gtk_drawing_area_new ();
+	/* make sure the box with color sample is always visible */
+	gtk_drawing_area_set_content_width (GTK_DRAWING_AREA (widget), 20);
+	gtk_drawing_area_set_draw_func (GTK_DRAWING_AREA (widget),
+		color_combo_draw_frame_cb, combo, NULL);
+	gtk_widget_add_css_class (widget, "frame");
 	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
-	g_signal_connect (
-		widget, "draw",
-		G_CALLBACK (color_combo_draw_frame_cb), combo);
 	combo->priv->color_frame = widget;  /* do not reference */
 
 	widget = gtk_separator_new (GTK_ORIENTATION_VERTICAL);
@@ -581,7 +509,7 @@ e_color_combo_init (EColorCombo *combo)
 	widget = e_gtk_popover_new (GTK_WIDGET (combo));
 	gtk_popover_set_position (GTK_POPOVER (widget), GTK_POS_BOTTOM);
 	gtk_popover_set_autohide (GTK_POPOVER (widget), TRUE);
-	combo->priv->popover = g_object_ref_sink (widget);
+	combo->priv->popover = widget;
 
 	g_signal_connect_swapped (
 		widget, "show",
@@ -589,18 +517,12 @@ e_color_combo_init (EColorCombo *combo)
 	g_signal_connect_swapped (
 		widget, "hide",
 		G_CALLBACK (color_combo_child_hide_cb), combo);
-	g_signal_connect_swapped (
-		widget, "button-press-event",
-		G_CALLBACK (color_combo_window_button_press_event_cb), combo);
-	g_signal_connect_swapped (
-		widget, "button-release-event",
-		G_CALLBACK (color_combo_window_button_release_event_cb), combo);
 
 	container = widget;
 
 	widget = gtk_grid_new ();
 	gtk_grid_set_row_spacing (GTK_GRID (widget), 5);
-	e_gtk_container_add (container, widget);
+	gtk_popover_set_child (GTK_POPOVER (container), widget);
 
 	container = widget;
 
@@ -616,7 +538,6 @@ e_color_combo_init (EColorCombo *combo)
 		G_CALLBACK (color_combo_popdown), combo);
 
 	widget = e_color_chooser_widget_new ();
-	g_object_set_data (G_OBJECT (widget), "window", combo->priv->popover);
 	gtk_grid_attach (GTK_GRID (container), widget, 0, 1, 1, 1);
 	combo->priv->chooser_widget = widget;  /* do not reference */
 

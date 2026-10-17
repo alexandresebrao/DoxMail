@@ -792,7 +792,7 @@ e_day_view_time_item_show_popup_menu (EDayViewTimeItem *time_item,
 	/* Make sure the menu is destroyed when it disappears. */
 	g_signal_connect (
 		menu, "selection-done",
-		G_CALLBACK (gtk_widget_destroy), NULL);
+		G_CALLBACK (e_gtk_widget_destroy), NULL);
 
 	for (i = 0; i < G_N_ELEMENTS (divisions); i++) {
 		g_snprintf (

@@ -53,12 +53,12 @@ typedef struct _EColorChooserWidgetClass EColorChooserWidgetClass;
 typedef struct _EColorChooserWidgetPrivate EColorChooserWidgetPrivate;
 
 struct _EColorChooserWidget {
-	GtkColorChooserWidget parent;
+	GtkWidget parent;
 	EColorChooserWidgetPrivate *priv;
 };
 
 struct _EColorChooserWidgetClass {
-	GtkColorChooserWidgetClass parent_class;
+	GtkWidgetClass parent_class;
 
 	void		(*editor_activated)	(GtkColorChooserWidget *chooser);
 };

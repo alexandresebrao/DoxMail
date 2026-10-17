@@ -73,7 +73,7 @@ collection_wizard_page_update_button_captions (ECollectionWizardPage *page)
 {
 	g_return_if_fail (E_IS_COLLECTION_WIZARD_PAGE (page));
 
-	if (gtk_notebook_get_current_page (GTK_NOTEBOOK (page->collection_wizard)))
+	if (gtk_notebook_get_current_page (e_collection_account_wizard_get_notebook (page->collection_wizard)))
 		gtk_button_set_label (page->prev_button, _("_Previous"));
 	else
 		gtk_button_set_label (page->prev_button, _("_Back"));

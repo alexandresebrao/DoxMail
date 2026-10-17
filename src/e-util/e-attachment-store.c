@@ -732,7 +732,7 @@ e_attachment_store_run_load_dialog (EAttachmentStore *store,
 	e_util_save_file_chooser_folder (file_chooser);
 
 	files = e_gtk_file_chooser_get_files (file_chooser);
-	active = option_display ? gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (option_display)) : FALSE;
+	active = option_display ? e_gtk_toggle_button_get_active (option_display) : FALSE;
 	disposition = active ? "inline" : "attachment";
 
 #ifdef HAVE_AUTOAR
@@ -855,21 +855,18 @@ e_attachment_store_run_save_dialog (EAttachmentStore *store,
 		extract_box = GTK_BOX (extract_box_widget);
 		e_gtk_box_pack_start (extra_box, extract_box_widget, FALSE, FALSE, 5);
 
-		extract_dont = gtk_radio_button_new_with_mnemonic (NULL,
-			_("Do _not extract files from the attachment"));
+		extract_dont = e_gtk_radio_button_new_with_mnemonic (NULL, _("Do _not extract files from the attachment"));
 		e_gtk_box_pack_start (extract_box, extract_dont, FALSE, FALSE, 0);
 
-		extract_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (extract_dont));
-		extract_only = gtk_radio_button_new_with_mnemonic (extract_group,
-			_("Save extracted files _only"));
+		extract_group = e_gtk_radio_button_get_group (GTK_CHECK_BUTTON (extract_dont));
+		extract_only = e_gtk_radio_button_new_with_mnemonic (extract_group, _("Save extracted files _only"));
 		e_gtk_box_pack_start (extract_box, extract_only, FALSE, FALSE, 0);
 
-		extract_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (extract_only));
-		extract_org = gtk_radio_button_new_with_mnemonic (extract_group,
-			_("Save extracted files and the original _archive"));
+		extract_group = e_gtk_radio_button_get_group (GTK_CHECK_BUTTON (extract_only));
+		extract_org = e_gtk_radio_button_new_with_mnemonic (extract_group, _("Save extracted files and the original _archive"));
 		e_gtk_box_pack_start (extract_box, extract_org, FALSE, FALSE, 0);
 
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (extract_dont), TRUE);
+		e_gtk_toggle_button_set_active (extract_dont, TRUE);
 
 		gtk_widget_set_visible (extra_box_widget, TRUE);
 		gtk_file_chooser_set_extra_widget (file_chooser, extra_box_widget);
@@ -951,11 +948,11 @@ e_attachment_store_run_save_dialog (EAttachmentStore *store,
 		if (dialog) {
 #ifdef HAVE_AUTOAR
 			save_self =
-				gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (extract_dont)) ||
-				gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (extract_org));
+				e_gtk_toggle_button_get_active (extract_dont) ||
+				e_gtk_toggle_button_get_active (extract_org);
 			save_extracted =
-				gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (extract_only)) ||
-				gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (extract_org));
+				e_gtk_toggle_button_get_active (extract_only) ||
+				e_gtk_toggle_button_get_active (extract_org);
 
 			if (action == GTK_FILE_CHOOSER_ACTION_SAVE) {
 				e_attachment_set_save_self (attachment_list->data, save_self);

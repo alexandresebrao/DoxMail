@@ -123,13 +123,13 @@ e_appearance_settings_toolbar_icon_size_changed_cb (GSettings *settings,
 	switch (ad->icon_size_value) {
 	default:
 	case E_TOOLBAR_ICON_SIZE_DEFAULT:
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ad->icon_size_radio_default), TRUE);
+		e_gtk_toggle_button_set_active (ad->icon_size_radio_default, TRUE);
 		break;
 	case E_TOOLBAR_ICON_SIZE_SMALL:
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ad->icon_size_radio_small), TRUE);
+		e_gtk_toggle_button_set_active (ad->icon_size_radio_small, TRUE);
 		break;
 	case E_TOOLBAR_ICON_SIZE_LARGE:
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ad->icon_size_radio_large), TRUE);
+		e_gtk_toggle_button_set_active (ad->icon_size_radio_large, TRUE);
 		break;
 	}
 }
@@ -147,7 +147,7 @@ e_appearance_settings_toolbar_icon_size_toggled_cb (GtkWidget *radio_button,
 			  ad->icon_size_radio_small == radio_button ||
 			  ad->icon_size_radio_large == radio_button);
 
-	if (!gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (radio_button)))
+	if (!e_gtk_toggle_button_get_active (radio_button))
 		return;
 
 	new_value = radio_button == ad->icon_size_radio_small ? E_TOOLBAR_ICON_SIZE_SMALL :
@@ -187,13 +187,13 @@ e_appearance_settings_prefer_symbolic_icons_changed_cb (GSettings *settings,
 	switch (ad->symbolic_icons_value) {
 	default:
 	case E_PREFER_SYMBOLIC_ICONS_NO:
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ad->symbolic_icons_radio_no), TRUE);
+		e_gtk_toggle_button_set_active (ad->symbolic_icons_radio_no, TRUE);
 		break;
 	case E_PREFER_SYMBOLIC_ICONS_YES:
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ad->symbolic_icons_radio_yes), TRUE);
+		e_gtk_toggle_button_set_active (ad->symbolic_icons_radio_yes, TRUE);
 		break;
 	case E_PREFER_SYMBOLIC_ICONS_AUTO:
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ad->symbolic_icons_radio_auto), TRUE);
+		e_gtk_toggle_button_set_active (ad->symbolic_icons_radio_auto, TRUE);
 		break;
 	}
 }
@@ -211,7 +211,7 @@ e_appearance_settings_prefer_symbolic_icons_toggled_cb (GtkWidget *radio_button,
 			  ad->symbolic_icons_radio_yes == radio_button ||
 			  ad->symbolic_icons_radio_auto == radio_button);
 
-	if (!gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (radio_button)))
+	if (!e_gtk_toggle_button_get_active (radio_button))
 		return;
 
 	new_value = radio_button == ad->symbolic_icons_radio_no ? E_PREFER_SYMBOLIC_ICONS_NO :
@@ -269,7 +269,7 @@ e_appearance_settings_page_new (EPreferencesWindow *window)
 	row++;
 
 	/* Translators: This is the GNOME project name; you probably do not want to translate it, apart of changing the mnemonic */
-	widget = gtk_radio_button_new_with_mnemonic (NULL, _("_GNOME"));
+	widget = e_gtk_radio_button_new_with_mnemonic (NULL, _("_GNOME"));
 	g_object_set (widget,
 		"margin-start", 12,
 		NULL);
@@ -314,12 +314,12 @@ e_appearance_settings_page_new (EPreferencesWindow *window)
 		G_SETTINGS_BIND_DEFAULT);
 
 	/* Translators: This belongs under "Title Bar Mode" setting, thus similar to "Title Bar Mode: Standard" */
-	widget = gtk_radio_button_new_with_mnemonic (NULL, _("_Standard"));
+	widget = e_gtk_radio_button_new_with_mnemonic (NULL, _("_Standard"));
 	g_object_set (widget,
 		"margin-start", 12,
 		NULL);
 
-	gtk_radio_button_join_group (GTK_RADIO_BUTTON (widget), GTK_RADIO_BUTTON (main_radio));
+	e_gtk_radio_button_join_group (GTK_CHECK_BUTTON (widget), GTK_CHECK_BUTTON (main_radio));
 
 	g_settings_bind (
 		settings, "use-header-bar",
@@ -366,7 +366,7 @@ e_appearance_settings_page_new (EPreferencesWindow *window)
 	row++;
 
 	/* Translators: This is for "Toolbar Icon Size: Default" */
-	widget = gtk_radio_button_new_with_mnemonic (NULL, _("_Default"));
+	widget = e_gtk_radio_button_new_with_mnemonic (NULL, _("_Default"));
 	g_object_set (widget,
 		"margin-start", 12,
 		NULL);
@@ -378,7 +378,7 @@ e_appearance_settings_page_new (EPreferencesWindow *window)
 	gtk_grid_attach (grid, widget, 0, row, 1, 1);
 
 	/* Translators: This is for "Icons Look: Autodetect" */
-	widget = gtk_radio_button_new_with_mnemonic (NULL, _("Aut_odetect"));
+	widget = e_gtk_radio_button_new_with_mnemonic (NULL, _("Aut_odetect"));
 	g_object_set (widget,
 		"margin-start", 36,
 		NULL);
@@ -391,46 +391,46 @@ e_appearance_settings_page_new (EPreferencesWindow *window)
 	row++;
 
 	/* Translators: This is for "Toolbar Icon Size: Small" */
-	widget = gtk_radio_button_new_with_mnemonic (NULL, _("Sm_all"));
+	widget = e_gtk_radio_button_new_with_mnemonic (NULL, _("Sm_all"));
 	g_object_set (widget,
 		"margin-start", 12,
 		NULL);
 
-	gtk_radio_button_join_group (GTK_RADIO_BUTTON (widget), GTK_RADIO_BUTTON (main_radio));
+	e_gtk_radio_button_join_group (GTK_CHECK_BUTTON (widget), GTK_CHECK_BUTTON (main_radio));
 	ad->icon_size_radio_small = widget;
 
 	gtk_grid_attach (grid, widget, 0, row, 1, 1);
 
 	/* Translators: This is for "Icons Look: Prefer symbolic" */
-	widget = gtk_radio_button_new_with_mnemonic (NULL, _("_Prefer symbolic"));
+	widget = e_gtk_radio_button_new_with_mnemonic (NULL, _("_Prefer symbolic"));
 	g_object_set (widget,
 		"margin-start", 36,
 		NULL);
 
-	gtk_radio_button_join_group (GTK_RADIO_BUTTON (widget), GTK_RADIO_BUTTON (main_symbolic_icons_radio));
+	e_gtk_radio_button_join_group (GTK_CHECK_BUTTON (widget), GTK_CHECK_BUTTON (main_symbolic_icons_radio));
 	ad->symbolic_icons_radio_yes = widget;
 
 	gtk_grid_attach (grid, widget, 1, row, 1, 1);
 	row++;
 
 	/* Translators: This is for "Toolbar Icon Size: Large" */
-	widget = gtk_radio_button_new_with_mnemonic (NULL, _("_Large"));
+	widget = e_gtk_radio_button_new_with_mnemonic (NULL, _("_Large"));
 	g_object_set (widget,
 		"margin-start", 12,
 		NULL);
 
-	gtk_radio_button_join_group (GTK_RADIO_BUTTON (widget), GTK_RADIO_BUTTON (main_radio));
+	e_gtk_radio_button_join_group (GTK_CHECK_BUTTON (widget), GTK_CHECK_BUTTON (main_radio));
 	ad->icon_size_radio_large = widget;
 
 	gtk_grid_attach (grid, widget, 0, row, 1, 1);
 
 	/* Translators: This is for "Icons Look: Prefer regular" */
-	widget = gtk_radio_button_new_with_mnemonic (NULL, _("Prefer _regular"));
+	widget = e_gtk_radio_button_new_with_mnemonic (NULL, _("Prefer _regular"));
 	g_object_set (widget,
 		"margin-start", 36,
 		NULL);
 
-	gtk_radio_button_join_group (GTK_RADIO_BUTTON (widget), GTK_RADIO_BUTTON (main_symbolic_icons_radio));
+	e_gtk_radio_button_join_group (GTK_CHECK_BUTTON (widget), GTK_CHECK_BUTTON (main_symbolic_icons_radio));
 	ad->symbolic_icons_radio_no = widget;
 
 	gtk_grid_attach (grid, widget, 1, row, 1, 1);
@@ -445,13 +445,13 @@ e_appearance_settings_page_new (EPreferencesWindow *window)
 	switch (ad->icon_size_value) {
 	default:
 	case E_TOOLBAR_ICON_SIZE_DEFAULT:
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ad->icon_size_radio_default), TRUE);
+		e_gtk_toggle_button_set_active (ad->icon_size_radio_default, TRUE);
 		break;
 	case E_TOOLBAR_ICON_SIZE_SMALL:
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ad->icon_size_radio_small), TRUE);
+		e_gtk_toggle_button_set_active (ad->icon_size_radio_small, TRUE);
 		break;
 	case E_TOOLBAR_ICON_SIZE_LARGE:
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ad->icon_size_radio_large), TRUE);
+		e_gtk_toggle_button_set_active (ad->icon_size_radio_large, TRUE);
 		break;
 	}
 
@@ -476,13 +476,13 @@ e_appearance_settings_page_new (EPreferencesWindow *window)
 	switch (ad->symbolic_icons_value) {
 	default:
 	case E_PREFER_SYMBOLIC_ICONS_NO:
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ad->symbolic_icons_radio_no), TRUE);
+		e_gtk_toggle_button_set_active (ad->symbolic_icons_radio_no, TRUE);
 		break;
 	case E_PREFER_SYMBOLIC_ICONS_YES:
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ad->symbolic_icons_radio_yes), TRUE);
+		e_gtk_toggle_button_set_active (ad->symbolic_icons_radio_yes, TRUE);
 		break;
 	case E_PREFER_SYMBOLIC_ICONS_AUTO:
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ad->symbolic_icons_radio_auto), TRUE);
+		e_gtk_toggle_button_set_active (ad->symbolic_icons_radio_auto, TRUE);
 		break;
 	}
 

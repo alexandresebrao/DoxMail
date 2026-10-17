@@ -71,23 +71,19 @@ G_DEFINE_TYPE_WITH_PRIVATE (EHTMLEditorCellDialog, e_html_editor_cell_dialog, E_
 static void
 html_editor_cell_dialog_set_scope (EHTMLEditorCellDialog *dialog)
 {
-	if (gtk_toggle_button_get_active (
-		GTK_TOGGLE_BUTTON (dialog->priv->scope_cell_button))) {
+	if (e_gtk_toggle_button_get_active (dialog->priv->scope_cell_button)) {
 
 		dialog->priv->scope = SCOPE_CELL;
 
-	} else if (gtk_toggle_button_get_active (
-		GTK_TOGGLE_BUTTON (dialog->priv->scope_row_button))) {
+	} else if (e_gtk_toggle_button_get_active (dialog->priv->scope_row_button)) {
 
 		dialog->priv->scope = SCOPE_ROW;
 
-	} else if (gtk_toggle_button_get_active (
-		GTK_TOGGLE_BUTTON (dialog->priv->scope_column_button))) {
+	} else if (e_gtk_toggle_button_get_active (dialog->priv->scope_column_button)) {
 
 		dialog->priv->scope = SCOPE_COLUMN;
 
-	} else if (gtk_toggle_button_get_active (
-		GTK_TOGGLE_BUTTON (dialog->priv->scope_table_button))) {
+	} else if (e_gtk_toggle_button_get_active (dialog->priv->scope_table_button)) {
 
 		dialog->priv->scope = SCOPE_TABLE;
 
@@ -137,8 +133,7 @@ html_editor_cell_dialog_set_wrap_text (EHTMLEditorCellDialog *dialog)
 
 	e_content_editor_cell_set_wrap (
 		cnt_editor,
-		gtk_toggle_button_get_active (
-			GTK_TOGGLE_BUTTON (dialog->priv->wrap_text_check)),
+		e_gtk_toggle_button_get_active (dialog->priv->wrap_text_check),
 		dialog->priv->scope);
 }
 
@@ -153,8 +148,7 @@ html_editor_cell_dialog_set_header_style (EHTMLEditorCellDialog *dialog)
 
 	e_content_editor_cell_set_header_style (
 		cnt_editor,
-		gtk_toggle_button_get_active (
-			GTK_TOGGLE_BUTTON (dialog->priv->header_style_check)),
+		e_gtk_toggle_button_get_active (dialog->priv->header_style_check),
 		dialog->priv->scope);
 }
 
@@ -167,8 +161,7 @@ html_editor_cell_dialog_set_width (EHTMLEditorCellDialog *dialog)
 	editor = e_html_editor_dialog_get_editor (E_HTML_EDITOR_DIALOG (dialog));
 	cnt_editor = e_html_editor_get_content_editor (editor);
 
-	if (gtk_toggle_button_get_active (
-		GTK_TOGGLE_BUTTON (dialog->priv->width_check))) {
+	if (e_gtk_toggle_button_get_active (dialog->priv->width_check)) {
 
 		e_content_editor_cell_set_width (
 			cnt_editor,
@@ -297,8 +290,7 @@ html_editor_cell_dialog_show (GtkWidget *widget)
 
 	e_content_editor_on_dialog_open (cnt_editor, E_CONTENT_EDITOR_DIALOG_CELL);
 
-	gtk_toggle_button_set_active (
-		GTK_TOGGLE_BUTTON (dialog->priv->scope_cell_button), TRUE);
+	e_gtk_toggle_button_set_active (dialog->priv->scope_cell_button, TRUE);
 
 	alignment = e_content_editor_cell_get_align (cnt_editor);
 	gtk_combo_box_set_active_id (
@@ -312,20 +304,14 @@ html_editor_cell_dialog_show (GtkWidget *widget)
 		(alignment && *alignment) ? alignment : "middle");
 	g_free (alignment);
 
-	gtk_toggle_button_set_active (
-		GTK_TOGGLE_BUTTON (dialog->priv->wrap_text_check),
-		e_content_editor_cell_get_wrap (cnt_editor));
+	e_gtk_toggle_button_set_active (dialog->priv->wrap_text_check, e_content_editor_cell_get_wrap (cnt_editor));
 
-	gtk_toggle_button_set_active (
-		GTK_TOGGLE_BUTTON (dialog->priv->header_style_check),
-		e_content_editor_cell_is_header (cnt_editor));
+	e_gtk_toggle_button_set_active (dialog->priv->header_style_check, e_content_editor_cell_is_header (cnt_editor));
 
 	width = e_content_editor_cell_get_width (cnt_editor, &unit);
 	gtk_spin_button_set_value (
 		GTK_SPIN_BUTTON (dialog->priv->width_edit), width);
-	gtk_toggle_button_set_active (
-		GTK_TOGGLE_BUTTON (dialog->priv->width_check),
-		unit != E_CONTENT_EDITOR_UNIT_AUTO);
+	e_gtk_toggle_button_set_active (dialog->priv->width_check, unit != E_CONTENT_EDITOR_UNIT_AUTO);
 	gtk_combo_box_set_active_id (
 		GTK_COMBO_BOX (dialog->priv->width_units),
 		(unit == E_CONTENT_EDITOR_UNIT_PIXEL) ? "units-px" : "units-percent");
@@ -403,7 +389,7 @@ e_html_editor_cell_dialog_init (EHTMLEditorCellDialog *dialog)
 	gtk_widget_set_margin_start (GTK_WIDGET (grid), 10);
 
 	/* Scope: cell */
-	widget = gtk_radio_button_new_with_mnemonic (NULL, _("C_ell"));
+	widget = e_gtk_radio_button_new_with_mnemonic (NULL, _("C_ell"));
 	gtk_grid_attach (grid, widget, 1, 0, 1, 1);
 	dialog->priv->scope_cell_button = widget;
 
@@ -412,8 +398,7 @@ e_html_editor_cell_dialog_init (EHTMLEditorCellDialog *dialog)
 		G_CALLBACK (html_editor_cell_dialog_set_scope), dialog);
 
 	/* Scope: row */
-	widget = gtk_radio_button_new_with_mnemonic_from_widget (
-		GTK_RADIO_BUTTON (dialog->priv->scope_cell_button), _("_Row"));
+	widget = e_gtk_radio_button_new_with_mnemonic_from_widget (GTK_CHECK_BUTTON (dialog->priv->scope_cell_button), _("_Row"));
 	gtk_grid_attach (grid, widget, 3, 0, 1, 1);
 	dialog->priv->scope_row_button = widget;
 
@@ -422,8 +407,7 @@ e_html_editor_cell_dialog_init (EHTMLEditorCellDialog *dialog)
 		G_CALLBACK (html_editor_cell_dialog_set_scope), dialog);
 
 	/* Scope: table */
-	widget = gtk_radio_button_new_with_mnemonic_from_widget (
-		GTK_RADIO_BUTTON (dialog->priv->scope_cell_button), _("_Table"));
+	widget = e_gtk_radio_button_new_with_mnemonic_from_widget (GTK_CHECK_BUTTON (dialog->priv->scope_cell_button), _("_Table"));
 	gtk_grid_attach (grid, widget, 1, 1, 1, 1);
 	dialog->priv->scope_table_button = widget;
 
@@ -432,8 +416,7 @@ e_html_editor_cell_dialog_init (EHTMLEditorCellDialog *dialog)
 		G_CALLBACK (html_editor_cell_dialog_set_scope), dialog);
 
 	/* Scope: column */
-	widget = gtk_radio_button_new_with_mnemonic_from_widget (
-		GTK_RADIO_BUTTON (dialog->priv->scope_cell_button), _("Col_umn"));
+	widget = e_gtk_radio_button_new_with_mnemonic_from_widget (GTK_CHECK_BUTTON (dialog->priv->scope_cell_button), _("Col_umn"));
 	gtk_grid_attach (grid, widget, 3, 1, 1, 1);
 	dialog->priv->scope_column_button = widget;
 

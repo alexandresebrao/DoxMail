@@ -199,7 +199,7 @@ struct _EConfigTarget {
  * @id: The globally unique identifider for this configuration window,
  * used for hooking into it.
  * @target: The current target.
- * @widget: The GtkNoteBook or GtkAssistant created after
+ * @widget: The GtkNoteBook or EAssistant created after
  * :create_widget() is called that represents the merged and combined
  * configuration window.
  * @window: If :create_window() is called, then the containing

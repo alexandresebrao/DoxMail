@@ -1984,7 +1984,7 @@ action_mail_reply_all_check (CamelFolder *folder,
 
 		response = e_gtk_dialog_run (GTK_DIALOG (dialog));
 
-		if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (check))) {
+		if (e_gtk_toggle_button_get_active (check)) {
 			GSettings *settings;
 			const gchar *key;
 
@@ -2414,8 +2414,7 @@ action_mail_reply_sender_check (CamelFolder *folder,
 
 			response = e_gtk_dialog_run (GTK_DIALOG (dialog));
 
-			active = gtk_toggle_button_get_active (
-				GTK_TOGGLE_BUTTON (check));
+			active = e_gtk_toggle_button_get_active (check);
 			if (active) {
 				key = "prompt-on-private-list-reply";
 				g_settings_set_boolean (settings, key, FALSE);
@@ -2460,16 +2459,14 @@ action_mail_reply_sender_check (CamelFolder *folder,
 
 		response = e_gtk_dialog_run (GTK_DIALOG (dialog));
 
-		active = gtk_toggle_button_get_active (
-			GTK_TOGGLE_BUTTON (check_again));
+		active = e_gtk_toggle_button_get_active (check_again);
 		if (active) {
 			key = "prompt-on-list-reply-to";
 			g_settings_set_boolean (settings, key, FALSE);
 		}
 
 		key = "composer-ignore-list-reply-to";
-		active = gtk_toggle_button_get_active (
-			GTK_TOGGLE_BUTTON (check_always_ignore));
+		active = e_gtk_toggle_button_get_active (check_always_ignore);
 		g_settings_set_boolean (settings, key, active);
 
 		e_gtk_widget_destroy (dialog);
@@ -5056,13 +5053,13 @@ mail_label_change_more_checkbox_toggled_cb (GtkToggleButton *button)
 {
 	g_signal_handlers_block_by_func (button, mail_label_change_more_checkbox_toggled_cb, NULL);
 
-	if (gtk_toggle_button_get_inconsistent (button) &&
-	    gtk_toggle_button_get_active (button)) {
-		gtk_toggle_button_set_active (button, FALSE);
-		gtk_toggle_button_set_inconsistent (button, FALSE);
-	} else if (!gtk_toggle_button_get_active (button)) {
-		gtk_toggle_button_set_inconsistent (button, TRUE);
-		gtk_toggle_button_set_active (button, FALSE);
+	if (e_gtk_toggle_button_get_inconsistent (button) &&
+	    e_gtk_toggle_button_get_active (button)) {
+		e_gtk_toggle_button_set_active (button, FALSE);
+		e_gtk_toggle_button_set_inconsistent (button, FALSE);
+	} else if (!e_gtk_toggle_button_get_active (button)) {
+		e_gtk_toggle_button_set_inconsistent (button, TRUE);
+		e_gtk_toggle_button_set_active (button, FALSE);
 	}
 
 	g_signal_handlers_unblock_by_func (button, mail_label_change_more_checkbox_toggled_cb, NULL);
@@ -5099,7 +5096,7 @@ mail_label_change_more_store_changes (MoreLabelsData *mld,
 		GtkToggleButton *checkbox = g_ptr_array_index (mld->checkboxes, ii);
 		const gchar *tag;
 
-		if (!unset_all && gtk_toggle_button_get_inconsistent (checkbox))
+		if (!unset_all && e_gtk_toggle_button_get_inconsistent (checkbox))
 			continue;
 
 		tag = g_object_get_data (G_OBJECT (checkbox), "tag");
@@ -5114,7 +5111,7 @@ mail_label_change_more_store_changes (MoreLabelsData *mld,
 			if (!nfo)
 				continue;
 
-			if (unset_all || !gtk_toggle_button_get_active (checkbox)) {
+			if (unset_all || !e_gtk_toggle_button_get_active (checkbox)) {
 				camel_message_info_set_user_flag (nfo, tag, FALSE);
 				camel_message_info_set_user_tag (nfo, "label", NULL);
 			} else {
@@ -5212,9 +5209,9 @@ action_mail_label_change_more_cb (EUIAction *action,
 		not_exists = (value & LABEL_NOTEXIST) != 0;
 
 		if (exists && not_exists)
-			gtk_toggle_button_set_inconsistent (GTK_TOGGLE_BUTTON (checkbox), TRUE);
+			e_gtk_toggle_button_set_inconsistent (checkbox, TRUE);
 		else if (exists)
-			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (checkbox), TRUE);
+			e_gtk_toggle_button_set_active (checkbox, TRUE);
 
 		g_signal_connect (checkbox, "toggled",
 			G_CALLBACK (mail_label_change_more_checkbox_toggled_cb), NULL);
@@ -5314,7 +5311,7 @@ action_mail_label_change_more_cb (EUIAction *action,
 	gtk_grid_attach (grid, GTK_WIDGET (box), 0, max_rows + 1, col + 1, 1);
 
 	g_signal_connect (popover, "closed",
-		G_CALLBACK (gtk_widget_destroy), NULL);
+		G_CALLBACK (e_gtk_widget_destroy), NULL);
 
 	widget = gtk_widget_get_parent (GTK_POPOVER (popover));
 	if (widget) {

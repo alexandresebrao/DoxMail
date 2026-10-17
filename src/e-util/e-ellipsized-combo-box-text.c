@@ -20,37 +20,30 @@
 
 #include "e-ellipsized-combo-box-text.h"
 
-struct _EEllipsizedComboBoxTextPrivate {
-	gint max_natural_width;
-};
+#define MAX_WIDTH_KEY "e-ellipsized-max-natural-width"
 
-G_DEFINE_TYPE_WITH_PRIVATE (EEllipsizedComboBoxText, e_ellipsized_combo_box_text, GTK_TYPE_COMBO_BOX_TEXT)
-
-static void
-ellipsized_combo_box_text_get_preferred_width (GtkWidget *widget,
-					       gint *minimum_width,
-					       gint *natural_width)
+GType
+e_ellipsized_combo_box_text_get_type (void)
 {
-	EEllipsizedComboBoxText *combo_box = E_ELLIPSIZED_COMBO_BOX_TEXT (widget);
-
-	GTK_WIDGET_CLASS (e_ellipsized_combo_box_text_parent_class)->measure (widget, GTK_ORIENTATION_HORIZONTAL, -1, minimum_width, natural_width, NULL, NULL);
-
-	if (*natural_width > combo_box->priv->max_natural_width + (25 * gtk_widget_get_scale_factor (widget)))
-		*natural_width = combo_box->priv->max_natural_width;
+	return GTK_TYPE_COMBO_BOX_TEXT;
 }
 
 static void
-ellipsized_combo_box_text_constructed (GObject *object)
+ellipsized_combo_box_text_update_cells (GtkComboBoxText *combo_box,
+					gint max_natural_width)
 {
 	GList *cells, *link;
+	gint max_chars;
 
-	G_OBJECT_CLASS (e_ellipsized_combo_box_text_parent_class)->constructed (object);
+	/* cells measure in characters; an average one is about 8px wide */
+	max_chars = max_natural_width > 0 ? MAX (max_natural_width / 8, 1) : -1;
 
-	cells = gtk_cell_layout_get_cells (GTK_CELL_LAYOUT (object));
+	cells = gtk_cell_layout_get_cells (GTK_CELL_LAYOUT (combo_box));
 	for (link = cells; link; link = g_list_next (link)) {
 		if (GTK_IS_CELL_RENDERER_TEXT (link->data)) {
 			g_object_set (link->data,
 				"ellipsize", PANGO_ELLIPSIZE_END,
+				"max-width-chars", max_chars,
 				NULL);
 		}
 	}
@@ -58,73 +51,31 @@ ellipsized_combo_box_text_constructed (GObject *object)
 	g_list_free (cells);
 }
 
-static void
-e_ellipsized_combo_box_text_measure (GtkWidget *widget,
-		GtkOrientation orientation,
-		gint for_size,
-		gint *minimum,
-		gint *natural,
-		gint *minimum_baseline,
-		gint *natural_baseline)
-{
-	if (orientation == GTK_ORIENTATION_HORIZONTAL) {
-		ellipsized_combo_box_text_get_preferred_width (widget, minimum, natural);
-		return;
-	}
-
-	GTK_WIDGET_CLASS (e_ellipsized_combo_box_text_parent_class)->measure (widget, orientation, for_size,
-		minimum, natural, minimum_baseline, natural_baseline);
-}
-
-static void
-e_ellipsized_combo_box_text_class_init (EEllipsizedComboBoxTextClass *klass)
-{
-	GtkWidgetClass *widget_class;
-	GObjectClass *object_class;
-
-	widget_class = GTK_WIDGET_CLASS (klass);
-
-	object_class = G_OBJECT_CLASS (klass);
-	object_class->constructed = ellipsized_combo_box_text_constructed;
-}
-
-static void
-e_ellipsized_combo_box_text_init (EEllipsizedComboBoxText *combo_box)
-{
-	combo_box->priv = e_ellipsized_combo_box_text_get_instance_private (combo_box);
-	combo_box->priv->max_natural_width = 225;
-}
-
 GtkWidget *
 e_ellipsized_combo_box_text_new (gboolean has_entry)
 {
-	return g_object_new (e_ellipsized_combo_box_text_get_type (),
-		"has-entry", has_entry,
-		NULL);
+	GtkWidget *widget;
+
+	widget = has_entry ? gtk_combo_box_text_new_with_entry () : gtk_combo_box_text_new ();
+	e_ellipsized_combo_box_text_set_max_natural_width (GTK_COMBO_BOX_TEXT (widget), 225);
+
+	return widget;
 }
 
 gint
 e_ellipsized_combo_box_text_get_max_natural_width (EEllipsizedComboBoxText *combo_box)
 {
-	g_return_val_if_fail (E_IS_ELLIPSIZED_COMBO_BOX_TEXT (combo_box), -1);
+	g_return_val_if_fail (GTK_IS_COMBO_BOX_TEXT (combo_box), -1);
 
-	return combo_box->priv->max_natural_width;
+	return GPOINTER_TO_INT (g_object_get_data (G_OBJECT (combo_box), MAX_WIDTH_KEY));
 }
 
 void
 e_ellipsized_combo_box_text_set_max_natural_width (EEllipsizedComboBoxText *combo_box,
 						   gint max_natural_width)
 {
-	g_return_if_fail (E_IS_ELLIPSIZED_COMBO_BOX_TEXT (combo_box));
+	g_return_if_fail (GTK_IS_COMBO_BOX_TEXT (combo_box));
 
-	if (combo_box->priv->max_natural_width != max_natural_width) {
-		GtkWidget *widget;
-
-		combo_box->priv->max_natural_width = max_natural_width;
-
-		widget = GTK_WIDGET (combo_box);
-
-		if (gtk_widget_get_realized (widget))
-			gtk_widget_queue_resize (widget);
-	}
+	g_object_set_data (G_OBJECT (combo_box), MAX_WIDTH_KEY, GINT_TO_POINTER (max_natural_width));
+	ellipsized_combo_box_text_update_cells (combo_box, max_natural_width);
 }

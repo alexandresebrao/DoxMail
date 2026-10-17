@@ -95,13 +95,13 @@ replace_dialog_get_find_flags (EHTMLEditorReplaceDialog *dialog)
 {
 	guint32 flags = E_CONTENT_EDITOR_FIND_NEXT;
 
-	if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (dialog->priv->backwards)))
+	if (e_gtk_toggle_button_get_active (dialog->priv->backwards))
 		flags |= E_CONTENT_EDITOR_FIND_MODE_BACKWARDS;
 
-	if (!gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (dialog->priv->case_sensitive)))
+	if (!e_gtk_toggle_button_get_active (dialog->priv->case_sensitive))
 		flags |= E_CONTENT_EDITOR_FIND_CASE_INSENSITIVE;
 
-	if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (dialog->priv->wrap)))
+	if (e_gtk_toggle_button_get_active (dialog->priv->wrap))
 		flags |= E_CONTENT_EDITOR_FIND_WRAP_AROUND;
 
 	return flags;

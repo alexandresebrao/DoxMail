@@ -124,10 +124,10 @@ mail_config_yahoo_summary_commit_changes_cb (EMailConfigSummaryPage *page,
 		return;
 
 	toggle_button = GTK_TOGGLE_BUTTON (extension->priv->calendar_toggle);
-	calendar_active = gtk_toggle_button_get_active (toggle_button);
+	calendar_active = e_gtk_toggle_button_get_active (toggle_button);
 
 	toggle_button = GTK_TOGGLE_BUTTON (extension->priv->contacts_toggle);
-	contacts_active = gtk_toggle_button_get_active (toggle_button);
+	contacts_active = e_gtk_toggle_button_get_active (toggle_button);
 
 	/* If the user declined to add a Calendar, do nothing. */
 	if (!calendar_active && !contacts_active)
@@ -268,14 +268,14 @@ mail_config_yahoo_summary_constructed (GObject *object)
 
 	text = _("Add Ca_lendar and Tasks to this account");
 	widget = gtk_check_button_new_with_mnemonic (text);
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget), TRUE);
+	e_gtk_toggle_button_set_active (widget, TRUE);
 	gtk_widget_set_margin_start (widget, 12);
 	gtk_grid_attach (GTK_GRID (container), widget, 0, 1, 2, 1);
 	extension->priv->calendar_toggle = widget;  /* not referenced */
 	gtk_widget_show (widget);
 
 	widget = gtk_check_button_new_with_mnemonic (_("Add Con_tacts to this account"));
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget), TRUE);
+	e_gtk_toggle_button_set_active (widget, TRUE);
 	gtk_widget_set_margin_start (widget, 12);
 	gtk_grid_attach (GTK_GRID (container), widget, 0, 2, 2, 1);
 	extension->priv->contacts_toggle = widget;  /* not referenced */

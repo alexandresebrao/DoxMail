@@ -286,7 +286,7 @@ cal_config_local_check_complete (ESourceConfigBackend *backend,
 	file = e_source_local_get_custom_file (extension);
 
 	toggle_button = GTK_TOGGLE_BUTTON (context->custom_file_checkbox);
-	active = gtk_toggle_button_get_active (toggle_button);
+	active = e_gtk_toggle_button_get_active (toggle_button);
 
 	/* If toggle button is active we need a valid file. */
 	return !active || (file != NULL);

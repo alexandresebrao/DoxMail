@@ -128,7 +128,7 @@ checkbox_toggle_cb (GtkToggleButton *tb,
 {
 	g_datalist_set_data (
 		&target->data, "kmail-do-mail",
-		GINT_TO_POINTER (gtk_toggle_button_get_active (tb)));
+		GINT_TO_POINTER (e_gtk_toggle_button_get_active (tb)));
 }
 
 #if ENABLE_SELECT
@@ -247,7 +247,7 @@ kmail_getwidget (EImport *ei,
 
 	box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 2);
 	w = gtk_check_button_new_with_label (_("Mail"));
-	gtk_toggle_button_set_active ((GtkToggleButton *) w, TRUE);
+	e_gtk_toggle_button_set_active ((GtkToggleButton *) w, TRUE);
 	g_signal_connect (
 		w, "toggled",
 		G_CALLBACK (checkbox_toggle_cb), target);
@@ -258,7 +258,7 @@ kmail_getwidget (EImport *ei,
 	count = g_slist_length (contact_list);
 	contact_str = g_strdup_printf (ngettext ("%d Address", "%d Addresses", count), count);
 	w = gtk_check_button_new_with_label (contact_str);
-	gtk_toggle_button_set_active ((GtkToggleButton *) w, TRUE);
+	e_gtk_toggle_button_set_active ((GtkToggleButton *) w, TRUE);
 	g_signal_connect (
 		w, "toggled",
 		G_CALLBACK (checkbox_toggle_cb), target);

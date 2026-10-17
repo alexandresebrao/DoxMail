@@ -343,8 +343,7 @@ do_save_calendar_csv (FormatHandler *handler,
 	config->newline = userstring_to_systemstring (tmp ? tmp:"\\n");
 	tmp = gtk_editable_get_text (GTK_EDITABLE (d->quote_entry));
 	config->quote = userstring_to_systemstring (tmp ? tmp:"\"");
-	config->header = gtk_toggle_button_get_active (
-		GTK_TOGGLE_BUTTON (d->header_check));
+	config->header = e_gtk_toggle_button_get_active (d->header_check);
 
 	stream = open_for_writing (
 		GTK_WINDOW (e_gtk_widget_get_toplevel (GTK_WIDGET (selector))),

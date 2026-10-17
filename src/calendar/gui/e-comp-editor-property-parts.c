@@ -2309,12 +2309,11 @@ ecepp_transparency_fill_widget (ECompEditorPropertyPart *property_part,
 
 	prop = i_cal_component_get_first_property (component, I_CAL_TRANSP_PROPERTY);
 	if (prop) {
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (edit_widget),
-			i_cal_property_get_transp (prop) == I_CAL_TRANSP_OPAQUE);
+		e_gtk_toggle_button_set_active (edit_widget, i_cal_property_get_transp (prop) == I_CAL_TRANSP_OPAQUE);
 
 		g_object_unref (prop);
 	} else {
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (edit_widget), TRUE);
+		e_gtk_toggle_button_set_active (edit_widget, TRUE);
 	}
 }
 
@@ -2331,7 +2330,7 @@ ecepp_transparency_fill_component (ECompEditorPropertyPart *property_part,
 	edit_widget = e_comp_editor_property_part_get_edit_widget (property_part);
 	g_return_if_fail (GTK_IS_CHECK_BUTTON (edit_widget));
 
-	value = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (edit_widget)) ? I_CAL_TRANSP_OPAQUE : I_CAL_TRANSP_TRANSPARENT;
+	value = e_gtk_toggle_button_get_active (edit_widget) ? I_CAL_TRANSP_OPAQUE : I_CAL_TRANSP_TRANSPARENT;
 
 	prop = i_cal_component_get_first_property (component, I_CAL_TRANSP_PROPERTY);
 	if (prop) {

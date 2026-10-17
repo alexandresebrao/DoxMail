@@ -440,7 +440,7 @@ e_cal_day_column_bag_removed_cb (ECalComponentBag *bag,
 		CompData *cd = item->user_data;
 
 		if (cd)
-			g_clear_pointer (&cd->widget, gtk_widget_destroy);
+			g_clear_pointer (&cd->widget, e_gtk_widget_destroy);
 	}
 
 	self->highlight.clashes = e_cal_day_column_check_highlight_clashes (self);

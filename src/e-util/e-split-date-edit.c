@@ -427,7 +427,7 @@ e_split_date_edit_select_clicked_cb (GtkButton *button,
 	g_object_weak_ref (G_OBJECT (self->popover), (GWeakNotify) g_nullify_pointer, &self->popover);
 
 	g_signal_connect (widget, "closed",
-		G_CALLBACK (gtk_widget_destroy), NULL);
+		G_CALLBACK (e_gtk_widget_destroy), NULL);
 
 	gtk_widget_show (widget);
 }
@@ -545,7 +545,7 @@ e_split_date_edit_dispose (GObject *object)
 {
 	ESplitDateEdit *self = E_SPLIT_DATE_EDIT (object);
 
-	g_clear_pointer (&self->popover, gtk_widget_destroy);
+	g_clear_pointer (&self->popover, e_gtk_widget_destroy);
 
 	G_OBJECT_CLASS (e_split_date_edit_parent_class)->dispose (object);
 }

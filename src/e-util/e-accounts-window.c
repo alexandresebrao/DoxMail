@@ -1690,7 +1690,7 @@ accounts_window_constructed (GObject *object)
 	GtkWidget *container;
 	GtkWidget *widget;
 	GtkGrid *grid;
-	GtkAccelGroup *accel_group;
+	EGtkAccelGroup *accel_group;
 
 	/* Chain up to parent's method. */
 	G_OBJECT_CLASS (e_accounts_window_parent_class)->constructed (object);
@@ -1791,12 +1791,12 @@ accounts_window_constructed (GObject *object)
 	g_signal_connect_swapped (widget, "clicked",
 		G_CALLBACK (gtk_window_close), accounts_window);
 	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
-	accel_group = gtk_accel_group_new ();
-	gtk_widget_add_accelerator (
+	accel_group = e_gtk_accel_group_new ();
+	e_gtk_widget_add_accelerator (
 		widget, "activate", accel_group,
 		GDK_KEY_Escape, (GdkModifierType) 0,
-		GTK_ACCEL_VISIBLE);
-	gtk_window_add_accel_group (GTK_WINDOW (accounts_window), accel_group);
+		0);
+	e_gtk_window_add_accel_group (GTK_WINDOW (accounts_window), accel_group);
 
 	registry = e_accounts_window_get_registry (accounts_window);
 

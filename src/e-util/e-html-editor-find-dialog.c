@@ -118,13 +118,13 @@ html_editor_find_dialog_find_cb (EHTMLEditorFindDialog *dialog)
 {
 	guint32 flags = E_CONTENT_EDITOR_FIND_NEXT;
 
-	if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (dialog->priv->backwards)))
+	if (e_gtk_toggle_button_get_active (dialog->priv->backwards))
 		flags |= E_CONTENT_EDITOR_FIND_MODE_BACKWARDS;
 
-	if (!gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (dialog->priv->case_sensitive)))
+	if (!e_gtk_toggle_button_get_active (dialog->priv->case_sensitive))
 		flags |= E_CONTENT_EDITOR_FIND_CASE_INSENSITIVE;
 
-	if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (dialog->priv->wrap_search)))
+	if (e_gtk_toggle_button_get_active (dialog->priv->wrap_search))
 		flags |= E_CONTENT_EDITOR_FIND_WRAP_AROUND;
 
 	e_content_editor_find (
@@ -218,7 +218,7 @@ e_html_editor_find_dialog_init (EHTMLEditorFindDialog *dialog)
 
 	widget = gtk_check_button_new_with_mnemonic (N_("_Wrap Search"));
 	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget), TRUE);
+	e_gtk_toggle_button_set_active (widget, TRUE);
 	dialog->priv->wrap_search = widget;
 	g_signal_connect_swapped (
 		widget, "toggled",

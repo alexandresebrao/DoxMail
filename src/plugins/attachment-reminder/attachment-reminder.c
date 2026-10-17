@@ -172,7 +172,7 @@ ask_for_missing_attachment (EPlugin *ep,
 
 	response = e_gtk_dialog_run (GTK_DIALOG (dialog));
 
-	if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (check)))
+	if (e_gtk_toggle_button_get_active (check))
 		e_plugin_enable (ep, FALSE);
 
 	e_gtk_widget_destroy (dialog);

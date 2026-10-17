@@ -19,6 +19,7 @@
 #define E_MAIL_CONFIG_ASSISTANT_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-assistant.h>
 #include <libemail-engine/libemail-engine.h>
 
 #include <mail/e-mail-config-page.h>
@@ -50,12 +51,12 @@ typedef struct _EMailConfigAssistantClass EMailConfigAssistantClass;
 typedef struct _EMailConfigAssistantPrivate EMailConfigAssistantPrivate;
 
 struct _EMailConfigAssistant {
-	GtkAssistant parent;
+	EAssistant parent;
 	EMailConfigAssistantPrivate *priv;
 };
 
 struct _EMailConfigAssistantClass {
-	GtkAssistantClass parent_class;
+	EAssistantClass parent_class;
 
 	/* Signals */
 	void		(* new_source)	(EMailConfigAssistant *assistant,

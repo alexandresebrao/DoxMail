@@ -434,7 +434,7 @@ ecep_recurrence_checkbox_toggled_cb (GtkToggleButton *checkbox,
 
 	g_return_if_fail (E_IS_COMP_EDITOR_PAGE_RECURRENCE (page_recurrence));
 
-	if (page_recurrence->priv->is_custom && !gtk_toggle_button_get_active (checkbox))
+	if (page_recurrence->priv->is_custom && !e_gtk_toggle_button_get_active (checkbox))
 		page_recurrence->priv->is_custom = FALSE;
 
 	page = E_COMP_EDITOR_PAGE (page_recurrence);
@@ -949,7 +949,7 @@ ecep_recurrence_make_recurrence_special (ECompEditorPageRecurrence *page_recurre
 
 	g_return_if_fail (E_IS_COMP_EDITOR_PAGE_RECURRENCE (page_recurrence));
 
-	g_clear_pointer (&page_recurrence->priv->month_num_combo, gtk_widget_destroy);
+	g_clear_pointer (&page_recurrence->priv->month_num_combo, e_gtk_widget_destroy);
 
 	child = ecep_recurrence_get_box_first_child (page_recurrence->priv->recr_interval_special_box);
 	if (child != NULL) {
@@ -1229,7 +1229,7 @@ ecep_recurrence_clear_widgets (ECompEditorPageRecurrence *page_recurrence)
 	page_recurrence->priv->month_day = MONTH_DAY_NTH;
 
 	g_signal_handlers_block_matched (page_recurrence->priv->recr_check_box, G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, page_recurrence);
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (page_recurrence->priv->recr_check_box), FALSE);
+	e_gtk_toggle_button_set_active (page_recurrence->priv->recr_check_box, FALSE);
 	g_signal_handlers_unblock_matched (page_recurrence->priv->recr_check_box, G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, page_recurrence);
 
 	adj = gtk_spin_button_get_adjustment (GTK_SPIN_BUTTON (page_recurrence->priv->recr_interval_value_spin));
@@ -1600,7 +1600,7 @@ ecep_recurrence_sensitize_widgets (ECompEditorPage *page,
 
 	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (page_recurrence->priv->exceptions_tree_view));
 
-	create_recurrence = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (page_recurrence->priv->recr_check_box));
+	create_recurrence = e_gtk_toggle_button_get_active (page_recurrence->priv->recr_check_box);
 	any_selected = gtk_tree_selection_count_selected_rows (selection) > 0;
 
 	/* Let it be possible to unset the recurrence even if it cannot be edited */
@@ -1684,7 +1684,7 @@ ecep_recurrence_fill_widgets (ECompEditorPage *page,
 	    !e_cal_util_component_has_property (component, I_CAL_RRULE_PROPERTY) &&
 	    !e_cal_util_component_has_property (component, I_CAL_EXRULE_PROPERTY)) {
 		g_signal_handlers_block_matched (page_recurrence->priv->recr_check_box, G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, page_recurrence);
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (page_recurrence->priv->recr_check_box), FALSE);
+		e_gtk_toggle_button_set_active (page_recurrence->priv->recr_check_box, FALSE);
 		g_signal_handlers_unblock_matched (page_recurrence->priv->recr_check_box, G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, page_recurrence);
 
 		ecep_recurrence_update_preview (page_recurrence);
@@ -1987,7 +1987,7 @@ ecep_recurrence_fill_widgets (ECompEditorPage *page,
 	/* If we got here it means it is a simple recurrence */
 
 	g_signal_handlers_block_matched (page_recurrence->priv->recr_check_box, G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, page_recurrence);
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (page_recurrence->priv->recr_check_box), TRUE);
+	e_gtk_toggle_button_set_active (page_recurrence->priv->recr_check_box, TRUE);
 	g_signal_handlers_unblock_matched (page_recurrence->priv->recr_check_box, G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, page_recurrence);
 
 	ecep_recurrence_make_recurrence_special (page_recurrence);
@@ -2007,7 +2007,7 @@ ecep_recurrence_fill_widgets (ECompEditorPage *page,
 
 	g_signal_handlers_block_matched (page_recurrence->priv->recr_check_box, G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, page_recurrence);
 	page_recurrence->priv->is_custom = TRUE;
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (page_recurrence->priv->recr_check_box), TRUE);
+	e_gtk_toggle_button_set_active (page_recurrence->priv->recr_check_box, TRUE);
 	g_signal_handlers_unblock_matched (page_recurrence->priv->recr_check_box, G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, page_recurrence);
 
 	g_clear_object (&rrule);
@@ -2030,7 +2030,7 @@ ecep_recurrence_fill_component (ECompEditorPage *page,
 
 	page_recurrence = E_COMP_EDITOR_PAGE_RECURRENCE (page);
 
-	recurs = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (page_recurrence->priv->recr_check_box));
+	recurs = e_gtk_toggle_button_get_active (page_recurrence->priv->recr_check_box);
 
 	if (recurs && page_recurrence->priv->is_custom) {
 		/* We just keep whatever the component has currently */

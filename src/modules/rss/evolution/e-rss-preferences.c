@@ -201,13 +201,13 @@ e_rss_preferences_three_state_toggled_cb (GtkToggleButton *widget,
 
 	g_signal_handler_block (widget, *phandler_id);
 
-	if (gtk_toggle_button_get_inconsistent (widget) &&
-	    gtk_toggle_button_get_active (widget)) {
-		gtk_toggle_button_set_active (widget, FALSE);
-		gtk_toggle_button_set_inconsistent (widget, FALSE);
-	} else if (!gtk_toggle_button_get_active (widget)) {
-		gtk_toggle_button_set_inconsistent (widget, TRUE);
-		gtk_toggle_button_set_active (widget, FALSE);
+	if (e_gtk_toggle_button_get_inconsistent (widget) &&
+	    e_gtk_toggle_button_get_active (widget)) {
+		e_gtk_toggle_button_set_active (widget, FALSE);
+		e_gtk_toggle_button_set_inconsistent (widget, FALSE);
+	} else if (!e_gtk_toggle_button_get_active (widget)) {
+		e_gtk_toggle_button_set_inconsistent (widget, TRUE);
+		e_gtk_toggle_button_set_active (widget, FALSE);
 	}
 
 	g_signal_handler_unblock (widget, *phandler_id);
@@ -241,10 +241,10 @@ e_rss_preferences_three_state_from_widget (GtkToggleButton *button)
 {
 	g_return_val_if_fail (GTK_IS_TOGGLE_BUTTON (button), CAMEL_THREE_STATE_INCONSISTENT);
 
-	if (gtk_toggle_button_get_inconsistent (button))
+	if (e_gtk_toggle_button_get_inconsistent (button))
 		return CAMEL_THREE_STATE_INCONSISTENT;
 
-	if (gtk_toggle_button_get_active (button))
+	if (e_gtk_toggle_button_get_active (button))
 		return CAMEL_THREE_STATE_ON;
 
 	return CAMEL_THREE_STATE_OFF;
@@ -259,11 +259,11 @@ e_rss_preferences_three_state_to_widget (GtkToggleButton *button,
 	g_signal_handlers_block_matched (button, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, e_rss_preferences_three_state_toggled_cb, NULL);
 
 	if (state == CAMEL_THREE_STATE_INCONSISTENT) {
-		gtk_toggle_button_set_active (button, FALSE);
-		gtk_toggle_button_set_inconsistent (button, TRUE);
+		e_gtk_toggle_button_set_active (button, FALSE);
+		e_gtk_toggle_button_set_inconsistent (button, TRUE);
 	} else {
-		gtk_toggle_button_set_inconsistent (button, FALSE);
-		gtk_toggle_button_set_active (button, state == CAMEL_THREE_STATE_ON);
+		e_gtk_toggle_button_set_inconsistent (button, FALSE);
+		e_gtk_toggle_button_set_active (button, state == CAMEL_THREE_STATE_ON);
 	}
 
 	g_signal_handlers_unblock_matched (button, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, e_rss_preferences_three_state_toggled_cb, NULL);

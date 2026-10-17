@@ -81,7 +81,7 @@ e_bulk_edit_contacts_apply_simple (EBulkEditContacts *self,
 
 	edit_item = &self->priv->simple_edit_items[item_id];
 
-	if (!gtk_toggle_button_get_active (edit_item->toggle))
+	if (!e_gtk_toggle_button_get_active (edit_item->toggle))
 		return;
 
 	value = gtk_editable_get_text (GTK_EDITABLE (edit_item->widget));
@@ -336,15 +336,15 @@ e_bulk_edit_contacts_apply_address (EBulkEditContacts *self,
 	gchar *street = NULL, *ext = NULL;
 	const gchar *locality = NULL, *region = NULL, *code = NULL, *country = NULL, *po = NULL;
 
-	if (!gtk_toggle_button_get_active (address_item->address.toggle) &&
-	    !gtk_toggle_button_get_active (address_item->pobox.toggle) &&
-	    !gtk_toggle_button_get_active (address_item->city.toggle) &&
-	    !gtk_toggle_button_get_active (address_item->zip.toggle) &&
-	    !gtk_toggle_button_get_active (address_item->state.toggle) &&
-	    !gtk_toggle_button_get_active (address_item->country.toggle))
+	if (!e_gtk_toggle_button_get_active (address_item->address.toggle) &&
+	    !e_gtk_toggle_button_get_active (address_item->pobox.toggle) &&
+	    !e_gtk_toggle_button_get_active (address_item->city.toggle) &&
+	    !e_gtk_toggle_button_get_active (address_item->zip.toggle) &&
+	    !e_gtk_toggle_button_get_active (address_item->state.toggle) &&
+	    !e_gtk_toggle_button_get_active (address_item->country.toggle))
 		return;
 
-	if (gtk_toggle_button_get_active (address_item->address.toggle)) {
+	if (e_gtk_toggle_button_get_active (address_item->address.toggle)) {
 		GtkTextBuffer *text_buffer;
 		GtkTextIter iter_1, iter_2;
 
@@ -378,7 +378,7 @@ e_bulk_edit_contacts_apply_address (EBulkEditContacts *self,
 	}
 
 	#define get_entry_value(_into, _edit_item) G_STMT_START { \
-		if (gtk_toggle_button_get_active ((_edit_item).toggle)) \
+		if (e_gtk_toggle_button_get_active ((_edit_item).toggle)) \
 			_into = gtk_editable_get_text (GTK_EDITABLE ((_edit_item).widget)); \
 		} G_STMT_END
 

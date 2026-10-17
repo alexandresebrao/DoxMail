@@ -1897,9 +1897,9 @@ webdav_browser_save_clicked (EWebDAVBrowser *webdav_browser,
 
 		return;
 	} else if (is_calendar &&
-		   !gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (webdav_browser->priv->create_edit_event_check)) &&
-		   !gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (webdav_browser->priv->create_edit_memo_check)) &&
-		   !gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (webdav_browser->priv->create_edit_task_check))) {
+		   !e_gtk_toggle_button_get_active (webdav_browser->priv->create_edit_event_check) &&
+		   !e_gtk_toggle_button_get_active (webdav_browser->priv->create_edit_memo_check) &&
+		   !e_gtk_toggle_button_get_active (webdav_browser->priv->create_edit_task_check)) {
 		gtk_widget_hide (webdav_browser->priv->create_edit_hint_popover);
 
 		gtk_label_set_text (GTK_LABEL (webdav_browser->priv->create_edit_hint_label), _("At least one component type should be set"));
@@ -1928,11 +1928,11 @@ webdav_browser_save_clicked (EWebDAVBrowser *webdav_browser,
 	if (is_book) {
 		supports = E_WEBDAV_RESOURCE_SUPPORTS_CONTACTS;
 	} else if (is_calendar) {
-		if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (webdav_browser->priv->create_edit_event_check)))
+		if (e_gtk_toggle_button_get_active (webdav_browser->priv->create_edit_event_check))
 			supports |= E_WEBDAV_RESOURCE_SUPPORTS_EVENTS;
-		if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (webdav_browser->priv->create_edit_memo_check)))
+		if (e_gtk_toggle_button_get_active (webdav_browser->priv->create_edit_memo_check))
 			supports |= E_WEBDAV_RESOURCE_SUPPORTS_MEMOS;
-		if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (webdav_browser->priv->create_edit_task_check)))
+		if (e_gtk_toggle_button_get_active (webdav_browser->priv->create_edit_task_check))
 			supports |= E_WEBDAV_RESOURCE_SUPPORTS_TASKS;
 	}
 
@@ -2094,9 +2094,9 @@ webdav_browser_prepare_popover (EWebDAVBrowser *webdav_browser,
 	gtk_editable_set_text (GTK_EDITABLE (webdav_browser->priv->create_edit_name_entry), "");
 	e_color_combo_set_current_color (E_COLOR_COMBO (webdav_browser->priv->create_edit_color_combo), &rgba);
 	gtk_spin_button_set_value (GTK_SPIN_BUTTON (webdav_browser->priv->create_edit_order_spin), -1);
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (webdav_browser->priv->create_edit_event_check), FALSE);
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (webdav_browser->priv->create_edit_memo_check), FALSE);
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (webdav_browser->priv->create_edit_task_check), FALSE);
+	e_gtk_toggle_button_set_active (webdav_browser->priv->create_edit_event_check, FALSE);
+	e_gtk_toggle_button_set_active (webdav_browser->priv->create_edit_memo_check, FALSE);
+	e_gtk_toggle_button_set_active (webdav_browser->priv->create_edit_task_check, FALSE);
 	gtk_text_buffer_set_text (gtk_text_view_get_buffer (GTK_TEXT_VIEW (webdav_browser->priv->create_edit_description_textview)), "", -1);
 }
 
@@ -2194,12 +2194,9 @@ webdav_browser_edit_clicked_cb (GtkWidget *button,
 
 		gtk_spin_button_set_value (GTK_SPIN_BUTTON (webdav_browser->priv->create_edit_order_spin), order);
 
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (webdav_browser->priv->create_edit_event_check),
-			(supports & E_WEBDAV_RESOURCE_SUPPORTS_EVENTS) != 0);
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (webdav_browser->priv->create_edit_memo_check),
-			(supports & E_WEBDAV_RESOURCE_SUPPORTS_MEMOS) != 0);
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (webdav_browser->priv->create_edit_task_check),
-			(supports & E_WEBDAV_RESOURCE_SUPPORTS_TASKS) != 0);
+		e_gtk_toggle_button_set_active (webdav_browser->priv->create_edit_event_check, (supports & E_WEBDAV_RESOURCE_SUPPORTS_EVENTS) != 0);
+		e_gtk_toggle_button_set_active (webdav_browser->priv->create_edit_memo_check, (supports & E_WEBDAV_RESOURCE_SUPPORTS_MEMOS) != 0);
+		e_gtk_toggle_button_set_active (webdav_browser->priv->create_edit_task_check, (supports & E_WEBDAV_RESOURCE_SUPPORTS_TASKS) != 0);
 
 		gtk_widget_set_sensitive (webdav_browser->priv->create_edit_support_label, FALSE);
 		gtk_widget_set_sensitive (webdav_browser->priv->create_edit_event_check, FALSE);

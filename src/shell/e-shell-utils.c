@@ -246,11 +246,11 @@ e_shell_utils_import_uris (EShell *shell,
 	if (assistant) {
 		g_signal_connect_after (
 			assistant, "cancel",
-			G_CALLBACK (gtk_widget_destroy), NULL);
+			G_CALLBACK (e_gtk_widget_destroy), NULL);
 
 		g_signal_connect_after (
 			assistant, "finished",
-			G_CALLBACK (gtk_widget_destroy), NULL);
+			G_CALLBACK (e_gtk_widget_destroy), NULL);
 
 		gtk_application_add_window (
 			GTK_APPLICATION (shell),

@@ -861,7 +861,7 @@ send_account_override_setup (GtkBuilder *builder,
 
 	g_object_set_data_full (
 		G_OBJECT (tree_view), "identity-combo-box",
-		identity_combo_box, (GDestroyNotify) gtk_widget_destroy);
+		identity_combo_box, (GDestroyNotify) e_gtk_widget_destroy);
 	g_object_set_data_full (
 		G_OBJECT (builder), MAIL_CAMEL_SESSION_KEY,
 		g_object_ref (e_mail_backend_get_session (mail_backend)), g_object_unref);

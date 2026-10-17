@@ -157,11 +157,11 @@ action_import_cb (EUIAction *action,
 
 	g_signal_connect_after (
 		assistant, "cancel",
-		G_CALLBACK (gtk_widget_destroy), NULL);
+		G_CALLBACK (e_gtk_widget_destroy), NULL);
 
 	g_signal_connect_after (
 		assistant, "finished",
-		G_CALLBACK (gtk_widget_destroy), NULL);
+		G_CALLBACK (e_gtk_widget_destroy), NULL);
 
 	gtk_widget_show (assistant);
 }

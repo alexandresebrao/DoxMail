@@ -482,7 +482,7 @@ ivcal_getwidget (EImport *ei,
 			selector, "primary_selection_changed",
 			G_CALLBACK (primary_selection_changed_cb), target);
 
-		rb = gtk_radio_button_new_with_label (group, _(import_type_strings[i]));
+		rb = e_gtk_radio_button_new_with_label (group, _(import_type_strings[i]));
 		e_gtk_box_pack_start (GTK_BOX (hbox), rb, FALSE, FALSE, 6);
 
 		sd = g_malloc0 (sizeof (*sd));
@@ -496,7 +496,7 @@ ivcal_getwidget (EImport *ei,
 			G_CALLBACK (button_toggled_cb), sd);
 
 		if (!group)
-			group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (rb));
+			group = e_gtk_radio_button_get_group (GTK_CHECK_BUTTON (rb));
 		if (first == NULL) {
 			/* Set primary-source */
 			primary_selection_changed_cb (E_SOURCE_SELECTOR (selector), target);
@@ -505,7 +505,7 @@ ivcal_getwidget (EImport *ei,
 		}
 	}
 	if (first)
-		gtk_toggle_button_set_active ((GtkToggleButton *) first, TRUE);
+		e_gtk_toggle_button_set_active ((GtkToggleButton *) first, TRUE);
 
 	gtk_widget_set_visible (top_vbox, TRUE);
 	g_hash_table_unref (known_readonly);
@@ -1157,14 +1157,14 @@ static void
 calendar_toggle_cb (GtkToggleButton *tb,
                     EImportTarget *target)
 {
-	g_datalist_set_data (&target->data, "gnomecal-do-cal", GINT_TO_POINTER (gtk_toggle_button_get_active (tb)));
+	g_datalist_set_data (&target->data, "gnomecal-do-cal", GINT_TO_POINTER (e_gtk_toggle_button_get_active (tb)));
 }
 
 static void
 tasks_toggle_cb (GtkToggleButton *tb,
                  EImportTarget *target)
 {
-	g_datalist_set_data (&target->data, "gnomecal-do-tasks", GINT_TO_POINTER (gtk_toggle_button_get_active (tb)));
+	g_datalist_set_data (&target->data, "gnomecal-do-tasks", GINT_TO_POINTER (e_gtk_toggle_button_get_active (tb)));
 }
 
 static GtkWidget *
@@ -1187,14 +1187,14 @@ gnome_calendar_getwidget (EImport *ei,
 	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 2);
 
 	w = gtk_check_button_new_with_label (_("Calendar Events"));
-	gtk_toggle_button_set_active ((GtkToggleButton *) w, !done_cal);
+	e_gtk_toggle_button_set_active ((GtkToggleButton *) w, !done_cal);
 	g_signal_connect (
 		w, "toggled",
 		G_CALLBACK (calendar_toggle_cb), target);
 	e_gtk_box_pack_start (GTK_BOX (hbox), w, FALSE, FALSE, 0);
 
 	w = gtk_check_button_new_with_label (_("Tasks"));
-	gtk_toggle_button_set_active ((GtkToggleButton *) w, !done_tasks);
+	e_gtk_toggle_button_set_active ((GtkToggleButton *) w, !done_tasks);
 	g_signal_connect (
 		w, "toggled",
 		G_CALLBACK (tasks_toggle_cb), target);

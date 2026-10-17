@@ -24,39 +24,18 @@
 #include <gtk/gtk.h>
 #include <e-util/e-gtk4-compat.h>
 
-/* Standard GObject macros */
+/* GtkComboBoxText is final on GTK 4, so this is a plain GtkComboBoxText
+ * with ellipsized cells and a capped natural width */
 #define E_TYPE_ELLIPSIZED_COMBO_BOX_TEXT \
 	(e_ellipsized_combo_box_text_get_type ())
 #define E_ELLIPSIZED_COMBO_BOX_TEXT(obj) \
-	(G_TYPE_CHECK_INSTANCE_CAST \
-	((obj), E_TYPE_ELLIPSIZED_COMBO_BOX_TEXT, EEllipsizedComboBoxText))
-#define E_ELLIPSIZED_COMBO_BOX_TEXT_CLASS(cls) \
-	(G_TYPE_CHECK_CLASS_CAST \
-	((cls), E_TYPE_ELLIPSIZED_COMBO_BOX_TEXT, EEllipsizedComboBoxTextClass))
+	(GTK_COMBO_BOX_TEXT (obj))
 #define E_IS_ELLIPSIZED_COMBO_BOX_TEXT(obj) \
-	(G_TYPE_CHECK_INSTANCE_TYPE \
-	((obj), E_TYPE_ELLIPSIZED_COMBO_BOX_TEXT))
-#define E_IS_ELLIPSIZED_COMBO_BOX_TEXT_CLASS(cls) \
-	(G_TYPE_CHECK_CLASS_TYPE \
-	((cls), E_TYPE_ELLIPSIZED_COMBO_BOX_TEXT))
-#define E_ELLIPSIZED_COMBO_BOX_TEXT_GET_CLASS(obj) \
-	(G_TYPE_INSTANCE_GET_CLASS \
-	((obj), E_TYPE_ELLIPSIZED_COMBO_BOX_TEXT, EEllipsizedComboBoxTextClass))
+	(GTK_IS_COMBO_BOX_TEXT (obj))
 
 G_BEGIN_DECLS
 
-typedef struct _EEllipsizedComboBoxText EEllipsizedComboBoxText;
-typedef struct _EEllipsizedComboBoxTextClass EEllipsizedComboBoxTextClass;
-typedef struct _EEllipsizedComboBoxTextPrivate EEllipsizedComboBoxTextPrivate;
-
-struct _EEllipsizedComboBoxText {
-	GtkComboBoxText parent;
-	EEllipsizedComboBoxTextPrivate *priv;
-};
-
-struct _EEllipsizedComboBoxTextClass {
-	GtkComboBoxTextClass parent_class;
-};
+typedef GtkComboBoxText EEllipsizedComboBoxText;
 
 GType		e_ellipsized_combo_box_text_get_type	(void) G_GNUC_CONST;
 GtkWidget *	e_ellipsized_combo_box_text_new		(gboolean has_entry);

@@ -2585,7 +2585,7 @@ fill_in_simple_field (EContactEditor *editor,
 	} else if (GTK_IS_TOGGLE_BUTTON (widget)) {
 		gboolean val = e_contact_get (contact, field_id) != NULL;
 
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget), val);
+		e_gtk_toggle_button_set_active (widget, val);
 
 	} else {
 		g_warning (G_STRLOC ": Unhandled widget class in mappings!");
@@ -2759,7 +2759,7 @@ extract_simple_field (EContactEditor *editor,
 	} else if (GTK_IS_TOGGLE_BUTTON (widget)) {
 		gboolean val;
 
-		val = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
+		val = e_gtk_toggle_button_get_active (widget);
 		e_contact_set (contact, field_id, val ? (gpointer) 1 : NULL);
 
 	} else {
@@ -5101,7 +5101,7 @@ e_contact_editor_init (EContactEditor *e_contact_editor)
 	GtkWidget *container;
 	GtkWidget *widget, *label, *dyntable;
 	GtkEntryCompletion *completion;
-	GtkAccelGroup *accel_group;
+	EGtkAccelGroup *accel_group;
 
 	e_contact_editor->priv = e_contact_editor_get_instance_private (e_contact_editor);
 
@@ -5184,13 +5184,13 @@ e_contact_editor_init (EContactEditor *e_contact_editor)
 		gtk_widget_set_valign (widget, GTK_ALIGN_FILL);
 	}
 
-	accel_group = gtk_accel_group_new ();
+	accel_group = e_gtk_accel_group_new ();
 	widget = e_builder_get_widget (builder, "button-ok");
 	e_gtk_widget_grab_default (widget);
-	gtk_widget_add_accelerator (
+	e_gtk_widget_add_accelerator (
 		widget, "clicked", accel_group,
 		's', GDK_CONTROL_MASK, 0);
-	gtk_window_add_accel_group (GTK_WINDOW (e_contact_editor->priv->app), accel_group);
+	e_gtk_window_add_accel_group (GTK_WINDOW (e_contact_editor->priv->app), accel_group);
 	g_clear_object (&accel_group);
 
 	init_all (e_contact_editor);
@@ -5340,7 +5340,7 @@ e_contact_editor_constructed (GObject *object)
 	editor->priv->focus_tracker = e_focus_tracker_new (GTK_WINDOW (editor->priv->app));
 	editor->priv->ui_manager = e_ui_manager_new (NULL);
 
-	gtk_window_add_accel_group (
+	e_gtk_window_add_accel_group (
 		GTK_WINDOW (editor->priv->app),
 		e_ui_manager_get_accel_group (editor->priv->ui_manager));
 
@@ -5365,7 +5365,7 @@ e_contact_editor_dispose (GObject *object)
 {
 	EContactEditor *e_contact_editor = E_CONTACT_EDITOR (object);
 
-	g_clear_pointer (&e_contact_editor->priv->image_selector, gtk_widget_destroy);
+	g_clear_pointer (&e_contact_editor->priv->image_selector, e_gtk_widget_destroy);
 	g_clear_object (&e_contact_editor->priv->image_selector_native);
 
 	g_slist_free_full (

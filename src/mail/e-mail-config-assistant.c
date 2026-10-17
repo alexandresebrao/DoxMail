@@ -40,7 +40,7 @@
 
 #include "e-mail-config-assistant.h"
 
-/* GtkAssistant's back button label. */
+/* EAssistant's back button label. */
 #define BACK_BUTTON_LABEL g_dgettext ("gtk30", "_Back")
 
 typedef struct _ConfigLookupContext ConfigLookupContext;
@@ -58,12 +58,12 @@ struct _EMailConfigAssistantPrivate {
 	GHashTable *visited_pages;
 	gboolean auto_configured;
 
-	/* GtkAssistant owns this. */
+	/* EAssistant owns this. */
 	GtkButton *back_button;  /* not referenced */
 };
 
 struct _ConfigLookupContext {
-	GtkAssistant *assistant;
+	EAssistant *assistant;
 	GCancellable *cancellable;
 	GtkWidget *skip_button;  /* not referenced */
 	EConfigLookup *config_lookup;
@@ -92,7 +92,7 @@ static gulong signals[LAST_SIGNAL];
  *     fashion faux pas these days.  But it's only used when submitting the
  *     the newly-configured account fails, so should rarely be seen. */
 
-G_DEFINE_TYPE_WITH_CODE (EMailConfigAssistant, e_mail_config_assistant, GTK_TYPE_ASSISTANT,
+G_DEFINE_TYPE_WITH_CODE (EMailConfigAssistant, e_mail_config_assistant, E_TYPE_ASSISTANT,
 	G_ADD_PRIVATE (EMailConfigAssistant)
 	G_IMPLEMENT_INTERFACE (E_TYPE_ALERT_SINK, NULL)
 	G_IMPLEMENT_INTERFACE (E_TYPE_EXTENSIBLE, NULL))
@@ -105,7 +105,7 @@ config_lookup_skip_button_clicked_cb (GtkButton *button,
 }
 
 static ConfigLookupContext *
-config_lookup_context_new (GtkAssistant *assistant,
+config_lookup_context_new (EAssistant *assistant,
 			   ESourceRegistry *registry,
 			   const gchar *email_address)
 {
@@ -118,10 +118,10 @@ config_lookup_context_new (GtkAssistant *assistant,
 	context->config_lookup = e_config_lookup_new (registry);
 	context->email_address = g_strdup (email_address);
 
-	/* GtkAssistant sinks the floating button reference. */
+	/* EAssistant sinks the floating button reference. */
 	text = _("_Skip Lookup");
 	context->skip_button = gtk_button_new_with_mnemonic (text);
-	gtk_assistant_add_action_widget (
+	e_assistant_add_action_widget (
 		context->assistant, context->skip_button);
 	gtk_widget_show (context->skip_button);
 
@@ -136,7 +136,7 @@ config_lookup_context_new (GtkAssistant *assistant,
 static void
 config_lookup_context_free (ConfigLookupContext *context)
 {
-	/* Cannot use gtk_assistant_remove_action_widget(), because
+	/* Cannot use e_assistant_remove_action_widget (), because
 	   it doesn't work with the header bar. See:
 	   https://gitlab.gnome.org/GNOME/gtk/-/issues/5185 */
 	e_gtk_widget_destroy (context->skip_button);
@@ -279,8 +279,8 @@ static void
 mail_config_assistant_page_changed (EMailConfigPage *page,
                                     EMailConfigAssistant *assistant)
 {
-	gtk_assistant_set_page_complete (
-		GTK_ASSISTANT (assistant), GTK_WIDGET (page),
+	e_assistant_set_page_complete (
+		E_ASSISTANT (assistant), GTK_WIDGET (page),
 		e_mail_config_page_check_complete (page));
 }
 
@@ -332,7 +332,7 @@ mail_config_assistant_config_lookup_run_cb (GObject *source_object,
 			e_source_set_display_name (self->priv->identity_source, context->email_address);
 		}
 
-		gtk_assistant_next_page (context->assistant);
+		e_assistant_next_page (context->assistant);
 		goto exit;
 	}
 
@@ -347,23 +347,23 @@ mail_config_assistant_config_lookup_run_cb (GObject *source_object,
 	e_source_set_display_name (self->priv->identity_source, context->email_address);
 
 	/* Go to the next page (Receiving Email) before skipping to the
-	 * Summary Page to get it into GtkAssistant visited page history.
+	 * Summary Page to get it into EAssistant visited page history.
 	 * We want the back button to return to Receiving Email. */
-	gtk_assistant_next_page (context->assistant);
+	e_assistant_next_page (context->assistant);
 
 	/* XXX Can't find a better way to learn the page number of
 	 *     the summary page.  Oh my god this API is horrible. */
-	n_pages = gtk_assistant_get_n_pages (context->assistant);
+	n_pages = e_assistant_get_n_pages (context->assistant);
 	for (ii = 0; ii < n_pages; ii++) {
 		GtkWidget *page;
 
-		page = gtk_assistant_get_nth_page (context->assistant, ii);
+		page = e_assistant_get_nth_page (context->assistant, ii);
 		if (E_IS_MAIL_CONFIG_SUMMARY_PAGE (page))
 			break;
 	}
 
 	g_warn_if_fail (ii < n_pages);
-	gtk_assistant_set_current_page (context->assistant, ii);
+	e_assistant_set_current_page (context->assistant, ii);
 
  exit:
 	/* Set the page invisible so we never revisit it. */
@@ -939,9 +939,9 @@ mail_config_assistant_constructed (GObject *object)
 
 	e_extensible_load_extensions (E_EXTENSIBLE (assistant));
 
-	npages = gtk_assistant_get_n_pages (GTK_ASSISTANT (assistant));
+	npages = e_assistant_get_n_pages (E_ASSISTANT (assistant));
 	for (ii = 0; ii < npages; ii++) {
-		children = g_slist_prepend (children, gtk_assistant_get_nth_page (GTK_ASSISTANT (assistant), ii));
+		children = g_slist_prepend (children, e_assistant_get_nth_page (E_ASSISTANT (assistant), ii));
 	}
 
 	e_util_resize_window_for_screen (GTK_WINDOW (assistant), requisition.width, requisition.height, children);
@@ -964,7 +964,7 @@ mail_config_assistant_remove (GtkContainer *container,
 }
 
 static void
-mail_config_assistant_prepare (GtkAssistant *assistant,
+mail_config_assistant_prepare (EAssistant *assistant,
                                GtkWidget *page)
 {
 	EMailConfigAssistant *self = E_MAIL_CONFIG_ASSISTANT (assistant);
@@ -980,10 +980,10 @@ mail_config_assistant_prepare (GtkAssistant *assistant,
 	}
 
 	if (!self->priv->back_button) {
-		/* XXX Locate the GtkAssistant's internal "Go Back" button so
+		/* XXX Locate the EAssistant's internal "Go Back" button so
 		 *     we can temporarily rename it for autoconfigure results.
 		 *     Walking the container like this is an extremely naughty
-		 *     and brittle hack, but GtkAssistant does not provide API
+		 *     and brittle hack, but EAssistant does not provide API
 		 *     to access it directly. */
 		e_gtk_container_foreach (assistant, mail_config_assistant_find_back_button_cb, assistant);
 	}
@@ -1087,11 +1087,11 @@ mail_config_assistant_prepare (GtkAssistant *assistant,
 }
 
 static void
-mail_config_assistant_close (GtkAssistant *assistant)
+mail_config_assistant_close (EAssistant *assistant)
 {
 	GdkCursor *gdk_cursor;
 
-	/* Do not chain up.  GtkAssistant does not implement this method. */
+	/* Do not chain up.  EAssistant does not implement this method. */
 
 	/* Make the cursor appear busy. */
 	gdk_cursor = gdk_cursor_new_from_name ("wait", NULL);
@@ -1113,9 +1113,9 @@ mail_config_assistant_close (GtkAssistant *assistant)
 }
 
 static void
-mail_config_assistant_cancel (GtkAssistant *assistant)
+mail_config_assistant_cancel (EAssistant *assistant)
 {
-	/* Do not chain up.  GtkAssistant does not implement this method. */
+	/* Do not chain up.  EAssistant does not implement this method. */
 
 	e_gtk_widget_destroy (GTK_WIDGET (assistant));
 }
@@ -1125,7 +1125,7 @@ e_mail_config_assistant_class_init (EMailConfigAssistantClass *class)
 {
 	GObjectClass *object_class;
 	GtkContainerClass *container_class;
-	GtkAssistantClass *assistant_class;
+	EAssistantClass *assistant_class;
 
 	object_class = G_OBJECT_CLASS (class);
 	object_class->set_property = mail_config_assistant_set_property;
@@ -1137,7 +1137,7 @@ e_mail_config_assistant_class_init (EMailConfigAssistantClass *class)
 	container_class = GTK_CONTAINER_CLASS (class);
 	container_class->remove = mail_config_assistant_remove;
 
-	assistant_class = GTK_ASSISTANT_CLASS (class);
+	assistant_class = E_ASSISTANT_CLASS (class);
 	assistant_class->prepare = mail_config_assistant_prepare;
 	assistant_class->close = mail_config_assistant_close;
 	assistant_class->cancel = mail_config_assistant_cancel;
@@ -1355,12 +1355,12 @@ e_mail_config_assistant_add_page (EMailConfigAssistant *assistant,
 	page_title = page_interface->title;
 
 	/* Determine the position to insert the page. */
-	n_pages = gtk_assistant_get_n_pages (GTK_ASSISTANT (assistant));
+	n_pages = e_assistant_get_n_pages (E_ASSISTANT (assistant));
 	for (position = 0; position < n_pages; position++) {
 		GtkWidget *nth_page;
 
-		nth_page = gtk_assistant_get_nth_page (
-			GTK_ASSISTANT (assistant), position);
+		nth_page = e_assistant_get_nth_page (
+			E_ASSISTANT (assistant), position);
 		if (e_mail_config_page_compare (page_widget, nth_page) < 0)
 			break;
 	}
@@ -1370,21 +1370,21 @@ e_mail_config_assistant_add_page (EMailConfigAssistant *assistant,
 	/* Some pages can be clicked through unchanged. */
 	complete = e_mail_config_page_check_complete (page);
 
-	gtk_assistant_insert_page (
-		GTK_ASSISTANT (assistant), page_widget, position);
-	gtk_assistant_set_page_type (
-		GTK_ASSISTANT (assistant), page_widget, page_type);
-	gtk_assistant_set_page_title (
-		GTK_ASSISTANT (assistant), page_widget, page_title);
-	gtk_assistant_set_page_complete (
-		GTK_ASSISTANT (assistant), page_widget, complete);
+	e_assistant_insert_page (
+		E_ASSISTANT (assistant), page_widget, position);
+	e_assistant_set_page_type (
+		E_ASSISTANT (assistant), page_widget, page_type);
+	e_assistant_set_page_title (
+		E_ASSISTANT (assistant), page_widget, page_title);
+	e_assistant_set_page_complete (
+		E_ASSISTANT (assistant), page_widget, complete);
 
-	/* XXX GtkAssistant has no equivalent to GtkNotebook's
+	/* XXX EAssistant has no equivalent to GtkNotebook's
 	 *     "page-added" and "page-removed" signals.  Fortunately
 	 *     removing a page does trigger GtkContainer::remove, so
 	 *     we can override that method and disconnect our signal
 	 *     handler before chaining up.  But I don't see any way
-	 *     for a subclass to intercept GtkAssistant pages being
+	 *     for a subclass to intercept EAssistant pages being
 	 *     added, so we have to connect our signal handler here.
 	 *     Not really an issue, I'm just being pedantic. */
 
@@ -1456,7 +1456,7 @@ e_mail_config_assistant_commit (EMailConfigAssistant *assistant,
 	if (source != NULL)
 		g_queue_push_tail (queue, g_object_ref (source));
 
-	n_pages = gtk_assistant_get_n_pages (GTK_ASSISTANT (assistant));
+	n_pages = e_assistant_get_n_pages (E_ASSISTANT (assistant));
 
 	/* Tell all EMailConfigPages to commit their UI state to their
 	 * scratch ESources and push any additional data sources on to
@@ -1465,8 +1465,8 @@ e_mail_config_assistant_commit (EMailConfigAssistant *assistant,
 	for (ii = 0; ii < n_pages; ii++) {
 		GtkWidget *widget;
 
-		widget = gtk_assistant_get_nth_page (
-			GTK_ASSISTANT (assistant), ii);
+		widget = e_assistant_get_nth_page (
+			E_ASSISTANT (assistant), ii);
 
 		if (E_IS_MAIL_CONFIG_PAGE (widget)) {
 			EMailConfigPage *page;

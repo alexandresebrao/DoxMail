@@ -555,7 +555,7 @@ open_cert_viewer (GtkWidget *widget,
 	dialog = e_cert_manager_new_certificate_viewer ((GtkWindow *) parent, cert);
 	g_signal_connect (
 		dialog, "response",
-		G_CALLBACK (gtk_widget_destroy), NULL);
+		G_CALLBACK (e_gtk_widget_destroy), NULL);
 
 	gtk_widget_show (dialog);
 }
@@ -803,7 +803,7 @@ run_cert_backup_dialog (CertPage *cp,
 
 	response = e_gtk_dialog_run (GTK_DIALOG (dialog));
 	*password = strdup (gtk_editable_get_text (GTK_EDITABLE (data.entry1)));
-	*save_chain = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (chain));
+	*save_chain = e_gtk_toggle_button_get_active (chain);
 
 	e_gtk_widget_destroy (dialog);
 
@@ -1293,10 +1293,10 @@ mail_cert_edit_trust (GtkWidget *parent,
 	g_free (text);
 
 	#define add_radio(_radio, _title, _trust) G_STMT_START { \
-		_radio = gtk_radio_button_new_with_mnemonic (runknown ? gtk_radio_button_get_group (GTK_RADIO_BUTTON (runknown)) : NULL, _title); \
+		_radio = e_gtk_radio_button_new_with_mnemonic (runknown ? e_gtk_radio_button_get_group (GTK_CHECK_BUTTON (runknown)) : NULL, _title); \
 		gtk_widget_set_margin_start (_radio, 12); \
 		if (camel_cert->trust == (_trust)) \
-			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (_radio), TRUE); \
+			e_gtk_toggle_button_set_active (_radio, TRUE); \
 		gtk_grid_attach (grid, _radio, 0, row, 1, 1); \
 		row++; \
 		} G_STMT_END
@@ -1346,15 +1346,15 @@ mail_cert_edit_trust (GtkWidget *parent,
 	if (e_gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
 		CamelCertTrust trust = CAMEL_CERT_TRUST_UNKNOWN;
 
-		if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rnever)))
+		if (e_gtk_toggle_button_get_active (rnever))
 			trust = CAMEL_CERT_TRUST_NEVER;
-		else if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rmarginal)))
+		else if (e_gtk_toggle_button_get_active (rmarginal))
 			trust = CAMEL_CERT_TRUST_MARGINAL;
-		else if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rfully)))
+		else if (e_gtk_toggle_button_get_active (rfully))
 			trust = CAMEL_CERT_TRUST_FULLY;
-		else if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rultimate)))
+		else if (e_gtk_toggle_button_get_active (rultimate))
 			trust = CAMEL_CERT_TRUST_ULTIMATE;
-		else if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rtemporary)))
+		else if (e_gtk_toggle_button_get_active (rtemporary))
 			trust = CAMEL_CERT_TRUST_TEMPORARY;
 
 		changed = trust != camel_cert->trust;

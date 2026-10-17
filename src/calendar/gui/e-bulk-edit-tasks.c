@@ -104,7 +104,7 @@ e_bulk_edit_tasks_apply_changes_gui (EBulkEditTasks *self)
 		g_object_unref (des_cr->icomp);
 
 		for (ii = 0; ii < N_EDIT_ITEMS; ii++) {
-			if (!gtk_toggle_button_get_active (self->priv->items[ii].check))
+			if (!e_gtk_toggle_button_get_active (self->priv->items[ii].check))
 				continue;
 
 			e_comp_editor_property_part_fill_component (self->priv->items[ii].part, des_cr->icomp);
@@ -218,19 +218,19 @@ e_bulk_edit_tasks_response_cb (GtkDialog *dialog,
 		scd->write_completed = FALSE;
 		scd->success = TRUE;
 
-		if (gtk_toggle_button_get_active (self->priv->items[EDIT_ITEM_STATUS].check)) {
+		if (e_gtk_toggle_button_get_active (self->priv->items[EDIT_ITEM_STATUS].check)) {
 			if (e_comp_editor_property_part_picker_with_map_get_selected (
 				E_COMP_EDITOR_PROPERTY_PART_PICKER_WITH_MAP (self->priv->items[EDIT_ITEM_STATUS].part)) == I_CAL_STATUS_COMPLETED)
 				scd->write_completed = TRUE;
 		}
 
-		if (!scd->write_completed && gtk_toggle_button_get_active (self->priv->items[EDIT_ITEM_PERCENTCOMPLETE].check)) {
+		if (!scd->write_completed && e_gtk_toggle_button_get_active (self->priv->items[EDIT_ITEM_PERCENTCOMPLETE].check)) {
 			GtkSpinButton *percent_spin = GTK_SPIN_BUTTON (e_comp_editor_property_part_get_edit_widget (self->priv->items[EDIT_ITEM_PERCENTCOMPLETE].part));
 
 			scd->write_completed = gtk_spin_button_get_value_as_int (percent_spin) >= 100;
 		}
 
-		if (scd->write_completed || gtk_toggle_button_get_active (self->priv->items[EDIT_ITEM_COMPLETED].check)) {
+		if (scd->write_completed || e_gtk_toggle_button_get_active (self->priv->items[EDIT_ITEM_COMPLETED].check)) {
 			GtkWidget *widget;
 
 			widget = e_comp_editor_property_part_get_edit_widget (self->priv->items[EDIT_ITEM_COMPLETED].part);
@@ -513,9 +513,9 @@ e_bulk_edit_tasks_dates_to_timezone_cb (GBinding *binding,
 	EBulkEditTasks *self = user_data;
 
 	g_value_set_boolean (to_value,
-		gtk_toggle_button_get_active (self->priv->items[EDIT_ITEM_DTSTART].check) ||
-		gtk_toggle_button_get_active (self->priv->items[EDIT_ITEM_DUE].check) ||
-		gtk_toggle_button_get_active (self->priv->items[EDIT_ITEM_COMPLETED].check));
+		e_gtk_toggle_button_get_active (self->priv->items[EDIT_ITEM_DTSTART].check) ||
+		e_gtk_toggle_button_get_active (self->priv->items[EDIT_ITEM_DUE].check) ||
+		e_gtk_toggle_button_get_active (self->priv->items[EDIT_ITEM_COMPLETED].check));
 
 	return TRUE;
 }

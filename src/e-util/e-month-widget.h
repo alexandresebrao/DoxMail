@@ -44,12 +44,12 @@ typedef struct _EMonthWidgetClass EMonthWidgetClass;
 typedef struct _EMonthWidgetPrivate EMonthWidgetPrivate;
 
 struct _EMonthWidget {
-	GtkEventBox parent;
+	GtkWidget parent;
 	EMonthWidgetPrivate *priv;
 };
 
 struct _EMonthWidgetClass {
-	GtkEventBoxClass parent_class;
+	GtkWidgetClass parent_class;
 
 	void	(* changed)		(EMonthWidget *self);
 	void	(* day_clicked)		(EMonthWidget *self,

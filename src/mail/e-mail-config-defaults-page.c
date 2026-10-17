@@ -215,7 +215,7 @@ mail_config_defaults_page_restore_folders (EMailConfigDefaultsPage *page)
 		folder_uri = e_mail_session_get_local_folder_uri (session, type);
 		em_folder_selection_button_set_folder_uri (button, folder_uri);
 
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (page->priv->replies_toggle), FALSE);
+		e_gtk_toggle_button_set_active (page->priv->replies_toggle, FALSE);
 	}
 }
 
@@ -321,7 +321,7 @@ mail_config_defaults_page_autodetect_folders_cb (EMailConfigDefaultsPage *page,
 static void
 mail_config_defaults_page_restore_real_folder (GtkToggleButton *toggle_button)
 {
-	gtk_toggle_button_set_active (toggle_button, FALSE);
+	e_gtk_toggle_button_set_active (toggle_button, FALSE);
 }
 
 static GtkWidget *

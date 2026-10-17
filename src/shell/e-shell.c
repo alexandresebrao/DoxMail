@@ -1814,7 +1814,7 @@ shell_dispose (GObject *object)
 	g_clear_object (&self->priv->client_cache);
 	g_clear_object (&self->priv->color_scheme_watcher);
 
-	g_clear_pointer (&self->priv->preferences_window, gtk_widget_destroy);
+	g_clear_pointer (&self->priv->preferences_window, e_gtk_widget_destroy);
 
 	if (self->priv->preparing_for_line_change != NULL) {
 		g_object_remove_weak_pointer (

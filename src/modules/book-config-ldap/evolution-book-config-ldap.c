@@ -331,7 +331,7 @@ book_config_ldap_search_base_done (GObject *source_object,
 	g_return_if_fail (sbd != NULL);
 
 	if (!g_cancellable_is_cancelled (sbd->cancellable)) {
-		g_clear_pointer (&sbd->dialog, gtk_widget_destroy);
+		g_clear_pointer (&sbd->dialog, e_gtk_widget_destroy);
 	} else {
 		was_cancelled = TRUE;
 	}

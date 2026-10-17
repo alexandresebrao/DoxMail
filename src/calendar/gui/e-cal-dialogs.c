@@ -731,7 +731,7 @@ cb_toggled_cb (GtkToggleButton *toggle,
 	gboolean active = FALSE;
 	GtkWidget *entry = (GtkWidget *) data;
 
-	active = gtk_toggle_button_get_active (toggle);
+	active = e_gtk_toggle_button_get_active (toggle);
 	gtk_widget_set_sensitive (entry, active);
 }
 
@@ -802,7 +802,7 @@ e_cal_dialogs_prompt_retract (GtkWidget *parent,
 	ret_val = (e_gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK);
 
 	if (ret_val) {
-		if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (cb))) {
+		if (e_gtk_toggle_button_get_active (cb)) {
 			GtkTextIter text_iter_start, text_iter_end;
 			GtkTextBuffer *text_buffer;
 
@@ -1165,22 +1165,22 @@ e_cal_dialogs_recur_component (ECalClient *client,
 	e_gtk_box_pack_start (GTK_BOX (hbox), vbox, TRUE, TRUE, 0);
 	gtk_widget_show (vbox);
 
-	rb_this = gtk_radio_button_new_with_label (NULL, _("This Instance Only"));
+	rb_this = e_gtk_radio_button_new_with_label (NULL, _("This Instance Only"));
 	e_gtk_container_add (vbox, rb_this);
 
 	if (!e_client_check_capability (E_CLIENT (client), E_CAL_STATIC_CAPABILITY_NO_THISANDPRIOR)) {
-		rb_prior = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (rb_this), _("This and Prior Instances"));
+		rb_prior = e_gtk_radio_button_new_with_label_from_widget (GTK_CHECK_BUTTON (rb_this), _("This and Prior Instances"));
 		e_gtk_container_add (vbox, rb_prior);
 	} else
 		rb_prior = NULL;
 
 	if (!e_client_check_capability (E_CLIENT (client), E_CAL_STATIC_CAPABILITY_NO_THISANDFUTURE)) {
-		rb_future = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (rb_this), _("This and Future Instances"));
+		rb_future = e_gtk_radio_button_new_with_label_from_widget (GTK_CHECK_BUTTON (rb_this), _("This and Future Instances"));
 		e_gtk_container_add (vbox, rb_future);
 	} else
 		rb_future = NULL;
 
-	rb_all = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (rb_this), _("All Instances"));
+	rb_all = e_gtk_radio_button_new_with_label_from_widget (GTK_CHECK_BUTTON (rb_this), _("All Instances"));
 	e_gtk_container_add (vbox, rb_all);
 
 	gtk_widget_set_visible (hbox, TRUE);
@@ -1191,13 +1191,13 @@ e_cal_dialogs_recur_component (ECalClient *client,
 
 	ret = e_gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK;
 
-	if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rb_this)))
+	if (e_gtk_toggle_button_get_active (rb_this))
 		*mod = E_CAL_OBJ_MOD_THIS;
-	else if (rb_prior && gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rb_prior)))
+	else if (rb_prior && e_gtk_toggle_button_get_active (rb_prior))
 		*mod = E_CAL_OBJ_MOD_THIS_AND_PRIOR;
-	else if (rb_future && gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rb_future)))
+	else if (rb_future && e_gtk_toggle_button_get_active (rb_future))
 		*mod = E_CAL_OBJ_MOD_THIS_AND_FUTURE;
-	else if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rb_all))) {
+	else if (e_gtk_toggle_button_get_active (rb_all)) {
 		*mod = E_CAL_OBJ_MOD_ALL;
 	}
 
@@ -1430,7 +1430,7 @@ e_cal_dialogs_send_component (GtkWindow *parent,
 	if (strip_alarms) {
 		sa_checkbox = add_checkbox (GTK_BOX (content_area), _("Send my reminders with this event"));
 		settings = e_util_ref_settings ("org.gnome.evolution.calendar");
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (sa_checkbox), g_settings_get_boolean (settings, "send-reminder-with-event"));
+		e_gtk_toggle_button_set_active (sa_checkbox, g_settings_get_boolean (settings, "send-reminder-with-event"));
 	}
 	if (only_new_attendees)
 		ona_checkbox = add_checkbox (GTK_BOX (content_area), _("Notify new attendees _only"));
@@ -1438,12 +1438,12 @@ e_cal_dialogs_send_component (GtkWindow *parent,
 	res = e_gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_YES;
 
 	if (res && strip_alarms) {
-		gboolean send_alarms = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (sa_checkbox));
+		gboolean send_alarms = e_gtk_toggle_button_get_active (sa_checkbox);
 		g_settings_set_boolean (settings, "send-reminder-with-event", send_alarms);
 		*strip_alarms = !send_alarms;
 	}
 	if (only_new_attendees)
-		*only_new_attendees = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ona_checkbox));
+		*only_new_attendees = e_gtk_toggle_button_get_active (ona_checkbox);
 
 	e_gtk_widget_destroy (GTK_WIDGET (dialog));
 	g_clear_object (&settings);
@@ -1520,7 +1520,7 @@ e_cal_dialogs_send_dragged_or_resized_component (GtkWindow *parent,
 	if (strip_alarms) {
 		sa_checkbox = add_checkbox (GTK_BOX (content_area), _("Send my reminders with this event"));
 		settings = e_util_ref_settings ("org.gnome.evolution.calendar");
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (sa_checkbox), g_settings_get_boolean (settings, "send-reminder-with-event"));
+		e_gtk_toggle_button_set_active (sa_checkbox, g_settings_get_boolean (settings, "send-reminder-with-event"));
 	}
 	if (only_new_attendees)
 		ona_checkbox = add_checkbox (GTK_BOX (content_area), _("Notify new attendees _only"));
@@ -1535,12 +1535,12 @@ e_cal_dialogs_send_dragged_or_resized_component (GtkWindow *parent,
 		res = GTK_RESPONSE_CANCEL;
 
 	if (res == GTK_RESPONSE_YES && strip_alarms) {
-		gboolean send_alarms = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (sa_checkbox));
+		gboolean send_alarms = e_gtk_toggle_button_get_active (sa_checkbox);
 		g_settings_set_boolean (settings, "send-reminder-with-event", send_alarms);
 		*strip_alarms = !send_alarms;
 	}
 	if (only_new_attendees)
-		*only_new_attendees = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ona_checkbox));
+		*only_new_attendees = e_gtk_toggle_button_get_active (ona_checkbox);
 
 	e_gtk_widget_destroy (GTK_WIDGET (dialog));
 	g_clear_object (&settings);

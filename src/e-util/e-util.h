@@ -31,6 +31,7 @@
 #include <e-util/e-alert-bar.h>
 #include <e-util/e-alert-dialog.h>
 #include <e-util/e-alert-sink.h>
+#include <e-util/e-assistant.h>
 #include <e-util/e-alert.h>
 #include <e-util/e-attachment-bar.h>
 #include <e-util/e-attachment-handler-image.h>
