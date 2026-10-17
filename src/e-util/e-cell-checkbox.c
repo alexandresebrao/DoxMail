@@ -69,8 +69,8 @@ ecc_draw (ECellView *ecell_view,
 	  gint x2,
 	  gint y2)
 {
-	GtkStyleContext *style_context;
-	GtkWidgetPath *widget_path;
+	GtkWidget *widget;
+	GdkRGBA rgba;
 	gint xx, yy, ww, hh;
 	const gint value = GPOINTER_TO_INT (e_table_model_value_at (ecell_view->e_table_model, model_col, row));
 
@@ -92,21 +92,29 @@ ecc_draw (ECellView *ecell_view,
 		hh = 16;
 	}
 
-	widget_path = gtk_widget_path_new ();
-	gtk_widget_path_append_type (widget_path, G_TYPE_NONE);
-	gtk_widget_path_iter_set_object_name (widget_path, -1, "check");
+	/* GTK 4 cannot render a "check" node without a widget; draw it */
+	widget = ecell_view->e_table_item_view ?
+		GTK_WIDGET (GNOME_CANVAS_ITEM (ecell_view->e_table_item_view)->canvas) : NULL;
+	if (widget)
+		gtk_widget_get_color (widget, &rgba);
+	else
+		rgba.red = rgba.green = rgba.blue = 0.0, rgba.alpha = 1.0;
 
-	style_context = gtk_style_context_new ();
-	gtk_style_context_set_path (style_context, widget_path);
-	gtk_style_context_set_state (style_context,
-		(value ? GTK_STATE_FLAG_CHECKED : 0) |
-		((flags & E_CELL_SELECTED) != 0 ? GTK_STATE_FLAG_SELECTED : 0));
+	cairo_save (cr);
+	cairo_set_line_width (cr, 1.0);
+	cairo_set_source_rgba (cr, rgba.red, rgba.green, rgba.blue, rgba.alpha * 0.6);
+	cairo_rectangle (cr, xx + 1.5, yy + 1.5, ww - 3, hh - 3);
+	cairo_stroke (cr);
 
-	gtk_render_frame (style_context, cr, xx, yy, ww, hh);
-	gtk_render_check (style_context, cr, xx, yy, ww, hh);
-
-	gtk_widget_path_unref (widget_path);
-	g_object_unref (style_context);
+	if (value) {
+		cairo_set_line_width (cr, 2.0);
+		cairo_set_source_rgba (cr, rgba.red, rgba.green, rgba.blue, rgba.alpha);
+		cairo_move_to (cr, xx + ww * 0.25, yy + hh * 0.5);
+		cairo_line_to (cr, xx + ww * 0.45, yy + hh * 0.7);
+		cairo_line_to (cr, xx + ww * 0.75, yy + hh * 0.3);
+		cairo_stroke (cr);
+	}
+	cairo_restore (cr);
 }
 
 static gint

@@ -108,8 +108,8 @@ cell_toggle_ensure_icons (ECellToggle *cell_toggle,
 		gint unscaled_height;
 
 		if (icon_name != NULL)
-			pixbuf = gtk_icon_theme_load_icon_for_scale (
-				icon_theme, icon_name, height, scale, GTK_ICON_LOOKUP_FORCE_SIZE, &error);
+			pixbuf = e_gtk_icon_theme_load_icon_for_scale (
+				icon_theme, icon_name, height, scale, 0, &error);
 
 		if (error != NULL) {
 			g_warning ("%s", error->message);
@@ -259,7 +259,7 @@ cell_toggle_draw (ECellView *ecell_view,
 
 	cairo_save (cr);
 	if (style_context)
-		gtk_render_icon_surface (style_context, cr, sd->surface, x, y);
+		e_gtk_render_icon_surface (style_context, cr, sd->surface, x, y);
 	cairo_restore (cr);
 }
 
@@ -378,7 +378,7 @@ cell_toggle_print (ECellView *ecell_view,
 			image_width - image_height / 7);
 		cairo_clip (cr);
 		if (style_context)
-			gtk_render_icon_surface (style_context, cr, sd->surface, 0, image_height / 4);
+			e_gtk_render_icon_surface (style_context, cr, sd->surface, 0, image_height / 4);
 		cairo_restore (cr);
 	}
 }

@@ -596,7 +596,7 @@ update_preview_cb (GtkFileChooser *file_chooser,
 
 	gtk_image_clear (GTK_IMAGE (data));
 	preview = GTK_WIDGET (data);
-	filename = gtk_file_chooser_get_preview_filename (file_chooser);
+	filename = e_gtk_file_chooser_get_preview_filename (file_chooser);
 	if (!e_util_can_preview_filename (filename)) {
 		g_free (filename);
 		return;
@@ -711,7 +711,7 @@ e_attachment_store_run_load_dialog (EAttachmentStore *store,
 		e_gtk_box_pack_start (option_format_box, option_format_combo, FALSE, FALSE, 0);
 #endif
 
-		gtk_file_chooser_set_extra_widget (file_chooser, extra_box_widget);
+		e_gtk_file_chooser_set_extra_widget (file_chooser, extra_box_widget);
 		gtk_widget_set_visible (extra_box_widget, TRUE);
 	}
 
@@ -869,7 +869,7 @@ e_attachment_store_run_save_dialog (EAttachmentStore *store,
 		e_gtk_toggle_button_set_active (extract_dont, TRUE);
 
 		gtk_widget_set_visible (extra_box_widget, TRUE);
-		gtk_file_chooser_set_extra_widget (file_chooser, extra_box_widget);
+		e_gtk_file_chooser_set_extra_widget (file_chooser, extra_box_widget);
 #endif
 	}
 

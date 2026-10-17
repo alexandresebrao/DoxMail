@@ -679,7 +679,7 @@ e_contact_card_container_update (EContactCardContainer *self)
 
 		parent = gtk_widget_get_parent (self_widget);
 		if (GTK_IS_WIDGET (parent))
-			gtk_container_check_resize (GTK_CONTAINER (parent));
+			gtk_container_check_resize (GTK_WIDGET (parent));
 	}
 }
 

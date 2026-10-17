@@ -111,9 +111,9 @@ move_widget (GtkGrid *grid, GtkWidget *w, guint col, guint row)
 	g_value_set_uint (&rowValue, row);
 	g_value_set_uint (&colValue, col);
 
-	gtk_container_child_set_property (GTK_CONTAINER (grid), w,
+	e_gtk_container_child_set_property (grid, w,
 	                                  "left-attach", &colValue);
-	gtk_container_child_set_property (GTK_CONTAINER (grid), w,
+	e_gtk_container_child_set_property (grid, w,
 	                                  "top-attach",	&rowValue);
 }
 

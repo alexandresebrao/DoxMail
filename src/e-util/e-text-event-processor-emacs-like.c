@@ -124,7 +124,7 @@ e_text_event_processor_emacs_like_event (ETextEventProcessor *tep,
 	key = event->key;
 
 	switch (event->type) {
-	case GDK_BUTTON_PRESS:
+	case GNOME_CANVAS_BUTTON_PRESS:
 		if (event->button.button == 1 || event->button.button == 2) {
 			command.action = E_TEP_GRAB;
 			command.device = event->button.device;
@@ -141,7 +141,7 @@ e_text_event_processor_emacs_like_event (ETextEventProcessor *tep,
 		}
 		break;
 
-	case GDK_2BUTTON_PRESS:
+	case GNOME_CANVAS_2BUTTON_PRESS:
 		if (event->button.button == 1) {
 			command.action = E_TEP_SELECT;
 			command.position = E_TEP_SELECT_WORD;
@@ -149,7 +149,7 @@ e_text_event_processor_emacs_like_event (ETextEventProcessor *tep,
 		}
 		break;
 
-	case GDK_3BUTTON_PRESS:
+	case GNOME_CANVAS_3BUTTON_PRESS:
 		if (event->button.button == 1) {
 			command.action = E_TEP_SELECT;
 			command.position = E_TEP_SELECT_ALL;
@@ -157,7 +157,7 @@ e_text_event_processor_emacs_like_event (ETextEventProcessor *tep,
 		}
 		break;
 
-	case GDK_BUTTON_RELEASE:
+	case GNOME_CANVAS_BUTTON_RELEASE:
 		if (event->button.button == 1) {
 			command.action = E_TEP_UNGRAB;
 			command.time = event->button.time;
@@ -176,7 +176,7 @@ e_text_event_processor_emacs_like_event (ETextEventProcessor *tep,
 		}
 		break;
 
-	case GDK_MOTION_NOTIFY:
+	case GNOME_CANVAS_MOTION_NOTIFY:
 		if (tep_el->mouse_down) {
 			command.action = E_TEP_SELECT;
 			command.position = E_TEP_VALUE;
@@ -185,7 +185,7 @@ e_text_event_processor_emacs_like_event (ETextEventProcessor *tep,
 		}
 		break;
 
-	case GDK_KEY_PRESS:
+	case GNOME_CANVAS_KEY_PRESS:
 		{
 			command.time = event->key.time;
 
@@ -532,7 +532,7 @@ e_text_event_processor_emacs_like_event (ETextEventProcessor *tep,
 			}
 			break;
 
-		case GDK_KEY_RELEASE:
+		case GNOME_CANVAS_KEY_RELEASE:
 			command.time = event->key.time;
 			command.action = E_TEP_NOP;
 			break;

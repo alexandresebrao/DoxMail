@@ -149,7 +149,7 @@ process_stock_request_idle_cb (gpointer user_data)
 	/* Fallback to icon theme */
 	} else {
 		GtkIconTheme *icon_theme;
-		GtkIconInfo *icon_info = NULL;
+		EGtkIconInfo *icon_info = NULL;
 		gint icon_width, icon_height, scale_factor;
 
 		scale_factor = e_stock_request_get_scale_factor (E_STOCK_REQUEST (sid->request));
@@ -167,19 +167,19 @@ process_stock_request_idle_cb (gpointer user_data)
 		icon_theme = e_gtk_icon_theme_get_default ();
 
 		if (icon_name_symbolic)
-			icon_info = gtk_icon_theme_lookup_icon (icon_theme, icon_name_symbolic, size, GTK_ICON_LOOKUP_USE_BUILTIN);
+			icon_info = e_gtk_icon_theme_lookup_icon (icon_theme, icon_name_symbolic, size, 0);
 		if (!icon_info)
-			icon_info = gtk_icon_theme_lookup_icon (icon_theme, icon_name, size, GTK_ICON_LOOKUP_USE_BUILTIN);
+			icon_info = e_gtk_icon_theme_lookup_icon (icon_theme, icon_name, size, 0);
 
 		/* Some icons can be missing in the theme */
 		if (icon_info) {
 			GdkPixbuf *pixbuf = NULL;
 
 			if (icon_name_symbolic || g_str_has_suffix (icon_name, "-symbolic"))
-				pixbuf = gtk_icon_info_load_symbolic (icon_info, &theme_fg, NULL, NULL, NULL, NULL, NULL);
+				pixbuf = e_gtk_icon_info_load_symbolic (icon_info, &theme_fg, NULL, NULL, NULL, NULL, NULL);
 
 			if (!pixbuf)
-				pixbuf = gtk_icon_info_load_icon (icon_info, NULL);
+				pixbuf = e_gtk_icon_info_load_icon (icon_info, NULL);
 
 			if (pixbuf) {
 				gdk_pixbuf_save_to_buffer (

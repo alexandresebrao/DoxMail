@@ -392,12 +392,31 @@ attachment_bar_dispose (GObject *object)
 }
 
 static void
+attachment_bar_pressed_cb (GtkGestureClick *gesture,
+			   gint n_press,
+			   gdouble x,
+			   gdouble y,
+			   gpointer user_data)
+{
+	/* Never propagate the event to the parent */
+	gtk_gesture_set_state (GTK_GESTURE (gesture), GTK_EVENT_SEQUENCE_CLAIMED);
+}
+
+static void
 attachment_bar_constructed (GObject *object)
 {
 	EAttachmentBar *self;
 	GSettings *settings;
 
 	self = E_ATTACHMENT_BAR (object);
+
+	{
+		GtkGesture *gesture = gtk_gesture_click_new ();
+
+		gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (gesture), 0);
+		g_signal_connect (gesture, "pressed", G_CALLBACK (attachment_bar_pressed_cb), NULL);
+		gtk_widget_add_controller (GTK_WIDGET (self), GTK_EVENT_CONTROLLER (gesture));
+	}
 
 	/* Set up property-to-property bindings. */
 
@@ -579,39 +598,6 @@ attachment_bar_update_actions (EAttachmentView *view)
 	e_attachment_view_update_actions (view);
 }
 
-static gboolean
-attachment_bar_button_press_event (GtkWidget *widget,
-				   GdkEvent *event)
-{
-	/* Chain up to parent's button_press_event() method. */
-	GTK_WIDGET_CLASS (e_attachment_bar_parent_class)->button_press_event (widget, event);
-
-	/* Never propagate the event to the parent */
-	return TRUE;
-}
-
-static gboolean
-attachment_bar_button_release_event (GtkWidget *widget,
-				     GdkEvent *event)
-{
-	/* Chain up to parent's button_release_event() method. */
-	GTK_WIDGET_CLASS (e_attachment_bar_parent_class)->button_release_event (widget, event);
-
-	/* Never propagate the event to the parent */
-	return TRUE;
-}
-
-static gboolean
-attachment_bar_motion_notify_event (GtkWidget *widget,
-				    GdkEvent *event)
-{
-	/* Chain up to parent's motion_notify_event() method. */
-	GTK_WIDGET_CLASS (e_attachment_bar_parent_class)->motion_notify_event (widget, event);
-
-	/* Never propagate the event to the parent */
-	return TRUE;
-}
-
 static void
 e_attachment_bar_class_init (EAttachmentBarClass *class)
 {
@@ -625,9 +611,6 @@ e_attachment_bar_class_init (EAttachmentBarClass *class)
 	object_class->constructed = attachment_bar_constructed;
 
 	widget_class = GTK_WIDGET_CLASS (class);
-	widget_class->button_press_event = attachment_bar_button_press_event;
-	widget_class->button_release_event = attachment_bar_button_release_event;
-	widget_class->motion_notify_event = attachment_bar_motion_notify_event;
 
 	/* Do not set the CSS class name, it breaks styling of the resize handle */
 	/* gtk_widget_class_set_css_name (widget_class, G_OBJECT_CLASS_NAME (class)); */

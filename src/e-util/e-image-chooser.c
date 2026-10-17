@@ -298,7 +298,7 @@ image_chooser_set_icon_name (EImageChooser *chooser,
                              const gchar *icon_name)
 {
 	GtkIconTheme *icon_theme;
-	GtkIconInfo *icon_info;
+	EGtkIconInfo *icon_info;
 	const gchar *filename;
 
 	if (g_strcmp0 (chooser->priv->icon_name, icon_name) != 0) {
@@ -313,10 +313,10 @@ image_chooser_set_icon_name (EImageChooser *chooser,
 		chooser->priv->pixel_size = height;
 	}
 
-	icon_info = gtk_icon_theme_lookup_icon (icon_theme, icon_name, chooser->priv->pixel_size, 0);
+	icon_info = e_gtk_icon_theme_lookup_icon (icon_theme, icon_name, chooser->priv->pixel_size, 0);
 	g_return_if_fail (icon_info != NULL);
 
-	filename = gtk_icon_info_get_filename (icon_info);
+	filename = e_gtk_icon_info_get_filename (icon_info);
 	e_image_chooser_set_from_file (chooser, filename);
 	g_object_unref (icon_info);
 }

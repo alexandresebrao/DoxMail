@@ -1286,8 +1286,7 @@ setup_custom_widgets (EContactListEditor *editor)
 		gtk_widget_get_name (old));
 	parent = gtk_widget_get_parent (old);
 
-	gtk_container_child_get (
-		GTK_CONTAINER (parent), old,
+	e_gtk_container_child_get (parent, old,
 		"left-attach", &la,
 		"top-attach", &ta,
 		"width", &w,

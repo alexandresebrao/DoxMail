@@ -23,6 +23,8 @@
 
 #include <gtk/gtk.h>
 
+#include "e-gtk4-compat.h"
+
 static EEmoticon *
 emoticon_copy (const EEmoticon *emoticon)
 {
@@ -102,17 +104,16 @@ e_emoticon_free (EEmoticon *emoticon)
 gchar *
 e_emoticon_dup_uri (const EEmoticon *emoticon)
 {
-	GtkIconInfo *icon_info;
+	EGtkIconInfo *icon_info;
 	GtkIconTheme *icon_theme;
 	const gchar *filename;
 	gchar *uri = NULL;
 
 	icon_theme = e_gtk_icon_theme_get_default ();
-	icon_info = gtk_icon_theme_lookup_icon (
-		icon_theme, emoticon->icon_name, 16, 0);
+	icon_info = e_gtk_icon_theme_lookup_icon (icon_theme, emoticon->icon_name, 16, 0);
 	g_return_val_if_fail (icon_info != NULL, NULL);
 
-	filename = gtk_icon_info_get_filename (icon_info);
+	filename = e_gtk_icon_info_get_filename (icon_info);
 	if (filename != NULL) {
 		uri = g_filename_to_uri (filename, NULL, NULL);
 	}

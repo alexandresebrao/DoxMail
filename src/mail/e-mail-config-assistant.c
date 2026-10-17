@@ -950,7 +950,7 @@ mail_config_assistant_constructed (GObject *object)
 }
 
 static void
-mail_config_assistant_remove (GtkContainer *container,
+mail_config_assistant_remove (GtkWidget *container,
                               GtkWidget *widget)
 {
 	if (E_IS_MAIL_CONFIG_PAGE (widget))
@@ -1381,7 +1381,7 @@ e_mail_config_assistant_add_page (EMailConfigAssistant *assistant,
 
 	/* XXX EAssistant has no equivalent to GtkNotebook's
 	 *     "page-added" and "page-removed" signals.  Fortunately
-	 *     removing a page does trigger GtkContainer::remove, so
+	 *     removing a page does trigger GtkWidget::remove, so
 	 *     we can override that method and disconnect our signal
 	 *     handler before chaining up.  But I don't see any way
 	 *     for a subclass to intercept EAssistant pages being

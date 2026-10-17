@@ -140,7 +140,7 @@ prefer_plain_page_factory (EPlugin *epl,
 		G_CALLBACK (epp_mode_changed), info);
 
 	gtk_grid_attach_next_to (GTK_GRID (data->parent), check, NULL, GTK_POS_BOTTOM, 2, 1);
-	gtk_container_child_get (GTK_CONTAINER (data->parent), check, "top-attach", &i, NULL);
+	e_gtk_container_child_get (data->parent, check, "top-attach", &i, NULL);
 	gtk_grid_attach (GTK_GRID (data->parent), dropdown_label, 0, i + 1, 1, 1);
 	gtk_grid_attach (GTK_GRID (data->parent), (GtkWidget *) dropdown, 1, i + 1, 1, 1);
 	gtk_grid_attach (GTK_GRID (data->parent), info, 1, i + 2, 1, 1);

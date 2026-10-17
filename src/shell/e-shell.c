@@ -1525,11 +1525,11 @@ e_setup_theme_icons_theme_changed_cb (GtkSettings *gtk_settings)
 			guint ii;
 
 			for (ii = 0; ii < G_N_ELEMENTS (sample_icon_names); ii++) {
-				GtkIconInfo *icon_info;
+				EGtkIconInfo *icon_info;
 
 				icon_info = gtk_icon_theme_choose_icon (icon_theme, sample_icon_names[ii], 32, 0);
 				if (icon_info) {
-					if (gtk_icon_info_is_symbolic (icon_info))
+					if (e_gtk_icon_info_is_symbolic (icon_info))
 						n_symbolic++;
 					else
 						n_non_symbolic++;

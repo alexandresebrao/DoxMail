@@ -184,7 +184,7 @@ rule_add (GtkWidget *widget,
 	gtk_window_set_default_size (GTK_WINDOW (editor->dialog), 650, 400);
 	gtk_window_set_resizable (GTK_WINDOW (editor->dialog), TRUE);
 	gtk_window_set_transient_for ((GtkWindow *) editor->dialog, (GtkWindow *) editor);
-	e_gtk_widget_set_border_width ((GtkContainer *) editor->dialog, 6);
+	e_gtk_widget_set_border_width ((GtkWidget *) editor->dialog, 6);
 
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (editor->dialog));
 	e_gtk_box_pack_start (GTK_BOX (content_area), rules, TRUE, TRUE, 3);
@@ -297,7 +297,7 @@ rule_edit (GtkWidget *widget,
 	gtk_window_set_default_size (GTK_WINDOW (editor->dialog), 650, 400);
 	gtk_window_set_resizable (GTK_WINDOW (editor->dialog), TRUE);
 	gtk_window_set_transient_for (GTK_WINDOW (editor->dialog), GTK_WINDOW (e_gtk_widget_get_toplevel (GTK_WIDGET (editor))));
-	e_gtk_widget_set_border_width ((GtkContainer *) editor->dialog, 6);
+	e_gtk_widget_set_border_width ((GtkWidget *) editor->dialog, 6);
 
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (editor->dialog));
 	e_gtk_box_pack_start (GTK_BOX (content_area), rules, TRUE, TRUE, 3);
@@ -350,7 +350,7 @@ rule_duplicate (GtkWidget *widget,
 	gtk_window_set_default_size (GTK_WINDOW (editor->dialog), 650, 400);
 	gtk_window_set_resizable (GTK_WINDOW (editor->dialog), TRUE);
 	gtk_window_set_transient_for (GTK_WINDOW (editor->dialog), GTK_WINDOW (e_gtk_widget_get_toplevel (GTK_WIDGET (editor))));
-	e_gtk_widget_set_border_width ((GtkContainer *) editor->dialog, 6);
+	e_gtk_widget_set_border_width ((GtkWidget *) editor->dialog, 6);
 
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (editor->dialog));
 	e_gtk_box_pack_start (GTK_BOX (content_area), rules, TRUE, TRUE, 3);

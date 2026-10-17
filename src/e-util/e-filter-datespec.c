@@ -177,7 +177,7 @@ get_values (EFilterDatespec *fds)
 		guint year, month, day;
 		struct tm tm;
 
-		gtk_calendar_get_date ((GtkCalendar *) self->priv->calendar_specify, &year, &month, &day);
+		e_gtk_calendar_get_date ((GtkCalendar *) self->priv->calendar_specify, &year, &month, &day);
 		memset (&tm, 0, sizeof (tm));
 		tm.tm_mday = day;
 		tm.tm_year = year - 1900;
@@ -220,8 +220,8 @@ set_values (EFilterDatespec *fds)
 		struct tm tm;
 
 		localtime_r (&fds->value, &tm);
-		gtk_calendar_select_month ((GtkCalendar *) self->priv->calendar_specify, tm.tm_mon, tm.tm_year + 1900);
-		gtk_calendar_select_day ((GtkCalendar *) self->priv->calendar_specify, tm.tm_mday);
+		e_gtk_calendar_select_month ((GtkCalendar *) self->priv->calendar_specify, tm.tm_mon, tm.tm_year + 1900);
+		e_gtk_calendar_select_day ((GtkCalendar *) self->priv->calendar_specify, tm.tm_mday);
 		break;
 	}
 	case FDST_X_AGO:

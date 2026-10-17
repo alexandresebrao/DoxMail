@@ -265,7 +265,7 @@ update_preview_cb (GtkFileChooser *file_chooser,
 	gsize length = 0;
 
 	preview = GTK_WIDGET (data);
-	filename = gtk_file_chooser_get_preview_filename (file_chooser);
+	filename = e_gtk_file_chooser_get_preview_filename (file_chooser);
 
 	have_preview = filename && prepare_image (filename, &file_contents, &length, &pixbuf, FALSE);
 	if (have_preview) {

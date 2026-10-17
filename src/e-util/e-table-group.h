@@ -96,23 +96,23 @@ struct _ETableGroupClass {
 	void		(*double_click)		(ETableGroup *table_group,
 						 gint row,
 						 gint col,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 	gboolean	(*right_click)		(ETableGroup *table_group,
 						 gint row,
 						 gint col,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 	gboolean	(*click)		(ETableGroup *table_group,
 						 gint row,
 						 gint col,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 	gboolean	(*key_press)		(ETableGroup *table_group,
 						 gint row,
 						 gint col,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 	gint		(*start_drag)		(ETableGroup *table_group,
 						 gint row,
 						 gint col,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 
 	/* Virtual functions. */
 	void		(*add)			(ETableGroup *table_group,
@@ -213,23 +213,23 @@ void		e_table_group_cursor_activated	(ETableGroup *table_group,
 void		e_table_group_double_click	(ETableGroup *table_group,
 						 gint row,
 						 gint col,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 gboolean	e_table_group_right_click	(ETableGroup *table_group,
 						 gint row,
 						 gint col,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 gboolean	e_table_group_click		(ETableGroup *table_group,
 						 gint row,
 						 gint col,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 gboolean	e_table_group_key_press		(ETableGroup *table_group,
 						 gint row,
 						 gint col,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 gint		e_table_group_start_drag	(ETableGroup *table_group,
 						 gint row,
 						 gint col,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 
 typedef void (*ETableGroupLeafFn) (gpointer e_table_item, gpointer closure);
 void		e_table_group_apply_to_leafs	(ETableGroup *table_group,

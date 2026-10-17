@@ -366,7 +366,7 @@ shell_switcher_screen_changed (GtkWidget *widget,
 }
 
 static void
-shell_switcher_remove (GtkContainer *container,
+shell_switcher_remove (GtkWidget *container,
                        GtkWidget *remove_widget)
 {
 	EShellSwitcher *self = E_SHELL_SWITCHER (container);
@@ -389,7 +389,7 @@ shell_switcher_remove (GtkContainer *container,
 }
 
 static void
-shell_switcher_forall (GtkContainer *container,
+shell_switcher_forall (GtkWidget *container,
                        gboolean include_internals,
                        EGtkCallback callback,
                        gpointer callback_data)

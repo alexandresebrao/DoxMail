@@ -120,7 +120,7 @@ book_shell_sidebar_constructed (GObject *object)
 	EShellBackend *shell_backend;
 	EShellSidebar *shell_sidebar;
 	EClientCache *client_cache;
-	GtkContainer *container;
+	GtkWidget *container;
 	GtkWidget *widget;
 	GSettings *settings;
 
@@ -132,7 +132,7 @@ book_shell_sidebar_constructed (GObject *object)
 	shell_backend = e_shell_view_get_shell_backend (shell_view);
 	shell = e_shell_backend_get_shell (shell_backend);
 
-	container = GTK_CONTAINER (shell_sidebar);
+	container = GTK_WIDGET (shell_sidebar);
 
 	widget = gtk_scrolled_window_new ();
 	gtk_scrolled_window_set_policy (
@@ -141,7 +141,7 @@ book_shell_sidebar_constructed (GObject *object)
 	e_gtk_container_add (container, widget);
 	gtk_widget_show (widget);
 
-	container = GTK_CONTAINER (widget);
+	container = GTK_WIDGET (widget);
 
 	client_cache = e_shell_get_client_cache (shell);
 	widget = e_addressbook_selector_new (client_cache);

@@ -3875,8 +3875,8 @@ e_source_selector_manage_groups (ESourceSelector *selector)
 	dlg = gtk_dialog_new_with_buttons (_("Manage Groups"),
 			w ? GTK_WINDOW (w) : NULL,
 			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
-			GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
+			_("_Cancel"), GTK_RESPONSE_REJECT,
+			_("_OK"), GTK_RESPONSE_ACCEPT,
 			NULL);
 
 	w = gtk_dialog_get_content_area (GTK_DIALOG (dlg));

@@ -441,8 +441,8 @@ picture_gallery_constructed (GObject *object)
 
 	gtk_cell_layout_add_attribute (cell_layout, renderer, "text", COL_FILENAME_TEXT);
 
-	drag_source = e_gtk_drag_source_new ();
-	e_gtk_drag_source_set_actions (drag_source, GDK_ACTION_COPY);
+	drag_source = gtk_drag_source_new ();
+	gtk_drag_source_set_actions (drag_source, GDK_ACTION_COPY);
 	g_signal_connect_object (drag_source, "prepare",
 		G_CALLBACK (picture_gallery_drag_prepare_cb), object, 0);
 	gtk_widget_add_controller (GTK_WIDGET (icon_view), GTK_EVENT_CONTROLLER (drag_source));

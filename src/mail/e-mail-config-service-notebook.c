@@ -208,7 +208,7 @@ mail_config_service_notebook_constructed (GObject *object)
 }
 
 static void
-mail_config_service_notebook_set_child_property (GtkContainer *container,
+mail_config_service_notebook_set_child_property (GtkWidget *container,
                                                  GtkWidget *child,
                                                  guint property_id,
                                                  const GValue *value,
@@ -227,7 +227,7 @@ mail_config_service_notebook_set_child_property (GtkContainer *container,
 }
 
 static void
-mail_config_service_notebook_get_child_property (GtkContainer *container,
+mail_config_service_notebook_get_child_property (GtkWidget *container,
                                                  GtkWidget *child,
                                                  guint property_id,
                                                  GValue *value,

@@ -157,6 +157,18 @@ void		e_gtk_widget_destroyed		(GtkWidget *widget,
 						 GtkWidget **widget_pointer);
 
 /* Icons as pixbufs and cairo surfaces, which GTK 4 replaced with paintables */
+GdkPixbuf *	e_gtk_icon_theme_load_icon_for_scale
+						(GtkIconTheme *icon_theme,
+						 const gchar *icon_name,
+						 gint size,
+						 gint scale,
+						 gint flags,
+						 GError **error);
+void		e_gtk_render_icon_surface	(GtkStyleContext *context,
+						 cairo_t *cr,
+						 cairo_surface_t *surface,
+						 gdouble x,
+						 gdouble y);
 GdkPixbuf *	e_gtk_icon_theme_load_icon	(GtkIconTheme *icon_theme,
 						 const gchar *icon_name,
 						 gint size,
@@ -196,6 +208,67 @@ gboolean	e_gtk_show_uri_on_window	(GtkWindow *parent,
 						 const gchar *uri,
 						 guint32 timestamp,
 						 GError **error);
+
+/* GtkIconInfo as the GtkIconPaintable a lookup gives; NULL when the
+ * theme has no such icon, like with GTK 3 */
+typedef GtkIconPaintable EGtkIconInfo;
+
+EGtkIconInfo *	e_gtk_icon_theme_lookup_icon	(GtkIconTheme *icon_theme,
+						 const gchar *icon_name,
+						 gint size,
+						 gint flags);
+EGtkIconInfo *	e_gtk_icon_theme_lookup_by_gicon
+						(GtkIconTheme *icon_theme,
+						 GIcon *icon,
+						 gint size,
+						 gint flags);
+const gchar *	e_gtk_icon_info_get_filename	(EGtkIconInfo *icon_info);
+GdkPixbuf *	e_gtk_icon_info_load_icon	(EGtkIconInfo *icon_info,
+						 GError **error);
+GdkPixbuf *	e_gtk_icon_info_load_symbolic	(EGtkIconInfo *icon_info,
+						 const GdkRGBA *fg,
+						 const GdkRGBA *success_color,
+						 const GdkRGBA *warning_color,
+						 const GdkRGBA *error_color,
+						 gboolean *was_symbolic,
+						 GError **error);
+gboolean	e_gtk_icon_info_is_symbolic	(EGtkIconInfo *icon_info);
+
+/* GTK 3 container child properties, on what GTK 4 has instead: the
+ * GtkNotebookPage, GtkStackPage, GtkGridLayoutChild or the GtkPaned;
+ * box packing properties are gone and get ignored */
+void		e_gtk_container_child_set	(gpointer container,
+						 GtkWidget *child,
+						 const gchar *first_property_name,
+						 ...) G_GNUC_NULL_TERMINATED;
+void		e_gtk_container_child_get	(gpointer container,
+						 GtkWidget *child,
+						 const gchar *first_property_name,
+						 ...) G_GNUC_NULL_TERMINATED;
+void		e_gtk_container_child_set_property
+						(gpointer container,
+						 GtkWidget *child,
+						 const gchar *property_name,
+						 const GValue *value);
+void		e_gtk_container_child_get_property
+						(gpointer container,
+						 GtkWidget *child,
+						 const gchar *property_name,
+						 GValue *value);
+
+/* GTK 3 GtkCalendar API: months count from 0, day 0 means none */
+void		e_gtk_calendar_get_date		(GtkCalendar *calendar,
+						 guint *year,
+						 guint *month,
+						 guint *day);
+void		e_gtk_calendar_select_month	(GtkCalendar *calendar,
+						 guint month,
+						 guint year);
+void		e_gtk_calendar_select_day	(GtkCalendar *calendar,
+						 guint day);
+
+/* stock buttons: a "gtk-*" stock id gives its label, others an icon */
+GtkWidget *	e_gtk_button_new_from_stock	(const gchar *stock_id);
 
 /* GtkAccelGroup as a GtkShortcutController added to the window */
 typedef GtkShortcutController EGtkAccelGroup;

@@ -869,7 +869,7 @@ create_duplicate_contact_detected_dialog (EContact *old_contact,
                                           gboolean is_for_commit)
 {
 	GtkWidget *widget, *scrolled;
-	GtkContainer *container;
+	GtkWidget *container;
 	GtkDialog *dialog;
 	const gchar *text;
 
@@ -895,7 +895,7 @@ create_duplicate_contact_detected_dialog (EContact *old_contact,
 	if (disable_merge)
 		gtk_dialog_set_response_sensitive (dialog, GTK_RESPONSE_APPLY, FALSE);
 
-	container = GTK_CONTAINER (gtk_dialog_get_content_area (dialog));
+	container = GTK_WIDGET (gtk_dialog_get_content_area (dialog));
 
 	widget = gtk_grid_new ();
 	g_object_set (
@@ -909,7 +909,7 @@ create_duplicate_contact_detected_dialog (EContact *old_contact,
 		NULL);
 
 	e_gtk_container_add (container, widget);
-	container = GTK_CONTAINER (widget);
+	container = GTK_WIDGET (widget);
 
 	widget = gtk_image_new_from_icon_name ("avatar-default");
 	g_object_set (
@@ -933,7 +933,7 @@ create_duplicate_contact_detected_dialog (EContact *old_contact,
 		NULL);
 
 	e_gtk_container_add (container, widget);
-	container = GTK_CONTAINER (widget);
+	container = GTK_WIDGET (widget);
 
 	if (is_for_commit)
 		text = _("The name or email address of this contact already exists\n"

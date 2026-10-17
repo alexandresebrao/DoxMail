@@ -1007,8 +1007,7 @@ composer_header_table_constructed (GObject *object)
 	ii = E_COMPOSER_HEADER_FROM;
 
 	/* Leave room in the "From" row for signature stuff. */
-	gtk_container_child_set (
-		GTK_CONTAINER (object),
+	e_gtk_container_child_set (object,
 		table->priv->headers[ii]->input_widget,
 		"width", 1, NULL);
 

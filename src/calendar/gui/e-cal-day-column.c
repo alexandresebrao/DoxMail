@@ -491,7 +491,7 @@ e_cal_day_column_bag_notify_n_items_cb (ECalComponentBag *bag,
 	ECalDayColumn *self = user_data;
 
 	if (!e_cal_component_bag_get_n_items (bag)) {
-		GtkContainer *container = GTK_CONTAINER (self);
+		GtkWidget *container = GTK_WIDGET (self);
 		GList *children, *link;
 
 		children = e_gtk_widget_get_children (container);

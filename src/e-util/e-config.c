@@ -451,10 +451,10 @@ ec_rebuild (EConfig *config)
 				w = gtk_label_new_with_mnemonic (translated_label);
 				gtk_widget_show (w);
 				page = gtk_box_new (GTK_ORIENTATION_VERTICAL, 12);
-				e_gtk_widget_set_border_width ((GtkContainer *) page, 12);
+				e_gtk_widget_set_border_width ((GtkWidget *) page, 12);
 				gtk_widget_show (page);
 				gtk_notebook_insert_page ((GtkNotebook *) book, page, w, pageno);
-				gtk_container_child_set (GTK_CONTAINER (book), page, "tab-fill", TRUE, "tab-expand", TRUE, NULL);
+				e_gtk_container_child_set (book, page, "tab-fill", TRUE, "tab-expand", TRUE, NULL);
 				wn->frame = page;
 			} else
 				page = wn->widget;
@@ -558,7 +558,6 @@ ec_rebuild (EConfig *config)
 				gtk_widget_set_margin_start (section, 12);
 				frame = g_object_new (
 					gtk_frame_get_type (),
-					"shadow_type", GTK_SHADOW_NONE,
 					"label_widget", label,
 					"child", section,
 					NULL);

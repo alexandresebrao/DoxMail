@@ -42,11 +42,11 @@ update_preview (GtkFileChooser *chooser,
 
 	g_return_if_fail (chooser != NULL);
 
-	image = GTK_IMAGE (gtk_file_chooser_get_preview_widget (chooser));
+	image = GTK_IMAGE (e_gtk_file_chooser_get_preview_widget (chooser));
 	if (!image)
 		return;
 
-	filename = gtk_file_chooser_get_preview_filename (chooser);
+	filename = e_gtk_file_chooser_get_preview_filename (chooser);
 
 	gtk_image_set_from_file (image, filename);
 

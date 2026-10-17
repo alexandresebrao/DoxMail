@@ -320,7 +320,7 @@ shell_content_size_allocate (GtkWidget *widget,
 }
 
 static void
-shell_content_remove (GtkContainer *container,
+shell_content_remove (GtkWidget *container,
                       GtkWidget *widget)
 {
 	EShellContent *self = E_SHELL_CONTENT (container);
@@ -342,7 +342,7 @@ shell_content_remove (GtkContainer *container,
 }
 
 static void
-shell_content_forall (GtkContainer *container,
+shell_content_forall (GtkWidget *container,
                       gboolean include_internals,
                       EGtkCallback callback,
                       gpointer callback_data)

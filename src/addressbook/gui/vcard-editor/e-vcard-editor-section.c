@@ -287,7 +287,7 @@ e_vcard_editor_section_take_item (EVCardEditorSection *self,
 				EVCardEditorItem *existing_item = g_ptr_array_index (self->items, ii);
 
 				if (self->sort_func (existing_item, item) > 0) {
-					GtkContainer *container = GTK_CONTAINER (self->grid);
+					GtkWidget *container = GTK_WIDGET (self->grid);
 					gint top;
 
 					index = ii;
@@ -297,13 +297,13 @@ e_vcard_editor_section_take_item (EVCardEditorSection *self,
 						label = e_vcard_editor_item_get_label_widget (existing_item);
 						box = e_vcard_editor_item_get_data_box (existing_item);
 
-						gtk_container_child_get (container, box, "top-attach", &top, NULL);
+						e_gtk_container_child_get (container, box, "top-attach", &top, NULL);
 						top++;
 
 						if (label)
-							gtk_container_child_set (container, label, "top-attach", top, NULL);
+							e_gtk_container_child_set (container, label, "top-attach", top, NULL);
 
-						gtk_container_child_set (container, box, "top-attach", top, NULL);
+						e_gtk_container_child_set (container, box, "top-attach", top, NULL);
 					}
 					break;
 				}

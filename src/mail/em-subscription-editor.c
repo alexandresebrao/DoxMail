@@ -1375,8 +1375,7 @@ subscription_editor_add_store (EMSubscriptionEditor *editor,
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (widget), TRUE);
 	gtk_notebook_append_page (GTK_NOTEBOOK (container), widget, NULL);
-	gtk_container_child_set (
-		GTK_CONTAINER (container), widget,
+	e_gtk_container_child_set (container, widget,
 		"tab-fill", FALSE, "tab-expand", FALSE, NULL);
 	gtk_widget_show (widget);
 

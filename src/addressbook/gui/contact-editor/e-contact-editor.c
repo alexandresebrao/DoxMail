@@ -4371,7 +4371,7 @@ update_preview_cb (GtkFileChooser *file_chooser,
 	GdkPixbuf *pixbuf;
 
 	preview = GTK_WIDGET (data);
-	filename = gtk_file_chooser_get_preview_filename (file_chooser);
+	filename = e_gtk_file_chooser_get_preview_filename (file_chooser);
 	if (!e_util_can_preview_filename (filename)) {
 		g_free (filename);
 		return;
@@ -4977,13 +4977,13 @@ setup_tab_order (GtkBuilder *builder)
 		list = add_to_tab_order (list, builder, "button-fulladdr");
 		list = add_to_tab_order (list, builder, "text-address");
 		list = g_list_reverse (list);
-		e_container_change_tab_order (GTK_CONTAINER (container), list);
+		e_container_change_tab_order (GTK_WIDGET (container), list);
 		g_list_free (list);
 	}
 */
 
 	container = e_builder_get_widget (builder, "grid-home-address");
-	gtk_container_get_focus_chain (GTK_CONTAINER (container), &list);
+	gtk_container_get_focus_chain (GTK_WIDGET (container), &list);
 
 	list = add_to_tab_order (list, builder, "scrolledwindow-home-address");
 	list = add_to_tab_order (list, builder, "entry-home-city");
@@ -4993,11 +4993,11 @@ setup_tab_order (GtkBuilder *builder)
 	list = add_to_tab_order (list, builder, "entry-home-country");
 	list = g_list_reverse (list);
 
-	gtk_container_set_focus_chain (GTK_CONTAINER (container), list);
+	gtk_container_set_focus_chain (GTK_WIDGET (container), list);
 	g_list_free (list);
 
 	container = e_builder_get_widget (builder, "grid-work-address");
-	gtk_container_get_focus_chain (GTK_CONTAINER (container), &list);
+	gtk_container_get_focus_chain (GTK_WIDGET (container), &list);
 
 	list = add_to_tab_order (list, builder, "scrolledwindow-work-address");
 	list = add_to_tab_order (list, builder, "entry-work-city");
@@ -5007,11 +5007,11 @@ setup_tab_order (GtkBuilder *builder)
 	list = add_to_tab_order (list, builder, "entry-work-country");
 	list = g_list_reverse (list);
 
-	gtk_container_set_focus_chain (GTK_CONTAINER (container), list);
+	gtk_container_set_focus_chain (GTK_WIDGET (container), list);
 	g_list_free (list);
 
 	container = e_builder_get_widget (builder, "grid-other-address");
-	gtk_container_get_focus_chain (GTK_CONTAINER (container), &list);
+	gtk_container_get_focus_chain (GTK_WIDGET (container), &list);
 
 	list = add_to_tab_order (list, builder, "scrolledwindow-other-address");
 	list = add_to_tab_order (list, builder, "entry-other-city");
@@ -5021,7 +5021,7 @@ setup_tab_order (GtkBuilder *builder)
 	list = add_to_tab_order (list, builder, "entry-other-country");
 	list = g_list_reverse (list);
 
-	gtk_container_set_focus_chain (GTK_CONTAINER (container), list);
+	gtk_container_set_focus_chain (GTK_WIDGET (container), list);
 	g_list_free (list);
 }
 

@@ -67,6 +67,28 @@ gboolean	e_gtk_file_chooser_set_current_folder_uri
 gchar *		e_gtk_file_chooser_get_current_folder_uri
 						(gpointer chooser);
 
+/* GTK 4 file choosers have no preview; "update-preview" exists, but is
+ * never emitted, and the preview functions do nothing */
+gchar *		e_gtk_file_chooser_get_preview_filename
+						(gpointer chooser);
+GtkWidget *	e_gtk_file_chooser_get_preview_widget
+						(gpointer chooser);
+void		e_gtk_file_chooser_set_preview_widget
+						(gpointer chooser,
+						 GtkWidget *preview_widget);
+void		e_gtk_file_chooser_set_preview_widget_active
+						(gpointer chooser,
+						 gboolean active);
+void		e_gtk_file_chooser_set_use_preview_label
+						(gpointer chooser,
+						 gboolean use_label);
+/* below the chooser of a GtkFileChooserDialog; kept unshown elsewhere */
+void		e_gtk_file_chooser_set_extra_widget
+						(gpointer chooser,
+						 GtkWidget *extra_widget);
+GtkWidget *	e_gtk_file_chooser_get_extra_widget
+						(gpointer chooser);
+
 G_END_DECLS
 
 #endif /* E_GTK_FILE_CHOOSER_COMPAT_H */

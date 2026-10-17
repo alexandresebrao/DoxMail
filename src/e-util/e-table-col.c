@@ -53,8 +53,8 @@ e_table_col_ensure_surface (ETableCol *etc,
 
 	etc->surface_scale = gtk_style_context_get_scale (style_context);
 
-	pixbuf = gtk_icon_theme_load_icon_for_scale (
-		icon_theme, etc->icon_name, height, etc->surface_scale, GTK_ICON_LOOKUP_FORCE_SIZE, &error);
+	pixbuf = e_gtk_icon_theme_load_icon_for_scale (
+		icon_theme, etc->icon_name, height, etc->surface_scale, 0, &error);
 
 	if (error != NULL) {
 		g_warning ("%s", error->message);

@@ -14,6 +14,7 @@
 
 #include "evolution-config.h"
 
+#include <glib/gi18n-lib.h>
 #include <gobject/gvaluecollector.h>
 
 #include "e-gtk4-compat.h"
@@ -1209,6 +1210,147 @@ e_gtk_icon_theme_load_icon (GtkIconTheme *icon_theme,
 	return pixbuf;
 }
 
+#define ICON_INFO_SIZE_KEY "e-gtk-icon-info-size"
+#define ICON_INFO_PATH_KEY "e-gtk-icon-info-path"
+
+static EGtkIconInfo *
+icon_info_new (GtkIconPaintable *paintable,
+	       gint size)
+{
+	if (paintable)
+		g_object_set_data (G_OBJECT (paintable), ICON_INFO_SIZE_KEY, GINT_TO_POINTER (size));
+
+	return paintable;
+}
+
+EGtkIconInfo *
+e_gtk_icon_theme_lookup_icon (GtkIconTheme *icon_theme,
+			      const gchar *icon_name,
+			      gint size,
+			      gint flags)
+{
+	g_return_val_if_fail (icon_name != NULL, NULL);
+
+	if (!icon_theme)
+		icon_theme = e_gtk_icon_theme_get_default ();
+
+	if (!gtk_icon_theme_has_icon (icon_theme, icon_name))
+		return NULL;
+
+	return icon_info_new (gtk_icon_theme_lookup_icon (icon_theme, icon_name, NULL, size, 1, GTK_TEXT_DIR_NONE, flags), size);
+}
+
+EGtkIconInfo *
+e_gtk_icon_theme_lookup_by_gicon (GtkIconTheme *icon_theme,
+				  GIcon *icon,
+				  gint size,
+				  gint flags)
+{
+	g_return_val_if_fail (G_IS_ICON (icon), NULL);
+
+	if (!icon_theme)
+		icon_theme = e_gtk_icon_theme_get_default ();
+
+	if (!gtk_icon_theme_has_gicon (icon_theme, icon) && !G_IS_FILE_ICON (icon) && !G_IS_LOADABLE_ICON (icon))
+		return NULL;
+
+	return icon_info_new (gtk_icon_theme_lookup_by_gicon (icon_theme, icon, size, 1, GTK_TEXT_DIR_NONE, flags), size);
+}
+
+const gchar *
+e_gtk_icon_info_get_filename (EGtkIconInfo *icon_info)
+{
+	const gchar *path;
+
+	g_return_val_if_fail (GTK_IS_ICON_PAINTABLE (icon_info), NULL);
+
+	path = g_object_get_data (G_OBJECT (icon_info), ICON_INFO_PATH_KEY);
+	if (!path) {
+		GFile *file = gtk_icon_paintable_get_file (icon_info);
+
+		if (file) {
+			/* GTK 3 owned the string; keep it with the paintable */
+			gchar *filename = g_file_get_path (file);
+
+			if (filename)
+				g_object_set_data_full (G_OBJECT (icon_info), ICON_INFO_PATH_KEY, filename, g_free);
+			path = filename;
+			g_object_unref (file);
+		}
+	}
+
+	return path;
+}
+
+GdkPixbuf *
+e_gtk_icon_info_load_icon (EGtkIconInfo *icon_info,
+			   GError **error)
+{
+	GdkPixbuf *pixbuf;
+	gint size;
+
+	g_return_val_if_fail (GTK_IS_ICON_PAINTABLE (icon_info), NULL);
+
+	size = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (icon_info), ICON_INFO_SIZE_KEY));
+	if (size <= 0)
+		size = gdk_paintable_get_intrinsic_width (GDK_PAINTABLE (icon_info));
+	if (size <= 0)
+		size = 16;
+
+	pixbuf = pixbuf_from_paintable (icon_info, size);
+	if (!pixbuf)
+		g_set_error (error, G_IO_ERROR, G_IO_ERROR_FAILED, "Failed to load icon");
+
+	return pixbuf;
+}
+
+GdkPixbuf *
+e_gtk_icon_info_load_symbolic (EGtkIconInfo *icon_info,
+			       const GdkRGBA *fg,
+			       const GdkRGBA *success_color,
+			       const GdkRGBA *warning_color,
+			       const GdkRGBA *error_color,
+			       gboolean *was_symbolic,
+			       GError **error)
+{
+	/* the colors are not applied; symbolic icons render as the theme has them */
+	if (was_symbolic)
+		*was_symbolic = icon_info && gtk_icon_paintable_is_symbolic (icon_info);
+
+	return e_gtk_icon_info_load_icon (icon_info, error);
+}
+
+gboolean
+e_gtk_icon_info_is_symbolic (EGtkIconInfo *icon_info)
+{
+	g_return_val_if_fail (GTK_IS_ICON_PAINTABLE (icon_info), FALSE);
+
+	return gtk_icon_paintable_is_symbolic (icon_info);
+}
+
+/* the pixbuf is size * scale pixels big, as with GTK 3 */
+GdkPixbuf *
+e_gtk_icon_theme_load_icon_for_scale (GtkIconTheme *icon_theme,
+				      const gchar *icon_name,
+				      gint size,
+				      gint scale,
+				      gint flags,
+				      GError **error)
+{
+	return e_gtk_icon_theme_load_icon (icon_theme, icon_name, size * MAX (scale, 1), flags, error);
+}
+
+void
+e_gtk_render_icon_surface (GtkStyleContext *context,
+			   cairo_t *cr,
+			   cairo_surface_t *surface,
+			   gdouble x,
+			   gdouble y)
+{
+	cairo_set_source_surface (cr, surface, x, y);
+	cairo_paint (cr);
+}
+
 GdkPixbuf *
 e_gtk_icon_theme_load_gicon (GtkIconTheme *icon_theme,
                              GIcon *icon,
@@ -1530,4 +1672,308 @@ e_gtk_window_remove_accel_group (GtkWindow *window,
 	g_return_if_fail (GTK_IS_SHORTCUT_CONTROLLER (accel_group));
 
 	gtk_widget_remove_controller (GTK_WIDGET (window), GTK_EVENT_CONTROLLER (accel_group));
+}
+
+void
+e_gtk_calendar_get_date (GtkCalendar *calendar,
+			 guint *year,
+			 guint *month,
+			 guint *day)
+{
+	GDateTime *dt;
+
+	g_return_if_fail (GTK_IS_CALENDAR (calendar));
+
+	dt = gtk_calendar_get_date (calendar);
+
+	if (year)
+		*year = g_date_time_get_year (dt);
+	if (month)
+		*month = g_date_time_get_month (dt) - 1;
+	if (day)
+		*day = g_date_time_get_day_of_month (dt);
+
+	g_date_time_unref (dt);
+}
+
+static void
+calendar_select (GtkCalendar *calendar,
+		 guint year,
+		 guint month,
+		 guint day)
+{
+	GDateTime *dt;
+	guint days;
+
+	days = g_date_get_days_in_month (month + 1, year);
+	dt = g_date_time_new_local (year, month + 1, CLAMP (day, 1, days), 0, 0, 0);
+	if (dt) {
+		gtk_calendar_select_day (calendar, dt);
+		g_date_time_unref (dt);
+	}
+}
+
+void
+e_gtk_calendar_select_month (GtkCalendar *calendar,
+			     guint month,
+			     guint year)
+{
+	guint day = 1;
+
+	g_return_if_fail (GTK_IS_CALENDAR (calendar));
+
+	e_gtk_calendar_get_date (calendar, NULL, NULL, &day);
+	calendar_select (calendar, year, month, day);
+}
+
+void
+e_gtk_calendar_select_day (GtkCalendar *calendar,
+			   guint day)
+{
+	guint year, month;
+
+	g_return_if_fail (GTK_IS_CALENDAR (calendar));
+
+	/* GTK 4 always has a day selected */
+	if (!day)
+		return;
+
+	e_gtk_calendar_get_date (calendar, &year, &month, NULL);
+	calendar_select (calendar, year, month, day);
+}
+
+GtkWidget *
+e_gtk_button_new_from_stock (const gchar *stock_id)
+{
+	static const struct {
+		const gchar *stock_id;
+		const gchar *label;
+	} stock_labels[] = {
+		{ "gtk-add", N_("_Add") },
+		{ "gtk-apply", N_("_Apply") },
+		{ "gtk-cancel", N_("_Cancel") },
+		{ "gtk-clear", N_("_Clear") },
+		{ "gtk-close", N_("_Close") },
+		{ "gtk-copy", N_("_Copy") },
+		{ "gtk-cut", N_("Cu_t") },
+		{ "gtk-delete", N_("_Delete") },
+		{ "gtk-edit", N_("_Edit") },
+		{ "gtk-find", N_("_Find") },
+		{ "gtk-go-back", N_("_Back") },
+		{ "gtk-go-forward", N_("_Forward") },
+		{ "gtk-help", N_("_Help") },
+		{ "gtk-no", N_("_No") },
+		{ "gtk-ok", N_("_OK") },
+		{ "gtk-open", N_("_Open") },
+		{ "gtk-paste", N_("_Paste") },
+		{ "gtk-print", N_("_Print") },
+		{ "gtk-properties", N_("_Properties") },
+		{ "gtk-quit", N_("_Quit") },
+		{ "gtk-refresh", N_("_Refresh") },
+		{ "gtk-remove", N_("_Remove") },
+		{ "gtk-revert-to-saved", N_("_Revert") },
+		{ "gtk-save", N_("_Save") },
+		{ "gtk-stop", N_("_Stop") },
+		{ "gtk-yes", N_("_Yes") }
+	};
+	guint ii;
+
+	g_return_val_if_fail (stock_id != NULL, NULL);
+
+	for (ii = 0; ii < G_N_ELEMENTS (stock_labels); ii++) {
+		if (g_str_equal (stock_id, stock_labels[ii].stock_id))
+			return gtk_button_new_with_mnemonic (_(stock_labels[ii].label));
+	}
+
+	return gtk_button_new_from_icon_name (stock_id);
+}
+
+/* finds the object holding a GTK 3 child property; NULL to ignore it */
+static GObject *
+container_child_resolve (GtkWidget *container,
+			 GtkWidget *child,
+			 const gchar *name,
+			 const gchar **out_name)
+{
+	*out_name = name;
+
+	if (GTK_IS_NOTEBOOK (container))
+		return G_OBJECT (gtk_notebook_get_page (GTK_NOTEBOOK (container), child));
+
+	if (GTK_IS_STACK (container))
+		return G_OBJECT (gtk_stack_get_page (GTK_STACK (container), child));
+
+	if (GTK_IS_PANED (container)) {
+		gboolean is_start = gtk_paned_get_start_child (GTK_PANED (container)) == child;
+
+		if (g_str_equal (name, "resize"))
+			*out_name = is_start ? "resize-start-child" : "resize-end-child";
+		else if (g_str_equal (name, "shrink"))
+			*out_name = is_start ? "shrink-start-child" : "shrink-end-child";
+		else
+			return NULL;
+
+		return G_OBJECT (container);
+	}
+
+	if (GTK_IS_GRID (container)) {
+		GtkLayoutManager *layout = gtk_widget_get_layout_manager (container);
+
+		if (g_str_equal (name, "left-attach"))
+			*out_name = "column";
+		else if (g_str_equal (name, "top-attach"))
+			*out_name = "row";
+		else if (g_str_equal (name, "width"))
+			*out_name = "column-span";
+		else if (g_str_equal (name, "height"))
+			*out_name = "row-span";
+		else
+			return NULL;
+
+		return G_OBJECT (gtk_layout_manager_get_layout_child (layout, child));
+	}
+
+	return NULL;
+}
+
+static GParamSpec *
+container_child_find_pspec (GtkWidget *container,
+			    GtkWidget *child,
+			    const gchar *name,
+			    GObject **out_object)
+{
+	const gchar *real_name;
+	GObject *object;
+
+	object = container_child_resolve (container, child, name, &real_name);
+	*out_object = object;
+
+	if (!object) {
+		g_debug ("%s: child property '%s' of %s is gone with GTK 4", G_STRFUNC, name, G_OBJECT_TYPE_NAME (container));
+		return NULL;
+	}
+
+	return g_object_class_find_property (G_OBJECT_GET_CLASS (object), real_name);
+}
+
+void
+e_gtk_container_child_set_property (gpointer container,
+				    GtkWidget *child,
+				    const gchar *property_name,
+				    const GValue *value)
+{
+	GObject *object;
+	GParamSpec *pspec;
+
+	g_return_if_fail (GTK_IS_WIDGET (container));
+	g_return_if_fail (GTK_IS_WIDGET (child));
+
+	pspec = container_child_find_pspec (container, child, property_name, &object);
+	if (pspec)
+		g_object_set_property (object, pspec->name, value);
+}
+
+void
+e_gtk_container_child_get_property (gpointer container,
+				    GtkWidget *child,
+				    const gchar *property_name,
+				    GValue *value)
+{
+	GObject *object;
+	GParamSpec *pspec;
+
+	g_return_if_fail (GTK_IS_WIDGET (container));
+	g_return_if_fail (GTK_IS_WIDGET (child));
+
+	pspec = container_child_find_pspec (container, child, property_name, &object);
+	if (pspec)
+		g_object_get_property (object, pspec->name, value);
+}
+
+/* the type of a property GTK 4 dropped, to skip its vararg */
+static GType
+container_child_gone_type (const gchar *name)
+{
+	if (g_str_equal (name, "padding") || g_str_equal (name, "position") ||
+	    g_str_equal (name, "pack-type"))
+		return G_TYPE_INT;
+
+	return G_TYPE_BOOLEAN;
+}
+
+void
+e_gtk_container_child_set (gpointer container,
+			   GtkWidget *child,
+			   const gchar *first_property_name,
+			   ...)
+{
+	const gchar *name;
+	va_list va;
+
+	g_return_if_fail (GTK_IS_WIDGET (container));
+	g_return_if_fail (GTK_IS_WIDGET (child));
+
+	va_start (va, first_property_name);
+
+	for (name = first_property_name; name; name = va_arg (va, const gchar *)) {
+		GObject *object;
+		GParamSpec *pspec;
+		GValue value = G_VALUE_INIT;
+		gchar *error = NULL;
+
+		pspec = container_child_find_pspec (container, child, name, &object);
+
+		G_VALUE_COLLECT_INIT (&value, pspec ? pspec->value_type : container_child_gone_type (name), va, 0, &error);
+		if (error) {
+			g_warning ("%s: %s", G_STRFUNC, error);
+			g_free (error);
+			break;
+		}
+
+		if (pspec)
+			g_object_set_property (object, pspec->name, &value);
+
+		g_value_unset (&value);
+	}
+
+	va_end (va);
+}
+
+void
+e_gtk_container_child_get (gpointer container,
+			   GtkWidget *child,
+			   const gchar *first_property_name,
+			   ...)
+{
+	const gchar *name;
+	va_list va;
+
+	g_return_if_fail (GTK_IS_WIDGET (container));
+	g_return_if_fail (GTK_IS_WIDGET (child));
+
+	va_start (va, first_property_name);
+
+	for (name = first_property_name; name; name = va_arg (va, const gchar *)) {
+		GObject *object;
+		GParamSpec *pspec;
+		GValue value = G_VALUE_INIT;
+		gchar *error = NULL;
+
+		pspec = container_child_find_pspec (container, child, name, &object);
+
+		g_value_init (&value, pspec ? pspec->value_type : container_child_gone_type (name));
+		if (pspec)
+			g_object_get_property (object, pspec->name, &value);
+
+		G_VALUE_LCOPY (&value, va, 0, &error);
+		g_value_unset (&value);
+
+		if (error) {
+			g_warning ("%s: %s", G_STRFUNC, error);
+			g_free (error);
+			break;
+		}
+	}
+
+	va_end (va);
 }

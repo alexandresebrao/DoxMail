@@ -1083,7 +1083,7 @@ e_alert_create_button_for_action (EUIAction *for_action)
 
 	/* action's icon-name is stock_id */
 	if (e_ui_action_get_icon_name (for_action)) {
-		widget = gtk_button_new_from_stock (e_ui_action_get_icon_name (for_action));
+		widget = e_gtk_button_new_from_stock (e_ui_action_get_icon_name (for_action));
 		if (e_ui_action_get_label (for_action)) {
 			gtk_button_set_use_underline (GTK_BUTTON (widget), TRUE);
 			gtk_button_set_label (GTK_BUTTON (widget), e_ui_action_get_label (for_action));

@@ -1845,18 +1845,18 @@ e_comp_editor_page_general_set_data_column_width (ECompEditorPageGeneral *page_g
 void
 e_comp_editor_page_general_update_view (ECompEditorPageGeneral *page_general)
 {
-	GtkContainer *grid;
+	GtkWidget *grid;
 
 	g_return_if_fail (E_IS_COMP_EDITOR_PAGE_GENERAL (page_general));
 
 	if (!page_general->priv->source_label)
 		return;
 
-	grid = GTK_CONTAINER (page_general);
+	grid = GTK_WIDGET (page_general);
 
-	gtk_container_child_set (grid, page_general->priv->organizer_hbox,
+	e_gtk_container_child_set (grid, page_general->priv->organizer_hbox,
 		"left-attach", 1, "width", page_general->priv->data_column_width, NULL);
-	gtk_container_child_set (grid, page_general->priv->attendees_hbox,
+	e_gtk_container_child_set (grid, page_general->priv->attendees_hbox,
 		"width", page_general->priv->data_column_width, NULL);
 
 	if (page_general->priv->show_attendees) {
@@ -1875,7 +1875,7 @@ e_comp_editor_page_general_update_view (ECompEditorPageGeneral *page_general)
 			g_object_unref (page_general->priv->source_and_color_hbox);
 		}
 
-		gtk_container_child_set (grid, page_general->priv->organizer_label,
+		e_gtk_container_child_set (grid, page_general->priv->organizer_label,
 			"left-attach", 0, NULL);
 
 		gtk_widget_show (page_general->priv->organizer_label);
@@ -1886,10 +1886,10 @@ e_comp_editor_page_general_update_view (ECompEditorPageGeneral *page_general)
 		gtk_widget_show (page_general->priv->attendees_button_box);
 	} else {
 		if (gtk_widget_get_parent (page_general->priv->source_label) != GTK_WIDGET (grid)) {
-			GtkContainer *container;
+			GtkWidget *container;
 			GtkGrid *ggrid;
 
-			container = GTK_CONTAINER (page_general->priv->organizer_hbox);
+			container = GTK_WIDGET (page_general->priv->organizer_hbox);
 			ggrid = GTK_GRID (grid);
 
 			g_object_ref (page_general->priv->source_label);
@@ -1905,9 +1905,9 @@ e_comp_editor_page_general_update_view (ECompEditorPageGeneral *page_general)
 			g_object_unref (page_general->priv->source_and_color_hbox);
 		}
 
-		gtk_container_child_set (grid, page_general->priv->source_label,
+		e_gtk_container_child_set (grid, page_general->priv->source_label,
 			"left-attach", 0, NULL);
-		gtk_container_child_set (grid, page_general->priv->source_and_color_hbox,
+		e_gtk_container_child_set (grid, page_general->priv->source_and_color_hbox,
 			"left-attach", 1, "width", page_general->priv->data_column_width, NULL);
 
 		gtk_widget_hide (page_general->priv->organizer_label);

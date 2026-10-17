@@ -371,7 +371,7 @@ action_submit_bug_cb (EUIAction *action,
 }
 
 static WebKitWebView *
-shell_window_actions_find_webview (GtkContainer *container)
+shell_window_actions_find_webview (GtkWidget *container)
 {
 	GList *children, *link;
 	WebKitWebView *webview = NULL;
@@ -387,7 +387,7 @@ shell_window_actions_find_webview (GtkContainer *container)
 		if (WEBKIT_IS_WEB_VIEW (child))
 			webview = WEBKIT_WEB_VIEW (child);
 		else if (GTK_IS_WIDGET (child))
-			webview = shell_window_actions_find_webview (GTK_CONTAINER (child));
+			webview = shell_window_actions_find_webview (GTK_WIDGET (child));
 	}
 
 	g_list_free (children);
@@ -408,7 +408,7 @@ action_show_webkit_gpu_cb (EUIAction *action,
 	shell_view = e_shell_window_get_shell_view (shell_window, e_shell_window_get_active_view (shell_window));
 	shell_content = e_shell_view_get_shell_content (shell_view);
 
-	webview = shell_window_actions_find_webview (GTK_CONTAINER (shell_content));
+	webview = shell_window_actions_find_webview (GTK_WIDGET (shell_content));
 
 	if (webview)
 		webkit_web_view_load_uri (webview, "webkit://gpu");

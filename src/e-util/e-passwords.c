@@ -427,30 +427,33 @@ pass_response (GtkDialog *dialog,
 	ep_idle_dispatch (NULL);
 }
 
-static gboolean
-update_capslock_state (GtkDialog *dialog,
-                       GdkEvent *event,
-                       GtkWidget *label)
+static void
+update_capslock_state (GtkWidget *label)
 {
-	GdkModifierType mask = 0;
-	GdkSurface *window;
+	GdkSeat *seat;
+	GdkDevice *keyboard;
+	gboolean caps_lock = FALSE;
 	gchar *markup = NULL;
-	GdkDeviceManager *device_manager;
-	GdkDevice *device;
 
-	device_manager = gdk_display_get_device_manager (gtk_widget_get_display (label));
-	device = gdk_device_manager_get_client_pointer (device_manager);
-	window = e_gtk_widget_get_surface (GTK_WIDGET (dialog));
-	gdk_window_get_device_position (window, device, NULL, NULL, &mask);
+	seat = gdk_display_get_default_seat (gtk_widget_get_display (label));
+	keyboard = seat ? gdk_seat_get_keyboard (seat) : NULL;
+	if (keyboard)
+		caps_lock = gdk_device_get_caps_lock_state (keyboard);
 
 	/* The space acts as a vertical placeholder. */
 	markup = g_markup_printf_escaped (
-		"<small>%s</small>", (mask & GDK_LOCK_MASK) ?
+		"<small>%s</small>", caps_lock ?
 		_("You have the Caps Lock key on.") : " ");
 	gtk_label_set_markup (GTK_LABEL (label), markup);
 	g_free (markup);
+}
 
-	return FALSE;
+static void
+capslock_device_notify_cb (GdkDevice *keyboard,
+			   GParamSpec *pspec,
+			   GtkWidget *label)
+{
+	update_capslock_state (label);
 }
 
 static void
@@ -573,12 +576,16 @@ ep_ask_password (EPassMsg *msg)
 
 	gtk_grid_attach (GTK_GRID (container), widget, 1, 2, 1, 1);
 
-	g_signal_connect (
-		password_dialog, "key-release-event",
-		G_CALLBACK (update_capslock_state), widget);
-	g_signal_connect (
-		password_dialog, "focus-in-event",
-		G_CALLBACK (update_capslock_state), widget);
+	{
+		GdkSeat *seat = gdk_display_get_default_seat (gtk_widget_get_display (widget));
+		GdkDevice *keyboard = seat ? gdk_seat_get_keyboard (seat) : NULL;
+
+		/* the keyboard device tells about Caps Lock changes */
+		if (keyboard)
+			g_signal_connect_object (keyboard, "notify::caps-lock-state",
+				G_CALLBACK (capslock_device_notify_cb), widget, 0);
+		update_capslock_state (widget);
+	}
 
 	/* static password, shouldn't be remembered between sessions,
 	 * but will be remembered within the session beyond our control */

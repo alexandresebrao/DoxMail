@@ -520,3 +520,86 @@ e_gtk_file_chooser_get_current_folder_uri (gpointer chooser)
 
 	return uri;
 }
+
+__attribute__((constructor))
+static void
+e_gtk_file_chooser_register_signals (void)
+{
+	GType types[3];
+	guint ii;
+
+	types[0] = GTK_TYPE_FILE_CHOOSER_DIALOG;
+	types[1] = GTK_TYPE_FILE_CHOOSER_NATIVE;
+	types[2] = GTK_TYPE_FILE_CHOOSER_WIDGET;
+
+	for (ii = 0; ii < G_N_ELEMENTS (types); ii++) {
+		g_signal_new ("update-preview", types[ii],
+			G_SIGNAL_RUN_LAST, 0, NULL, NULL, NULL,
+			G_TYPE_NONE, 0);
+	}
+}
+
+gchar *
+e_gtk_file_chooser_get_preview_filename (gpointer chooser)
+{
+	return NULL;
+}
+
+GtkWidget *
+e_gtk_file_chooser_get_preview_widget (gpointer chooser)
+{
+	return NULL;
+}
+
+void
+e_gtk_file_chooser_set_preview_widget (gpointer chooser,
+				       GtkWidget *preview_widget)
+{
+	if (preview_widget && g_object_is_floating (preview_widget))
+		g_object_unref (g_object_ref_sink (preview_widget));
+}
+
+void
+e_gtk_file_chooser_set_preview_widget_active (gpointer chooser,
+					      gboolean active)
+{
+}
+
+void
+e_gtk_file_chooser_set_use_preview_label (gpointer chooser,
+					  gboolean use_label)
+{
+}
+
+#define EXTRA_WIDGET_KEY "e-gtk-file-chooser-extra-widget"
+
+void
+e_gtk_file_chooser_set_extra_widget (gpointer chooser,
+				     GtkWidget *extra_widget)
+{
+	g_return_if_fail (G_IS_OBJECT (chooser));
+
+	if (!extra_widget) {
+		g_object_set_data (chooser, EXTRA_WIDGET_KEY, NULL);
+		return;
+	}
+
+	g_object_set_data_full (chooser, EXTRA_WIDGET_KEY, g_object_ref_sink (extra_widget), g_object_unref);
+
+	if (GTK_IS_DIALOG (chooser)) {
+		GtkWidget *content_area = gtk_dialog_get_content_area (chooser);
+
+		gtk_widget_set_margin_start (extra_widget, 6);
+		gtk_widget_set_margin_end (extra_widget, 6);
+		gtk_widget_set_margin_bottom (extra_widget, 6);
+		gtk_box_append (GTK_BOX (content_area), extra_widget);
+	}
+}
+
+GtkWidget *
+e_gtk_file_chooser_get_extra_widget (gpointer chooser)
+{
+	g_return_val_if_fail (G_IS_OBJECT (chooser), NULL);
+
+	return g_object_get_data (chooser, EXTRA_WIDGET_KEY);
+}

@@ -250,7 +250,7 @@ e_table_header_draw_button (cairo_t *cr,
 				ypos, layout);
 		}
 
-		gtk_render_icon_surface (
+		e_gtk_render_icon_surface (
 			context, cr, ecol->surface, xpos + 1,
 			inner_y + (inner_height - clip_height) / 2);
 

@@ -178,7 +178,7 @@ ask_destination_and_save (ESourceSelector *selector,
 		GTK_FILE_CHOOSER_ACTION_SAVE,
 		_("_Save As"), _("_Cancel"));
 
-	gtk_file_chooser_set_extra_widget (GTK_FILE_CHOOSER (native), extra_widget);
+	e_gtk_file_chooser_set_extra_widget (GTK_FILE_CHOOSER (native), extra_widget);
 	gtk_widget_show (hbox);
 	gtk_widget_show (GTK_WIDGET (label));
 	gtk_widget_show (GTK_WIDGET (combo));

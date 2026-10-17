@@ -1258,10 +1258,10 @@ customize_shortcut_action_selection_changed_cb (GtkTreeSelection *in_selection,
 	GtkTreeModel *model = NULL;
 	GtkTreeIter actions_iter;
 	GtkTreeIter customizer_iter;
-	GtkContainer *container;
+	GtkWidget *container;
 	GList *children, *link;
 
-	container = GTK_CONTAINER (self->shortcuts_box);
+	container = GTK_WIDGET (self->shortcuts_box);
 	children = e_gtk_widget_get_children (container);
 	for (link = children; link; link = g_list_next (link)) {
 		e_gtk_container_remove (container, link->data);

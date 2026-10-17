@@ -378,7 +378,18 @@ def r_editable_clipboard(action):
     return f
 
 
+def r_icon_lookup(new):
+    """GTK 3 lookups had 4 arguments and gave a GtkIconInfo."""
+    def f(args, *_):
+        if len(args) == 4:
+            return call(new, args)
+        return None
+    return f
+
+
 CALLS = {
+    'gtk_icon_theme_lookup_icon': r_icon_lookup('e_gtk_icon_theme_lookup_icon'),
+    'gtk_icon_theme_lookup_by_gicon': r_icon_lookup('e_gtk_icon_theme_lookup_by_gicon'),
     'gtk_scrolled_window_new': r_no_args('gtk_scrolled_window_new'),
     'gtk_popover_new': r_popover_new,
     'gtk_editable_cut_clipboard': r_editable_clipboard('cut'),
@@ -434,7 +445,8 @@ REGEX_RENAMES = [
     (r'\bGTK_TYPE_TARGET_LIST\b', 'E_GTK_TYPE_TARGET_LIST'),
     (r'\bGDK_TYPE_DRAG_CONTEXT\b', 'E_GTK_TYPE_DRAG_CONTEXT'),
     (r'\bGDK_IS_DRAG_CONTEXT\b', 'E_GTK_IS_DRAG_CONTEXT'),
-    (r'\bgtk_drag_(?!check_threshold\b)([a-z_]+)\s*\(', r'e_gtk_drag_\1 ('),
+    # keep the GTK 4 GtkDragSource/GtkDragIcon API
+    (r'\bgtk_drag_(?!check_threshold\b|source_(?:new|set_actions|set_content|get_drag|get_actions|get_content|drag_cancel|set_icon)\b|icon_)([a-z_]+)\s*\(', r'e_gtk_drag_\1 ('),
     (r'\bgdk_drag_status\s*\(', 'e_gtk_drag_status ('),
     (r'\bgdk_drag_context_([a-z_]+)\s*\(', r'e_gtk_drag_context_\1 ('),
     (r'\bgtk_target_(list|table)_([a-z_]+)\s*\(', r'e_gtk_target_\1_\2 ('),
@@ -461,6 +473,9 @@ REGEX_RENAMES = [
     (r'\(GDestroyNotify\) gtk_widget_destroy\b', '(GDestroyNotify) e_gtk_widget_destroy'),
     (r'(g_clear_pointer \([^,]+, )gtk_widget_destroy\)', r'\1e_gtk_widget_destroy)'),
     (r'\bGTK_IS_CONTAINER\b', 'GTK_IS_WIDGET'),
+    # GTK 4 has no containers; any widget may have children
+    (r'\bGtkContainer\b(?!Class)', 'GtkWidget'),
+    (r'\bGTK_CONTAINER\s*\(', 'GTK_WIDGET ('),
     # WebKitGTK 6.0
     (r'\bWebKitJavascriptResult \*', 'JSCValue *'),
     (r'\bwebkit_javascript_result_get_js_value \((\w+)\)', r'(\1)'),
@@ -478,6 +493,19 @@ REGEX_RENAMES = [
     (r'\batk_object_set_description\s*\(', 'e_gtk_widget_set_accessible_description ('),
     (r'\bGtkRadioButton\b', 'GtkCheckButton'),
     (r'\bGtkAccelGroup\b', 'EGtkAccelGroup'),
+    (r'\bgtk_container_child_(set|get)(_property)?\s*\(\s*GTK_CONTAINER\s*\(([^()]*)\)', r'e_gtk_container_child_\1\2 (\3'),
+    (r'\bgtk_container_child_(set|get)(_property)?\s*\(', r'e_gtk_container_child_\1\2 ('),
+    (r'\bGtkIconInfo\b', 'EGtkIconInfo'),
+    (r'\bgtk_icon_info_(get_filename|load_icon|load_symbolic|is_symbolic)\s*\(', r'e_gtk_icon_info_\1 ('),
+    (r'\bgtk_file_chooser_((?:get|set)_(?:preview_filename|preview_widget|preview_widget_active|extra_widget)|set_use_preview_label)\s*\(', r'e_gtk_file_chooser_\1 ('),
+    (r'\bgtk_calendar_(get_date|select_month|select_day)\s*\(', r'e_gtk_calendar_\1 ('),
+    (r'\bgtk_button_new_from_stock\s*\(', 'e_gtk_button_new_from_stock ('),
+    (r'\bgtk_image_new_from_stock\s*\(', 'gtk_image_new_from_icon_name ('),
+    (r'\bGTK_STOCK_OK\b', '_("_OK")'),
+    (r'\bGTK_STOCK_CANCEL\b', '_("_Cancel")'),
+    (r'\bgtk_icon_theme_load_icon_for_scale\s*\(', 'e_gtk_icon_theme_load_icon_for_scale ('),
+    (r'\bgtk_render_icon_surface\s*\(', 'e_gtk_render_icon_surface ('),
+    (r'\bGTK_ICON_LOOKUP_(FORCE_SIZE|USE_BUILTIN|GENERIC_FALLBACK|NO_SVG|FORCE_SVG)\b', '0'),
     (r'\bGTK_ACCEL_VISIBLE\b', '0'),
     (r'\bgtk_accel_group_new\s*\(', 'e_gtk_accel_group_new ('),
     (r'\bgtk_widget_add_accelerator\s*\(', 'e_gtk_widget_add_accelerator ('),

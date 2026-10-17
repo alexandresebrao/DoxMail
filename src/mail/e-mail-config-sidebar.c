@@ -75,8 +75,7 @@ mail_config_sidebar_notebook_page_added (GtkNotebook *notebook,
 	group_member = (keys != NULL) ? GTK_CHECK_BUTTON (keys->data) : NULL;
 	g_list_free (keys);
 
-	gtk_container_child_get (
-		GTK_CONTAINER (notebook), page,
+	e_gtk_container_child_get (notebook, page,
 		"tab-label", &tab_label, NULL);
 
 	button = e_gtk_radio_button_new_with_label_from_widget (group_member, tab_label);

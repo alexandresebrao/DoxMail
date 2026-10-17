@@ -256,7 +256,7 @@ e_weekday_chooser_set_week_start_day (EWeekdayChooser *chooser,
 
 	chooser->week_start_day = week_start_day;
 	for (ii = 0; ii < 7; ii++) {
-		gtk_container_child_set (GTK_CONTAINER (chooser), chooser->buttons[week_start_day - 1], "position", ii, NULL);
+		e_gtk_container_child_set (chooser, chooser->buttons[week_start_day - 1], "position", ii, NULL);
 		week_start_day = e_weekday_get_next (week_start_day);
 	}
 

@@ -29,6 +29,7 @@
 
 #include <gtk/gtk.h>
 #include <e-util/e-gtk4-compat.h>
+#include <libgnomecanvas/gnome-canvas-event.h>
 
 G_BEGIN_DECLS
 
@@ -94,7 +95,7 @@ typedef struct {
 } ETextEventProcessorCommand;
 
 typedef struct {
-	GdkEventType type;
+	GnomeCanvasEventType type;
 	guint32 time;
 	guint state;
 	guint button;
@@ -103,7 +104,7 @@ typedef struct {
 } ETextEventProcessorEventButton;
 
 typedef struct {
-	GdkEventType type;
+	GnomeCanvasEventType type;
 	guint32 time;
 	guint state;
 	guint keyval;
@@ -112,14 +113,14 @@ typedef struct {
 } ETextEventProcessorEventKey;
 
 typedef struct {
-	GdkEventType type;
+	GnomeCanvasEventType type;
 	guint32 time;
 	guint state;
 	gint position;
 } ETextEventProcessorEventMotion;
 
 union _ETextEventProcessorEvent {
-	GdkEventType type;
+	GnomeCanvasEventType type;
 	ETextEventProcessorEventButton button;
 	ETextEventProcessorEventKey key;
 	ETextEventProcessorEventMotion motion;

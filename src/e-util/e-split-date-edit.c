@@ -99,7 +99,6 @@ e_split_date_edit_extract_combo_value (GtkComboBox *combo,
 static void
 e_split_date_edit_reorder_parts (ESplitDateEdit *self)
 {
-	GtkContainer *container;
 	GtkGrid *grid;
 	const gchar *format;
 	gchar *locale_format = NULL;
@@ -200,12 +199,11 @@ e_split_date_edit_reorder_parts (ESplitDateEdit *self)
 	g_object_ref (self->month_combo);
 	g_object_ref (self->day_combo);
 
-	container = GTK_CONTAINER (self);
 	grid = GTK_GRID (self);
 
-	e_gtk_container_remove (container, GTK_WIDGET (self->year_entry));
-	e_gtk_container_remove (container, GTK_WIDGET (self->month_combo));
-	e_gtk_container_remove (container, GTK_WIDGET (self->day_combo));
+	gtk_grid_remove (grid, GTK_WIDGET (self->year_entry));
+	gtk_grid_remove (grid, GTK_WIDGET (self->month_combo));
+	gtk_grid_remove (grid, GTK_WIDGET (self->day_combo));
 
 	gtk_grid_attach (grid, GTK_WIDGET (self->year_entry), year_index, 0, 1, 1);
 	gtk_grid_attach (grid, GTK_WIDGET (self->month_combo), month_index, 0, 1, 1);
@@ -339,7 +337,7 @@ e_split_date_edit_day_selected_cb (GtkCalendar *calendar,
 	ESplitDateEdit *self = user_data;
 	guint year = 0, month = 0, day = 0;
 
-	gtk_calendar_get_date (calendar, &year, &month, &day);
+	e_gtk_calendar_get_date (calendar, &year, &month, &day);
 
 	e_split_date_edit_set_ymd (self, year, month + 1, day);
 
@@ -394,8 +392,8 @@ e_split_date_edit_select_clicked_cb (GtkButton *button,
 	month = self->month > 0 ? self->month - 1 : tm->tm_mon;
 	day = self->day > 0 ? self->day : tm->tm_mday;
 
-	gtk_calendar_select_month (GTK_CALENDAR (widget), month, year);
-	gtk_calendar_select_day (GTK_CALENDAR (widget), day);
+	e_gtk_calendar_select_month (GTK_CALENDAR (widget), month, year);
+	e_gtk_calendar_select_day (GTK_CALENDAR (widget), day);
 
 	gtk_grid_attach (grid, widget, 0, 0, 2, 1);
 
@@ -432,16 +430,16 @@ e_split_date_edit_select_clicked_cb (GtkButton *button,
 	gtk_widget_show (widget);
 }
 
-static void
+static gboolean
 e_split_date_edit_grab_focus (GtkWidget *widget)
 {
 	GtkWidget *child;
 
-	g_return_if_fail (E_IS_SPLIT_DATE_EDIT (widget));
+	g_return_val_if_fail (E_IS_SPLIT_DATE_EDIT (widget), FALSE);
 
 	child = gtk_grid_get_child_at (GTK_GRID (widget), 0, 0);
-	if (child)
-		gtk_widget_grab_focus (child);
+
+	return child && gtk_widget_grab_focus (child);
 }
 
 static gboolean

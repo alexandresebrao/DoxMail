@@ -67,17 +67,17 @@ save_gicon_to_stream (GIcon *icon,
 		      GOutputStream *output_stream,
 		      gchar **out_mime_type)
 {
-	GtkIconInfo *icon_info;
+	EGtkIconInfo *icon_info;
 	GdkPixbuf *pixbuf;
 
 	if (size < 16)
 		size = 16;
 
-	icon_info = gtk_icon_theme_lookup_by_gicon (e_gtk_icon_theme_get_default (), icon, size, GTK_ICON_LOOKUP_FORCE_SIZE);
+	icon_info = e_gtk_icon_theme_lookup_by_gicon (e_gtk_icon_theme_get_default (), icon, size, 0);
 	if (!icon_info)
 		return;
 
-	pixbuf = gtk_icon_info_load_icon (icon_info, NULL);
+	pixbuf = e_gtk_icon_info_load_icon (icon_info, NULL);
 	if (pixbuf) {
 		if (gdk_pixbuf_save_to_stream (
 			pixbuf, output_stream,

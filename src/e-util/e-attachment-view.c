@@ -1970,7 +1970,7 @@ e_attachment_view_drag_begin (EAttachmentView *view,
 			GTK_TEXT_DIR_NONE, 0);
 
 		if (paintable) {
-			e_gtk_drag_icon_set_from_paintable (
+			gtk_drag_icon_set_from_paintable (
 				e_gtk_drag_context_get_drag (context),
 				GDK_PAINTABLE (paintable), 0, 0);
 			g_object_unref (paintable);

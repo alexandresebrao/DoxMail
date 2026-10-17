@@ -83,9 +83,9 @@ shell_taskbar_remove_proxy_container (EShellTaskbar *shell_taskbar,
                                       GtkWidget *proxy)
 {
 	GList *children;
-	GtkContainer *container;
+	GtkWidget *container;
 
-	container = GTK_CONTAINER (shell_taskbar->priv->hbox);
+	container = GTK_WIDGET (shell_taskbar->priv->hbox);
 	e_gtk_container_remove (container, proxy);
 
 	children = e_gtk_widget_get_children (container);

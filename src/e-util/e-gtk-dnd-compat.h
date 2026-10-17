@@ -38,6 +38,9 @@ G_BEGIN_DECLS
 
 typedef const gchar *EGtkAtom;
 
+#define GDK_POINTER_TO_ATOM(ptr) ((EGtkAtom) (ptr))
+#define GDK_ATOM_TO_POINTER(atom) ((gpointer) (atom))
+
 #define E_GTK_ATOM_NONE			NULL
 #define E_GTK_SELECTION_PRIMARY		(g_intern_static_string ("PRIMARY"))
 #define E_GTK_SELECTION_CLIPBOARD	(g_intern_static_string ("CLIPBOARD"))

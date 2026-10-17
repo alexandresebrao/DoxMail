@@ -156,7 +156,7 @@ shell_sidebar_dispose (GObject *object)
 	}
 
 	/* Unparent the widget before destroying it to avoid
-	 * writing a custom GtkContainer::remove() method. */
+	 * writing a custom GtkWidget::remove() method. */
 
 	if (self->priv->event_box != NULL) {
 		gtk_widget_unparent (self->priv->event_box);
@@ -271,7 +271,7 @@ shell_sidebar_size_allocate (GtkWidget *widget,
 }
 
 static void
-shell_sidebar_forall (GtkContainer *container,
+shell_sidebar_forall (GtkWidget *container,
                       gboolean include_internals,
                       EGtkCallback callback,
                       gpointer callback_data)

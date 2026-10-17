@@ -189,7 +189,7 @@ e_online_button_set_online (EOnlineButton *button,
                             gboolean online)
 {
 	GtkImage *image;
-	GtkIconInfo *icon_info;
+	EGtkIconInfo *icon_info;
 	GtkIconTheme *icon_theme;
 	const gchar *filename;
 	const gchar *icon_name;
@@ -206,9 +206,8 @@ e_online_button_set_online (EOnlineButton *button,
 	icon_theme = e_gtk_icon_theme_get_default ();
 
 	/* Prevent GTK+ from scaling these rectangular icons. */
-	icon_info = gtk_icon_theme_lookup_icon (
-		icon_theme, icon_name, GTK_ICON_SIZE_NORMAL, 0);
-	filename = gtk_icon_info_get_filename (icon_info);
+	icon_info = e_gtk_icon_theme_lookup_icon (icon_theme, icon_name, GTK_ICON_SIZE_NORMAL, 0);
+	filename = e_gtk_icon_info_get_filename (icon_info);
 	online_button_update_icon (image, filename);
 	g_object_unref (icon_info);
 
