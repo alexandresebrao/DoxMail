@@ -1611,7 +1611,10 @@ e_rss_preferences_new (EPreferencesWindow *window)
 		"hexpand", TRUE,
 		"valign", GTK_ALIGN_FILL,
 		"vexpand", TRUE,
-		"border-width", 12,
+		"margin-start", 12,
+		"margin-end", 12,
+		"margin-top", 12,
+		"margin-bottom", 12,
 		NULL);
 
 	widget = gtk_label_new (_("General"));

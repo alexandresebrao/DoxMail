@@ -940,7 +940,10 @@ goto_dialog_create_widgets (GoToDialog *dlg,
 		NULL);
 
 	g_object_set (G_OBJECT (dlg->dialog),
-		"border-width", 12,
+		"margin-start", 12,
+		"margin-end", 12,
+		"margin-top", 12,
+		"margin-bottom", 12,
 		NULL);
 
 	widget = gtk_grid_new ();

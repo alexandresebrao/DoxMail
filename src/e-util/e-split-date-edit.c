@@ -479,10 +479,10 @@ e_split_date_edit_constructed (GObject *object)
 	gtk_grid_attach (grid, widget, 1, 0, 1, 1);
 	self->month_combo = GTK_COMBO_BOX (widget);
 
+	/* GTK 4 combo boxes have no grid popup ("wrap-width") */
 	widget = gtk_combo_box_text_new ();
 	g_object_set (widget,
 		"visible", TRUE,
-		"wrap-width", DAY_COMBO_COLUMNS,
 		NULL);
 	gtk_grid_attach (grid, widget, 2, 0, 1, 1);
 	self->day_combo = GTK_COMBO_BOX (widget);
@@ -491,7 +491,6 @@ e_split_date_edit_constructed (GObject *object)
 	g_object_set (widget,
 		"visible", TRUE,
 		"margin-start", 4,
-		"always-show-image", TRUE,
 		"tooltip-text", _("Click to select date"),
 		NULL);
 	gtk_grid_attach (grid, widget, 3, 0, 1, 1);

@@ -693,7 +693,7 @@ run_cert_backup_dialog (CertPage *cp,
 	g_object_set (dialog, "resizable", FALSE, NULL);
 
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
-	g_object_set (content_area, "border-width", 6, NULL);
+	e_gtk_widget_set_border_width (content_area, 6);
 
 	grid = GTK_GRID (gtk_grid_new ());
 	g_object_set (grid, "column-spacing", 12, NULL);

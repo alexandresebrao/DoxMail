@@ -254,7 +254,10 @@ e_appearance_settings_page_new (EPreferencesWindow *window)
 		"hexpand", TRUE,
 		"valign", GTK_ALIGN_FILL,
 		"vexpand", TRUE,
-		"border-width", 12,
+		"margin-start", 12,
+		"margin-end", 12,
+		"margin-top", 12,
+		"margin-bottom", 12,
 		"row-spacing", 2,
 		NULL);
 

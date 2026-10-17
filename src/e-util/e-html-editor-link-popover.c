@@ -298,7 +298,6 @@ e_html_editor_link_popover_constructed (GObject *object)
 	widget = gtk_button_new_with_mnemonic (_("_Add"));
 	g_object_set (widget,
 		"visible", TRUE,
-		"can-default", TRUE,
 		"halign", GTK_ALIGN_CENTER,
 		"valign", GTK_ALIGN_CENTER,
 		NULL);
@@ -310,7 +309,6 @@ e_html_editor_link_popover_constructed (GObject *object)
 	widget = gtk_button_new_with_mnemonic (_("_Remove"));
 	g_object_set (widget,
 		"visible", TRUE,
-		"can-default", FALSE,
 		"halign", GTK_ALIGN_CENTER,
 		"valign", GTK_ALIGN_CENTER,
 		NULL);

@@ -79,7 +79,6 @@ mail_config_sidebar_notebook_page_added (GtkNotebook *notebook,
 		"tab-label", &tab_label, NULL);
 
 	button = e_gtk_radio_button_new_with_label_from_widget (group_member, tab_label);
-	g_object_set (button, "draw-indicator", FALSE, NULL);
 	gtk_button_set_has_frame (GTK_BUTTON (button), FALSE);
 	e_gtk_box_pack_start (GTK_BOX (sidebar), button, FALSE, FALSE, 0);
 	e_gtk_box_reorder_child (GTK_BOX (sidebar), button, page_num);

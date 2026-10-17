@@ -426,7 +426,6 @@ e_attachment_popover_constructed (GObject *object)
 	widget = gtk_button_new_with_mnemonic (_("_Save Changes"));
 	g_object_set (widget,
 		"visible", TRUE,
-		"can-default", TRUE,
 		"halign", GTK_ALIGN_CENTER,
 		"valign", GTK_ALIGN_CENTER,
 		"margin-top", 4,

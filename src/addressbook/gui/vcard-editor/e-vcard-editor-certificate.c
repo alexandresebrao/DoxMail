@@ -540,7 +540,6 @@ e_vcard_editor_certificate_constructed (GObject *object)
 		"valign", GTK_ALIGN_FILL,
 		"vexpand", TRUE,
 		"visible", FALSE,
-		"no-show-all", TRUE,
 		"hscrollbar-policy", GTK_POLICY_AUTOMATIC,
 		"vscrollbar-policy", GTK_POLICY_AUTOMATIC,
 		"has-frame", TRUE,
@@ -563,7 +562,6 @@ e_vcard_editor_certificate_constructed (GObject *object)
 		"hexpand", TRUE,
 		"valign", GTK_ALIGN_FILL,
 		"vexpand", TRUE,
-		"no-show-all", TRUE,
 		"visible", TRUE,
 		"has-frame", TRUE,
 		"min-content-width", 200,
@@ -590,7 +588,6 @@ e_vcard_editor_certificate_constructed (GObject *object)
 	gtk_widget_add_css_class (widget, "flat");
 	g_object_set (widget,
 		"tooltip-text", _("Remove"),
-		"always-show-image", TRUE,
 		"valign", GTK_ALIGN_CENTER,
 		NULL);
 	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
@@ -605,7 +602,6 @@ e_vcard_editor_certificate_constructed (GObject *object)
 	gtk_widget_add_css_class (widget, "flat");
 	g_object_set (widget,
 		"tooltip-text", _("Save to File"),
-		"always-show-image", TRUE,
 		"valign", GTK_ALIGN_CENTER,
 		NULL);
 	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
@@ -620,8 +616,6 @@ e_vcard_editor_certificate_constructed (GObject *object)
 	g_object_set (widget,
 		"visible", FALSE,
 		"tooltip-text", _("Add"),
-		"no-show-all", TRUE,
-		"always-show-image", TRUE,
 		"valign", GTK_ALIGN_CENTER,
 		NULL);
 	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
@@ -634,7 +628,6 @@ e_vcard_editor_certificate_constructed (GObject *object)
 	widget = gtk_label_new ("");
 	g_object_set (widget,
 		"visible", TRUE,
-		"no-show-all", TRUE,
 		NULL);
 	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 

@@ -1741,8 +1741,9 @@ init_config_menuitem (EContactEditor *editor,
 	item = e_builder_get_widget (editor->priv->builder, item_name);
 	e_gtk_toggle_button_set_active (item, show);
 
+	/* GTK 4: the menu items are check buttons in a popover */
 	g_signal_connect (
-		item, "activate",
+		item, "toggled",
 		G_CALLBACK (config_save_cb), editor);
 }
 

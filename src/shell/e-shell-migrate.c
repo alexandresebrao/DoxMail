@@ -414,7 +414,10 @@ shell_migrate_mail_folders_show_dialog_cb (gpointer user_data)
 
 	box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 4);
 	g_object_set (box,
-		"border-width", 12,
+		"margin-start", 12,
+		"margin-end", 12,
+		"margin-top", 12,
+		"margin-bottom", 12,
 		NULL);
 
 	e_gtk_container_add (mfd->window, box);

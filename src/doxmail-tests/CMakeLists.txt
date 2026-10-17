@@ -45,3 +45,34 @@ target_link_libraries(test-eutil
 )
 
 add_test(NAME eutil COMMAND test-eutil)
+
+add_executable(test-ui-files test-ui-files.c)
+
+target_compile_definitions(test-ui-files PRIVATE
+	-DG_LOG_DOMAIN=\"test-ui-files\"
+	-DDOXMAIL_SOURCE_DIR=\"${CMAKE_SOURCE_DIR}\"
+)
+
+target_compile_options(test-ui-files PRIVATE
+	${EVOLUTION_DATA_SERVER_CFLAGS}
+	${GNOME_PLATFORM_CFLAGS}
+)
+
+target_include_directories(test-ui-files PRIVATE
+	${CMAKE_BINARY_DIR}
+	${CMAKE_BINARY_DIR}/src
+	${CMAKE_SOURCE_DIR}/src
+	${EVOLUTION_DATA_SERVER_INCLUDE_DIRS}
+	${GNOME_PLATFORM_INCLUDE_DIRS}
+)
+
+target_link_libraries(test-ui-files
+	evolution-util
+	evolution-mail
+	evolution-calendar
+	econtacteditor
+	${EVOLUTION_DATA_SERVER_LDFLAGS}
+	${GNOME_PLATFORM_LDFLAGS}
+)
+
+add_test(NAME ui-files COMMAND test-ui-files)

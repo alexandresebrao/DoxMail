@@ -1148,7 +1148,6 @@ eve_add_item_geo (EVCardEditorSection *section,
 		"hexpand", FALSE,
 		"sensitive", FALSE,
 		"tooltip-text", _("Open in map"),
-		"always-show-image", TRUE,
 		NULL);
 
 	e_vcard_editor_item_add_data_widget (item, widget, FALSE);
@@ -4570,7 +4569,6 @@ e_vcard_editor_constructed (GObject *object)
 	g_object_set (self->add_menu_button,
 		"visible", TRUE,
 		"tooltip-text", _("Add"),
-		"always-show-image", TRUE,
 		NULL);
 
 	g_signal_connect (e_gtk_widget_legacy_events (self->add_menu_button), "button-press-event",
@@ -4660,7 +4658,6 @@ e_vcard_editor_constructed (GObject *object)
 	g_object_set (widget,
 		"halign", GTK_ALIGN_CENTER,
 		"valign", GTK_ALIGN_START,
-		"no-show-all", TRUE,
 		"visible", FALSE,
 		"revealed", TRUE,
 		"message-type", GTK_MESSAGE_INFO,
@@ -5128,7 +5125,6 @@ e_vcard_editor_new (GtkWindow *transient_for,
 
 	self = g_object_new (E_TYPE_VCARD_EDITOR,
 		"can-focus", FALSE,
-		"border-width", 6,
 		"transient-for", transient_for,
 		"use-header-bar", e_util_get_use_header_bar (),
 		"title", _("Contact Editor"),

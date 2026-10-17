@@ -1441,9 +1441,49 @@ contact_list_editor_constructed (GObject *object)
 	g_type_ensure (E_TYPE_CLIENT_COMBO_BOX);
 
 	editor->priv->builder = gtk_builder_new ();
+
+	/* GTK 4 builders connect the .ui signal handlers while building,
+	 * looking them up in their scope */
+	{
+		GtkBuilderScope *scope = gtk_builder_cscope_new ();
+
+		gtk_builder_cscope_add_callback_symbols (GTK_BUILDER_CSCOPE (scope),
+			"contact_list_editor_add_button_clicked_cb", G_CALLBACK (contact_list_editor_add_button_clicked_cb),
+			"contact_list_editor_bottom_button_clicked_cb", G_CALLBACK (contact_list_editor_bottom_button_clicked_cb),
+			"contact_list_editor_cancel_button_clicked_cb", G_CALLBACK (contact_list_editor_cancel_button_clicked_cb),
+			"contact_list_editor_check_button_toggled_cb", G_CALLBACK (contact_list_editor_check_button_toggled_cb),
+			"contact_list_editor_delete_event_cb", G_CALLBACK (contact_list_editor_delete_event_cb),
+			"contact_list_editor_down_button_clicked_cb", G_CALLBACK (contact_list_editor_down_button_clicked_cb),
+			"contact_list_editor_drag_data_received_cb", G_CALLBACK (contact_list_editor_drag_data_received_cb),
+			"contact_list_editor_list_name_entry_changed_cb", G_CALLBACK (contact_list_editor_list_name_entry_changed_cb),
+			"contact_list_editor_ok_button_clicked_cb", G_CALLBACK (contact_list_editor_ok_button_clicked_cb),
+			"contact_list_editor_remove_button_clicked_cb", G_CALLBACK (contact_list_editor_remove_button_clicked_cb),
+			"contact_list_editor_select_button_clicked_cb", G_CALLBACK (contact_list_editor_select_button_clicked_cb),
+			"contact_list_editor_top_button_clicked_cb", G_CALLBACK (contact_list_editor_top_button_clicked_cb),
+			"contact_list_editor_tree_view_key_press_event_cb", G_CALLBACK (contact_list_editor_tree_view_key_press_event_cb),
+			"contact_list_editor_up_button_clicked_cb", G_CALLBACK (contact_list_editor_up_button_clicked_cb),
+			NULL);
+		gtk_builder_set_scope (editor->priv->builder, scope);
+		g_object_unref (scope);
+	}
+
 	e_load_ui_builder_definition (
 		editor->priv->builder, "contact-list-editor.ui");
-	/* GTK 4 builders connect signals while building */
+
+	/* the GTK 3 signals the .ui connects are emitted for these */
+	e_gtk_window_delete_events (WIDGET (DIALOG));
+	e_gtk_widget_legacy_events (WIDGET (TREE_VIEW));
+
+	/* <Control>s saves, an <accelerator> of the GTK 3 .ui */
+	{
+		GtkEventController *controller = gtk_shortcut_controller_new ();
+
+		gtk_shortcut_controller_set_scope (GTK_SHORTCUT_CONTROLLER (controller), GTK_SHORTCUT_SCOPE_MANAGED);
+		gtk_shortcut_controller_add_shortcut (GTK_SHORTCUT_CONTROLLER (controller),
+			gtk_shortcut_new (gtk_keyval_trigger_new (GDK_KEY_s, GDK_CONTROL_MASK),
+				gtk_signal_action_new ("clicked")));
+		gtk_widget_add_controller (CONTACT_LIST_EDITOR_WIDGET (editor, "ok-button"), controller);
+	}
 
 	/* Embed a pointer to the EContactListEditor in the top-level
 	 * widget.  Signal handlers can then access the pointer from any

@@ -283,7 +283,6 @@ collection_account_wizard_create_window (GtkWindow *parent,
 		"vexpand", FALSE,
 		"valign", GTK_ALIGN_START,
 		"visible", TRUE,
-		"can-default", TRUE,
 		NULL);
 	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 
@@ -1699,7 +1698,10 @@ collection_account_wizard_constructed (GObject *object)
 		"vexpand", TRUE,
 		"valign", GTK_ALIGN_FILL,
 		"visible", TRUE,
-		"border-width", 12,
+		"margin-start", 12,
+		"margin-end", 12,
+		"margin-top", 12,
+		"margin-bottom", 12,
 		"row-spacing", 6,
 		"column-spacing", 6,
 		NULL);

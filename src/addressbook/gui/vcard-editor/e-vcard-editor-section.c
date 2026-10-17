@@ -137,7 +137,6 @@ e_vcard_editor_section_init (EVCardEditorSection *self)
 	g_object_set (widget,
 		"visible", FALSE,
 		"tooltip-text", _("Add"),
-		"always-show-image", TRUE,
 		"valign", GTK_ALIGN_CENTER,
 		NULL);
 	gtk_grid_attach (self->grid, widget, 2, 0, 1, 1);

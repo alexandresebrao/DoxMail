@@ -214,7 +214,23 @@ themselves (alert and activity bars so far). `G_DEBUG=fatal-criticals
 doxmail/port/run-evolution.sh --gdb` stops at the first critical.
 
 Still open: GtkPopoverMenu keeps the submenu pages of rebuilt menu models
-("duplicate child name in GtkStack" warnings, a leak); the `.ui` files.
+("duplicate child name in GtkStack" warnings, a leak).
+
+### 7. GtkBuilder files
+
+All 13 `.ui` files are GTK 4 files: `gtk4-builder-tool simplify --3to4
+--replace`, then `doxmail/port/ui-leftovers.py` (GtkAlignment and button
+boxes to GtkBox, ATK blocks and relations to GTK 4 accessibility, leftover
+`<packing>`, empty list store cells) and `doxmail/port/ui-properties.py`
+(checks every property against the real GTK 4 class through PyGObject:
+translates border-width/xpad/ypad and icon sizes, drops the unknown and
+read-only ones). By hand: the contact editor's config GtkMenu became a
+popover of check buttons, the contact list editor sets a GtkBuilderCScope
+for its handlers (GTK 4 connects them while building) and a shortcut for
+its former `<accelerator>`, handlers that GTK 3 never connected went.
+`test-ui-files` loads every file. Code that set GTK 3 only properties with
+`g_object_set()`/`g_object_new()` (always-show-image, can-default,
+draw-indicator, no-show-all, border-width) is fixed too.
 
 ## Next
 

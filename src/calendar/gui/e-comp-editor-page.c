@@ -176,7 +176,10 @@ e_comp_editor_page_constructed (GObject *object)
 	g_object_set (object,
 		"column-spacing", 4,
 		"row-spacing", 4,
-		"border-width", 6,
+		"margin-start", 6,
+		"margin-end", 6,
+		"margin-top", 6,
+		"margin-bottom", 6,
 		NULL);
 }
 

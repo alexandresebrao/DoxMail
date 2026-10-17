@@ -348,7 +348,10 @@ mail_signature_script_dialog_constructed (GObject *object)
 		"vexpand", TRUE,
 		"column-spacing", 6,
 		"row-spacing", 6,
-		"border-width", 6,
+		"margin-start", 6,
+		"margin-end", 6,
+		"margin-top", 6,
+		"margin-bottom", 6,
 		NULL);
 	e_gtk_box_pack_start (GTK_BOX (content_area), widget, FALSE, FALSE, 0);
 

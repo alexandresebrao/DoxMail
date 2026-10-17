@@ -607,7 +607,10 @@ merge_dialog_data_create (EContactMergingLookup *lookup,
 
 	grid = GTK_GRID (gtk_grid_new ());
 	g_object_set (G_OBJECT (grid),
-		"border-width", 12,
+		"margin-start", 12,
+		"margin-end", 12,
+		"margin-top", 12,
+		"margin-bottom", 12,
 		"row-spacing", 6,
 		"column-spacing", 2,
 		NULL);

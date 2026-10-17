@@ -180,7 +180,10 @@ e_message_popover_constructed (GObject *object)
 		NULL);
 
 	g_object_set (self,
-		"border-width", 6,
+		"margin-start", 6,
+		"margin-end", 6,
+		"margin-top", 6,
+		"margin-bottom", 6,
 		"position", GTK_POS_BOTTOM,
 		"modal", TRUE,
 		NULL);

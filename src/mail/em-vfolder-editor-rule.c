@@ -854,7 +854,10 @@ get_widget (EFilterRule *fr,
 	g_object_set (
 		G_OBJECT (vgrid),
 		"orientation", GTK_ORIENTATION_VERTICAL,
-		"border-width", 6,
+		"margin-start", 6,
+		"margin-end", 6,
+		"margin-top", 6,
+		"margin-bottom", 6,
 		"row-spacing", 6,
 		NULL);
 	e_gtk_container_add (hgrid, vgrid);
@@ -931,7 +934,10 @@ get_widget (EFilterRule *fr,
 	g_object_set (
 		G_OBJECT (vgrid),
 		"orientation", GTK_ORIENTATION_VERTICAL,
-		"border-width", 6,
+		"margin-start", 6,
+		"margin-end", 6,
+		"margin-top", 6,
+		"margin-bottom", 6,
 		"row-spacing", 6,
 		NULL);
 	e_gtk_container_add (hgrid, vgrid);

@@ -247,7 +247,6 @@ collection_wizard_page_constructed (GObject *object)
 		"vexpand", FALSE,
 		"valign", GTK_ALIGN_START,
 		"visible", TRUE,
-		"can-default", TRUE,
 		NULL);
 	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 
