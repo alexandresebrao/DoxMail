@@ -571,6 +571,7 @@ REGEX_RENAMES = [
     (r'\bGTK_IS_CLIPBOARD\b', 'GDK_IS_CLIPBOARD'),
     (r'"stock-size"', '"icon-size"'),
     (r'\bgdk_event_free\b', 'gdk_event_unref'),
+    (r'\bgtk_popover_get_relative_to\s*\(\s*GTK_POPOVER\s*\(', 'gtk_widget_get_parent (GTK_WIDGET ('),
     (r'\bgtk_popover_get_relative_to\s*\(', 'gtk_widget_get_parent ('),
     (r'\bgtk_window_new \(GTK_WINDOW_TOPLEVEL\)', 'gtk_window_new ()'),
     (r'g_signal_connect \(\s*([^,]+),\s*"delete[-_]event",\s*G_CALLBACK \(gtk_widget_hide_on_delete\),\s*NULL\);', r'gtk_window_set_hide_on_close (GTK_WINDOW (\1), TRUE);'),

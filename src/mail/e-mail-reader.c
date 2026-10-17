@@ -5313,7 +5313,7 @@ action_mail_label_change_more_cb (EUIAction *action,
 	g_signal_connect (popover, "closed",
 		G_CALLBACK (e_gtk_widget_destroy), NULL);
 
-	widget = gtk_widget_get_parent (GTK_POPOVER (popover));
+	widget = gtk_widget_get_parent (GTK_WIDGET (popover));
 	if (widget) {
 		GtkAllocation allocation;
 		GdkRectangle rect;

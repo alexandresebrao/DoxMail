@@ -552,52 +552,53 @@ customize_shortcuts_unset_from_other_cb (GtkWidget *menu_item,
 }
 
 static void
+customize_shortcuts_unset_clicked_cb (GtkButton *button,
+				      gpointer user_data)
+{
+	gtk_popover_popdown (GTK_POPOVER (gtk_widget_get_ancestor (GTK_WIDGET (button), GTK_TYPE_POPOVER)));
+
+	customize_shortcuts_unset_from_other_cb (GTK_WIDGET (button), user_data);
+}
+
+/* GTK 4 "icon-press" passes no event */
+static void
 customize_shortcuts_entry_icon_press_cb (GtkEntry *entry,
 					 GtkEntryIconPosition icon_pos,
-					 GdkEvent *event,
 					 gpointer user_data)
 {
 	UnsetShortcutData *usd = user_data;
-	GtkMenu *menu;
-	GtkWidget *item;
+	GtkWidget *popover, *box;
 	GtkWidget *widget;
+	GdkRectangle rect;
 
 	if (icon_pos != GTK_ENTRY_ICON_SECONDARY || !usd)
 		return;
 
-	menu = GTK_MENU (gtk_menu_new ());
+	box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
 
 	widget = gtk_label_new (gtk_entry_get_icon_tooltip_text (entry, icon_pos));
 	g_object_set (widget,
 		"use-underline", FALSE,
-		"visible", TRUE,
 		"wrap", TRUE,
 		"width-chars", 30,
 		"max-width-chars", 40,
+		"xalign", 0.0,
 		NULL);
+	gtk_widget_add_css_class (widget, "dim-label");
+	gtk_box_append (GTK_BOX (box), widget);
 
-	item = gtk_menu_item_new ();
-	g_object_set (item,
-		"visible", TRUE,
-		"sensitive", FALSE,
-		NULL);
-	e_gtk_container_add (item, widget);
+	widget = gtk_button_new_with_mnemonic (g_dngettext (GETTEXT_PACKAGE, "_Unset from other action", "_Unset from other actions", usd->n_clashing));
+	gtk_button_set_has_frame (GTK_BUTTON (widget), FALSE);
+	gtk_box_append (GTK_BOX (box), widget);
 
-	gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+	g_signal_connect_data (widget, "clicked",
+		G_CALLBACK (customize_shortcuts_unset_clicked_cb), unset_shortcut_data_copy (usd), (GClosureNotify) unset_shortcut_data_free, 0);
 
-	item = gtk_menu_item_new_with_mnemonic (g_dngettext (GETTEXT_PACKAGE, "_Unset from other action", "_Unset from other actions", usd->n_clashing));
-	g_object_set (item,
-		"visible", TRUE,
-		NULL);
-	gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+	popover = gtk_popover_new ();
+	gtk_popover_set_child (GTK_POPOVER (popover), box);
 
-	g_signal_connect_data (item, "activate",
-		G_CALLBACK (customize_shortcuts_unset_from_other_cb), unset_shortcut_data_copy (usd), (GClosureNotify) unset_shortcut_data_free, 0);
-
-	gtk_menu_attach_to_widget (GTK_MENU (menu), GTK_WIDGET (entry), NULL);
-	e_util_connect_menu_detach_after_deactivate (GTK_MENU (menu));
-
-	gtk_menu_popup_at_pointer (GTK_MENU (menu), event);
+	gtk_entry_get_icon_area (entry, icon_pos, &rect);
+	e_util_popup_menu (popover, GTK_WIDGET (entry), rect.x + rect.width / 2, rect.y + rect.height);
 }
 
 static void
@@ -1527,47 +1528,54 @@ e_ui_customize_dialog_layout_add_separator_activated_cb (GtkButton *button,
 }
 
 static void
+e_ui_customize_dialog_layout_add_action_cb (GSimpleAction *action,
+					    GVariant *parameter,
+					    gpointer user_data)
+{
+	if (g_str_equal (g_action_get_name (G_ACTION (action)), "selected"))
+		e_ui_customize_dialog_layout_add_selected_activated_cb (NULL, user_data);
+	else
+		e_ui_customize_dialog_layout_add_separator_activated_cb (NULL, user_data);
+}
+
+static void
 e_ui_customize_dialog_layout_add_clicked_cb (GtkWidget *button,
 					     gpointer user_data)
 {
 	EUICustomizeDialog *self = user_data;
-	GtkWidget *popup_menu;
-	GtkMenuShell *menu_shell;
-	GtkWidget *item;
+	GSimpleActionGroup *actions;
+	GSimpleAction *action;
+	GMenu *menu;
 	GtkTreeSelection *selection;
 	gint n_selected;
 
 	selection = gtk_tree_view_get_selection (self->actions_tree_view);
 	n_selected = gtk_tree_selection_count_selected_rows (selection);
 
-	popup_menu = gtk_menu_new ();
-	menu_shell = GTK_MENU_SHELL (popup_menu);
+	actions = g_simple_action_group_new ();
 
-	item = gtk_menu_item_new_with_mnemonic (g_dngettext (GETTEXT_PACKAGE, _("Selected _Action"), _("Selected _Actions"), n_selected));
-	g_signal_connect (item, "activate", G_CALLBACK (e_ui_customize_dialog_layout_add_selected_activated_cb), self);
-	gtk_widget_set_sensitive (item, n_selected > 0);
-	gtk_menu_shell_append (menu_shell, item);
+	action = g_simple_action_new ("selected", NULL);
+	g_simple_action_set_enabled (action, n_selected > 0);
+	g_signal_connect_object (action, "activate", G_CALLBACK (e_ui_customize_dialog_layout_add_action_cb), self, 0);
+	g_action_map_add_action (G_ACTION_MAP (actions), G_ACTION (action));
+	g_object_unref (action);
 
-	item = gtk_menu_item_new_with_mnemonic (_("_Separator"));
-	g_signal_connect (item, "activate", G_CALLBACK (e_ui_customize_dialog_layout_add_separator_activated_cb), self);
-	gtk_menu_shell_append (menu_shell, item);
+	action = g_simple_action_new ("separator", NULL);
+	g_signal_connect_object (action, "activate", G_CALLBACK (e_ui_customize_dialog_layout_add_action_cb), self, 0);
+	g_action_map_add_action (G_ACTION_MAP (actions), G_ACTION (action));
+	g_object_unref (action);
 
-	gtk_widget_set_visible (popup_menu, TRUE);
+	gtk_widget_insert_action_group (button, "layoutadd", G_ACTION_GROUP (actions));
+	g_object_unref (actions);
 
-	gtk_menu_attach_to_widget (GTK_MENU (popup_menu), button, NULL);
-	e_util_connect_menu_detach_after_deactivate (GTK_MENU (popup_menu));
+	menu = g_menu_new ();
+	g_menu_append (menu, g_dngettext (GETTEXT_PACKAGE, _("Selected _Action"), _("Selected _Actions"), n_selected), "layoutadd.selected");
+	g_menu_append (menu, _("_Separator"), "layoutadd.separator");
 
-	g_object_set (popup_menu,
-	              "anchor-hints", (GDK_ANCHOR_FLIP_Y |
-	                               GDK_ANCHOR_SLIDE |
-	                               GDK_ANCHOR_RESIZE),
-	              NULL);
+	/* below the button */
+	e_util_popup_menu_model (G_MENU_MODEL (menu), button, 0, gtk_widget_get_height (button));
 
-	gtk_menu_popup_at_widget (GTK_MENU (popup_menu),
-	                          button,
-	                          GDK_GRAVITY_SOUTH_WEST,
-	                          GDK_GRAVITY_NORTH_WEST,
-	                          NULL);
+	g_object_unref (menu);
 }
 
 static gint
@@ -2053,20 +2061,14 @@ customize_layout_tree_autoscroll (gpointer user_data)
 	GtkTreeView *tree_view;
 	GtkScrollable *scrollable;
 	GdkRectangle rect;
-	GdkSurface *window;
-	GdkDisplay *display;
-	GdkDeviceManager *device_manager;
-	GdkDevice *device;
-	gdouble value;
-	gint offset, y;
+	gdouble value, py = 0;
+	gint offset, y, by = 0;
 
 	/* Get the y pointer position relative to the treeview. */
 	tree_view = self->layout_tree_view;
-	window = gtk_tree_view_get_bin_window (tree_view);
-	display = gdk_window_get_display (window);
-	device_manager = gdk_display_get_device_manager (display);
-	device = gdk_device_manager_get_client_pointer (device_manager);
-	gdk_window_get_device_position (window, device, NULL, &y, NULL);
+	e_gtk_widget_get_pointer_position (GTK_WIDGET (tree_view), NULL, &py);
+	gtk_tree_view_convert_widget_to_bin_window_coords (tree_view, 0, (gint) py, NULL, &by);
+	y = by;
 
 	/* Rect is in coordinates relative to the scrolled window,
 	 * relative to the treeview. */
@@ -2107,11 +2109,13 @@ customize_actions_tree_drag_begin_cb (GtkWidget *widget,
 	selected_paths = gtk_tree_selection_get_selected_rows (selection, NULL);
 
 	if (selected_paths) {
-		cairo_surface_t *surface;
+		GdkPaintable *paintable;
 
-		surface = gtk_tree_view_create_row_drag_icon (self->actions_tree_view, selected_paths->data);
-		e_gtk_drag_set_icon_surface (context, surface);
-		cairo_surface_destroy (surface);
+		paintable = gtk_tree_view_create_row_drag_icon (self->actions_tree_view, selected_paths->data);
+		if (paintable) {
+			e_gtk_drag_set_icon_paintable (context, paintable, 0, 0);
+			g_object_unref (paintable);
+		}
 	}
 
 	g_list_free_full (selected_paths, (GDestroyNotify) gtk_tree_path_free);
@@ -2168,7 +2172,7 @@ customize_layout_tree_drag_begin_cb (GtkWidget *widget,
 	if (drag_refs) {
 		GtkTreeRowReference *ref;
 		GtkTreePath *path;
-		cairo_surface_t *surface;
+		GdkPaintable *paintable;
 
 		self->layout_drag_refs = drag_refs;
 
@@ -2176,9 +2180,11 @@ customize_layout_tree_drag_begin_cb (GtkWidget *widget,
 		path = gtk_tree_row_reference_get_path (ref);
 
 		if (path) {
-			surface = gtk_tree_view_create_row_drag_icon (self->layout_tree_view, path);
-			e_gtk_drag_set_icon_surface (context, surface);
-			cairo_surface_destroy (surface);
+			paintable = gtk_tree_view_create_row_drag_icon (self->layout_tree_view, path);
+			if (paintable) {
+				e_gtk_drag_set_icon_paintable (context, paintable, 0, 0);
+				g_object_unref (paintable);
+			}
 
 			gtk_tree_path_free (path);
 		}

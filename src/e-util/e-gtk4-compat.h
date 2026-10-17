@@ -273,6 +273,12 @@ gint		e_gtk_entry_get_index_at_position
 void		e_gtk_widget_override_font	(GtkWidget *widget,
 						 const PangoFontDescription *font_desc);
 
+/* the pointer position in @widget coordinates */
+gboolean	e_gtk_widget_get_pointer_position
+						(GtkWidget *widget,
+						 gdouble *x,
+						 gdouble *y);
+
 /* the "labelled-by" ATK relation */
 void		e_gtk_widget_set_labelled_by	(GtkWidget *widget,
 						 GtkWidget *label);

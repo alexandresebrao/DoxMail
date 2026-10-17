@@ -2071,3 +2071,41 @@ e_gtk_widget_override_font (GtkWidget *widget,
 	gtk_css_provider_load_from_string (provider, css->str);
 	g_string_free (css, TRUE);
 }
+
+gboolean
+e_gtk_widget_get_pointer_position (GtkWidget *widget,
+				   gdouble *x,
+				   gdouble *y)
+{
+	GtkNative *native;
+	GdkSurface *surface;
+	GdkSeat *seat;
+	GdkDevice *pointer;
+	graphene_point_t point;
+	gdouble px = 0, py = 0, nx = 0, ny = 0;
+	gboolean res = FALSE;
+
+	g_return_val_if_fail (GTK_IS_WIDGET (widget), FALSE);
+
+	native = gtk_widget_get_native (widget);
+	surface = native ? gtk_native_get_surface (native) : NULL;
+	seat = gdk_display_get_default_seat (gtk_widget_get_display (widget));
+	pointer = seat ? gdk_seat_get_pointer (seat) : NULL;
+
+	if (surface && pointer && gdk_surface_get_device_position (surface, pointer, &px, &py, NULL)) {
+		gtk_native_get_surface_transform (native, &nx, &ny);
+		res = gtk_widget_compute_point (GTK_WIDGET (native), widget,
+			&GRAPHENE_POINT_INIT (px - nx, py - ny), &point);
+		if (res) {
+			px = point.x;
+			py = point.y;
+		}
+	}
+
+	if (x)
+		*x = px;
+	if (y)
+		*y = py;
+
+	return res;
+}

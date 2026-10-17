@@ -32,7 +32,6 @@
 struct _ESpellEntryPrivate {
 	PangoAttrList *attr_list;
 	gint mark_character;
-	gint entry_scroll_offset;
 	gboolean custom_checkers;
 	gboolean checking_enabled;
 	gchar **words;
@@ -168,8 +167,7 @@ spell_entry_recheck_all (ESpellEntry *entry)
 				entry->priv->word_ends[i]);
 		}
 
-		layout = gtk_entry_get_layout (GTK_ENTRY (entry));
-		pango_layout_set_attributes (layout, entry->priv->attr_list);
+		gtk_entry_set_attributes (GTK_ENTRY (entry), entry->priv->attr_list);
 	}
 
 	if (gtk_widget_get_realized (widget))
@@ -351,18 +349,16 @@ spell_entry_byte_pos_to_char_pos (ESpellEntry *entry,
 }
 
 static void
-add_to_dictionary (GtkWidget *menuitem,
-                   ESpellEntry *entry)
+add_to_dictionary (ESpellEntry *entry,
+                   ESpellDictionary *dict)
 {
 	gchar *word;
 	gint start, end;
-	ESpellDictionary *dict;
 
 	get_word_extents_from_position (
 		entry, &start, &end, entry->priv->mark_character);
 	word = spell_entry_get_chars_from_byte_pos (entry, start, end);
 
-	dict = g_object_get_data (G_OBJECT (menuitem), "spell-entry-checker");
 	if (dict != NULL)
 		e_spell_dictionary_learn_word (dict, word, -1);
 
@@ -384,8 +380,7 @@ add_to_dictionary (GtkWidget *menuitem,
 }
 
 static void
-ignore_all (GtkWidget *menuitem,
-            ESpellEntry *entry)
+ignore_all (ESpellEntry *entry)
 {
 	ESpellChecker *spell_checker;
 	gchar *word;
@@ -416,20 +411,17 @@ ignore_all (GtkWidget *menuitem,
 }
 
 static void
-replace_word (GtkWidget *menuitem,
-              ESpellEntry *entry)
+replace_word (ESpellEntry *entry,
+              ESpellDictionary *dict,
+              const gchar *newword)
 {
 	gchar *oldword;
-	const gchar *newword;
 	gint start, end;
 	gint cursor;
-	ESpellDictionary *dict;
 
 	get_word_extents_from_position (
 		entry, &start, &end, entry->priv->mark_character);
 	oldword = spell_entry_get_chars_from_byte_pos (entry, start, end);
-	newword = gtk_label_get_text (
-		GTK_LABEL (e_gtk_bin_get_child (menuitem)));
 
 	spell_entry_byte_pos_to_char_pos (entry, start, &start);
 	spell_entry_byte_pos_to_char_pos (entry, end, &end);
@@ -447,8 +439,6 @@ replace_word (GtkWidget *menuitem,
 		GTK_EDITABLE (entry), newword, strlen (newword), &start);
 	gtk_editable_set_position (GTK_EDITABLE (entry), cursor);
 
-	dict = g_object_get_data (G_OBJECT (menuitem), "spell-entry-checker");
-
 	if (dict != NULL)
 		e_spell_dictionary_store_correction (
 			dict, oldword, -1, newword, -1);
@@ -456,75 +446,92 @@ replace_word (GtkWidget *menuitem,
 	g_free (oldword);
 }
 
+/* the menu items name their dictionary by its code */
+static ESpellDictionary *
+spell_entry_ref_dictionary (ESpellEntry *entry,
+			    const gchar *code)
+{
+	return e_spell_checker_ref_dictionary (e_spell_entry_get_spell_checker (entry), code);
+}
+
+static void
+spell_entry_action_cb (GSimpleAction *action,
+		       GVariant *parameter,
+		       gpointer user_data)
+{
+	ESpellEntry *entry = user_data;
+	const gchar *name = g_action_get_name (G_ACTION (action));
+	ESpellDictionary *dict;
+
+	if (g_str_equal (name, "replace")) {
+		const gchar *code = NULL, *word = NULL;
+
+		g_variant_get (parameter, "(&s&s)", &code, &word);
+		dict = spell_entry_ref_dictionary (entry, code);
+		replace_word (entry, dict, word);
+		g_clear_object (&dict);
+	} else if (g_str_equal (name, "add")) {
+		dict = spell_entry_ref_dictionary (entry, g_variant_get_string (parameter, NULL));
+		add_to_dictionary (entry, dict);
+		g_clear_object (&dict);
+	} else if (g_str_equal (name, "ignore")) {
+		ignore_all (entry);
+	}
+}
+
 static void
 build_suggestion_menu (ESpellEntry *entry,
-                       GtkWidget *menu,
+                       GMenu *menu,
                        ESpellDictionary *dict,
                        const gchar *word)
 {
-	GtkWidget *mi;
 	GList *suggestions, *iter;
+	const gchar *code = e_spell_dictionary_get_code (dict);
 
 	suggestions = e_spell_dictionary_get_suggestions (dict, word, -1);
 
 	if (suggestions == NULL) {
 		/* no suggestions. Put something in the menu anyway... */
-		GtkWidget *label = gtk_label_new (_("(no suggestions)"));
-		PangoAttribute *attribute;
-		PangoAttrList *attribute_list;
-
-		attribute_list = pango_attr_list_new ();
-		attribute = pango_attr_style_new (PANGO_STYLE_ITALIC);
-		pango_attr_list_insert (attribute_list, attribute);
-		gtk_label_set_attributes (GTK_LABEL (label), attribute_list);
-		pango_attr_list_unref (attribute_list);
-
-		mi = gtk_separator_menu_item_new ();
-		e_gtk_container_add (mi, label);
-		gtk_widget_set_visible (mi, TRUE);
-		gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), mi);
+		g_menu_append (menu, _("(no suggestions)"), "spell.none");
 	} else {
 		gint ii = 0;
 
 		/* build a set of menus with suggestions */
 		for (iter = suggestions; iter; iter = g_list_next (iter), ii++) {
+			GMenuItem *item;
+
 			if ((ii != 0) && (ii % 10 == 0)) {
-				mi = gtk_separator_menu_item_new ();
-				gtk_widget_show (mi);
-				gtk_menu_shell_append (GTK_MENU_SHELL (menu), mi);
+				GMenu *more = g_menu_new ();
 
-				mi = gtk_menu_item_new_with_label (_("More…"));
-				gtk_widget_show (mi);
-				gtk_menu_shell_append (GTK_MENU_SHELL (menu), mi);
-
-				menu = gtk_menu_new ();
-				gtk_menu_item_set_submenu (GTK_MENU_ITEM (mi), menu);
+				g_menu_append_submenu (menu, _("More…"), G_MENU_MODEL (more));
+				g_object_unref (more);
+				menu = more;
 			}
 
-			mi = gtk_menu_item_new_with_label (iter->data);
-			g_object_set_data (G_OBJECT (mi), "spell-entry-checker", dict);
-			g_signal_connect (mi, "activate", G_CALLBACK (replace_word), entry);
-			gtk_widget_show (mi);
-			gtk_menu_shell_append (GTK_MENU_SHELL (menu), mi);
+			item = g_menu_item_new (iter->data, NULL);
+			g_menu_item_set_action_and_target (item, "spell.replace", "(ss)", code, (const gchar *) iter->data);
+			g_menu_append_item (menu, item);
+			g_object_unref (item);
 		}
 	}
 
 	g_list_free_full (suggestions, (GDestroyNotify) g_free);
 }
 
-static GtkWidget *
+static GMenu *
 build_spelling_menu (ESpellEntry *entry,
                      const gchar *word)
 {
 	ESpellChecker *spell_checker;
 	ESpellDictionary *dict;
-	GtkWidget *topmenu, *mi;
+	GMenu *topmenu, *section;
+	GMenuItem *item;
 	GQueue queue = G_QUEUE_INIT;
 	gchar **active_languages;
 	guint ii, n_active_languages;
 	gchar *label;
 
-	topmenu = gtk_menu_new ();
+	topmenu = g_menu_new ();
 
 	spell_checker = e_spell_entry_get_spell_checker (entry);
 
@@ -542,17 +549,18 @@ build_spelling_menu (ESpellEntry *entry,
 		goto exit;
 
 	/* Suggestions */
+	section = g_menu_new ();
 	if (n_active_languages == 1) {
 		dict = g_queue_peek_head (&queue);
-		build_suggestion_menu (entry, topmenu, dict, word);
+		build_suggestion_menu (entry, section, dict, word);
 	} else {
-		GtkWidget *menu;
 		GList *list, *link;
 
 		list = g_queue_peek_head_link (&queue);
 
 		for (link = list; link != NULL; link = g_list_next (link)) {
 			const gchar *lang_name;
+			GMenu *menu;
 
 			dict = E_SPELL_DICTIONARY (link->data);
 
@@ -562,42 +570,31 @@ build_spelling_menu (ESpellEntry *entry,
 			if (lang_name == NULL)
 				lang_name = "???";
 
-			mi = gtk_menu_item_new_with_label (lang_name);
-
-			gtk_widget_show (mi);
-			gtk_menu_shell_append (GTK_MENU_SHELL (topmenu), mi);
-			menu = gtk_menu_new ();
-			gtk_menu_item_set_submenu (GTK_MENU_ITEM (mi), menu);
+			menu = g_menu_new ();
 			build_suggestion_menu (entry, menu, dict, word);
+			g_menu_append_submenu (section, lang_name, G_MENU_MODEL (menu));
+			g_object_unref (menu);
 		}
 	}
+	g_menu_append_section (topmenu, NULL, G_MENU_MODEL (section));
+	g_object_unref (section);
 
-	/* Separator */
-	mi = gtk_separator_menu_item_new ();
-	gtk_widget_show (mi);
-	gtk_menu_shell_append (GTK_MENU_SHELL (topmenu), mi);
+	section = g_menu_new ();
 
 	/* + Add to Dictionary */
 	label = g_strdup_printf (_("Add “%s” to Dictionary"), word);
-	mi = gtk_image_menu_item_new_with_label (label);
-	g_free (label);
-
-	gtk_image_menu_item_set_image (
-		GTK_IMAGE_MENU_ITEM (mi),
-		gtk_image_new_from_icon_name ("list-add"));
 
 	if (n_active_languages == 1) {
 		dict = g_queue_peek_head (&queue);
-		g_object_set_data (G_OBJECT (mi), "spell-entry-checker", dict);
-		g_signal_connect (
-			mi, "activate",
-			G_CALLBACK (add_to_dictionary), entry);
+		item = g_menu_item_new (label, NULL);
+		g_menu_item_set_action_and_target (item, "spell.add", "s", e_spell_dictionary_get_code (dict));
+		g_menu_append_item (section, item);
+		g_object_unref (item);
 	} else {
-		GtkWidget *menu, *submi;
+		GMenu *menu;
 		GList *list, *link;
 
-		menu = gtk_menu_new ();
-		gtk_menu_item_set_submenu (GTK_MENU_ITEM (mi), menu);
+		menu = g_menu_new ();
 
 		list = g_queue_peek_head_link (&queue);
 
@@ -612,28 +609,23 @@ build_spelling_menu (ESpellEntry *entry,
 			if (lang_name == NULL)
 				lang_name = "???";
 
-			submi = gtk_menu_item_new_with_label (lang_name);
-			g_object_set_data (G_OBJECT (submi), "spell-entry-checker", dict);
-			g_signal_connect (
-				submi, "activate",
-				G_CALLBACK (add_to_dictionary), entry);
-
-			gtk_widget_show (submi);
-			gtk_menu_shell_append (GTK_MENU_SHELL (menu), submi);
+			item = g_menu_item_new (lang_name, NULL);
+			g_menu_item_set_action_and_target (item, "spell.add", "s", e_spell_dictionary_get_code (dict));
+			g_menu_append_item (menu, item);
+			g_object_unref (item);
 		}
+
+		g_menu_append_submenu (section, label, G_MENU_MODEL (menu));
+		g_object_unref (menu);
 	}
 
-	gtk_widget_set_visible (mi, TRUE);
-	gtk_menu_shell_append (GTK_MENU_SHELL (topmenu), mi);
+	g_free (label);
 
 	/* - Ignore All */
-	mi = gtk_image_menu_item_new_with_label (_("Ignore All"));
-	gtk_image_menu_item_set_image (
-		GTK_IMAGE_MENU_ITEM (mi),
-		gtk_image_new_from_icon_name ("list-remove"));
-	g_signal_connect (mi, "activate", G_CALLBACK (ignore_all), entry);
-	gtk_widget_set_visible (mi, TRUE);
-	gtk_menu_shell_append (GTK_MENU_SHELL (topmenu), mi);
+	g_menu_append (section, _("Ignore All"), "spell.ignore");
+
+	g_menu_append_section (topmenu, NULL, G_MENU_MODEL (section));
+	g_object_unref (section);
 
 exit:
 	while (!g_queue_is_empty (&queue))
@@ -643,50 +635,34 @@ exit:
 }
 
 static void
-spell_entry_add_suggestions_menu (ESpellEntry *entry,
-                                  GtkMenu *menu,
+spell_entry_set_suggestions_menu (ESpellEntry *entry,
                                   const gchar *word)
 {
-	GtkWidget *icon, *mi;
+	GMenu *menu, *spelling;
 
-	g_return_if_fail (menu != NULL);
-	g_return_if_fail (word != NULL);
+	if (!word) {
+		gtk_entry_set_extra_menu (GTK_ENTRY (entry), NULL);
+		return;
+	}
 
-	/* separator */
-	mi = gtk_separator_menu_item_new ();
-	gtk_widget_show (mi);
-	gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), mi);
+	/* GTK 4 adds the model to the entry context menu */
+	menu = g_menu_new ();
+	spelling = build_spelling_menu (entry, word);
+	g_menu_append_submenu (menu, _("Spelling Suggestions"), G_MENU_MODEL (spelling));
+	g_object_unref (spelling);
 
-	/* Above the separator, show the suggestions menu */
-	icon = gtk_image_new_from_icon_name ("tools-check-spelling");
-	mi = gtk_image_menu_item_new_with_label (_("Spelling Suggestions"));
-	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (mi), icon);
-
-	gtk_menu_item_set_submenu (GTK_MENU_ITEM (mi), build_spelling_menu (entry, word));
-
-	gtk_widget_set_visible (mi, TRUE);
-	gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), mi);
-}
-
-static gboolean
-spell_entry_popup_menu (ESpellEntry *entry)
-{
-	/* Menu popped up from a keybinding (menu key or <shift>+F10).
-	 * Use the cursor position as the mark position. */
-	entry->priv->mark_character =
-		gtk_editable_get_position (GTK_EDITABLE (entry));
-
-	return FALSE;
+	gtk_entry_set_extra_menu (GTK_ENTRY (entry), G_MENU_MODEL (menu));
+	g_object_unref (menu);
 }
 
 static void
-spell_entry_populate_popup (ESpellEntry *entry,
-                            GtkMenu *menu,
-                            gpointer data)
+spell_entry_populate_popup (ESpellEntry *entry)
 {
 	ESpellChecker *spell_checker;
 	gint start, end;
 	gchar *word;
+
+	spell_entry_set_suggestions_menu (entry, NULL);
 
 	spell_checker = e_spell_entry_get_spell_checker (entry);
 	if (e_spell_checker_count_active_languages (spell_checker) == 0)
@@ -703,7 +679,7 @@ spell_entry_populate_popup (ESpellEntry *entry,
 	word = spell_entry_get_chars_from_byte_pos (entry, start, end);
 	g_return_if_fail (word != NULL);
 
-	spell_entry_add_suggestions_menu (entry, menu, word);
+	spell_entry_set_suggestions_menu (entry, word);
 
 	g_free (word);
 }
@@ -731,38 +707,6 @@ spell_entry_changed (GtkEditable *editable)
 		&entry->priv->word_ends);
 
 	spell_entry_recheck_all (entry);
-}
-
-static void
-spell_entry_notify_scroll_offset (ESpellEntry *spell_entry)
-{
-	g_object_get (
-		G_OBJECT (spell_entry), "scroll-offset",
-		&spell_entry->priv->entry_scroll_offset, NULL);
-}
-
-static gint
-spell_entry_find_position (ESpellEntry *spell_entry,
-                           gint x)
-{
-	PangoLayout *layout;
-	PangoLayoutLine *line;
-	gint index;
-	gint pos;
-	gint trailing;
-	const gchar *text;
-	GtkEntry *entry = GTK_ENTRY (spell_entry);
-
-	layout = gtk_entry_get_layout (entry);
-	text = pango_layout_get_text (layout);
-
-	line = pango_layout_get_lines_readonly (layout)->data;
-	pango_layout_line_x_to_index (line, x * PANGO_SCALE, &index, &trailing);
-
-	pos = g_utf8_pointer_to_offset (text, text + index);
-	pos += trailing;
-
-	return pos;
 }
 
 static void
@@ -888,43 +832,27 @@ spell_entry_constructed (GObject *object)
 	e_extensible_load_extensions (E_EXTENSIBLE (object));
 }
 
-static gboolean
-spell_entry_draw (GtkWidget *widget,
-                  cairo_t *cr)
+static void
+spell_entry_pressed_cb (GtkGestureClick *gesture,
+			gint n_press,
+			gdouble x,
+			gdouble y,
+			gpointer user_data)
 {
-	ESpellEntry *spell_entry = E_SPELL_ENTRY (widget);
+	ESpellEntry *spell_entry = user_data;
+	gint pos;
 
-	if (!spell_entry->priv->im_in_preedit) {
-		GtkEntry *entry = GTK_ENTRY (widget);
-		PangoLayout *layout;
+	/* before the entry opens its context menu */
+	pos = e_gtk_entry_get_index_at_position (GTK_ENTRY (spell_entry), x, y);
+	spell_entry->priv->mark_character = pos >= 0 ? pos : gtk_editable_get_position (GTK_EDITABLE (spell_entry));
 
-		layout = gtk_entry_get_layout (entry);
-		pango_layout_set_attributes (layout, spell_entry->priv->attr_list);
-	}
-
-	/* Chain up to parent's draw() method. */
-	return GTK_WIDGET_CLASS (e_spell_entry_parent_class)->
-		draw (widget, cr);
-}
-
-static gboolean
-spell_entry_button_press (GtkWidget *widget,
-                          GdkEvent *event)
-{
-	ESpellEntry *spell_entry = E_SPELL_ENTRY (widget);
-
-	spell_entry->priv->mark_character = spell_entry_find_position (
-		spell_entry, e_gdk_event_x (event) + spell_entry->priv->entry_scroll_offset);
-
-	/* Chain up to parent's button_press_event() method. */
-	return e_gtk_widget_chain_legacy_event (widget, event);
+	spell_entry_populate_popup (spell_entry);
 }
 
 static void
 e_spell_entry_class_init (ESpellEntryClass *class)
 {
 	GObjectClass *object_class;
-	GtkWidgetClass *widget_class;
 
 	object_class = G_OBJECT_CLASS (class);
 	object_class->set_property = spell_entry_set_property;
@@ -933,9 +861,6 @@ e_spell_entry_class_init (ESpellEntryClass *class)
 	object_class->finalize = spell_entry_finalize;
 	object_class->constructed = spell_entry_constructed;
 
-	widget_class = GTK_WIDGET_CLASS (class);
-	widget_class->draw = spell_entry_draw;
-	e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (widget_class), "button-press-event", G_CALLBACK (spell_entry_button_press));
 
 	g_object_class_install_property (
 		object_class,
@@ -969,17 +894,29 @@ e_spell_entry_init (ESpellEntry *spell_entry)
 	spell_entry->priv->im_in_preedit = FALSE;
 
 	g_signal_connect (
-		e_gtk_widget_legacy_events (spell_entry), "popup-menu",
-		G_CALLBACK (spell_entry_popup_menu), NULL);
-	g_signal_connect (
-		spell_entry, "populate-popup",
-		G_CALLBACK (spell_entry_populate_popup), NULL);
-	g_signal_connect (
 		spell_entry, "changed",
 		G_CALLBACK (spell_entry_changed), NULL);
-	e_signal_connect_notify (
-		spell_entry, "notify::scroll-offset",
-		G_CALLBACK (spell_entry_notify_scroll_offset), NULL);
+
+	{
+		static const GActionEntry entries[] = {
+			{ "replace", spell_entry_action_cb, "(ss)", NULL, NULL },
+			{ "add", spell_entry_action_cb, "s", NULL, NULL },
+			{ "ignore", spell_entry_action_cb, NULL, NULL, NULL }
+		};
+		GSimpleActionGroup *actions = g_simple_action_group_new ();
+		GtkGesture *gesture = gtk_gesture_click_new ();
+
+		g_action_map_add_action_entries (G_ACTION_MAP (actions), entries, G_N_ELEMENTS (entries), spell_entry);
+		gtk_widget_insert_action_group (GTK_WIDGET (spell_entry), "spell", G_ACTION_GROUP (actions));
+		g_object_unref (actions);
+
+		/* GTK 4 has no populate-popup: the extra menu is set up when
+		 * the right button goes down, at the word under the pointer */
+		gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (gesture), GDK_BUTTON_SECONDARY);
+		gtk_event_controller_set_propagation_phase (GTK_EVENT_CONTROLLER (gesture), GTK_PHASE_CAPTURE);
+		g_signal_connect (gesture, "pressed", G_CALLBACK (spell_entry_pressed_cb), spell_entry);
+		gtk_widget_add_controller (GTK_WIDGET (spell_entry), GTK_EVENT_CONTROLLER (gesture));
+	}
 }
 
 GtkWidget *

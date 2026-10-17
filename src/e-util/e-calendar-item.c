@@ -34,7 +34,6 @@
 #include <gdk/gdkkeysyms.h>
 #include <glib/gi18n.h>
 
-#include "ea-widgets.h"
 #include "e-misc-utils.h"
 #include "e-util-enumtypes.h"
 
@@ -587,7 +586,7 @@ e_calendar_item_class_init (ECalendarItemClass *class)
 		NULL,
 		G_TYPE_INT, 0);
 
-	e_calendar_item_a11y_init ();
+	/* the ATK factories (ea-*) are gone with GTK 4 */
 }
 
 static void
