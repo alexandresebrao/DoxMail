@@ -3432,8 +3432,8 @@ message_list_dispose (GObject *object)
 		priv->folder_changed_handler_id = 0;
 	}
 
-	g_clear_pointer (&priv->copy_target_list, gtk_target_list_unref);
-	g_clear_pointer (&priv->paste_target_list, gtk_target_list_unref);
+	g_clear_pointer (&priv->copy_target_list, e_gtk_target_list_unref);
+	g_clear_pointer (&priv->paste_target_list, e_gtk_target_list_unref);
 
 	priv->destroyed = TRUE;
 

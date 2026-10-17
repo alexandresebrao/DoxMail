@@ -51,10 +51,6 @@ set(SOURCES
 	e-addressbook-view.h
 	gal-view-minicard.c
 	gal-view-minicard.h
-	ea-addressbook-view.c
-	ea-addressbook-view.h
-	ea-addressbook.c
-	ea-addressbook.h
 )
 
 set(HEADERS

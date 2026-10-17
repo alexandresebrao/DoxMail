@@ -8,11 +8,12 @@
 
 #include <gtk/gtk.h>
 #include <libebook-contacts/libebook-contacts.h>
+#include <e-util/e-util.h>
 
 G_BEGIN_DECLS
 
 #define E_TYPE_ALPHABET_BOX e_alphabet_box_get_type ()
-G_DECLARE_FINAL_TYPE (EAlphabetBox, e_alphabet_box, E, ALPHABET_BOX, GtkListBox)
+G_DECLARE_FINAL_TYPE (EAlphabetBox, e_alphabet_box, E, ALPHABET_BOX, GtkWidget)
 
 GtkWidget *	e_alphabet_box_new		(void);
 void		e_alphabet_box_take_indices	(EAlphabetBox *self,

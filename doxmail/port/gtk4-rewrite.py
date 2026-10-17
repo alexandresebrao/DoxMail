@@ -561,6 +561,7 @@ REGEX_RENAMES = [
     (r'\bgdk_drag_status\s*\(', 'e_gtk_drag_status ('),
     (r'\bgdk_drag_context_([a-z_]+)\s*\(', r'e_gtk_drag_context_\1 ('),
     (r'\bgtk_target_(list|table)_([a-z_]+)\s*\(', r'e_gtk_target_\1_\2 ('),
+    (r'(?<!e_)\bgtk_(target_list|target_table|selection_data)_(unref|free|ref|copy)\b', r'e_gtk_\1_\2'),
     (r'\bgtk_selection_data_([a-z_]+)\s*\(', r'e_gtk_selection_data_\1 ('),
     (r'\bgtk_clipboard_([a-z_]+)\s*\(', r'e_gtk_clipboard_\1 ('),
     (r'\bgdk_atom_(intern_static_string|intern|name)\s*\(', r'e_gtk_atom_\1 ('),
@@ -587,6 +588,18 @@ REGEX_RENAMES = [
     (r'\bGTK_IS_CONTAINER\b', 'GTK_IS_WIDGET'),
     # GtkBin subclasses -> EGtkBin of e-gtk4-compat
     (r'\bGTK_TYPE_BIN\b', 'E_GTK_TYPE_BIN'),
+    (r'\bGTK_TYPE_EVENT_BOX\b', 'E_GTK_TYPE_BIN'),
+    # the default modifier intents of GTK 3
+    (r'\b(?:gtk_widget_get_modifier_mask|gdk_keymap_get_modifier_mask)\s*\((?:[^()]|\([^()]*\)|\((?:[^()]|\([^()]*\))*\))*?GDK_MODIFIER_INTENT_MODIFY_SELECTION\s*\)', 'GDK_CONTROL_MASK'),
+    (r'\b(?:gtk_widget_get_modifier_mask|gdk_keymap_get_modifier_mask)\s*\((?:[^()]|\([^()]*\)|\((?:[^()]|\([^()]*\))*\))*?GDK_MODIFIER_INTENT_EXTEND_SELECTION\s*\)', 'GDK_SHIFT_MASK'),
+    (r'\b(?:gtk_widget_get_modifier_mask|gdk_keymap_get_modifier_mask)\s*\((?:[^()]|\([^()]*\)|\((?:[^()]|\([^()]*\))*\))*?GDK_MODIFIER_INTENT_PRIMARY_ACCELERATOR\s*\)', 'GDK_CONTROL_MASK'),
+    (r'\bgtk_container_check_resize\s*\(', 'gtk_widget_queue_allocate ('),
+    # GtkLayout -> EGtkLayout of e-gtk4-compat
+    (r'\bGTK_TYPE_LAYOUT\b', 'E_GTK_TYPE_LAYOUT'),
+    (r'\bGtkLayout(Class)?\b', r'EGtkLayout\1'),
+    (r'\bGTK_LAYOUT\s*\(', 'E_GTK_LAYOUT ('),
+    (r'\bgtk_layout_(put|move|set_size|get_size|new)\s*\(', r'e_gtk_layout_\1 ('),
+    (r'\bGtkEventBox(Class)?\b', r'EGtkBin\1'),
     (r'\bGtkBin(Class)?\b', r'EGtkBin\1'),
     (r'\n[ \t]*\w+->forall = \w+;', ''),
     # GTK 4 has no containers; any widget may have children

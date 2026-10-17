@@ -47,7 +47,7 @@ struct _EaABViewClass
 };
 
 GType ea_ab_view_get_type (void);
-AtkObject * ea_ab_view_new (GObject *obj);
+GtkWidget * ea_ab_view_new (GObject *obj);
 
 G_END_DECLS
 

@@ -258,8 +258,8 @@ calendar_view_dispose (GObject *object)
 		g_clear_object (&self->priv->model);
 	}
 
-	g_clear_pointer (&self->priv->copy_target_list, gtk_target_list_unref);
-	g_clear_pointer (&self->priv->paste_target_list, gtk_target_list_unref);
+	g_clear_pointer (&self->priv->copy_target_list, e_gtk_target_list_unref);
+	g_clear_pointer (&self->priv->paste_target_list, e_gtk_target_list_unref);
 
 	if (self->priv->selected_cut_list) {
 		g_slist_free_full (self->priv->selected_cut_list, e_calendar_view_selection_data_free);

@@ -7,6 +7,7 @@
 #define E_CONTACT_CARD_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-util.h>
 #include <libebook/libebook.h>
 
 /* Standard GObject macros */
@@ -35,12 +36,12 @@ typedef struct _EContactCardClass EContactCardClass;
 typedef struct _EContactCardPrivate EContactCardPrivate;
 
 struct _EContactCard {
-	GtkEventBox parent;
+	EGtkBin parent;
 	EContactCardPrivate *priv;
 };
 
 struct _EContactCardClass {
-	GtkEventBoxClass parent_class;
+	EGtkBinClass parent_class;
 
 	/* Padding for future expansion */
 	gpointer padding[12];

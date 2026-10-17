@@ -38,12 +38,12 @@ typedef struct _ECardViewClass ECardViewClass;
 typedef struct _ECardViewPrivate ECardViewPrivate;
 
 struct _ECardView {
-	GtkEventBox parent;
+	EGtkBin parent;
 	ECardViewPrivate *priv;
 };
 
 struct _ECardViewClass {
-	GtkEventBoxClass parent_class;
+	EGtkBinClass parent_class;
 
 	void		(*status_message)	(ECardView *card_view,
 						 const gchar *message,

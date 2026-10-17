@@ -6,7 +6,6 @@
 #include "evolution-config.h"
 
 #include <gtk/gtk.h>
-#include <gtk/gtk-a11y.h>
 #include <libebook/libebook.h>
 
 #include "eab-book-util.h"
@@ -15,77 +14,6 @@
 #include "e-contact-card.h"
 
 #define N_ROWS 5
-
-#define E_TYPE_CONTACT_CARD_ACCESSIBLE e_contact_card_accessible_get_type ()
-G_DECLARE_FINAL_TYPE (EContactCardAccessible, e_contact_card_accessible, E, CONTACT_CARD_ACCESSIBLE, GtkContainerAccessible)
-
-struct _EContactCardAccessible {
-	GtkContainerAccessible parent;
-};
-
-G_DEFINE_TYPE (EContactCardAccessible, e_contact_card_accessible, GTK_TYPE_CONTAINER_ACCESSIBLE)
-
-static void
-e_contact_card_accessible_init (EContactCardAccessible *accessible)
-{
-}
-
-static void
-e_contact_card_accessible_initialize (GtkWidget *obj,
-				      gpointer   data)
-{
-	ATK_OBJECT_CLASS (e_contact_card_accessible_parent_class)->initialize (obj, data);
-	obj->role = ATK_ROLE_TABLE_CELL;
-}
-
-static AtkStateSet *
-e_contact_card_accessible_ref_state_set (GtkWidget *obj)
-{
-	AtkStateSet *state_set;
-	GtkWidget *widget;
-
-	state_set = ATK_OBJECT_CLASS (e_contact_card_accessible_parent_class)->ref_state_set (obj);
-	widget = gtk_accessible_get_widget (GTK_ACCESSIBLE (obj));
-	if (widget) {
-		atk_state_set_add_state (state_set, ATK_STATE_SELECTABLE);
-
-		if ((gtk_widget_get_state_flags (widget) & GTK_STATE_FLAG_SELECTED) != 0)
-			atk_state_set_add_state (state_set, ATK_STATE_SELECTED);
-	}
-
-	return state_set;
-}
-
-static void
-e_contact_card_accessible_measure (GtkWidget *widget,
-		GtkOrientation orientation,
-		gint for_size,
-		gint *minimum,
-		gint *natural,
-		gint *minimum_baseline,
-		gint *natural_baseline)
-{
-	if (orientation == GTK_ORIENTATION_HORIZONTAL) {
-		if (for_size >= 0) {
-			e_contact_card_get_preferred_width_for_height (widget, for_size, minimum, natural);
-			return;
-		}
-		e_contact_card_get_preferred_width (widget, minimum, natural);
-		return;
-	}
-
-	GTK_WIDGET_CLASS (e_contact_card_accessible_parent_class)->measure (widget, orientation, for_size,
-		minimum, natural, minimum_baseline, natural_baseline);
-}
-
-static void
-e_contact_card_accessible_class_init (EContactCardAccessibleClass *klass)
-{
-	AtkObjectClass *object_class = ATK_OBJECT_CLASS (klass);
-
-	object_class->initialize = e_contact_card_accessible_initialize;
-	object_class->ref_state_set = e_contact_card_accessible_ref_state_set;
-}
 
 /* ************************************************************************* */
 
@@ -115,7 +43,7 @@ enum {
 
 static GParamSpec *obj_props[LAST_PROP] = { NULL, };
 
-G_DEFINE_TYPE_WITH_PRIVATE (EContactCard, e_contact_card, GTK_TYPE_EVENT_BOX)
+G_DEFINE_TYPE_WITH_PRIVATE (EContactCard, e_contact_card, E_GTK_TYPE_BIN)
 
 static void
 e_contact_card_get_preferred_width (GtkWidget *widget,
@@ -147,16 +75,27 @@ e_contact_card_get_preferred_width_for_height (GtkWidget *widget,
 }
 
 static void
-e_contact_card_show_all (GtkWidget *widget)
+e_contact_card_measure (GtkWidget *widget,
+		GtkOrientation orientation,
+		gint for_size,
+		gint *minimum,
+		gint *natural,
+		gint *minimum_baseline,
+		gint *natural_baseline)
 {
-	EContactCard *self = E_CONTACT_CARD (widget);
+	if (orientation == GTK_ORIENTATION_HORIZONTAL) {
+		if (for_size >= 0) {
+			e_contact_card_get_preferred_width_for_height (widget, for_size, minimum, natural);
+			return;
+		}
+		e_contact_card_get_preferred_width (widget, minimum, natural);
+		return;
+	}
 
-	/* Chain up to parent's method. */
-	GTK_WIDGET_CLASS (e_contact_card_parent_class)->show_all (widget);
-
-	gtk_widget_set_visible (self->priv->spinner, !self->priv->contact);
-	gtk_widget_set_visible (GTK_WIDGET (self->priv->image), self->priv->contact && self->priv->have_image);
+	GTK_WIDGET_CLASS (e_contact_card_parent_class)->measure (widget, orientation, for_size,
+		minimum, natural, minimum_baseline, natural_baseline);
 }
+
 
 static void
 e_contact_card_set_property (GObject *object,
@@ -361,11 +300,9 @@ e_contact_card_class_init (EContactCardClass *klass)
 	GtkWidgetClass *widget_class;
 
 	widget_class = GTK_WIDGET_CLASS (klass);
-	widget_class->measure = e_contact_card_accessible_measure;
-	widget_class->show_all = e_contact_card_show_all;
+	widget_class->measure = e_contact_card_measure;
 
-	gtk_widget_class_set_accessible_role (widget_class, ATK_ROLE_LIST_ITEM);
-	gtk_widget_class_set_accessible_type (widget_class, E_TYPE_CONTACT_CARD_ACCESSIBLE);
+	gtk_widget_class_set_accessible_role (widget_class, GTK_ACCESSIBLE_ROLE_LIST_ITEM);
 	gtk_widget_class_set_css_name (widget_class, "EContactCard");
 
 	object_class = G_OBJECT_CLASS (klass);

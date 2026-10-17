@@ -283,8 +283,8 @@ memo_table_dispose (GObject *object)
 	}
 
 	g_clear_object (&self->priv->model);
-	g_clear_pointer (&self->priv->copy_target_list, gtk_target_list_unref);
-	g_clear_pointer (&self->priv->paste_target_list, gtk_target_list_unref);
+	g_clear_pointer (&self->priv->copy_target_list, e_gtk_target_list_unref);
+	g_clear_pointer (&self->priv->paste_target_list, e_gtk_target_list_unref);
 
 	/* Chain up to parent's dispose() method. */
 	G_OBJECT_CLASS (e_memo_table_parent_class)->dispose (object);

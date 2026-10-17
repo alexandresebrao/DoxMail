@@ -24,8 +24,8 @@
 #include <glib/gi18n.h>
 #include "ea-addressbook-view.h"
 
-static const gchar * ea_ab_view_get_name (AtkObject *accessible);
-static const gchar * ea_ab_view_get_description (AtkObject *accessible);
+static const gchar * ea_ab_view_get_name (GtkWidget *accessible);
+static const gchar * ea_ab_view_get_description (GtkWidget *accessible);
 
 static void ea_ab_view_class_init (EAddressbookViewClass *class);
 
@@ -57,7 +57,7 @@ ea_ab_view_get_type (void)
 
 		factory = atk_registry_get_factory (
 			atk_get_default_registry (),
-			GTK_TYPE_EVENT_BOX);
+			E_GTK_TYPE_BIN);
 		derived_atk_type = atk_object_factory_get_accessible_type (factory);
 		g_type_query (derived_atk_type, &query);
 
@@ -83,7 +83,7 @@ ea_ab_view_class_init (EAddressbookViewClass *class)
 }
 
 static const gchar *
-ea_ab_view_get_name (AtkObject *accessible)
+ea_ab_view_get_name (GtkWidget *accessible)
 {
 	g_return_val_if_fail (EA_IS_AB_VIEW (accessible), NULL);
 	if (accessible->name)
@@ -93,7 +93,7 @@ ea_ab_view_get_name (AtkObject *accessible)
 }
 
 static const gchar *
-ea_ab_view_get_description (AtkObject *accessible)
+ea_ab_view_get_description (GtkWidget *accessible)
 {
 	if (accessible->description)
 		return accessible->description;
@@ -101,11 +101,11 @@ ea_ab_view_get_description (AtkObject *accessible)
 	return _("evolution address book");
 }
 
-AtkObject *
+GtkWidget *
 ea_ab_view_new (GObject *obj)
 {
 	GObject *object;
-	AtkObject *accessible;
+	GtkWidget *accessible;
 
 	g_return_val_if_fail (obj != NULL, NULL);
 	g_return_val_if_fail (E_IS_ADDRESSBOOK_VIEW (obj), NULL);

@@ -42,7 +42,7 @@ enum {
 };
 
 static guint signals[LAST_SIGNAL];
-G_DEFINE_TYPE_WITH_PRIVATE (ECardView, e_card_view, GTK_TYPE_EVENT_BOX)
+G_DEFINE_TYPE_WITH_PRIVATE (ECardView, e_card_view, E_GTK_TYPE_BIN)
 
 enum RefreshFlags {
 	REFRESH_FLAG_NONE		= 0,

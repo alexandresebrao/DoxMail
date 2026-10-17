@@ -45,7 +45,7 @@ e_month_widget_day_label_get_day (GtkWidget *label)
 	return GPOINTER_TO_UINT (g_object_get_data (G_OBJECT (label), DAY_KEY));
 }
 
-/* was a GtkEventBox; now a widget holding the grid */
+/* was a EGtkBin; now a widget holding the grid */
 G_DEFINE_TYPE_WITH_PRIVATE (EMonthWidget, e_month_widget, GTK_TYPE_WIDGET)
 
 enum {

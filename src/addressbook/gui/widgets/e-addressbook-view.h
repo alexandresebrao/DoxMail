@@ -55,12 +55,12 @@ typedef struct _EAddressbookViewClass EAddressbookViewClass;
 typedef struct _EAddressbookViewPrivate EAddressbookViewPrivate;
 
 struct _EAddressbookView {
-	GtkScrolledWindow parent;
+	EGtkBin parent;
 	EAddressbookViewPrivate *priv;
 };
 
 struct _EAddressbookViewClass {
-	GtkScrolledWindowClass parent_class;
+	EGtkBinClass parent_class;
 
 	/* Signals */
 	void	(*open_contact)			(EAddressbookView *view,

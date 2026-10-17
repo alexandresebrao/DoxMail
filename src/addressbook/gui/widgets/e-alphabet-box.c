@@ -11,8 +11,9 @@
 #include "e-alphabet-box.h"
 
 struct _EAlphabetBox {
-	GtkListBox parent_instance;
+	GtkWidget parent_instance;
 
+	GtkWidget *list_box; /* GtkListBox is final with GTK 4 */
 	EBookIndices *indices;
 	GtkSizeGroup *sizegroup;
 	GtkCssProvider *css_provider;
@@ -25,7 +26,7 @@ enum {
 
 static guint signals[LAST_SIGNAL];
 
-G_DEFINE_FINAL_TYPE (EAlphabetBox, e_alphabet_box, GTK_TYPE_LIST_BOX)
+G_DEFINE_FINAL_TYPE (EAlphabetBox, e_alphabet_box, GTK_TYPE_WIDGET)
 
 static void
 e_alphabet_box_update (EAlphabetBox *self)
@@ -35,7 +36,7 @@ e_alphabet_box_update (EAlphabetBox *self)
 	guint ii;
 
 	if (!self->indices) {
-		while (child = gtk_list_box_get_row_at_index (GTK_LIST_BOX (self), 0), child) {
+		while (child = gtk_list_box_get_row_at_index (GTK_LIST_BOX (self->list_box), 0), child) {
 			e_gtk_widget_destroy (GTK_WIDGET (child));
 		}
 
@@ -44,7 +45,7 @@ e_alphabet_box_update (EAlphabetBox *self)
 
 	for (ii = 0; self->indices[ii].chr; ii++) {
 		gchar *indice_markup = g_markup_printf_escaped ("<small><b>%s</b></small>", self->indices[ii].chr);
-		child = gtk_list_box_get_row_at_index (GTK_LIST_BOX (self), ii);
+		child = gtk_list_box_get_row_at_index (GTK_LIST_BOX (self->list_box), ii);
 		if (child) {
 			label = e_gtk_bin_get_child (child);
 			gtk_label_set_markup (GTK_LABEL (label), indice_markup);
@@ -62,10 +63,10 @@ e_alphabet_box_update (EAlphabetBox *self)
 				"margin-bottom", 4,
 				NULL);
 
-			gtk_list_box_insert (GTK_LIST_BOX (self), label, -1);
+			gtk_list_box_insert (GTK_LIST_BOX (self->list_box), label, -1);
 			gtk_size_group_add_widget (self->sizegroup, label);
 
-			child = gtk_list_box_get_row_at_index (GTK_LIST_BOX (self), ii);
+			child = gtk_list_box_get_row_at_index (GTK_LIST_BOX (self->list_box), ii);
 			gtk_widget_set_margin_bottom (GTK_WIDGET (child), 1);
 			style_context = gtk_widget_get_style_context (GTK_WIDGET (child));
 			gtk_style_context_add_class (style_context, "frame");
@@ -77,7 +78,7 @@ e_alphabet_box_update (EAlphabetBox *self)
 		gtk_widget_set_visible (GTK_WIDGET (child), self->indices[ii].index != G_MAXUINT);
 	}
 
-	while (child = gtk_list_box_get_row_at_index (GTK_LIST_BOX (self), ii), child) {
+	while (child = gtk_list_box_get_row_at_index (GTK_LIST_BOX (self->list_box), ii), child) {
 		e_gtk_widget_destroy (GTK_WIDGET (child));
 	}
 }
@@ -119,16 +120,13 @@ e_alphabet_box_constructed (GObject *object)
 		"   border-top-left-radius:8px;"
 		"   border-bottom-left-radius:8px;"
 		"}"
-		"EAlphabetBox row:focus {"
-		"   -gtk-outline-radius:0px;"
-		"   -gtk-outline-top-left-radius:6px;"
-		"   -gtk-outline-bottom-left-radius:6px;"
 		"}");
 
-	gtk_style_context_add_provider (gtk_widget_get_style_context (GTK_WIDGET (self)),
+	/* for the rows, which are children of the wrapped list box */
+	gtk_style_context_add_provider_for_display (gtk_widget_get_display (GTK_WIDGET (self)),
 		GTK_STYLE_PROVIDER (self->css_provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 
-	g_signal_connect (self, "row-activated",
+	g_signal_connect (self->list_box, "row-activated",
 		G_CALLBACK (e_alphabet_box_row_activated_cb), self);
 }
 
@@ -137,8 +135,13 @@ e_alphabet_box_dispose (GObject *object)
 {
 	EAlphabetBox *self = E_ALPHABET_BOX (object);
 
-	g_clear_object (&self->css_provider);
+	if (self->css_provider) {
+		gtk_style_context_remove_provider_for_display (gtk_widget_get_display (GTK_WIDGET (self)),
+			GTK_STYLE_PROVIDER (self->css_provider));
+		g_clear_object (&self->css_provider);
+	}
 	g_clear_object (&self->sizegroup);
+	g_clear_pointer (&self->list_box, gtk_widget_unparent);
 
 	G_OBJECT_CLASS (e_alphabet_box_parent_class)->dispose (object);
 }
@@ -161,6 +164,7 @@ e_alphabet_box_class_init (EAlphabetBoxClass *klass)
 
 	widget_class = GTK_WIDGET_CLASS (klass);
 	gtk_widget_class_set_css_name (widget_class, "EAlphabetBox");
+	gtk_widget_class_set_layout_manager_type (widget_class, GTK_TYPE_BIN_LAYOUT);
 
 	object_class = G_OBJECT_CLASS (klass);
 	object_class->constructed = e_alphabet_box_constructed;
@@ -180,7 +184,9 @@ e_alphabet_box_class_init (EAlphabetBoxClass *klass)
 static void
 e_alphabet_box_init (EAlphabetBox *self)
 {
-	gtk_list_box_set_selection_mode (GTK_LIST_BOX (self), GTK_SELECTION_NONE);
+	self->list_box = gtk_list_box_new ();
+	gtk_widget_set_parent (self->list_box, GTK_WIDGET (self));
+	gtk_list_box_set_selection_mode (GTK_LIST_BOX (self->list_box), GTK_SELECTION_NONE);
 	gtk_widget_set_margin_top (GTK_WIDGET (self), 1);
 }
 

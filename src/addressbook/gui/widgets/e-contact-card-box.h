@@ -7,6 +7,7 @@
 #define E_CONTACT_CARD_BOX_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-util.h>
 #include <libebook/libebook.h>
 
 /* Standard GObject macros */
@@ -78,12 +79,12 @@ typedef struct _EContactCardBoxClass EContactCardBoxClass;
 typedef struct _EContactCardBoxPrivate EContactCardBoxPrivate;
 
 struct _EContactCardBox {
-	GtkScrolledWindow parent;
+	EGtkBin parent;
 	EContactCardBoxPrivate *priv;
 };
 
 struct _EContactCardBoxClass {
-	GtkScrolledWindowClass parent_class;
+	EGtkBinClass parent_class;
 
 	void	(* child_activated)		(EContactCardBox *box,
 						 guint child_index);

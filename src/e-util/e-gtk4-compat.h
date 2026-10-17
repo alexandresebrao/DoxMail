@@ -373,6 +373,32 @@ GtkWidget *	e_gtk_bin_get_bin_child		(EGtkBin *bin);
 void		e_gtk_bin_set_bin_child		(EGtkBin *bin,
 						 GtkWidget *child);
 
+/* GtkLayout is gone with GTK 4: children at fixed positions in an area of
+ * a set size, scrolled through the GtkScrollable adjustments */
+#define E_GTK_TYPE_LAYOUT (e_gtk_layout_get_type ())
+G_DECLARE_DERIVABLE_TYPE (EGtkLayout, e_gtk_layout, E_GTK, LAYOUT, GtkWidget)
+
+struct _EGtkLayoutClass {
+	GtkWidgetClass parent_class;
+};
+
+GtkWidget *	e_gtk_layout_new		(GtkAdjustment *hadjustment,
+						 GtkAdjustment *vadjustment);
+void		e_gtk_layout_put		(EGtkLayout *layout,
+						 GtkWidget *child,
+						 gint x,
+						 gint y);
+void		e_gtk_layout_move		(EGtkLayout *layout,
+						 GtkWidget *child,
+						 gint x,
+						 gint y);
+void		e_gtk_layout_set_size		(EGtkLayout *layout,
+						 guint width,
+						 guint height);
+void		e_gtk_layout_get_size		(EGtkLayout *layout,
+						 guint *width,
+						 guint *height);
+
 /* GtkScrollable implemented by a wrapper and forwarded to the wrapped child;
  * the four properties take ids first_property_id .. first_property_id + 3 */
 void		e_gtk_scrollable_override_properties

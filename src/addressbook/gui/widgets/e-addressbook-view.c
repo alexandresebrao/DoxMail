@@ -34,7 +34,7 @@
 #include "shell/e-shell-sidebar.h"
 
 #include "addressbook/printing/e-contact-print.h"
-#include "ea-addressbook.h"
+
 
 #include "e-card-view.h"
 #include "gal-view-minicard.h"
@@ -58,6 +58,9 @@ static void	command_state_change		(EAddressbookView *view);
 
 struct _EAddressbookViewPrivate {
 	gpointer shell_view;  /* weak pointer */
+
+	GtkWidget *scrolled_window; /* GtkScrolledWindow is final with GTK 4 */
+	GtkWidget *content; /* the ETable or the ECardView in it */
 
 	EAddressbookModel *model;
 	EActivity *activity;
@@ -116,9 +119,17 @@ static guint signals[LAST_SIGNAL];
 static void	e_addressbook_view_selectable_init
 					(ESelectableInterface *iface);
 
-G_DEFINE_TYPE_WITH_CODE (EAddressbookView, e_addressbook_view, GTK_TYPE_SCROLLED_WINDOW,
+G_DEFINE_TYPE_WITH_CODE (EAddressbookView, e_addressbook_view, E_GTK_TYPE_BIN,
 	G_ADD_PRIVATE (EAddressbookView)
 	G_IMPLEMENT_INTERFACE (E_TYPE_SELECTABLE, e_addressbook_view_selectable_init))
+
+static void
+addressbook_view_set_content (EAddressbookView *view,
+			      GtkWidget *content)
+{
+	view->priv->content = content;
+	gtk_scrolled_window_set_child (GTK_SCROLLED_WINDOW (view->priv->scrolled_window), content);
+}
 
 static ESelectionModel *
 e_addressbook_view_get_selection_model (EAddressbookView *view)
@@ -135,7 +146,7 @@ e_addressbook_view_get_selection_model (EAddressbookView *view)
 	if (GAL_IS_VIEW_ETABLE (gal_view)) {
 		GtkWidget *child;
 
-		child = e_gtk_bin_get_child (view);
+		child = view->priv->content;
 		model = e_table_get_selection_model (E_TABLE (child));
 
 	} else if (GAL_IS_VIEW_MINICARD (gal_view)) {
@@ -504,7 +515,7 @@ addressbook_view_create_table_view (EAddressbookView *view,
 	 * initial layout.  It does the rest.  */
 	widget = e_table_new (adapter, extras, specification);
 	g_object_set (G_OBJECT (widget), "uniform-row-height", TRUE, NULL);
-	e_gtk_container_add (view, widget);
+	addressbook_view_set_content (view, widget);
 
 	g_object_unref (specification);
 	g_object_unref (extras);
@@ -604,7 +615,7 @@ addressbook_view_create_minicard_view (EAddressbookView *view,
 
 	view->priv->object = G_OBJECT (card_view);
 
-	e_gtk_container_add (view, card_view);
+	addressbook_view_set_content (view, card_view);
 	gtk_widget_show (card_view);
 
 	gal_view_minicard_attach (gal_view, view);
@@ -635,9 +646,9 @@ addressbook_view_display_view_cb (GalViewInstance *view_instance,
 	if (book_client)
 		g_object_ref (book_client);
 
-	child = e_gtk_bin_get_child (view);
+	child = view->priv->content;
 	if (child != NULL)
-		e_gtk_container_remove (view, child);
+		addressbook_view_set_content (view, NULL);
 	view->priv->object = NULL;
 
 	if (GAL_IS_VIEW_ETABLE (gal_view))
@@ -767,7 +778,7 @@ address_book_view_focus_in_cb (EAddressbookView *view,
 
 	g_return_val_if_fail (E_IS_ADDRESSBOOK_VIEW (view), FALSE);
 
-	child = e_gtk_bin_get_child (view);
+	child = view->priv->content;
 	if (child)
 		gtk_widget_grab_focus (child);
 
@@ -891,8 +902,8 @@ addressbook_view_dispose (GObject *object)
 
 	g_clear_pointer (&self->priv->search_text, g_free);
 	g_clear_object (&self->priv->advanced_search);
-	g_clear_pointer (&self->priv->copy_target_list, gtk_target_list_unref);
-	g_clear_pointer (&self->priv->paste_target_list, gtk_target_list_unref);
+	g_clear_pointer (&self->priv->copy_target_list, e_gtk_target_list_unref);
+	g_clear_pointer (&self->priv->paste_target_list, e_gtk_target_list_unref);
 
 	g_slist_free_full (self->priv->previous_selection, g_object_unref);
 	self->priv->previous_selection = NULL;
@@ -1237,7 +1248,7 @@ e_addressbook_view_class_init (EAddressbookViewClass *class)
 		G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_INT);
 
 	/* init the accessibility support for e_addressbook_view */
-	eab_view_a11y_init ();
+	/* the ATK factories (ea-*) are gone with GTK 4 */
 }
 
 static void
@@ -1255,9 +1266,11 @@ e_addressbook_view_init (EAddressbookView *view)
 	e_target_list_add_directory_targets (target_list, 0);
 	view->priv->paste_target_list = target_list;
 
+	view->priv->scrolled_window = gtk_scrolled_window_new ();
 	gtk_scrolled_window_set_policy (
-		GTK_SCROLLED_WINDOW (view),
+		GTK_SCROLLED_WINDOW (view->priv->scrolled_window),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	e_gtk_bin_set_bin_child (E_GTK_BIN (view), view->priv->scrolled_window);
 }
 
 static void
@@ -1276,7 +1289,7 @@ update_empty_message (EAddressbookView *view)
 {
 	GtkWidget *widget;
 
-	widget = e_gtk_bin_get_child (view);
+	widget = view->priv->content;
 
 	if (E_IS_TABLE (widget)) {
 		const gchar *msg = NULL;
@@ -1748,7 +1761,7 @@ e_addressbook_view_print (EAddressbookView *view,
 		EPrintable *printable;
 		GtkWidget *widget;
 
-		widget = e_gtk_bin_get_child (view);
+		widget = view->priv->content;
 		printable = e_table_get_printable (E_TABLE (widget));
 		g_object_ref_sink (printable);
 
@@ -1901,7 +1914,7 @@ e_addressbook_view_delete_selection_run (EAddressbookView *view,
 	if (e_contact_get (contact, E_CONTACT_IS_LIST))
 		is_list = TRUE;
 
-	widget = e_gtk_bin_get_child (view);
+	widget = view->priv->content;
 
 	if (GAL_IS_VIEW_MINICARD (gal_view)) {
 		card_box = e_card_view_get_card_box (E_CARD_VIEW (view->priv->object));

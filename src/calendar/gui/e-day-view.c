@@ -3072,7 +3072,7 @@ e_day_view_on_canvas_realized (GtkWidget *widget,
 {
 	GdkSurface *window;
 
-	window = gtk_layout_get_bin_window (GTK_LAYOUT (widget));
+	window = gtk_layout_get_bin_window (E_GTK_LAYOUT (widget));
 	gdk_window_set_background_pattern (window, NULL);
 }
 
@@ -4401,13 +4401,13 @@ e_day_view_on_top_canvas_button_press (GtkWidget *widget,
 {
 	gint event_x, event_y, day, event_num;
 	ECalendarViewPosition pos;
-	GtkLayout *layout;
+	EGtkLayout *layout;
 	GdkSurface *window;
 	GdkDevice *event_device;
 	guint event_button = 0;
 	guint32 event_time;
 
-	layout = GTK_LAYOUT (widget);
+	layout = E_GTK_LAYOUT (widget);
 	window = gtk_layout_get_bin_window (layout);
 
 	gnome_canvas_event_get_button (button_event, &event_button);
@@ -4561,13 +4561,13 @@ e_day_view_on_main_canvas_button_press (GtkWidget *widget,
 {
 	gint event_x, event_y, row, day, event_num;
 	ECalendarViewPosition pos;
-	GtkLayout *layout;
+	EGtkLayout *layout;
 	GdkSurface *window;
 	GdkDevice *event_device;
 	guint event_button = 0;
 	guint32 event_time;
 
-	layout = GTK_LAYOUT (widget);
+	layout = E_GTK_LAYOUT (widget);
 	window = gtk_layout_get_bin_window (layout);
 
 	gnome_canvas_event_get_button (button_event, &event_button);
@@ -4846,7 +4846,7 @@ e_day_view_on_long_event_click (EDayView *day_view,
                                 gint event_y)
 {
 	EDayViewEvent *event;
-	GtkLayout *layout;
+	EGtkLayout *layout;
 	GdkSurface *window;
 	gint start_day, end_day, day;
 	gint item_x, item_y, item_w, item_h;
@@ -4893,7 +4893,7 @@ e_day_view_on_long_event_click (EDayView *day_view,
 		if (!gtk_widget_has_focus (GTK_WIDGET (day_view)))
 			gtk_widget_grab_focus (GTK_WIDGET (day_view));
 
-		layout = GTK_LAYOUT (day_view->top_canvas);
+		layout = E_GTK_LAYOUT (day_view->top_canvas);
 		window = gtk_layout_get_bin_window (layout);
 
 		event_device = gnome_canvas_event_get_device (button_event);
@@ -4955,7 +4955,7 @@ e_day_view_on_event_click (EDayView *day_view,
 {
 	EDayViewEvent *event;
 	ECalendarView *cal_view;
-	GtkLayout *layout;
+	EGtkLayout *layout;
 	GdkSurface *window;
 	gint time_divisions;
 	gint tmp_day, row, start_row;
@@ -5002,7 +5002,7 @@ e_day_view_on_event_click (EDayView *day_view,
 		if (!gtk_widget_has_focus (GTK_WIDGET (day_view)))
 			gtk_widget_grab_focus (GTK_WIDGET (day_view));
 
-		layout = GTK_LAYOUT (day_view->main_canvas);
+		layout = E_GTK_LAYOUT (day_view->main_canvas);
 		window = gtk_layout_get_bin_window (layout);
 
 		event_device = gnome_canvas_event_get_device (button_event);
@@ -5235,7 +5235,7 @@ e_day_view_on_top_canvas_motion (GtkWidget *widget,
 	GdkCursor *cursor;
 	GdkSurface *window;
 
-	window = gtk_layout_get_bin_window (GTK_LAYOUT (widget));
+	window = gtk_layout_get_bin_window (E_GTK_LAYOUT (widget));
 
 	/* Convert the coords to the main canvas window, or return if the
 	 * window is not found. */
@@ -5352,7 +5352,7 @@ e_day_view_on_main_canvas_motion (GtkWidget *widget,
 	GdkSurface *window;
 	GdkCursor *cursor;
 
-	window = gtk_layout_get_bin_window (GTK_LAYOUT (widget));
+	window = gtk_layout_get_bin_window (E_GTK_LAYOUT (widget));
 
 	/* Convert the coords to the main canvas window, or return if the
 	 * window is not found. */
@@ -7630,7 +7630,7 @@ e_day_view_on_text_item_event (GnomeCanvasItem *item,
 			ECalendarViewPosition pos;
 			gboolean main_canvas = TRUE;
 			GdkSurface *window;
-			GtkLayout *layout;
+			EGtkLayout *layout;
 
 			if (day_view->editing_event_num != -1)
 				break;
@@ -7643,7 +7643,7 @@ e_day_view_on_text_item_event (GnomeCanvasItem *item,
 
 			/* Convert the coords to the main canvas window, or return if the
 			 * window is not found. */
-			layout = GTK_LAYOUT (day_view->main_canvas);
+			layout = E_GTK_LAYOUT (day_view->main_canvas);
 			window = gtk_layout_get_bin_window (layout);
 			if (!e_day_view_convert_event_coords (
 				day_view, (GnomeCanvasEvent *) event,
@@ -7651,7 +7651,7 @@ e_day_view_on_text_item_event (GnomeCanvasItem *item,
 
 				main_canvas = FALSE;
 
-				layout = GTK_LAYOUT (day_view->top_canvas);
+				layout = E_GTK_LAYOUT (day_view->top_canvas);
 				window = gtk_layout_get_bin_window (layout);
 				if (!e_day_view_convert_event_coords (
 					day_view, (GnomeCanvasEvent *) event,

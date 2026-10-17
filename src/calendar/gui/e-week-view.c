@@ -3232,7 +3232,7 @@ e_week_view_on_button_press (GtkWidget *widget,
 		if (!gtk_widget_has_focus (GTK_WIDGET (week_view)) && !gtk_widget_has_focus (GTK_WIDGET (week_view->main_canvas)))
 			gtk_widget_grab_focus (GTK_WIDGET (week_view));
 
-		window = gtk_layout_get_bin_window (GTK_LAYOUT (widget));
+		window = gtk_layout_get_bin_window (E_GTK_LAYOUT (widget));
 
 		event_device = gnome_canvas_event_get_device (button_event);
 		event_time = gnome_canvas_event_get_time (button_event);

@@ -32,10 +32,10 @@ static EGtkTargetEntry dnd_types[] = {
 };
 
 #define E_TYPE_CONTACT_CARD_CONTAINER e_contact_card_container_get_type ()
-G_DECLARE_FINAL_TYPE (EContactCardContainer, e_contact_card_container, E, CONTACT_CARD_CONTAINER, GtkLayout)
+G_DECLARE_FINAL_TYPE (EContactCardContainer, e_contact_card_container, E, CONTACT_CARD_CONTAINER, EGtkLayout)
 
 struct _EContactCardContainer {
-	GtkLayout parent;
+	EGtkLayout parent;
 
 	EContactCardBoxGetItemsFunc get_items_func;
 	EContactCardBoxGetItemsFinishFunc get_items_finish_func;
@@ -65,7 +65,7 @@ struct _EContactCardContainer {
 	guint n_known_selected; /* when larger than TRACK_N_SELECTED, then tracked_selected[] is useless */
 };
 
-G_DEFINE_TYPE (EContactCardContainer, e_contact_card_container, GTK_TYPE_LAYOUT)
+G_DEFINE_TYPE (EContactCardContainer, e_contact_card_container, E_GTK_TYPE_LAYOUT)
 
 enum {
 	CONTAINER_SELECTED_CHANGED,
@@ -495,7 +495,7 @@ static void
 e_contact_card_container_update (EContactCardContainer *self)
 {
 	GtkWidget *card, *self_widget = GTK_WIDGET (self);
-	GtkLayout *self_layout = GTK_LAYOUT (self);
+	EGtkLayout *self_layout = E_GTK_LAYOUT (self);
 	guint new_content_width, new_content_height;
 	guint old_content_width = 0, old_content_height = 0;
 	gint card_width = 0, card_height = 0;
@@ -508,7 +508,7 @@ e_contact_card_container_update (EContactCardContainer *self)
 		is_new_card = FALSE;
 	} else {
 		card = e_contact_card_new (self->css_provider);
-		gtk_layout_put (self_layout, card, 0, 0);
+		e_gtk_layout_put (self_layout, card, 0, 0);
 		gtk_widget_set_visible (card, TRUE);
 		is_new_card = TRUE;
 	}
@@ -594,7 +594,7 @@ e_contact_card_container_update (EContactCardContainer *self)
 
 			e_gtk_drag_source_set (card, GDK_BUTTON1_MASK, dnd_types, G_N_ELEMENTS (dnd_types), GDK_ACTION_MOVE | GDK_ACTION_COPY);
 
-			gtk_layout_put (self_layout, card, 0, 0);
+			e_gtk_layout_put (self_layout, card, 0, 0);
 			g_ptr_array_add (self->cards, card);
 
 			g_signal_connect_object (card, "event",
@@ -610,10 +610,10 @@ e_contact_card_container_update (EContactCardContainer *self)
 		}
 	}
 
-	gtk_layout_get_size (self_layout, &old_content_width, &old_content_height);
+	e_gtk_layout_get_size (self_layout, &old_content_width, &old_content_height);
 	if (new_content_width != old_content_width ||
 	    new_content_height != old_content_height) {
-		gtk_layout_set_size (self_layout, new_content_width, new_content_height);
+		e_gtk_layout_set_size (self_layout, new_content_width, new_content_height);
 	}
 
 	if (self->n_cols > 0 && self->card_height > 0) {
@@ -640,7 +640,7 @@ e_contact_card_container_update (EContactCardContainer *self)
 			card = g_ptr_array_index (self->cards, ii);
 
 			gtk_widget_set_size_request (card, self->card_width, self->card_height);
-			gtk_layout_move (self_layout, card, xx, yy);
+			e_gtk_layout_move (self_layout, card, xx, yy);
 			if (!gtk_widget_get_visible (card))
 				gtk_widget_set_visible (card, TRUE);
 
@@ -679,7 +679,7 @@ e_contact_card_container_update (EContactCardContainer *self)
 
 		parent = gtk_widget_get_parent (self_widget);
 		if (GTK_IS_WIDGET (parent))
-			gtk_container_check_resize (GTK_WIDGET (parent));
+			gtk_widget_queue_allocate (GTK_WIDGET (parent));
 	}
 }
 
@@ -1016,6 +1016,7 @@ e_contact_card_container_is_selected (EContactCardContainer *self,
 
 struct _EContactCardBoxPrivate {
 	GtkCssProvider *css_provider;
+	GtkWidget *scrolled_window; /* GtkScrolledWindow is final with GTK 4 */
 	EContactCardContainer *container;
 
 	gint last_width;
@@ -1043,7 +1044,7 @@ enum {
 
 static guint box_signals[BOX_LAST_SIGNAL] = { 0 };
 
-G_DEFINE_TYPE_WITH_PRIVATE (EContactCardBox, e_contact_card_box, GTK_TYPE_SCROLLED_WINDOW)
+G_DEFINE_TYPE_WITH_PRIVATE (EContactCardBox, e_contact_card_box, E_GTK_TYPE_BIN)
 
 static guint
 e_contact_card_box_get_card_index (EContactCardBox *self,
@@ -1071,7 +1072,7 @@ e_contact_card_box_is_overlay_scrolling (EContactCardBox *self)
 
 	g_object_get (settings, "gtk-overlay-scrolling", &overlay_scrolling, NULL);
 
-	overlay_scrolling = overlay_scrolling && gtk_scrolled_window_get_overlay_scrolling (GTK_SCROLLED_WINDOW (self));
+	overlay_scrolling = overlay_scrolling && gtk_scrolled_window_get_overlay_scrolling (GTK_SCROLLED_WINDOW (self->priv->scrolled_window));
 
 	if (overlay_scrolling) {
 		static gchar env_overlay_scrolling = -1;
@@ -1088,7 +1089,7 @@ e_contact_card_box_is_overlay_scrolling (EContactCardBox *self)
 static void
 e_contact_card_box_update_viewport (EContactCardBox *self)
 {
-	GtkScrolledWindow *scrolled_window = GTK_SCROLLED_WINDOW (self);
+	GtkScrolledWindow *scrolled_window = GTK_SCROLLED_WINDOW (self->priv->scrolled_window);
 	GtkAllocation allocation;
 	GtkAdjustment *adjustment;
 	gint scrollbar_size = 0;
@@ -1121,10 +1122,10 @@ e_contact_card_box_get_current_selection_modifiers (GtkWidget *widget,
 	if (e_gtk_get_current_event_state (&state)) {
 		GdkModifierType mask;
 
-		mask = gtk_widget_get_modifier_mask (widget, GDK_MODIFIER_INTENT_MODIFY_SELECTION);
+		mask = GDK_CONTROL_MASK;
 		*out_modify = (state & mask) == mask;
 
-		mask = gtk_widget_get_modifier_mask (widget, GDK_MODIFIER_INTENT_EXTEND_SELECTION);
+		mask = GDK_SHIFT_MASK;
 		*out_extend = (state & mask) == mask;
 	} else {
 		*out_modify = FALSE;
@@ -1390,12 +1391,14 @@ e_contact_card_box_selected_children_changed (EContactCardBox *self)
 
 static void
 e_contact_card_box_size_allocate (GtkWidget *widget,
-				  GtkAllocation *allocation)
+				  gint width,
+				  gint height,
+				  gint baseline)
 {
 	EContactCardBox *self = E_CONTACT_CARD_BOX (widget);
 
 	/* Chain up to parent's method. */
-	GTK_WIDGET_CLASS (e_contact_card_box_parent_class)->size_allocate (widget, allocation);
+	GTK_WIDGET_CLASS (e_contact_card_box_parent_class)->size_allocate (widget, width, height, baseline);
 
 	e_contact_card_box_update_viewport (self);
 }
@@ -1520,8 +1523,8 @@ e_contact_card_box_add_move_binding (GtkWidgetClass *binding_set,
 
 	display = gdk_display_get_default ();
 	if (display) {
-		extend_mod_mask = gdk_keymap_get_modifier_mask (gdk_keymap_get_for_display (display), GDK_MODIFIER_INTENT_EXTEND_SELECTION);
-		modify_mod_mask = gdk_keymap_get_modifier_mask (gdk_keymap_get_for_display (display), GDK_MODIFIER_INTENT_MODIFY_SELECTION);
+		extend_mod_mask = GDK_SHIFT_MASK;
+		modify_mod_mask = GDK_CONTROL_MASK;
 	}
 
 	gtk_widget_class_add_binding_signal (binding_set, keyval, modmask, "move-cursor", "(ii)", step, count);
@@ -1554,10 +1557,10 @@ e_contact_card_box_constructed (GObject *object)
 		"can-focus", FALSE,
 		NULL);
 
-	g_signal_connect_swapped (gtk_scrolled_window_get_hadjustment (GTK_SCROLLED_WINDOW (self)), "notify::value",
+	g_signal_connect_swapped (gtk_scrolled_window_get_hadjustment (GTK_SCROLLED_WINDOW (self->priv->scrolled_window)), "notify::value",
 		G_CALLBACK (e_contact_card_box_update_viewport), self);
 
-	g_signal_connect_swapped (gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW (self)), "notify::value",
+	g_signal_connect_swapped (gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW (self->priv->scrolled_window)), "notify::value",
 		G_CALLBACK (e_contact_card_box_update_viewport), self);
 
 	self->priv->css_provider = gtk_css_provider_new ();
@@ -1621,7 +1624,7 @@ e_contact_card_box_constructed (GObject *object)
 		"valign", GTK_ALIGN_FILL,
 		"visible", TRUE,
 		NULL);
-	e_gtk_container_add (self, GTK_WIDGET (self->priv->container));
+	gtk_scrolled_window_set_child (GTK_SCROLLED_WINDOW (self->priv->scrolled_window), GTK_WIDGET (self->priv->container));
 
 	g_signal_connect_object (self->priv->container, "card-event",
 		G_CALLBACK (e_contact_card_box_card_event_cb), self, 0);
@@ -1780,7 +1783,7 @@ e_contact_card_box_class_init (EContactCardBoxClass *klass)
 		NULL, NULL, g_cclosure_marshal_VOID__VOID,
 		G_TYPE_NONE, 0);
 
-	widget_class->activate_signal = box_signals[BOX_ACTIVATE_CURSOR_CHILD];
+	gtk_widget_class_set_activate_signal (widget_class, box_signals[BOX_ACTIVATE_CURSOR_CHILD]);
 
 	binding_set = GTK_WIDGET_CLASS (klass);
 
@@ -1810,6 +1813,9 @@ static void
 e_contact_card_box_init (EContactCardBox *self)
 {
 	self->priv = e_contact_card_box_get_instance_private (self);
+
+	self->priv->scrolled_window = gtk_scrolled_window_new ();
+	e_gtk_bin_set_bin_child (E_GTK_BIN (self), self->priv->scrolled_window);
 }
 
 /**
@@ -1904,7 +1910,7 @@ e_contact_card_box_scroll_to_index (EContactCardBox *self,
 	if (allocation.width <= 0 || allocation.height <= 0)
 		return;
 
-	adjustment = gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW (self));
+	adjustment = gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW (self->priv->scrolled_window));
 	value = gtk_adjustment_get_value (adjustment);
 
 	if (allocation.y >= value && allocation.y + allocation.height <= value + self->priv->container->viewport.height)

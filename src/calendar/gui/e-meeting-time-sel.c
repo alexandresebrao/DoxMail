@@ -2298,7 +2298,7 @@ e_meeting_time_selector_on_canvas_realized (GtkWidget *widget,
 {
 	GdkSurface *window;
 
-	window = gtk_layout_get_bin_window (GTK_LAYOUT (widget));
+	window = gtk_layout_get_bin_window (E_GTK_LAYOUT (widget));
 	gdk_window_set_background_pattern (window, NULL);
 }
 
