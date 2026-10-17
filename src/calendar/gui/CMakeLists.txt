@@ -24,6 +24,9 @@ set(DEPENDENCIES
 	gnomecanvas
 )
 
+# DoxMail: the ATK accessibility code (ea-*) is out of the GTK 4 build;
+# it needs rewriting with GtkAccessible.
+
 set(SOURCES
 	calendar-config.c
 	calendar-view.c
@@ -90,17 +93,6 @@ set(SOURCES
 	itip-utils.c
 	print.c
 	tag-calendar.c
-	ea-calendar.c
-	ea-calendar-helpers.c
-	ea-cal-view.c
-	ea-cal-view-event.c
-	ea-day-view.c
-	ea-day-view-main-item.c
-	ea-day-view-cell.c
-	ea-week-view.c
-	ea-week-view-main-item.c
-	ea-week-view-cell.c
-	ea-jump-button.c
 )
 
 set(HEADERS
@@ -171,17 +163,6 @@ set(HEADERS
 	itip-utils.h
 	print.h
 	tag-calendar.h
-	ea-calendar.h
-	ea-calendar-helpers.h
-	ea-cal-view.h
-	ea-cal-view-event.h
-	ea-day-view.h
-	ea-day-view-main-item.h
-	ea-day-view-cell.h
-	ea-week-view.h
-	ea-week-view-main-item.h
-	ea-week-view-cell.h
-	ea-jump-button.h
 )
 
 add_library(evolution-calendar SHARED

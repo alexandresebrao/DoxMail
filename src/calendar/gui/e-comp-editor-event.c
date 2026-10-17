@@ -883,7 +883,7 @@ e_comp_editor_event_unmap (GtkWidget *widget)
 	GSettings *settings;
 	gint width = 10, height = 10;
 
-	gtk_window_get_size (GTK_WINDOW (comp_editor), &width, &height);
+	gtk_window_get_default_size (GTK_WINDOW (comp_editor), &width, &height);
 
 	/* the comp_editor can have the settings already freed, thus get the new one */
 	settings = e_util_ref_settings ("org.gnome.evolution.calendar");
@@ -1363,7 +1363,7 @@ e_comp_editor_event_constructed (GObject *object)
 	if (settings) {
 		gint width = 10, height = 10;
 
-		gtk_window_get_size (GTK_WINDOW (event_editor), &width, &height);
+		gtk_window_get_default_size (GTK_WINDOW (event_editor), &width, &height);
 
 		if (g_settings_get_int (settings, "editor-event-window-width") > width) {
 			width = g_settings_get_int (settings, "editor-event-window-width");

@@ -169,9 +169,27 @@ PNG files in `$XDG_RUNTIME_DIR/evolution/label-icons` (no built-in icons).
 Not verified yet: account reordering by drag (hooked to GtkTreeView's own
 GtkDragSource), anything interactive.
 
+### 5. calendar
+
+`src/calendar` (libevolution-calendar, importers) builds with GTK 4; the
+ATK `ea-*` files are out of the build like in e-util. The day and week
+views share code between canvas item handlers and canvas widget signal
+handlers: the shared code takes GnomeCanvasEvent, and the widget handlers
+convert their GdkEvent with `e_gdk_event_to_canvas_event()` (canvas
+window coordinates, like the GTK 3 bin window; `doxmail/port/canvas-entry.py`
+rewrites such handlers). Explicit pointer grabs are gone (GTK 4 grabs for
+the pressed widget implicitly; item grabs use `gnome_canvas_item_grab()`).
+`draw` became `snapshot` (ECalDayColumn, EMeetingTimeSelector);
+`style_updated` overrides became "style-updated" handlers
+(`doxmail/port/style-updated.py`); menus are GMenu/GtkPopoverMenu
+(to-do pane, day view time column) or popovers with check buttons
+(meeting time selector Options/Autopick). More compat: `GdkPoint`,
+`e_gtk_widget_get_modifier_state()`. Not verified at runtime: any of the
+calendar views' mouse handling.
+
 ## Next
 
-calendar → modules (they give the shell its views) → plugins;
+ → modules (they give the shell its views) → plugins;
 then the `.ui` files and `data/` (schemas, icons) in the GTK 4 build.
 For each: add it to the `WITH_GTK4` list, rerun `rewrite-all.sh`, run
 `canvas-events.py` on canvas code and `gdk-event-fields.py` on the rest,

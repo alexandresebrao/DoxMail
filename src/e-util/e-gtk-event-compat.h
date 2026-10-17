@@ -7,6 +7,7 @@
 #define E_GTK_EVENT_COMPAT_H
 
 #include <gtk/gtk.h>
+#include <libgnomecanvas/gnome-canvas-event.h>
 
 G_BEGIN_DECLS
 
@@ -78,6 +79,16 @@ gboolean	e_gdk_event_get_widget_coords	(GdkEvent *event,
 						 GtkWidget *widget,
 						 gdouble *x,
 						 gdouble *y);
+
+/* fills @cevent from @event, given by a legacy signal of @canvas (or of
+ * another widget, when @canvas is NULL), with the canvas event type and
+ * positions in canvas window coordinates, as GTK 3 gave them on the bin
+ * window; for code shared by canvas item and canvas widget handlers.
+ * Returns @cevent. */
+GnomeCanvasEvent *
+		e_gdk_event_to_canvas_event	(GdkEvent *event,
+						 GtkWidget *canvas,
+						 GnomeCanvasEvent *cevent);
 
 G_END_DECLS
 

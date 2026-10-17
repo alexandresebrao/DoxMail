@@ -71,55 +71,6 @@ estimated_duration_entry_update_entry (EEstimatedDurationEntry *self)
 	g_free (tmp);
 }
 
-static void
-estimated_duration_entry_add_relation (EEstimatedDurationEntry *self)
-{
-	GtkWidget *a11y_estimated_duration_entry;
-	GtkWidget *a11y_widget;
-	AtkRelationSet *set;
-	AtkRelation *relation;
-	GtkWidget *widget;
-	GPtrArray *target;
-	gpointer target_object;
-
-	/* add a labelled_by relation for widget for accessibility */
-
-	widget = GTK_WIDGET (self);
-	a11y_estimated_duration_entry = GTK_WIDGET (widget);
-
-	widget = self->priv->entry;
-	a11y_widget = GTK_WIDGET (widget);
-
-	set = atk_object_ref_relation_set (a11y_widget);
-	if (set != NULL) {
-		relation = atk_relation_set_get_relation_by_type (set, ATK_RELATION_LABELLED_BY);
-		/* check whether has a labelled_by relation already */
-		if (relation != NULL) {
-			g_object_unref (set);
-			return;
-		}
-	}
-
-	g_clear_object (&set);
-
-	set = atk_object_ref_relation_set (a11y_estimated_duration_entry);
-	if (!set)
-		return;
-
-	relation = atk_relation_set_get_relation_by_type (set, ATK_RELATION_LABELLED_BY);
-	if (relation != NULL) {
-		target = atk_relation_get_target (relation);
-		target_object = g_ptr_array_index (target, 0);
-		if (ATK_IS_OBJECT (target_object)) {
-			atk_object_add_relationship (
-				a11y_widget,
-				ATK_RELATION_LABELLED_BY,
-				ATK_OBJECT (target_object));
-		}
-	}
-
-	g_clear_object (&set);
-}
 
 static void
 estimated_duration_set_button_clicked_cb (GtkButton *button,
@@ -521,7 +472,8 @@ e_estimated_duration_entry_set_value (EEstimatedDurationEntry *self,
 		self->priv->value = i_cal_duration_new_from_seconds (i_cal_duration_as_utc_seconds ((ICalDuration *) value));
 
 	estimated_duration_entry_update_entry (self);
-	estimated_duration_entry_add_relation (self);
+	/* the ATK labelled-by copy onto the inner entry is gone: GTK 4
+	 * has no getter for accessible relations */
 
 	g_object_notify (G_OBJECT (self), "value");
 }

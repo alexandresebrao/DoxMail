@@ -88,9 +88,6 @@ static void	e_day_view_time_item_increment_time
 static void	e_day_view_time_item_show_popup_menu
 						(EDayViewTimeItem *time_item,
 						 GnomeCanvasEvent *event);
-static void	e_day_view_time_item_on_set_divisions
-						(GtkWidget *item,
-						 EDayViewTimeItem *time_item);
 static void	e_day_view_time_item_on_button_press
 						(EDayViewTimeItem *time_item,
 						 GnomeCanvasEvent *event);
@@ -752,49 +749,89 @@ edvti_second_zone_changed_cb (GSettings *settings,
 }
 
 static void
-edvti_on_select_zone (GtkWidget *item,
-                      EDayViewTimeItem *time_item)
+edvti_on_select_zone (GSimpleAction *action,
+		      GVariant *parameter,
+		      gpointer user_data)
 {
-	calendar_config_select_day_second_zone (e_gtk_widget_get_toplevel (item));
+	EDayViewTimeItem *time_item = user_data;
+	EDayView *day_view;
+
+	day_view = e_day_view_time_item_get_day_view (time_item);
+	g_return_if_fail (day_view != NULL);
+
+	calendar_config_select_day_second_zone (e_gtk_widget_get_toplevel (GTK_WIDGET (day_view)));
+}
+
+/* the state is the location, an empty string for none */
+static void
+edvti_on_set_zone (GSimpleAction *action,
+		   GVariant *state,
+		   gpointer user_data)
+{
+	const gchar *location;
+
+	g_simple_action_set_state (action, state);
+
+	location = g_variant_get_string (state, NULL);
+	calendar_config_set_day_second_zone (location && *location ? location : NULL);
 }
 
 static void
-edvti_on_set_zone (GtkWidget *item,
-                   EDayViewTimeItem *time_item)
+e_day_view_time_item_on_set_divisions (GSimpleAction *action,
+				       GVariant *state,
+				       gpointer user_data)
 {
-	if (!e_gtk_toggle_button_get_active (item))
-		return;
+	EDayViewTimeItem *time_item = user_data;
+	EDayView *day_view;
 
-	calendar_config_set_day_second_zone (
-		g_object_get_data (G_OBJECT (item), "timezone"));
+	day_view = e_day_view_time_item_get_day_view (time_item);
+	g_return_if_fail (day_view != NULL);
+
+	g_simple_action_set_state (action, state);
+
+	e_calendar_view_set_time_divisions (E_CALENDAR_VIEW (day_view), g_variant_get_int32 (state));
 }
 
+/* GtkMenu is gone with GTK 4: the popup is a GMenu over "edvti" actions
+ * inserted on the day view */
 static void
 e_day_view_time_item_show_popup_menu (EDayViewTimeItem *time_item,
                                       GnomeCanvasEvent *event)
 {
 	static gint divisions[] = { 60, 30, 15, 10, 5 };
+	const GActionEntry entries[] = {
+		{ "divisions", NULL, "i", "30", e_day_view_time_item_on_set_divisions },
+		{ "second-zone", NULL, "s", "''", edvti_on_set_zone },
+		{ "select-zone", edvti_on_select_zone, NULL, NULL, NULL }
+	};
 	EDayView *day_view;
 	ECalendarView *cal_view;
-	GtkWidget *menu, *item, *submenu;
+	GSimpleActionGroup *group;
+	GMenu *menu, *section, *submenu;
+	GMenuItem *item;
+	GtkWidget *popover;
 	gchar buffer[256];
-	GSList *group = NULL, *recent_zones, *s;
-	gint current_divisions, i;
+	GSList *recent_zones, *s;
+	gint i;
 	ICalTimezone *zone;
 
 	day_view = e_day_view_time_item_get_day_view (time_item);
 	g_return_if_fail (day_view != NULL);
 
 	cal_view = E_CALENDAR_VIEW (day_view);
-	current_divisions = e_calendar_view_get_time_divisions (cal_view);
 
-	menu = gtk_menu_new ();
+	group = g_simple_action_group_new ();
+	g_action_map_add_action_entries (G_ACTION_MAP (group), entries, G_N_ELEMENTS (entries), time_item);
+	g_action_group_change_action_state (G_ACTION_GROUP (group), "divisions",
+		g_variant_new_int32 (e_calendar_view_get_time_divisions (cal_view)));
+	g_simple_action_set_state (G_SIMPLE_ACTION (g_action_map_lookup_action (G_ACTION_MAP (group), "second-zone")),
+		g_variant_new_string (time_item->priv->second_zone ? i_cal_timezone_get_location (time_item->priv->second_zone) : ""));
+	gtk_widget_insert_action_group (GTK_WIDGET (day_view), "edvti", G_ACTION_GROUP (group));
+	g_object_unref (group);
 
-	/* Make sure the menu is destroyed when it disappears. */
-	g_signal_connect (
-		menu, "selection-done",
-		G_CALLBACK (e_gtk_widget_destroy), NULL);
+	menu = g_menu_new ();
 
+	section = g_menu_new ();
 	for (i = 0; i < G_N_ELEMENTS (divisions); i++) {
 		g_snprintf (
 			buffer, sizeof (buffer),
@@ -805,54 +842,28 @@ e_day_view_time_item_show_popup_menu (EDayViewTimeItem *time_item,
 			 * 24 "60 minute divisions" or
 			 * 48 "30 minute divisions". */
 			_("%02i minute divisions"), divisions[i]);
-		item = gtk_radio_menu_item_new_with_label (group, buffer);
-		group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (item));
-		gtk_widget_show (item);
-		gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
-
-		if (current_divisions == divisions[i])
-			e_gtk_toggle_button_set_active (item, TRUE);
-
-		g_object_set_data (
-			G_OBJECT (item), "divisions",
-			GINT_TO_POINTER (divisions[i]));
-
-		g_signal_connect (
-			item, "toggled",
-			G_CALLBACK (e_day_view_time_item_on_set_divisions),
-			time_item);
+		item = g_menu_item_new (buffer, NULL);
+		g_menu_item_set_action_and_target_value (item, "edvti.divisions", g_variant_new_int32 (divisions[i]));
+		g_menu_append_item (section, item);
+		g_object_unref (item);
 	}
+	g_menu_append_section (menu, NULL, G_MENU_MODEL (section));
+	g_object_unref (section);
 
-	item = gtk_separator_menu_item_new ();
-	gtk_widget_show (item);
-	gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+	submenu = g_menu_new ();
 
-	submenu = gtk_menu_new ();
-	item = gtk_menu_item_new_with_label (_("Show the second time zone"));
-	gtk_widget_show (item);
-	gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
-	gtk_menu_item_set_submenu (GTK_MENU_ITEM (item), submenu);
-
+	/* the current zone, insensitive without an action */
+	section = g_menu_new ();
 	zone = e_calendar_view_get_timezone (E_CALENDAR_VIEW (day_view));
-	if (zone)
-		item = gtk_menu_item_new_with_label (i_cal_timezone_get_display_name (zone));
-	else
-		item = gtk_menu_item_new_with_label ("---");
-	gtk_widget_set_sensitive (item, FALSE);
-	gtk_menu_shell_append (GTK_MENU_SHELL (submenu), item);
+	g_menu_append (section, zone ? i_cal_timezone_get_display_name (zone) : "---", "edvti.none");
+	g_menu_append_section (submenu, NULL, G_MENU_MODEL (section));
+	g_object_unref (section);
 
-	item = gtk_separator_menu_item_new ();
-	gtk_menu_shell_append (GTK_MENU_SHELL (submenu), item);
-
-	group = NULL;
-	item = gtk_radio_menu_item_new_with_label (group, C_("cal-second-zone", "None"));
-	group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (item));
-	if (!time_item->priv->second_zone)
-		e_gtk_toggle_button_set_active (item, TRUE);
-	gtk_menu_shell_append (GTK_MENU_SHELL (submenu), item);
-	g_signal_connect (
-		item, "toggled",
-		G_CALLBACK (edvti_on_set_zone), time_item);
+	section = g_menu_new ();
+	item = g_menu_item_new (C_("cal-second-zone", "None"), NULL);
+	g_menu_item_set_action_and_target_value (item, "edvti.second-zone", g_variant_new_string (""));
+	g_menu_append_item (section, item);
+	g_object_unref (item);
 
 	recent_zones = calendar_config_get_day_second_zones ();
 	for (s = recent_zones; s != NULL; s = s->next) {
@@ -860,66 +871,38 @@ e_day_view_time_item_show_popup_menu (EDayViewTimeItem *time_item,
 		if (!zone)
 			continue;
 
-		item = gtk_radio_menu_item_new_with_label (
-			group, i_cal_timezone_get_display_name (zone));
-		group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (item));
-		/* both comes from builtin, thus no problem to compare pointers */
-		if (zone == time_item->priv->second_zone)
-			e_gtk_toggle_button_set_active (item, TRUE);
-		gtk_menu_shell_append (GTK_MENU_SHELL (submenu), item);
-		g_object_set_data_full (
-			G_OBJECT (item), "timezone",
-			g_strdup (s->data), g_free);
-		g_signal_connect (
-			item, "toggled",
-			G_CALLBACK (edvti_on_set_zone), time_item);
+		item = g_menu_item_new (i_cal_timezone_get_display_name (zone), NULL);
+		g_menu_item_set_action_and_target_value (item, "edvti.second-zone", g_variant_new_string (s->data));
+		g_menu_append_item (section, item);
+		g_object_unref (item);
 	}
 	calendar_config_free_day_second_zones (recent_zones);
+	g_menu_append_section (submenu, NULL, G_MENU_MODEL (section));
+	g_object_unref (section);
 
-	item = gtk_separator_menu_item_new ();
-	gtk_menu_shell_append (GTK_MENU_SHELL (submenu), item);
+	section = g_menu_new ();
+	g_menu_append (section, _("Select…"), "edvti.select-zone");
+	g_menu_append_section (submenu, NULL, G_MENU_MODEL (section));
+	g_object_unref (section);
 
-	item = gtk_menu_item_new_with_label (_("Select…"));
-	g_signal_connect (
-		item, "activate",
-		G_CALLBACK (edvti_on_select_zone), time_item);
-	gtk_menu_shell_append (GTK_MENU_SHELL (submenu), item);
+	section = g_menu_new ();
+	g_menu_append_submenu (section, _("Show the second time zone"), G_MENU_MODEL (submenu));
+	g_menu_append_section (menu, NULL, G_MENU_MODEL (section));
+	g_object_unref (section);
+	g_object_unref (submenu);
 
-	gtk_widget_set_visible (submenu, TRUE);
+	popover = gtk_popover_menu_new_from_model (G_MENU_MODEL (menu));
+	g_object_unref (menu);
 
-	gtk_menu_attach_to_widget (GTK_MENU (menu),
-				   GTK_WIDGET (day_view),
-				   NULL);
-	gtk_menu_popup_at_pointer (GTK_MENU (menu), event);
-}
-
-static void
-e_day_view_time_item_on_set_divisions (GtkWidget *item,
-                                       EDayViewTimeItem *time_item)
-{
-	EDayView *day_view;
-	ECalendarView *cal_view;
-	gint divisions;
-
-	day_view = e_day_view_time_item_get_day_view (time_item);
-	g_return_if_fail (day_view != NULL);
-
-	if (!e_gtk_toggle_button_get_active (item))
-		return;
-
-	divisions = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (item), "divisions"));
-
-	cal_view = E_CALENDAR_VIEW (day_view);
-	e_calendar_view_set_time_divisions (cal_view, divisions);
+	e_util_popup_menu_at_event (popover, GTK_WIDGET (day_view),
+		event ? gnome_canvas_event_get_gdk_event (event) : NULL);
 }
 
 static void
 e_day_view_time_item_on_button_press (EDayViewTimeItem *time_item,
                                       GnomeCanvasEvent *event)
 {
-	GdkSurface *window;
 	EDayView *day_view;
-	GnomeCanvas *canvas;
 	GnomeCanvasGrabStatus grab_status;
 	GdkDevice *event_device;
 	guint32 event_time;
@@ -927,8 +910,6 @@ e_day_view_time_item_on_button_press (EDayViewTimeItem *time_item,
 
 	day_view = e_day_view_time_item_get_day_view (time_item);
 	g_return_if_fail (day_view != NULL);
-
-	canvas = GNOME_CANVAS_ITEM (time_item)->canvas;
 
 	row = e_day_view_time_item_convert_position_to_row (
 		time_item,
@@ -940,19 +921,16 @@ e_day_view_time_item_on_button_press (EDayViewTimeItem *time_item,
 	if (!gtk_widget_has_focus (GTK_WIDGET (day_view)))
 		gtk_widget_grab_focus (GTK_WIDGET (day_view));
 
-	window = gtk_layout_get_bin_window (E_GTK_LAYOUT (canvas));
-
 	event_device = gnome_canvas_event_get_device (event);
 	event_time = gnome_canvas_event_get_time (event);
 
-	grab_status = gdk_device_grab (
-		event_device,
-		window,
-		GDK_OWNERSHIP_NONE,
-		FALSE,
+	/* GTK 4 has no device grabs: the canvas grabs for the item */
+	grab_status = gnome_canvas_item_grab (
+		GNOME_CANVAS_ITEM (time_item),
 		GNOME_CANVAS_POINTER_MOTION_MASK |
 		GNOME_CANVAS_BUTTON_RELEASE_MASK,
 		NULL,
+		event_device,
 		event_time);
 
 	if (grab_status == GNOME_CANVAS_GRAB_SUCCESS) {
@@ -971,12 +949,7 @@ e_day_view_time_item_on_button_release (EDayViewTimeItem *time_item,
 	g_return_if_fail (day_view != NULL);
 
 	if (time_item->priv->dragging_selection) {
-		GdkDevice *event_device;
-		guint32 event_time;
-
-		event_device = gnome_canvas_event_get_device (event);
-		event_time = gnome_canvas_event_get_time (event);
-		gdk_device_ungrab (event_device, event_time);
+		gnome_canvas_item_ungrab (GNOME_CANVAS_ITEM (time_item), gnome_canvas_event_get_time (event));
 
 		e_day_view_finish_selection (day_view);
 		e_day_view_stop_auto_scroll (day_view);

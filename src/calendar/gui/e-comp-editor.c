@@ -1919,7 +1919,8 @@ comp_editor_unrealize_cb (ECompEditor *comp_editor)
 
 static gboolean
 comp_editor_delete_event (GtkWidget *widget,
-			  GdkEvent *event)
+			  GdkEvent *event,
+			  gpointer user_data)
 {
 	ECompEditor *comp_editor;
 
@@ -1970,35 +1971,12 @@ comp_editor_selected_source_notify_cb (ECompEditorPageGeneral *page_general,
 	e_comp_editor_open_target_client (comp_editor);
 }
 
-static gboolean
-e_comp_editor_focus_in_event_cb (GtkWindow *comp_editor,
-				 GdkEvent *event,
-				 gpointer user_data)
-{
-
-	g_signal_handlers_disconnect_by_func (comp_editor,
-		G_CALLBACK (e_comp_editor_focus_in_event_cb), NULL);
-
-	return FALSE;
-}
-
 static void
 e_comp_editor_set_urgency_hint (ECompEditor *comp_editor)
 {
-	GtkWindow *window;
-
 	g_return_if_fail (E_IS_COMP_EDITOR (comp_editor));
 
-	window = GTK_WINDOW (comp_editor);
-
-	if (gtk_widget_get_visible (GTK_WIDGET (window)) &&
-	    !gtk_window_is_active (window) &&
-	    !gtk_window_get_urgency_hint (window)) {
-
-		g_signal_connect (
-			e_gtk_widget_legacy_events (window), "focus-in-event",
-			G_CALLBACK (e_comp_editor_focus_in_event_cb), NULL);
-	}
+	/* GTK 4 has no window urgency hint */
 }
 
 static void
@@ -2427,6 +2405,10 @@ e_comp_editor_constructed (GObject *object)
 
 	G_OBJECT_CLASS (e_comp_editor_parent_class)->constructed (object);
 
+	g_signal_connect (
+		e_gtk_window_delete_events (object), "delete-event",
+		G_CALLBACK (comp_editor_delete_event), NULL);
+
 	comp_editor->priv->calendar_settings = e_util_ref_settings ("org.gnome.evolution.calendar");
 	comp_editor->priv->ui_manager = e_ui_manager_new (e_ui_customizer_util_dup_filename_for_component ("comp-editor"));
 
@@ -2690,7 +2672,6 @@ e_comp_editor_class_init (ECompEditorClass *klass)
 	klass->fill_component = ece_fill_component;
 
 	widget_class = GTK_WIDGET_CLASS (klass);
-	widget_class->delete_event = comp_editor_delete_event;
 	e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (widget_class), "key-press-event", G_CALLBACK (comp_editor_key_press_event));
 
 	object_class = G_OBJECT_CLASS (klass);

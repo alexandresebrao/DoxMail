@@ -146,7 +146,7 @@ struct _ECalendarViewClass {
 
 	/* Notification signals */
 	void		(*popup_event)		(ECalendarView *cal_view,
-						 GnomeCanvasEvent *button_event);
+						 GdkEvent *button_event);
 	void		(*selection_changed)	(ECalendarView *cal_view);
 	void		(*selected_time_changed)(ECalendarView *cal_view);
 	void		(*timezone_changed)	(ECalendarView *cal_view,
@@ -234,7 +234,7 @@ ECompEditor *	e_calendar_view_open_event_with_flags
 						 guint32 flags);
 
 void		e_calendar_view_popup_event	(ECalendarView *cal_view,
-						 GnomeCanvasEvent *button_event);
+						 GdkEvent *button_event);
 
 void		e_calendar_view_add_event	(ECalendarView *cal_view,
 						 ECalClient *client,

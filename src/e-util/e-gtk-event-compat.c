@@ -674,3 +674,115 @@ e_gdk_event_focus_in (GdkEvent *event)
 
 	return gdk_focus_event_get_in (event);
 }
+
+GnomeCanvasEvent *
+e_gdk_event_to_canvas_event (GdkEvent *event,
+			     GtkWidget *canvas,
+			     GnomeCanvasEvent *cevent)
+{
+	GnomeCanvasEventType type;
+	gdouble x, y;
+
+	g_return_val_if_fail (cevent != NULL, NULL);
+
+	switch (e_gdk_event_type (event)) {
+	case GDK_BUTTON_PRESS:
+		type = GNOME_CANVAS_BUTTON_PRESS;
+		break;
+	case E_GDK_2BUTTON_PRESS:
+		type = GNOME_CANVAS_2BUTTON_PRESS;
+		break;
+	case E_GDK_3BUTTON_PRESS:
+		type = GNOME_CANVAS_3BUTTON_PRESS;
+		break;
+	case GDK_BUTTON_RELEASE:
+		type = GNOME_CANVAS_BUTTON_RELEASE;
+		break;
+	case GDK_MOTION_NOTIFY:
+		type = GNOME_CANVAS_MOTION_NOTIFY;
+		break;
+	case GDK_KEY_PRESS:
+		type = GNOME_CANVAS_KEY_PRESS;
+		break;
+	case GDK_KEY_RELEASE:
+		type = GNOME_CANVAS_KEY_RELEASE;
+		break;
+	case GDK_ENTER_NOTIFY:
+		type = GNOME_CANVAS_ENTER_NOTIFY;
+		break;
+	case GDK_LEAVE_NOTIFY:
+		type = GNOME_CANVAS_LEAVE_NOTIFY;
+		break;
+	case GDK_FOCUS_CHANGE:
+		type = GNOME_CANVAS_FOCUS_CHANGE;
+		break;
+	case GDK_SCROLL:
+		type = GNOME_CANVAS_SCROLL;
+		break;
+	default:
+		type = GNOME_CANVAS_NOTHING;
+		break;
+	}
+
+	x = event ? e_gdk_event_x (event) : 0;
+	y = event ? e_gdk_event_y (event) : 0;
+
+	/* the GTK 3 bin window of a canvas scrolled with it */
+	if (canvas && GTK_IS_SCROLLABLE (canvas)) {
+		GtkAdjustment *adjustment;
+
+		adjustment = gtk_scrollable_get_hadjustment (GTK_SCROLLABLE (canvas));
+		if (adjustment)
+			x += gtk_adjustment_get_value (adjustment);
+
+		adjustment = gtk_scrollable_get_vadjustment (GTK_SCROLLABLE (canvas));
+		if (adjustment)
+			y += gtk_adjustment_get_value (adjustment);
+	}
+
+	gnome_canvas_event_set_from_gdk (cevent, type, event, x, y);
+
+	if (!event)
+		return cevent;
+
+	cevent->any.state = e_gdk_event_state (event);
+
+	switch (type) {
+	case GNOME_CANVAS_BUTTON_PRESS:
+	case GNOME_CANVAS_2BUTTON_PRESS:
+	case GNOME_CANVAS_3BUTTON_PRESS:
+	case GNOME_CANVAS_BUTTON_RELEASE:
+		cevent->button.button = e_gdk_event_button (event);
+		break;
+	case GNOME_CANVAS_KEY_PRESS:
+	case GNOME_CANVAS_KEY_RELEASE:
+		cevent->key.keyval = e_gdk_event_keyval (event);
+		cevent->key.hardware_keycode = e_gdk_event_keycode (event);
+		cevent->key.is_modifier = e_gdk_event_is_modifier (event);
+
+		if (!(cevent->key.state & (GDK_CONTROL_MASK | GDK_ALT_MASK))) {
+			gunichar uc = gdk_keyval_to_unicode (cevent->key.keyval);
+
+			if (uc && g_unichar_isprint (uc))
+				cevent->key.length = g_unichar_to_utf8 (uc, cevent->key.string);
+		}
+		break;
+	case GNOME_CANVAS_ENTER_NOTIFY:
+	case GNOME_CANVAS_LEAVE_NOTIFY:
+		cevent->crossing.mode = GDK_CROSSING_NORMAL;
+		cevent->crossing.detail = GDK_NOTIFY_NONLINEAR;
+		break;
+	case GNOME_CANVAS_FOCUS_CHANGE:
+		cevent->focus_change.in = e_gdk_event_focus_in (event);
+		break;
+	case GNOME_CANVAS_SCROLL:
+		cevent->scroll.direction = e_gdk_event_direction (event);
+		cevent->scroll.delta_x = e_gdk_event_delta_x (event);
+		cevent->scroll.delta_y = e_gdk_event_delta_y (event);
+		break;
+	default:
+		break;
+	}
+
+	return cevent;
+}

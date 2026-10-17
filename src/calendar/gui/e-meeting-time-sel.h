@@ -258,7 +258,8 @@ struct _EMeetingTimeSelector {
 	/* The notification function id for Free/Busy refreshes */
 	gboolean fb_refresh_not;
 
-	GdkCursorType last_cursor_set;
+	/* whether the busy cursor is shown, while free/busy is refreshed */
+	gboolean busy_cursor_set;
 
 	guint style_change_idle_id;
 };

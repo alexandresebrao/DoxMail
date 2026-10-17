@@ -102,57 +102,6 @@ timezone_entry_update_entry (ETimezoneEntry *timezone_entry)
 
 	g_free (name_buffer);
 }
-static void
-timezone_entry_add_relation (ETimezoneEntry *timezone_entry)
-{
-	GtkWidget *a11y_timezone_entry;
-	GtkWidget *a11y_widget;
-	AtkRelationSet *set;
-	AtkRelation *relation;
-	GtkWidget *widget;
-	GPtrArray *target;
-	gpointer target_object;
-
-	/* add a labelled_by relation for widget for accessibility */
-
-	widget = GTK_WIDGET (timezone_entry);
-	a11y_timezone_entry = GTK_WIDGET (widget);
-
-	widget = timezone_entry->priv->entry;
-	a11y_widget = GTK_WIDGET (widget);
-
-	set = atk_object_ref_relation_set (a11y_widget);
-	if (set != NULL) {
-		relation = atk_relation_set_get_relation_by_type (
-			set, ATK_RELATION_LABELLED_BY);
-		/* check whether has a labelled_by relation already */
-		if (relation != NULL) {
-			g_object_unref (set);
-			return;
-		}
-	}
-
-	g_clear_object (&set);
-
-	set = atk_object_ref_relation_set (a11y_timezone_entry);
-	if (!set)
-		return;
-
-	relation = atk_relation_set_get_relation_by_type (
-		set, ATK_RELATION_LABELLED_BY);
-	if (relation != NULL) {
-		target = atk_relation_get_target (relation);
-		target_object = g_ptr_array_index (target, 0);
-		if (ATK_IS_OBJECT (target_object)) {
-			atk_object_add_relationship (
-				a11y_widget,
-				ATK_RELATION_LABELLED_BY,
-				ATK_OBJECT (target_object));
-		}
-	}
-
-	g_clear_object (&set);
-}
 
 /* The arrow button beside the date field has been clicked, so we show the
  * popup with the ECalendar in. */
@@ -535,7 +484,8 @@ e_timezone_entry_set_timezone (ETimezoneEntry *timezone_entry,
 		timezone_entry->priv->timezone = e_cal_util_copy_timezone (timezone);
 
 	timezone_entry_update_entry (timezone_entry);
-	timezone_entry_add_relation (timezone_entry);
+	/* the ATK labelled-by copy onto the inner entry is gone: GTK 4
+	 * has no getter for accessible relations */
 
 	g_object_notify (G_OBJECT (timezone_entry), "timezone");
 }

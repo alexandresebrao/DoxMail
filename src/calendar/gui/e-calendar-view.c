@@ -33,8 +33,6 @@
 #include <shell/e-shell.h>
 
 #include "comp-util.h"
-#include "ea-cal-view.h"
-#include "ea-calendar.h"
 #include "e-cal-dialogs.h"
 #include "e-cal-list-view.h"
 #include "e-cal-model-calendar.h"
@@ -1319,7 +1317,6 @@ e_calendar_view_class_init (ECalendarViewClass *class)
 
 	/* init the accessibility support for e_day_view */
 	widget_class = GTK_WIDGET_CLASS (class);
-	gtk_widget_class_set_accessible_type (widget_class, EA_TYPE_CAL_VIEW);
 }
 
 static void
@@ -1358,8 +1355,8 @@ e_calendar_view_popup_event (ECalendarView *calendar_view,
                              GdkEvent *button_event)
 {
 	g_return_if_fail (E_IS_CALENDAR_VIEW (calendar_view));
-	g_return_if_fail (button_event != NULL);
 
+	/* button_event can be NULL with GTK 4, like for keyboard popups */
 	g_signal_emit (calendar_view, signals[POPUP_EVENT], 0, button_event);
 }
 

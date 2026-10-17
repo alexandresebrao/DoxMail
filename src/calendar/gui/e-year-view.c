@@ -1370,7 +1370,7 @@ year_view_tree_view_drag_begin_cb (GtkWidget *tree_view,
 {
 	EYearView *self = user_data;
 	GtkTreeSelection *selection;
-	cairo_surface_t *surface = NULL;
+	GdkPaintable *paintable = NULL;
 	GList *selected, *link;
 	GtkTreeModel *model = NULL;
 	GtkTreeIter iter;
@@ -1392,8 +1392,8 @@ year_view_tree_view_drag_begin_cb (GtkWidget *tree_view,
 			self->priv->drag_data = g_slist_prepend (self->priv->drag_data,
 				drag_data_new (cd->client, cd->comp));
 
-			if (!surface)
-				surface = gtk_tree_view_create_row_drag_icon (self->priv->tree_view, link->data);
+			if (!paintable)
+				paintable = gtk_tree_view_create_row_drag_icon (self->priv->tree_view, link->data);
 		}
 	}
 
@@ -1404,9 +1404,9 @@ year_view_tree_view_drag_begin_cb (GtkWidget *tree_view,
 	self->priv->drag_month = self->priv->current_month;
 	self->priv->drag_year = self->priv->current_year;
 
-	if (surface) {
-		e_gtk_drag_set_icon_surface (context, surface);
-		cairo_surface_destroy (surface);
+	if (paintable) {
+		e_gtk_drag_set_icon_paintable (context, paintable, 0, 0);
+		g_object_unref (paintable);
 	}
 }
 
@@ -1461,7 +1461,7 @@ year_view_month_drag_motion_cb (GtkWidget *widget,
 	if (can_drop) {
 		GdkModifierType mask;
 
-		gdk_window_get_pointer (e_gtk_widget_get_surface (widget), NULL, NULL, &mask);
+		mask = e_gtk_widget_get_modifier_state (widget);
 
 		if ((mask & GDK_CONTROL_MASK) != 0)
 			drag_action = GDK_ACTION_COPY;

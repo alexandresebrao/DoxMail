@@ -274,6 +274,9 @@ gint		e_gtk_entry_get_index_at_position
 void		e_gtk_widget_override_font	(GtkWidget *widget,
 						 const PangoFontDescription *font_desc);
 
+/* the keyboard modifiers held now, like gdk_window_get_pointer() gave */
+GdkModifierType	e_gtk_widget_get_modifier_state	(GtkWidget *widget);
+
 /* the pointer position in @widget coordinates */
 gboolean	e_gtk_widget_get_pointer_position
 						(GtkWidget *widget,
@@ -353,6 +356,12 @@ void		e_gtk_main_quit			(void);
 
 /* GtkToolbarStyle is gone with GTK 4; the shell switcher and the
  * settings still talk about it */
+/* GdkPoint is gone with GTK 4 */
+typedef struct _GdkPoint {
+	gint x;
+	gint y;
+} GdkPoint;
+
 typedef enum {
 	GTK_TOOLBAR_ICONS,
 	GTK_TOOLBAR_TEXT,

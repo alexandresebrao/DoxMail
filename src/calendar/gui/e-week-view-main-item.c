@@ -26,7 +26,6 @@
 #include <glib/gi18n.h>
 
 #include "e-week-view-main-item.h"
-#include "ea-calendar.h"
 #include "calendar-config.h"
 
 struct _EWeekViewMainItemPrivate {
@@ -427,9 +426,6 @@ e_week_view_main_item_class_init (EWeekViewMainItemClass *class)
 			NULL,
 			E_TYPE_WEEK_VIEW,
 			G_PARAM_READWRITE));
-
-	/* init the accessibility support for e_week_view_main_item */
-	e_week_view_main_item_a11y_init ();
 }
 
 static void

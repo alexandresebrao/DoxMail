@@ -520,8 +520,6 @@ e_cal_day_column_bag_notify_n_spans_cb (ECalComponentBag *bag,
 static void
 e_cal_day_column_style_updated (GtkWidget *widget)
 {
-	GTK_WIDGET_CLASS (e_cal_day_column_parent_class)->style_updated (widget);
-
 	e_cal_day_column_recalc_layout (E_CAL_DAY_COLUMN (widget), FALSE, FALSE);
 }
 
@@ -542,19 +540,24 @@ e_cal_day_column_rectangle_intersects (const GdkRectangle *clip_rect,
 	return gdk_rectangle_intersect (clip_rect, &rect, NULL);
 }
 
-static gboolean
-e_cal_day_column_draw (GtkWidget *widget,
-		       cairo_t *cr)
+static void
+e_cal_day_column_snapshot (GtkWidget *widget,
+			   GtkSnapshot *snapshot)
 {
 	ECalDayColumn *self = E_CAL_DAY_COLUMN (widget);
 	gboolean is_rtl = gtk_widget_get_direction (widget) == GTK_TEXT_DIR_RTL;
 	GdkRectangle clip_rect;
 	GdkRGBA fg_rgba;
+	cairo_t *cr;
 	gint width;
-	gboolean res;
 
-	if (!gdk_cairo_get_clip_rectangle (cr, &clip_rect))
-		return GTK_WIDGET_CLASS (e_cal_day_column_parent_class)->draw (widget, cr);
+	/* GTK 4 draws the whole widget, there is no clip to skip by */
+	clip_rect.x = 0;
+	clip_rect.y = 0;
+	clip_rect.width = gtk_widget_get_width (widget);
+	clip_rect.height = gtk_widget_get_height (widget);
+
+	cr = gtk_snapshot_append_cairo (snapshot, &GRAPHENE_RECT_INIT (0, 0, clip_rect.width, clip_rect.height));
 
 	cairo_save (cr);
 
@@ -712,10 +715,10 @@ e_cal_day_column_draw (GtkWidget *widget,
 	}
 
 	cairo_restore (cr);
+	cairo_destroy (cr);
 
-	res = GTK_WIDGET_CLASS (e_cal_day_column_parent_class)->draw (widget, cr);
-
-	return res;
+	/* the children above the grid */
+	GTK_WIDGET_CLASS (e_cal_day_column_parent_class)->snapshot (widget, snapshot);
 }
 
 static void
@@ -886,8 +889,7 @@ e_cal_day_column_class_init (ECalDayColumnClass *klass)
 
 	widget_class = GTK_WIDGET_CLASS (klass);
 	widget_class->measure = e_cal_day_column_measure;
-	widget_class->style_updated = e_cal_day_column_style_updated;
-	widget_class->draw = e_cal_day_column_draw;
+	widget_class->snapshot = e_cal_day_column_snapshot;
 
 	/**
 	 * ECalDayColumn:show-time:
@@ -951,6 +953,10 @@ e_cal_day_column_init (ECalDayColumn *self)
 {
 	self->time_division_minutes = 30;
 	self->row_height = 0;
+
+	g_signal_connect (
+		e_gtk_widget_style_updates (self), "style-updated",
+		G_CALLBACK (e_cal_day_column_style_updated), NULL);
 	self->hour_attrs = pango_attr_list_new ();
 	pango_attr_list_insert_before (self->hour_attrs, pango_attr_font_features_new ("tnum=1"));
 	pango_attr_list_insert_before (self->hour_attrs, pango_attr_scale_new (1.2));

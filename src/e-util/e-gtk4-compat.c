@@ -2093,6 +2093,20 @@ e_gtk_widget_override_font (GtkWidget *widget,
 	g_string_free (css, TRUE);
 }
 
+GdkModifierType
+e_gtk_widget_get_modifier_state (GtkWidget *widget)
+{
+	GdkSeat *seat;
+
+	g_return_val_if_fail (GTK_IS_WIDGET (widget), 0);
+
+	seat = gdk_display_get_default_seat (gtk_widget_get_display (widget));
+	if (!seat || !gdk_seat_get_keyboard (seat))
+		return 0;
+
+	return gdk_device_get_modifier_state (gdk_seat_get_keyboard (seat));
+}
+
 gboolean
 e_gtk_widget_get_pointer_position (GtkWidget *widget,
 				   gdouble *x,

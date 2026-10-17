@@ -109,17 +109,9 @@ e_cal_component_widget_update_styles (ECalComponentWidget *self)
 }
 
 static void
-e_cal_component_widget_show_all (GtkWidget *widget)
-{
-	gtk_widget_set_visible (widget, TRUE);
-}
-
-static void
 e_cal_component_widget_style_updated (GtkWidget *widget)
 {
 	ECalComponentWidget *self = E_CAL_COMPONENT_WIDGET (widget);
-
-	GTK_WIDGET_CLASS (e_cal_component_widget_parent_class)->style_updated (widget);
 
 	e_cal_component_widget_update_styles (self);
 }
@@ -206,6 +198,10 @@ e_cal_component_widget_constructed (GObject *object)
 	GtkStyleContext *style_context;
 
 	G_OBJECT_CLASS (e_cal_component_widget_parent_class)->constructed (object);
+
+	g_signal_connect (
+		e_gtk_widget_style_updates (object), "style-updated",
+		G_CALLBACK (e_cal_component_widget_style_updated), NULL);
 
 	g_object_set (object,
 		"orientation", GTK_ORIENTATION_HORIZONTAL,
@@ -297,8 +293,6 @@ e_cal_component_widget_class_init (ECalComponentWidgetClass *klass)
 	object_class->finalize = e_cal_component_widget_finalize;
 
 	widget_class = GTK_WIDGET_CLASS (klass);
-	widget_class->show_all = e_cal_component_widget_show_all;
-	widget_class->style_updated = e_cal_component_widget_style_updated;
 	widget_class->size_allocate = e_cal_component_widget_size_allocate;
 
 	/**

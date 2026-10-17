@@ -42,10 +42,8 @@
 #include "e-week-view-layout.h"
 #include "e-week-view-main-item.h"
 #include "e-week-view-titles-item.h"
-#include "ea-calendar.h"
 #include "itip-utils.h"
 #include "print.h"
-#include "ea-week-view.h"
 
 #define E_WEEK_VIEW_SMALL_FONT_PTSIZE 7
 
@@ -123,16 +121,16 @@ static gboolean e_week_view_get_next_tab_event (EWeekView *week_view,
 static void e_week_view_update_query (EWeekView *week_view);
 
 static gboolean e_week_view_on_button_press (GtkWidget *widget,
-					     GnomeCanvasEvent *button_event,
+					     GdkEvent *gdk_event,
 					     EWeekView *week_view);
 static gboolean e_week_view_on_button_release (GtkWidget *widget,
-					       GnomeCanvasEvent *button_event,
+					       GdkEvent *gdk_event,
 					       EWeekView *week_view);
 static gboolean e_week_view_on_scroll (GtkWidget *widget,
-				       GnomeCanvasEvent *scroll,
+				       GdkEvent *gdk_event,
 				       EWeekView *week_view);
 static gboolean e_week_view_on_motion (GtkWidget *widget,
-				       GnomeCanvasEvent *event,
+				       GdkEvent *gdk_event,
 				       EWeekView *week_view);
 static gint e_week_view_convert_position_to_day (EWeekView *week_view,
 						 gint x,
@@ -919,6 +917,8 @@ week_view_dispose (GObject *object)
 	G_OBJECT_CLASS (e_week_view_parent_class)->dispose (object);
 }
 
+static void week_view_style_updated (GtkWidget *widget);
+
 static void
 week_view_constructed (GObject *object)
 {
@@ -929,6 +929,10 @@ week_view_constructed (GObject *object)
 
 	/* Chain up to parent's constructed() method. */
 	G_OBJECT_CLASS (e_week_view_parent_class)->constructed (object);
+
+	g_signal_connect (
+		e_gtk_widget_style_updates (object), "style-updated",
+		G_CALLBACK (week_view_style_updated), NULL);
 
 	week_view = E_WEEK_VIEW (object);
 	calendar_view = E_CALENDAR_VIEW (object);
@@ -1160,8 +1164,6 @@ week_view_unrealize (GtkWidget *widget)
 static void
 week_view_style_updated (GtkWidget *widget)
 {
-	if (GTK_WIDGET_CLASS (e_week_view_parent_class)->style_updated)
-		(*GTK_WIDGET_CLASS (e_week_view_parent_class)->style_updated) (widget);
 
 	week_view_update_style_settings (E_WEEK_VIEW (widget));
 }
@@ -1223,9 +1225,7 @@ week_view_size_allocate (GtkWidget *widget,
                          gint height,
                          gint baseline)
 {
-	GtkAllocation allocation_local = { 0, 0, width, height };
-	GtkAllocation *allocation = &allocation_local;
-	(*GTK_WIDGET_CLASS (e_week_view_parent_class)->size_allocate) (widget, allocation);
+	(*GTK_WIDGET_CLASS (e_week_view_parent_class)->size_allocate) (widget, width, height, baseline);
 
 	g_idle_add_full (G_PRIORITY_HIGH_IDLE, week_view_handle_size_allocate_idle_cb,
 		e_weak_ref_new (widget), (GDestroyNotify) e_weak_ref_free);
@@ -1233,8 +1233,9 @@ week_view_size_allocate (GtkWidget *widget,
 
 static gint
 week_view_focus_in (GtkWidget *widget,
-                    GnomeCanvasEvent *event)
+                    GdkEvent *gdk_event)
 {
+	GnomeCanvasEvent cevent, *event = e_gdk_event_to_canvas_event (gdk_event, NULL, &cevent);
 	EWeekView *week_view;
 
 	g_return_val_if_fail (widget != NULL, FALSE);
@@ -1271,8 +1272,9 @@ week_view_focus_in (GtkWidget *widget,
 
 static gint
 week_view_focus_out (GtkWidget *widget,
-                     GnomeCanvasEvent *event)
+                     GdkEvent *gdk_event)
 {
+	GnomeCanvasEvent cevent, *event = e_gdk_event_to_canvas_event (gdk_event, NULL, &cevent);
 	EWeekView *week_view;
 
 	g_return_val_if_fail (widget != NULL, FALSE);
@@ -1294,14 +1296,15 @@ week_view_focus_out (GtkWidget *widget,
 
 static gboolean
 week_view_key_press (GtkWidget *widget,
-                     GnomeCanvasEvent *event)
+                     GdkEvent *gdk_event)
 {
+	GnomeCanvasEvent cevent, *event = e_gdk_event_to_canvas_event (gdk_event, NULL, &cevent);
 	gboolean handled = FALSE;
 	handled = e_week_view_do_key_press (widget, event);
 
 	/* if not handled, try key bindings */
 	if (!handled)
-		handled = e_gtk_widget_chain_legacy_event (widget, event);
+		handled = e_gtk_widget_chain_legacy_event (widget, gdk_event);
 	return handled;
 }
 
@@ -1727,7 +1730,7 @@ e_week_view_drag_motion_cb (GtkWidget *widget,
 	if (can_drop) {
 		GdkModifierType mask;
 
-		gdk_window_get_pointer (e_gtk_widget_get_surface (widget), NULL, NULL, &mask);
+		mask = e_gtk_widget_get_modifier_state (widget);
 
 		if ((mask & GDK_CONTROL_MASK) != 0)
 			drag_action = GDK_ACTION_COPY;
@@ -1812,7 +1815,6 @@ e_week_view_class_init (EWeekViewClass *class)
 	widget_class = GTK_WIDGET_CLASS (class);
 	widget_class->realize = week_view_realize;
 	widget_class->unrealize = week_view_unrealize;
-	widget_class->style_updated = week_view_style_updated;
 	widget_class->size_allocate = week_view_size_allocate;
 	e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (widget_class), "focus-in-event", G_CALLBACK (week_view_focus_in));
 	e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (widget_class), "focus-out-event", G_CALLBACK (week_view_focus_out));
@@ -1907,7 +1909,6 @@ e_week_view_class_init (EWeekViewClass *class)
 		"is-editing");
 
 	/* init the accessibility support for e_week_view */
-	gtk_widget_class_set_accessible_type (widget_class, EA_TYPE_WEEK_VIEW);
 }
 
 static void
@@ -3174,9 +3175,10 @@ ewv_pass_gdkevent_to_etext (EWeekView *week_view,
 
 static gboolean
 e_week_view_on_button_press (GtkWidget *widget,
-                             GnomeCanvasEvent *button_event,
+                             GdkEvent *gdk_event,
                              EWeekView *week_view)
 {
+	GnomeCanvasEvent cevent, *button_event = e_gdk_event_to_canvas_event (gdk_event, widget, &cevent);
 	GnomeCanvasItem *item;
 	gint event_num = -1, span_num = -1;
 	guint event_button = 0;
@@ -3228,7 +3230,6 @@ e_week_view_on_button_press (GtkWidget *widget,
 
 	if (event_button == 1) {
 		GnomeCanvasGrabStatus grab_status;
-		GdkSurface *window;
 		GdkDevice *event_device;
 		guint32 event_time;
 
@@ -3236,20 +3237,11 @@ e_week_view_on_button_press (GtkWidget *widget,
 		if (!gtk_widget_has_focus (GTK_WIDGET (week_view)) && !gtk_widget_has_focus (GTK_WIDGET (week_view->main_canvas)))
 			gtk_widget_grab_focus (GTK_WIDGET (week_view));
 
-		window = gtk_layout_get_bin_window (E_GTK_LAYOUT (widget));
-
 		event_device = gnome_canvas_event_get_device (button_event);
 		event_time = gnome_canvas_event_get_time (button_event);
 
-		grab_status = gdk_device_grab (
-			event_device,
-			window,
-			GDK_OWNERSHIP_NONE,
-			FALSE,
-			GNOME_CANVAS_POINTER_MOTION_MASK |
-			GNOME_CANVAS_BUTTON_RELEASE_MASK,
-			NULL,
-			event_time);
+		/* GTK 4 grabs the pointer for the pressed widget implicitly */
+		grab_status = GNOME_CANVAS_GRAB_SUCCESS;
 
 		if (grab_status == GNOME_CANVAS_GRAB_SUCCESS) {
 			if (event_time - week_view->bc_event_time > 250)
@@ -3287,9 +3279,10 @@ e_week_view_on_button_press (GtkWidget *widget,
 
 static gboolean
 e_week_view_on_button_release (GtkWidget *widget,
-                               GnomeCanvasEvent *button_event,
+                               GdkEvent *gdk_event,
                                EWeekView *week_view)
 {
+	GnomeCanvasEvent cevent, *button_event = e_gdk_event_to_canvas_event (gdk_event, widget, &cevent);
 	GdkDevice *event_device;
 	guint32 event_time;
 
@@ -3298,7 +3291,6 @@ e_week_view_on_button_release (GtkWidget *widget,
 
 	if (week_view->selection_drag_pos != E_WEEK_VIEW_DRAG_NONE) {
 		week_view->selection_drag_pos = E_WEEK_VIEW_DRAG_NONE;
-		gdk_device_ungrab (event_device, event_time);
 	} else {
 		ewv_pass_gdkevent_to_etext (week_view, button_event);
 	}
@@ -3308,9 +3300,10 @@ e_week_view_on_button_release (GtkWidget *widget,
 
 static gboolean
 e_week_view_on_scroll (GtkWidget *widget,
-                       GnomeCanvasEvent *scroll,
+                       GdkEvent *gdk_event,
                        EWeekView *week_view)
 {
+	GnomeCanvasEvent cevent, *scroll = e_gdk_event_to_canvas_event (gdk_event, widget, &cevent);
 	GtkRange *range;
 	GtkAdjustment *adjustment;
 	gdouble page_increment;
@@ -3337,8 +3330,8 @@ e_week_view_on_scroll (GtkWidget *widget,
 			new_value = value + page_increment;
 			break;
 		case GDK_SCROLL_SMOOTH:
-			if (scroll->delta_y < -0.001 || scroll->delta_y > 0.001) {
-				new_value = value + scroll->delta_y * page_increment;
+			if (scroll->scroll.delta_y < -0.001 || scroll->scroll.delta_y > 0.001) {
+				new_value = value + scroll->scroll.delta_y * page_increment;
 				break;
 			}
 			return FALSE;
@@ -3357,9 +3350,10 @@ e_week_view_on_scroll (GtkWidget *widget,
 
 static gboolean
 e_week_view_on_motion (GtkWidget *widget,
-                       GnomeCanvasEvent *mevent,
+                       GdkEvent *gdk_event,
                        EWeekView *week_view)
 {
+	GnomeCanvasEvent cevent, *mevent = e_gdk_event_to_canvas_event (gdk_event, widget, &cevent);
 	gint x, y, day;
 
 	/* Convert the mouse position to a week & day. */
@@ -3804,7 +3798,7 @@ e_week_view_maybe_start_event_drag_on_motion (EWeekView *week_view,
 		e_gtk_drag_begin_with_coordinates (
 			week_view->main_canvas, target_list,
 			GDK_ACTION_COPY | GDK_ACTION_MOVE,
-			1, gdk_event, event_x_root, event_y_root);
+			1, gnome_canvas_event_get_gdk_event (gdk_event), event_x_root, event_y_root);
 		e_gtk_target_list_unref (target_list);
 	}
 }
@@ -3828,8 +3822,8 @@ background_item_event_cb (GnomeCanvasItem *item,
 		if (view->editing_event_num == -1) {
 			g_return_val_if_fail (pevent != NULL, FALSE);
 
-			pevent->x = ((GnomeCanvasEvent *) event)->x_root;
-			pevent->y = ((GnomeCanvasEvent *) event)->y_root;
+			pevent->x = event->any.x_root;
+			pevent->y = event->any.y_root;
 
 			return TRUE;
 		} else {
@@ -3838,8 +3832,8 @@ background_item_event_cb (GnomeCanvasItem *item,
 		case GNOME_CANVAS_MOTION_NOTIFY:
 			g_return_val_if_fail (pevent != NULL, FALSE);
 
-			pevent->x = ((GnomeCanvasEvent *) event)->x_root;
-			pevent->y = ((GnomeCanvasEvent *) event)->y_root;
+			pevent->x = event->any.x_root;
+			pevent->y = event->any.y_root;
 
 			e_week_view_maybe_start_event_drag_on_motion (view, event, event_num);
 			return TRUE;
@@ -5327,7 +5321,7 @@ e_week_view_show_popup_menu (EWeekView *week_view,
 {
 	e_week_view_set_popup_event (week_view, event_num);
 
-	e_calendar_view_popup_event (E_CALENDAR_VIEW (week_view), button_event);
+	e_calendar_view_popup_event (E_CALENDAR_VIEW (week_view), gnome_canvas_event_get_gdk_event (button_event));
 }
 
 void

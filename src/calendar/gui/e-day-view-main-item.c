@@ -31,7 +31,6 @@
 #include "comp-util.h"
 #include "e-calendar-view.h"
 #include "e-day-view-layout.h"
-#include "ea-calendar.h"
 
 struct _EDayViewMainItemPrivate {
 	EDayView *day_view;
@@ -1350,9 +1349,6 @@ e_day_view_main_item_class_init (EDayViewMainItemClass *class)
 			NULL,
 			E_TYPE_DAY_VIEW,
 			G_PARAM_READWRITE));
-
-	/* init the accessibility support for e_day_view */
-	e_day_view_main_item_a11y_init ();
 }
 
 static void

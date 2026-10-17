@@ -782,7 +782,7 @@ e_cal_dialogs_prompt_retract (GtkWidget *parent,
 
 	frame = gtk_frame_new (NULL);
 	gtk_frame_set_label_widget ((GtkFrame *) frame, label);
-	gtk_frame_set_label_align ((GtkFrame *) frame, 0, 0);
+	gtk_frame_set_label_align ((GtkFrame *) frame, 0);
 	e_gtk_container_add (vbox, frame);
 
 	sw = gtk_scrolled_window_new ();

@@ -22,7 +22,6 @@
 #include "evolution-config.h"
 
 #include "e-cal-list-view.h"
-#include "ea-calendar.h"
 
 #include <math.h>
 #include <time.h>

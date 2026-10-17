@@ -985,20 +985,18 @@ e_meeting_time_selector_item_motion_notify (EMeetingTimeSelectorItem *mts_item,
 	if (position != E_MEETING_TIME_SELECTOR_POS_NONE)
 		cursor = mts_item->resize_cursor;
 	/* If the Main window shows busy cursor show the same */
-	else if (mts_item->mts->last_cursor_set == GDK_WATCH)
+	else if (mts_item->mts->busy_cursor_set)
 		cursor = mts_item->busy_cursor;
 	else
 		cursor = mts_item->normal_cursor;
 
 	/* Only set the cursor if it is different to the last one we set. */
 	if (mts_item->last_cursor_set != cursor) {
-		GdkSurface *window;
 		GnomeCanvas *canvas;
 
 		mts_item->last_cursor_set = cursor;
 
 		canvas = GNOME_CANVAS_ITEM (mts_item)->canvas;
-		window = NULL; /* GTK 4 sets cursors on widgets */
 		gtk_widget_set_cursor (GTK_WIDGET (canvas), cursor);
 	}
 
@@ -1067,12 +1065,9 @@ void
 e_meeting_time_selector_item_set_normal_cursor (EMeetingTimeSelectorItem *mts_item)
 {
 	GnomeCanvas *canvas;
-	GdkSurface *window;
 
 	g_return_if_fail (IS_E_MEETING_TIME_SELECTOR_ITEM (mts_item));
 
 	canvas = GNOME_CANVAS_ITEM (mts_item)->canvas;
-	window = e_gtk_widget_get_surface (GTK_WIDGET (canvas));
-	if (window)
-		gdk_window_set_cursor (window, mts_item->normal_cursor);
+	gtk_widget_set_cursor (GTK_WIDGET (canvas), mts_item->normal_cursor);
 }
