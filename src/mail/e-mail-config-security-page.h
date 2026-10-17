@@ -51,12 +51,12 @@ typedef struct _EMailConfigSecurityPageClass EMailConfigSecurityPageClass;
 typedef struct _EMailConfigSecurityPagePrivate EMailConfigSecurityPagePrivate;
 
 struct _EMailConfigSecurityPage {
-	GtkScrolledWindow parent;
+	EGtkBin parent;
 	EMailConfigSecurityPagePrivate *priv;
 };
 
 struct _EMailConfigSecurityPageClass {
-	GtkScrolledWindowClass parent_class;
+	EGtkBinClass parent_class;
 };
 
 GType		e_mail_config_security_page_get_type

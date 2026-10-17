@@ -53,12 +53,12 @@ typedef struct _EMailConfigLookupPageClass EMailConfigLookupPageClass;
 typedef struct _EMailConfigLookupPagePrivate EMailConfigLookupPagePrivate;
 
 struct _EMailConfigLookupPage {
-	GtkScrolledWindow parent;
+	EGtkBin parent;
 	EMailConfigLookupPagePrivate *priv;
 };
 
 struct _EMailConfigLookupPageClass {
-	GtkScrolledWindowClass parent_class;
+	EGtkBinClass parent_class;
 };
 
 GType		e_mail_config_lookup_page_get_type

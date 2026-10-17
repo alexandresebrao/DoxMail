@@ -30,7 +30,7 @@ static void	e_mail_config_lookup_page_interface_init
 G_DEFINE_TYPE_WITH_CODE (
 	EMailConfigLookupPage,
 	e_mail_config_lookup_page,
-	GTK_TYPE_SCROLLED_WINDOW,
+	E_GTK_TYPE_BIN,
 	G_IMPLEMENT_INTERFACE (
 		E_TYPE_MAIL_CONFIG_PAGE,
 		e_mail_config_lookup_page_interface_init))

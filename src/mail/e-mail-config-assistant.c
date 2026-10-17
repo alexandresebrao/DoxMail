@@ -950,20 +950,6 @@ mail_config_assistant_constructed (GObject *object)
 }
 
 static void
-mail_config_assistant_remove (GtkWidget *container,
-                              GtkWidget *widget)
-{
-	if (E_IS_MAIL_CONFIG_PAGE (widget))
-		g_signal_handlers_disconnect_by_func (
-			widget, mail_config_assistant_page_changed,
-			E_MAIL_CONFIG_ASSISTANT (container));
-
-	/* Chain up to parent's remove() method. */
-	GTK_CONTAINER_CLASS (e_mail_config_assistant_parent_class)->
-		remove (container, widget);
-}
-
-static void
 mail_config_assistant_prepare (EAssistant *assistant,
                                GtkWidget *page)
 {
@@ -1124,7 +1110,6 @@ static void
 e_mail_config_assistant_class_init (EMailConfigAssistantClass *class)
 {
 	GObjectClass *object_class;
-	GtkContainerClass *container_class;
 	EAssistantClass *assistant_class;
 
 	object_class = G_OBJECT_CLASS (class);
@@ -1134,8 +1119,7 @@ e_mail_config_assistant_class_init (EMailConfigAssistantClass *class)
 	object_class->finalize = mail_config_assistant_finalize;
 	object_class->constructed = mail_config_assistant_constructed;
 
-	container_class = GTK_CONTAINER_CLASS (class);
-	container_class->remove = mail_config_assistant_remove;
+	/* e_assistant_remove_page() disconnects the page "changed" handler */
 
 	assistant_class = E_ASSISTANT_CLASS (class);
 	assistant_class->prepare = mail_config_assistant_prepare;
@@ -1230,16 +1214,6 @@ e_mail_config_assistant_class_init (EMailConfigAssistantClass *class)
 static void
 e_mail_config_assistant_init (EMailConfigAssistant *assistant)
 {
-	GObject *action_area;
-	GtkBuilder *builder;
-
-	builder = gtk_builder_new ();
-	action_area = gtk_buildable_get_internal_child (
-		GTK_BUILDABLE (assistant), builder, "action_area");
-	if (action_area)
-		e_gtk_widget_set_border_width (action_area, 12);
-	g_object_unref (builder);
-
 	assistant->priv = e_mail_config_assistant_get_instance_private (assistant);
 
 	assistant->priv->account_sources =

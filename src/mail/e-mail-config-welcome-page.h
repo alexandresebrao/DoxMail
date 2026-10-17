@@ -50,12 +50,12 @@ typedef struct _EMailConfigWelcomePageClass EMailConfigWelcomePageClass;
 typedef struct _EMailConfigWelcomePagePrivate EMailConfigWelcomePagePrivate;
 
 struct _EMailConfigWelcomePage {
-	GtkScrolledWindow parent;
+	EGtkBin parent;
 	EMailConfigWelcomePagePrivate *priv;
 };
 
 struct _EMailConfigWelcomePageClass {
-	GtkScrolledWindowClass parent_class;
+	EGtkBinClass parent_class;
 };
 
 GType		e_mail_config_welcome_page_get_type

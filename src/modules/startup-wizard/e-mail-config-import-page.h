@@ -55,12 +55,12 @@ typedef struct _EMailConfigImportPageClass EMailConfigImportPageClass;
 typedef struct _EMailConfigImportPagePrivate EMailConfigImportPagePrivate;
 
 struct _EMailConfigImportPage {
-	GtkScrolledWindow parent;
+	EGtkBin parent;
 	EMailConfigImportPagePrivate *priv;
 };
 
 struct _EMailConfigImportPageClass {
-	GtkScrolledWindowClass parent_class;
+	EGtkBinClass parent_class;
 };
 
 GType		e_mail_config_import_page_get_type

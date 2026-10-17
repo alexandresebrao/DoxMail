@@ -23,6 +23,7 @@
 	"__e_mail_config_service_notebook_%p_child_backend__"
 
 struct _EMailConfigServiceNotebookPrivate {
+	GtkNotebook *notebook;  /* the bin child */
 	EMailConfigServiceBackend *active_backend;
 	gchar *child_backend_key;
 };
@@ -32,12 +33,7 @@ enum {
 	PROP_ACTIVE_BACKEND
 };
 
-enum {
-	PROP_CHILD_0,
-	PROP_CHILD_BACKEND
-};
-
-G_DEFINE_TYPE_WITH_PRIVATE (EMailConfigServiceNotebook, e_mail_config_service_notebook, GTK_TYPE_NOTEBOOK)
+G_DEFINE_TYPE_WITH_PRIVATE (EMailConfigServiceNotebook, e_mail_config_service_notebook, E_GTK_TYPE_BIN)
 
 static void
 mail_config_service_notebook_set_child_backend (EMailConfigServiceNotebook *notebook,
@@ -77,7 +73,7 @@ mail_config_service_notebook_page_num_to_backend (GBinding *binding,
 	GtkWidget *child;
 	gint page_num;
 
-	/* The binding's source and target are the same instance. */
+	/* The binding's source is the inner notebook, user_data the wrapper. */
 	notebook = GTK_NOTEBOOK (g_binding_dup_source (binding));
 
 	page_num = g_value_get_int (source_value);
@@ -85,7 +81,7 @@ mail_config_service_notebook_page_num_to_backend (GBinding *binding,
 
 	if (child != NULL)
 		backend = mail_config_service_notebook_get_child_backend (
-			E_MAIL_CONFIG_SERVICE_NOTEBOOK (notebook), child);
+			E_MAIL_CONFIG_SERVICE_NOTEBOOK (user_data), child);
 	else
 		backend = NULL;
 
@@ -105,7 +101,7 @@ mail_config_service_notebook_backend_to_page_num (GBinding *binding,
 	GtkNotebook *notebook;
 	gint n_pages, ii;
 
-	/* The binding's source and target are the same instance. */
+	/* The binding's source is the inner notebook, user_data the wrapper. */
 	notebook = GTK_NOTEBOOK (g_binding_dup_source (binding));
 
 	backend = g_value_get_object (source_value);
@@ -117,7 +113,7 @@ mail_config_service_notebook_backend_to_page_num (GBinding *binding,
 
 		child = gtk_notebook_get_nth_page (notebook, ii);
 		candidate = mail_config_service_notebook_get_child_backend (
-			E_MAIL_CONFIG_SERVICE_NOTEBOOK (notebook), child);
+			E_MAIL_CONFIG_SERVICE_NOTEBOOK (user_data), child);
 
 		if (backend == candidate) {
 			g_value_set_int (target_value, ii);
@@ -191,66 +187,32 @@ mail_config_service_notebook_finalize (GObject *object)
 static void
 mail_config_service_notebook_constructed (GObject *object)
 {
+	EMailConfigServiceNotebook *self = E_MAIL_CONFIG_SERVICE_NOTEBOOK (object);
+
 	/* Chain up to parent's constructed() method. */
 	G_OBJECT_CLASS (e_mail_config_service_notebook_parent_class)->constructed (object);
 
-	gtk_notebook_set_show_tabs (GTK_NOTEBOOK (object), FALSE);
-	gtk_notebook_set_show_border (GTK_NOTEBOOK (object), FALSE);
+	/* GtkNotebook is final with GTK 4, thus wrap one */
+	self->priv->notebook = GTK_NOTEBOOK (gtk_notebook_new ());
+	e_gtk_bin_set_bin_child (E_GTK_BIN (self), GTK_WIDGET (self->priv->notebook));
+
+	gtk_notebook_set_show_tabs (self->priv->notebook, FALSE);
+	gtk_notebook_set_show_border (self->priv->notebook, FALSE);
 
 	/* Current page is still -1 so skip G_BINDING_SYNC_CREATE. */
 	e_binding_bind_property_full (
-		object, "page",
+		self->priv->notebook, "page",
 		object, "active-backend",
 		G_BINDING_BIDIRECTIONAL,
 		mail_config_service_notebook_page_num_to_backend,
 		mail_config_service_notebook_backend_to_page_num,
-		NULL, (GDestroyNotify) NULL);
-}
-
-static void
-mail_config_service_notebook_set_child_property (GtkWidget *container,
-                                                 GtkWidget *child,
-                                                 guint property_id,
-                                                 const GValue *value,
-                                                 GParamSpec *pspec)
-{
-	switch (property_id) {
-		case PROP_CHILD_BACKEND:
-			mail_config_service_notebook_set_child_backend (
-				E_MAIL_CONFIG_SERVICE_NOTEBOOK (container),
-				child, g_value_get_object (value));
-			return;
-	}
-
-	GTK_CONTAINER_WARN_INVALID_CHILD_PROPERTY_ID (
-		container, property_id, pspec);
-}
-
-static void
-mail_config_service_notebook_get_child_property (GtkWidget *container,
-                                                 GtkWidget *child,
-                                                 guint property_id,
-                                                 GValue *value,
-                                                 GParamSpec *pspec)
-{
-	switch (property_id) {
-		case PROP_CHILD_BACKEND:
-			g_value_set_object (
-				value,
-				mail_config_service_notebook_get_child_backend (
-				E_MAIL_CONFIG_SERVICE_NOTEBOOK (container), child));
-			return;
-	}
-
-	GTK_CONTAINER_WARN_INVALID_CHILD_PROPERTY_ID (
-		container, property_id, pspec);
+		object, (GDestroyNotify) NULL);
 }
 
 static void
 e_mail_config_service_notebook_class_init (EMailConfigServiceNotebookClass *class)
 {
 	GObjectClass *object_class;
-	GtkContainerClass *container_class;
 
 	object_class = G_OBJECT_CLASS (class);
 	object_class->set_property = mail_config_service_notebook_set_property;
@@ -258,10 +220,6 @@ e_mail_config_service_notebook_class_init (EMailConfigServiceNotebookClass *clas
 	object_class->dispose = mail_config_service_notebook_dispose;
 	object_class->finalize = mail_config_service_notebook_finalize;
 	object_class->constructed = mail_config_service_notebook_constructed;
-
-	container_class = GTK_CONTAINER_CLASS (class);
-	container_class->set_child_property = mail_config_service_notebook_set_child_property;
-	container_class->get_child_property = mail_config_service_notebook_get_child_property;
 
 	g_object_class_install_property (
 		object_class,
@@ -274,17 +232,6 @@ e_mail_config_service_notebook_class_init (EMailConfigServiceNotebookClass *clas
 			G_PARAM_READWRITE |
 			G_PARAM_STATIC_STRINGS));
 
-	/* Child property for notebook pages. */
-	gtk_container_class_install_child_property (
-		container_class,
-		PROP_CHILD_BACKEND,
-		g_param_spec_object (
-			"backend",
-			"Backend",
-			"The service backend for this page",
-			E_TYPE_MAIL_CONFIG_SERVICE_BACKEND,
-			G_PARAM_READWRITE |
-			G_PARAM_STATIC_STRINGS));
 }
 
 static void
@@ -318,7 +265,7 @@ e_mail_config_service_notebook_add_page (EMailConfigServiceNotebook *notebook,
 	mail_config_service_notebook_set_child_backend (
 		notebook, child, backend);
 
-	return gtk_notebook_append_page (GTK_NOTEBOOK (notebook), child, NULL);
+	return gtk_notebook_append_page (notebook->priv->notebook, child, NULL);
 }
 
 EMailConfigServiceBackend *

@@ -1375,6 +1375,8 @@ folder_tree_finalize (GObject *object)
 	G_OBJECT_CLASS (em_folder_tree_parent_class)->finalize (object);
 }
 
+static void folder_tree_style_updated (GtkWidget *widget);
+
 static void
 folder_tree_constructed (GObject *object)
 {
@@ -1389,6 +1391,10 @@ folder_tree_constructed (GObject *object)
 
 	/* Chain up to parent's constructed() method. */
 	G_OBJECT_CLASS (em_folder_tree_parent_class)->constructed (object);
+
+	g_signal_connect (
+		e_gtk_widget_style_updates (object), "style-updated",
+		G_CALLBACK (folder_tree_style_updated), NULL);
 
 	tree_view = GTK_TREE_VIEW (object);
 	model = gtk_tree_view_get_model (tree_view);
@@ -1612,9 +1618,6 @@ folder_tree_style_updated (GtkWidget *widget)
 
 	if (self->priv->new_message_text_color)
 		folder_tree_update_new_message_text_color (self, self->priv->new_message_text_color);
-
-	/* Chain up to parent's method. */
-	GTK_WIDGET_CLASS (em_folder_tree_parent_class)->style_updated (widget);
 }
 
 static void
@@ -1753,7 +1756,6 @@ em_folder_tree_class_init (EMFolderTreeClass *class)
 	e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (widget_class), "button-press-event", G_CALLBACK (folder_tree_button_press_event));
 	e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (widget_class), "key-press-event", G_CALLBACK (folder_tree_key_press_event));
 	e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (widget_class), "popup-menu", G_CALLBACK (folder_tree_popup_menu));
-	widget_class->style_updated = folder_tree_style_updated;
 
 	tree_view_class = GTK_TREE_VIEW_CLASS (class);
 	tree_view_class->row_activated = folder_tree_row_activated;
@@ -2172,7 +2174,7 @@ tree_drag_begin (GtkWidget *widget,
 	EMFolderTreePrivate *priv = folder_tree->priv;
 	GtkTreeSelection *selection;
 	GtkTreeView *tree_view;
-	cairo_surface_t *s;
+	GdkPaintable *paintable;
 	GtkTreeModel *model;
 	GtkTreePath *path;
 	GtkTreeIter iter;
@@ -2185,9 +2187,11 @@ tree_drag_begin (GtkWidget *widget,
 	path = gtk_tree_model_get_path (model, &iter);
 	priv->drag_row = gtk_tree_row_reference_new (model, path);
 
-	s = gtk_tree_view_create_row_drag_icon (tree_view, path);
-	e_gtk_drag_set_icon_surface (context, s);
-	cairo_surface_destroy (s);
+	paintable = gtk_tree_view_create_row_drag_icon (tree_view, path);
+	if (paintable) {
+		e_gtk_drag_set_icon_paintable (context, paintable, 0, 0);
+		g_object_unref (paintable);
+	}
 
 	gtk_tree_path_free (path);
 }
@@ -2978,22 +2982,16 @@ tree_autoscroll (gpointer user_data)
 	GtkTreeView *tree_view;
 	GtkScrollable *scrollable;
 	GdkRectangle rect;
-	GdkSurface *window;
-	GdkDisplay *display;
-	GdkDeviceManager *device_manager;
-	GdkDevice *device;
-	gdouble value;
+	gdouble value, px = 0, py = 0;
 	gint offset, y;
 
 	folder_tree = EM_FOLDER_TREE (user_data);
 
-	/* Get the y pointer position relative to the treeview. */
+	/* Get the y pointer position relative to the treeview's bin window. */
 	tree_view = GTK_TREE_VIEW (folder_tree);
-	window = gtk_tree_view_get_bin_window (tree_view);
-	display = gdk_window_get_display (window);
-	device_manager = gdk_display_get_device_manager (display);
-	device = gdk_device_manager_get_client_pointer (device_manager);
-	gdk_window_get_device_position (window, device, NULL, &y, NULL);
+	if (!e_gtk_widget_get_pointer_position (GTK_WIDGET (tree_view), &px, &py))
+		return TRUE;
+	gtk_tree_view_convert_widget_to_bin_window_coords (tree_view, (gint) px, (gint) py, NULL, &y);
 
 	/* Rect is in coorinates relative to the scrolled window,
 	 * relative to the treeview. */

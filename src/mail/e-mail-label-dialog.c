@@ -213,7 +213,9 @@ e_mail_label_dialog_init (EMailLabelDialog *dialog)
 
 	container = content_area;
 
-	widget = gtk_color_selection_new ();
+	/* GtkColorSelection is gone with GTK 4 */
+	widget = gtk_color_chooser_widget_new ();
+	gtk_color_chooser_set_use_alpha (GTK_COLOR_CHOOSER (widget), FALSE);
 	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	dialog->priv->colorsel = g_object_ref (widget);
 	gtk_widget_show (widget);
@@ -263,28 +265,28 @@ void
 e_mail_label_dialog_get_label_color (EMailLabelDialog *dialog,
                                      GdkRGBA *label_color)
 {
-	GtkColorSelection *colorsel;
+	GtkColorChooser *colorsel;
 
 	g_return_if_fail (E_IS_MAIL_LABEL_DIALOG (dialog));
 	g_return_if_fail (label_color != NULL);
 
-	colorsel = GTK_COLOR_SELECTION (dialog->priv->colorsel);
+	colorsel = GTK_COLOR_CHOOSER (dialog->priv->colorsel);
 
-	gtk_color_selection_get_current_rgba (colorsel, label_color);
+	gtk_color_chooser_get_rgba (colorsel, label_color);
 }
 
 void
 e_mail_label_dialog_set_label_color (EMailLabelDialog *dialog,
                                      const GdkRGBA *label_color)
 {
-	GtkColorSelection *colorsel;
+	GtkColorChooser *colorsel;
 
 	g_return_if_fail (E_IS_MAIL_LABEL_DIALOG (dialog));
 	g_return_if_fail (label_color != NULL);
 
-	colorsel = GTK_COLOR_SELECTION (dialog->priv->colorsel);
+	colorsel = GTK_COLOR_CHOOSER (dialog->priv->colorsel);
 
-	gtk_color_selection_set_current_rgba (colorsel, label_color);
+	gtk_color_chooser_set_rgba (colorsel, label_color);
 
 	g_object_notify (G_OBJECT (dialog), "label-color");
 }

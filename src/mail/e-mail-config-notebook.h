@@ -49,12 +49,12 @@ typedef struct _EMailConfigNotebookClass EMailConfigNotebookClass;
 typedef struct _EMailConfigNotebookPrivate EMailConfigNotebookPrivate;
 
 struct _EMailConfigNotebook {
-	GtkNotebook parent;
+	EGtkBin parent;
 	EMailConfigNotebookPrivate *priv;
 };
 
 struct _EMailConfigNotebookClass {
-	GtkNotebookClass parent_class;
+	EGtkBinClass parent_class;
 };
 
 GType		e_mail_config_notebook_get_type
@@ -66,6 +66,8 @@ GtkWidget *	e_mail_config_notebook_new
 					 ESource *identity_source,
 					 ESource *transport_source,
 					 ESource *collection_source);
+GtkNotebook *	e_mail_config_notebook_get_notebook
+					(EMailConfigNotebook *notebook);
 EMailSession *	e_mail_config_notebook_get_session
 					(EMailConfigNotebook *notebook);
 ESource *	e_mail_config_notebook_get_original_source

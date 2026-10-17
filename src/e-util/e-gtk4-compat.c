@@ -716,6 +716,22 @@ e_gtk_button_set_image (GtkButton *button,
 	}
 }
 
+/* the image set by e_gtk_button_set_image(), or NULL */
+GtkWidget *
+e_gtk_button_get_image (GtkButton *button)
+{
+	GtkWidget *child;
+
+	g_return_val_if_fail (GTK_IS_BUTTON (button), NULL);
+
+	child = gtk_button_get_child (button);
+
+	if (GTK_IS_BOX (child))
+		child = gtk_widget_get_first_child (child);
+
+	return GTK_IS_IMAGE (child) ? child : NULL;
+}
+
 void
 e_gtk_button_set_label_and_icon (GtkButton *button,
                                  const gchar *label,

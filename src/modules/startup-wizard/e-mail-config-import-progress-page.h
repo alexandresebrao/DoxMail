@@ -54,12 +54,12 @@ typedef struct _EMailConfigImportProgressPageClass EMailConfigImportProgressPage
 typedef struct _EMailConfigImportProgressPagePrivate EMailConfigImportProgressPagePrivate;
 
 struct _EMailConfigImportProgressPage {
-	GtkScrolledWindow parent;
+	EGtkBin parent;
 	EMailConfigImportProgressPagePrivate *priv;
 };
 
 struct _EMailConfigImportProgressPageClass {
-	GtkScrolledWindowClass parent_class;
+	EGtkBinClass parent_class;
 };
 
 GType		e_mail_config_import_progress_page_get_type

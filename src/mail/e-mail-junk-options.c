@@ -131,7 +131,7 @@ mail_junk_options_rebuild (EMailJunkOptions *options)
 
 	g_ptr_array_foreach (
 		options->priv->widgets,
-		(GFunc) gtk_widget_destroy, NULL);
+		(GFunc) e_gtk_widget_destroy, NULL);
 	g_ptr_array_set_size (options->priv->widgets, 0);
 
 	if (session != NULL)

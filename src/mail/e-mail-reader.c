@@ -6419,12 +6419,14 @@ e_mail_reader_get_message_list (EMailReader *reader)
 	return iface->get_message_list (reader);
 }
 
-GtkMenu *
+/* Returns an unparented GtkPopoverMenu, to be shown with
+ * e_util_popup_menu_at_event() */
+GtkWidget *
 e_mail_reader_get_popup_menu (EMailReader *reader)
 {
 	EUIManager *ui_manager;
 	GObject *ui_object;
-	GtkMenu *menu;
+	GtkWidget *menu;
 
 	g_return_val_if_fail (E_IS_MAIL_READER (reader), NULL);
 
@@ -6435,12 +6437,9 @@ e_mail_reader_get_popup_menu (EMailReader *reader)
 	ui_object = e_ui_manager_create_item (ui_manager, "mail-preview-popup");
 	g_return_val_if_fail (G_IS_MENU_MODEL (ui_object), NULL);
 
-	menu = GTK_MENU (gtk_popover_menu_new_from_model (G_MENU_MODEL (ui_object)));
+	menu = gtk_popover_menu_new_from_model (G_MENU_MODEL (ui_object));
 
 	g_clear_object (&ui_object);
-
-	gtk_menu_attach_to_widget (menu, GTK_WIDGET (reader), NULL);
-	e_util_connect_menu_detach_after_deactivate (menu);
 
 	return menu;
 }

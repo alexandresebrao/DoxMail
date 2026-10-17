@@ -52,12 +52,12 @@ typedef struct _EMailConfigRestorePageClass EMailConfigRestorePageClass;
 typedef struct _EMailConfigRestorePagePrivate EMailConfigRestorePagePrivate;
 
 struct _EMailConfigRestorePage {
-	GtkScrolledWindow parent;
+	EGtkBin parent;
 	EMailConfigRestorePagePrivate *priv;
 };
 
 struct _EMailConfigRestorePageClass {
-	GtkScrolledWindowClass parent_class;
+	EGtkBinClass parent_class;
 };
 
 GType		e_mail_config_restore_page_get_type

@@ -575,15 +575,62 @@ subscription_editor_create_menu_item (const gchar *label,
 {
 	GtkWidget *item;
 
-	item = gtk_menu_item_new_with_mnemonic (label);
+	/* GtkMenuItem is gone with GTK 4: a flat button in a popover */
+	item = gtk_button_new_with_mnemonic (label);
+	gtk_button_set_has_frame (GTK_BUTTON (item), FALSE);
+	gtk_label_set_xalign (GTK_LABEL (gtk_button_get_child (GTK_BUTTON (item))), 0.0);
 	gtk_widget_set_sensitive (item, sensitive);
 
 	gtk_widget_show (item);
 
-	g_signal_connect_swapped (
-		item, "activate", activate_cb, editor);
+	g_object_set_data (G_OBJECT (item), "activate-cb", activate_cb);
+	g_object_set_data (G_OBJECT (item), "editor", editor);
 
 	return item;
+}
+
+static void
+subscription_editor_menu_closed_cb (GtkPopover *menu)
+{
+	g_idle_add_full (G_PRIORITY_DEFAULT_IDLE, (GSourceFunc) gtk_widget_unparent,
+		g_object_ref (menu), g_object_unref);
+}
+
+static GtkWidget *
+subscription_editor_menu_new (void)
+{
+	GtkWidget *menu;
+
+	menu = gtk_popover_new ();
+	gtk_popover_set_has_arrow (GTK_POPOVER (menu), FALSE);
+	gtk_widget_add_css_class (menu, "menu");
+	gtk_popover_set_child (GTK_POPOVER (menu), gtk_box_new (GTK_ORIENTATION_VERTICAL, 0));
+
+	g_signal_connect (menu, "closed", G_CALLBACK (subscription_editor_menu_closed_cb), NULL);
+
+	return menu;
+}
+
+static void
+subscription_editor_menu_append (GtkWidget *menu,
+				 GtkWidget *item)
+{
+	g_signal_connect_swapped (item, "clicked", G_CALLBACK (gtk_popover_popdown), menu);
+	g_signal_connect_swapped (item, "clicked",
+		g_object_get_data (G_OBJECT (item), "activate-cb"),
+		g_object_get_data (G_OBJECT (item), "editor"));
+
+	gtk_box_append (GTK_BOX (gtk_popover_get_child (GTK_POPOVER (menu))), item);
+}
+
+static void
+subscription_editor_menu_popup (GtkWidget *menu,
+				GtkWidget *button)
+{
+	gtk_widget_set_parent (menu, button);
+	gtk_popover_set_position (GTK_POPOVER (menu), GTK_POS_BOTTOM);
+	gtk_widget_set_halign (menu, GTK_ALIGN_START);
+	gtk_popover_popup (GTK_POPOVER (menu));
 }
 
 static TreeRowData *
@@ -807,10 +854,10 @@ subscription_editor_subscribe_popup_cb (EMSubscriptionEditor *editor)
 			: editor->priv->active->tree_store,
 			&iter);
 
-	menu = gtk_menu_new ();
+	menu = subscription_editor_menu_new ();
 
-	gtk_menu_shell_append (
-		GTK_MENU_SHELL (menu),
+	subscription_editor_menu_append (
+		menu,
 		subscription_editor_create_menu_item (
 			_("_Subscribe"),
 			gtk_widget_get_sensitive (
@@ -818,36 +865,23 @@ subscription_editor_subscribe_popup_cb (EMSubscriptionEditor *editor)
 			G_CALLBACK (subscription_editor_subscribe),
 			editor));
 
-	gtk_menu_shell_append (
-		GTK_MENU_SHELL (menu),
+	subscription_editor_menu_append (
+		menu,
 		subscription_editor_create_menu_item (
 			_("Su_bscribe To Shown"),
 			tree_filled,
 			G_CALLBACK (subscription_editor_subscribe_shown),
 			editor));
 
-	gtk_menu_shell_append (
-		GTK_MENU_SHELL (menu),
+	subscription_editor_menu_append (
+		menu,
 		subscription_editor_create_menu_item (
 			_("Subscribe To _All"),
 			tree_filled,
 			G_CALLBACK (subscription_editor_subscribe_all),
 			editor));
 
-	gtk_menu_attach_to_widget (GTK_MENU (menu), GTK_WIDGET (editor), NULL);
-	g_signal_connect (menu, "deactivate", G_CALLBACK (gtk_menu_detach), NULL);
-
-	g_object_set (menu,
-	              "anchor-hints", (GDK_ANCHOR_FLIP_Y |
-	                               GDK_ANCHOR_SLIDE |
-	                               GDK_ANCHOR_RESIZE),
-	              NULL);
-
-	gtk_menu_popup_at_widget (GTK_MENU (menu),
-	                          editor->priv->subscribe_button,
-	                          GDK_GRAVITY_SOUTH_WEST,
-	                          GDK_GRAVITY_NORTH_WEST,
-	                          NULL);
+	subscription_editor_menu_popup (menu, editor->priv->subscribe_button);
 }
 
 static void
@@ -930,10 +964,10 @@ subscription_editor_unsubscribe_popup_cb (EMSubscriptionEditor *editor)
 			: editor->priv->active->tree_store,
 			&iter);
 
-	menu = gtk_menu_new ();
+	menu = subscription_editor_menu_new ();
 
-	gtk_menu_shell_append (
-		GTK_MENU_SHELL (menu),
+	subscription_editor_menu_append (
+		menu,
 		subscription_editor_create_menu_item (
 			_("_Unsubscribe"),
 			gtk_widget_get_sensitive (
@@ -941,36 +975,23 @@ subscription_editor_unsubscribe_popup_cb (EMSubscriptionEditor *editor)
 			G_CALLBACK (subscription_editor_unsubscribe),
 			editor));
 
-	gtk_menu_shell_append (
-		GTK_MENU_SHELL (menu),
+	subscription_editor_menu_append (
+		menu,
 		subscription_editor_create_menu_item (
 			_("Unsu_bscribe From Hidden"),
 			tree_filled,
 			G_CALLBACK (subscription_editor_unsubscribe_hidden),
 			editor));
 
-	gtk_menu_shell_append (
-		GTK_MENU_SHELL (menu),
+	subscription_editor_menu_append (
+		menu,
 		subscription_editor_create_menu_item (
 			_("Unsubscribe From _All"),
 			tree_filled,
 			G_CALLBACK (subscription_editor_unsubscribe_all),
 			editor));
 
-	gtk_menu_attach_to_widget (GTK_MENU (menu), GTK_WIDGET (editor), NULL);
-	g_signal_connect (menu, "deactivate", G_CALLBACK (gtk_menu_detach), NULL);
-
-	g_object_set (menu,
-	              "anchor-hints", (GDK_ANCHOR_FLIP_Y |
-	                               GDK_ANCHOR_SLIDE |
-	                               GDK_ANCHOR_RESIZE),
-	              NULL);
-
-	gtk_menu_popup_at_widget (GTK_MENU (menu),
-	                          editor->priv->unsubscribe_button,
-	                          GDK_GRAVITY_SOUTH_WEST,
-	                          GDK_GRAVITY_NORTH_WEST,
-	                          NULL);
+	subscription_editor_menu_popup (menu, editor->priv->unsubscribe_button);
 }
 
 static void

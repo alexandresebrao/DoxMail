@@ -67,7 +67,7 @@ em_migrate_set_progress (double percent)
 	gtk_progress_bar_set_fraction (progress, percent);
 	gtk_progress_bar_set_text (progress, text);
 
-	while (gtk_events_pending ())
+	while (g_main_context_pending (NULL))
 		g_main_context_iteration (NULL, TRUE);
 }
 

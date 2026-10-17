@@ -417,9 +417,6 @@ em_filter_editor_construct (EMFilterEditor *fe,
 	e_gtk_box_pack_start (GTK_BOX (action_area), button, FALSE, TRUE, 0);
 	e_gtk_box_reorder_child (GTK_BOX (action_area), button, 0);
 
-	if (GTK_IS_BUTTON_BOX (action_area))
-		e_gtk_button_box_set_child_secondary (action_area, button, TRUE);
-
 	g_signal_connect (button, "clicked", G_CALLBACK (emfe_describe_filters_cb), fe);
 
 	tree_view = e_builder_get_widget (builder, "rule_tree_view");

@@ -172,7 +172,30 @@ mail_label_list_store_dup_icon_name (EMailLabelListStore *store,
 		pixbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB, FALSE, 8, 16, 16);
 		gdk_pixbuf_fill (pixbuf, pixel);
 
-		gtk_icon_theme_add_builtin_icon (icon_name, 16, pixbuf);
+		/* GTK 4 has no built-in icons: save it into a search path
+		 * directory, then reset the search path so the theme rescans */
+		{
+			gchar *dirname, *filename, **paths;
+
+			dirname = g_build_filename (g_get_user_runtime_dir (), "evolution", "label-icons", NULL);
+			filename = g_strconcat (dirname, G_DIR_SEPARATOR_S, icon_name, ".png", NULL);
+			g_mkdir_with_parents (dirname, 0700);
+
+			if (gdk_pixbuf_save (pixbuf, filename, "png", NULL, NULL)) {
+				paths = gtk_icon_theme_get_search_path (icon_theme);
+
+				if (!paths || !g_strv_contains ((const gchar * const *) paths, dirname)) {
+					gtk_icon_theme_add_search_path (icon_theme, dirname);
+				} else {
+					gtk_icon_theme_set_search_path (icon_theme, (const gchar * const *) paths);
+				}
+
+				g_strfreev (paths);
+			}
+
+			g_free (filename);
+			g_free (dirname);
+		}
 
 		g_object_unref (pixbuf);
 	}

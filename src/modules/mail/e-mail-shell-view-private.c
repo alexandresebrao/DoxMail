@@ -298,7 +298,7 @@ mail_shell_view_popup_event_cb (EMailShellView *mail_shell_view,
 	EShellView *shell_view;
 	EMailReader *reader;
 	EMailView *mail_view;
-	GtkMenu *menu;
+	GtkWidget *menu;
 
 	if (uri != NULL)
 		return FALSE;
@@ -316,7 +316,7 @@ mail_shell_view_popup_event_cb (EMailShellView *mail_shell_view,
 	e_shell_view_update_actions (shell_view);
 
 	menu = e_mail_reader_get_popup_menu (reader);
-	gtk_menu_popup_at_pointer (menu, event);
+	e_util_popup_menu_at_event (menu, GTK_WIDGET (display), event);
 
 	return TRUE;
 }

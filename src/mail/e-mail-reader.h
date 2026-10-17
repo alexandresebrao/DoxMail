@@ -158,7 +158,7 @@ gboolean	e_mail_reader_get_hide_deleted	(EMailReader *reader);
 GtkWidget *	e_mail_reader_get_message_list	(EMailReader *reader);
 guint		e_mail_reader_open_selected_mail
 						(EMailReader *reader);
-GtkMenu *	e_mail_reader_get_popup_menu	(EMailReader *reader);
+GtkWidget *	e_mail_reader_get_popup_menu	(EMailReader *reader);
 EPreviewPane *	e_mail_reader_get_preview_pane	(EMailReader *reader);
 GPtrArray *	e_mail_reader_get_selected_uids	(EMailReader *reader);
 GPtrArray *	e_mail_reader_get_selected_uids_with_collapsed_threads

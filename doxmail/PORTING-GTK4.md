@@ -152,9 +152,26 @@ D-Bus session; without modules it only knows no views yet). More compat:
 (contact editor, contact list editor, mail and calendar dialogs):
 `gtk4-builder-tool simplify --3to4`, then fix by hand.
 
+### 4. mail
+
+`src/mail` (libevolution-mail, mail importers) builds with GTK 4.
+Config pages and both config notebooks were subclasses of the now final
+GtkScrolledWindow/GtkNotebook: they are `EGtkBin` subclasses now, the
+page interface puts a scrolled window in the bin
+(`e_mail_config_page_set_content()`), and the notebooks wrap a GtkNotebook
+(`e_mail_config_notebook_get_notebook()`); modules' pages (backup-restore,
+startup-wizard) are switched too. `e_mail_reader_get_popup_menu()` returns
+a GtkPopoverMenu shown with `e_util_popup_menu_at_event()`; small menus
+(remote content, subscription editor) are popovers with flat buttons;
+message-list cut/copy/paste uses the clipboard compat instead of a
+GtkInvisible; label colors are a GtkColorChooserWidget and their icons
+PNG files in `$XDG_RUNTIME_DIR/evolution/label-icons` (no built-in icons).
+Not verified yet: account reordering by drag (hooked to GtkTreeView's own
+GtkDragSource), anything interactive.
+
 ## Next
 
-mail → calendar → modules (they give the shell its views) → plugins;
+calendar → modules (they give the shell its views) → plugins;
 then the `.ui` files and `data/` (schemas, icons) in the GTK 4 build.
 For each: add it to the `WITH_GTK4` list, rerun `rewrite-all.sh`, run
 `canvas-events.py` on canvas code and `gdk-event-fields.py` on the rest,

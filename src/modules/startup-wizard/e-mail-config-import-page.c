@@ -42,7 +42,7 @@ static void	e_mail_config_import_page_interface_init
 					(EMailConfigPageInterface *iface);
 static gboolean	mail_config_import_page_next	(gpointer user_data);
 
-G_DEFINE_DYNAMIC_TYPE_EXTENDED (EMailConfigImportPage, e_mail_config_import_page, GTK_TYPE_SCROLLED_WINDOW, 0,
+G_DEFINE_DYNAMIC_TYPE_EXTENDED (EMailConfigImportPage, e_mail_config_import_page, E_GTK_TYPE_BIN, 0,
 	G_ADD_PRIVATE_DYNAMIC (EMailConfigImportPage)
 	G_IMPLEMENT_INTERFACE_DYNAMIC (E_TYPE_MAIL_CONFIG_PAGE, e_mail_config_import_page_interface_init))
 

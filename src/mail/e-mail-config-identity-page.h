@@ -51,12 +51,12 @@ typedef struct _EMailConfigIdentityPageClass EMailConfigIdentityPageClass;
 typedef struct _EMailConfigIdentityPagePrivate EMailConfigIdentityPagePrivate;
 
 struct _EMailConfigIdentityPage {
-	GtkScrolledWindow parent;
+	EGtkBin parent;
 	EMailConfigIdentityPagePrivate *priv;
 };
 
 struct _EMailConfigIdentityPageClass {
-	GtkScrolledWindowClass parent_class;
+	EGtkBinClass parent_class;
 };
 
 GType		e_mail_config_identity_page_get_type

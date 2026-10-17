@@ -36,7 +36,7 @@ enum {
 
 static gulong signals[LAST_SIGNAL];
 
-G_DEFINE_INTERFACE (EMailConfigPage, e_mail_config_page, GTK_TYPE_SCROLLED_WINDOW)
+G_DEFINE_INTERFACE (EMailConfigPage, e_mail_config_page, E_GTK_TYPE_BIN)
 
 static gboolean
 mail_config_page_check_complete (EMailConfigPage *page)
@@ -163,24 +163,26 @@ e_mail_config_page_set_content (EMailConfigPage *page,
 				GtkWidget *content)
 {
 	GtkScrolledWindow *scrolled;
-	GtkWidget *child;
 
 	g_return_if_fail (E_IS_MAIL_CONFIG_PAGE (page));
 	g_return_if_fail (!content || GTK_IS_WIDGET (content));
 
-	scrolled = GTK_SCROLLED_WINDOW (page);
+	/* GtkScrolledWindow is final with GTK 4: pages are EGtkBin
+	 * subclasses holding a scrolled window with the content */
+	scrolled = GTK_SCROLLED_WINDOW (e_gtk_bin_get_bin_child (E_GTK_BIN (page)));
+	if (!scrolled) {
+		scrolled = GTK_SCROLLED_WINDOW (gtk_scrolled_window_new ());
+		e_gtk_bin_set_bin_child (E_GTK_BIN (page), GTK_WIDGET (scrolled));
+	}
 
 	if (content)
-		e_gtk_container_add (scrolled, content);
+		gtk_scrolled_window_set_child (scrolled, content);
 
 	gtk_scrolled_window_set_policy (scrolled, GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_scrolled_window_set_has_frame (scrolled, FALSE);
 
-	child = e_gtk_bin_get_child (scrolled);
-	if (GTK_IS_VIEWPORT (child))
-		;
-
-	gtk_widget_show (content);
+	if (content)
+		gtk_widget_show (content);
 
 	g_object_set (GTK_WIDGET (page),
 		"halign", GTK_ALIGN_FILL,

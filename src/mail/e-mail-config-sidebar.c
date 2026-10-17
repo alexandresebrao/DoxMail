@@ -37,7 +37,7 @@ enum {
 	PROP_NOTEBOOK
 };
 
-G_DEFINE_TYPE_WITH_PRIVATE (EMailConfigSidebar, e_mail_config_sidebar, GTK_TYPE_BUTTON_BOX)
+G_DEFINE_TYPE_WITH_PRIVATE (EMailConfigSidebar, e_mail_config_sidebar, GTK_TYPE_BOX)
 
 static void
 mail_config_sidebar_button_toggled (GtkToggleButton *button,
@@ -53,7 +53,7 @@ mail_config_sidebar_button_toggled (GtkToggleButton *button,
 		page = g_hash_table_lookup (hash_table, button);
 		g_return_if_fail (GTK_IS_WIDGET (page));
 
-		notebook = GTK_NOTEBOOK (sidebar->priv->notebook);
+		notebook = e_mail_config_notebook_get_notebook (sidebar->priv->notebook);
 		page_num = gtk_notebook_page_num (notebook, page);
 		e_mail_config_sidebar_set_active (sidebar, page_num);
 	}
@@ -250,7 +250,7 @@ mail_config_sidebar_constructed (GObject *object)
 	/* Add buttons for existing notebook pages before
 	 * binding to properties or connecting to signals. */
 
-	notebook = GTK_NOTEBOOK (sidebar->priv->notebook);
+	notebook = e_mail_config_notebook_get_notebook (sidebar->priv->notebook);
 	n_pages = gtk_notebook_get_n_pages (notebook);
 
 	for (ii = 0; ii < n_pages; ii++) {
@@ -373,7 +373,7 @@ e_mail_config_sidebar_set_active (EMailConfigSidebar *sidebar,
 
 	g_return_if_fail (E_IS_MAIL_CONFIG_SIDEBAR (sidebar));
 
-	notebook = GTK_NOTEBOOK (sidebar->priv->notebook);
+	notebook = e_mail_config_notebook_get_notebook (sidebar->priv->notebook);
 	page = gtk_notebook_get_nth_page (notebook, active);
 
 	sidebar->priv->active = (page != NULL) ? active : -1;

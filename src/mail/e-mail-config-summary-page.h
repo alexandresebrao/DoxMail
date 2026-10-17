@@ -51,12 +51,12 @@ typedef struct _EMailConfigSummaryPageClass EMailConfigSummaryPageClass;
 typedef struct _EMailConfigSummaryPagePrivate EMailConfigSummaryPagePrivate;
 
 struct _EMailConfigSummaryPage {
-	GtkScrolledWindow parent;
+	EGtkBin parent;
 	EMailConfigSummaryPagePrivate *priv;
 };
 
 struct _EMailConfigSummaryPageClass {
-	GtkScrolledWindowClass parent_class;
+	EGtkBinClass parent_class;
 
 	/* Signals */
 	void		(*refresh)		(EMailConfigSummaryPage *page);

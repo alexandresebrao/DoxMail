@@ -240,6 +240,22 @@ test_widgets (void)
 	widget = e_date_edit_new ();
 	gtk_box_append (GTK_BOX (box), widget);
 
+	/* e_gtk_button_get_image() finds the image with and without a label */
+	{
+		GtkWidget *image = gtk_image_new_from_icon_name ("folder");
+
+		widget = gtk_button_new ();
+		e_gtk_button_set_image (GTK_BUTTON (widget), image);
+		g_assert_true (e_gtk_button_get_image (GTK_BUTTON (widget)) == image);
+		gtk_box_append (GTK_BOX (box), widget);
+
+		image = gtk_image_new_from_icon_name ("folder");
+		widget = gtk_button_new_with_mnemonic ("_Icon");
+		e_gtk_button_set_image (GTK_BUTTON (widget), image);
+		g_assert_true (e_gtk_button_get_image (GTK_BUTTON (widget)) == image);
+		gtk_box_append (GTK_BOX (box), widget);
+	}
+
 	widget = e_ellipsized_combo_box_text_new (FALSE);
 	gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (widget), "a very long text that should be ellipsized");
 	g_assert_cmpint (e_ellipsized_combo_box_text_get_max_natural_width (E_ELLIPSIZED_COMBO_BOX_TEXT (widget)), ==, 225);

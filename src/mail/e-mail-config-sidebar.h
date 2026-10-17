@@ -51,7 +51,7 @@ struct _EMailConfigSidebar {
 };
 
 struct _EMailConfigSidebarClass {
-	GtkButtonBoxClass parent_class;
+	GtkBoxClass parent_class;
 };
 
 GType		e_mail_config_sidebar_get_type	(void) G_GNUC_CONST;

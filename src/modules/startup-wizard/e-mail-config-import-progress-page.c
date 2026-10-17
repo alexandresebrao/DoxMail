@@ -34,7 +34,7 @@ enum {
 static void	e_mail_config_import_progress_page_interface_init
 					(EMailConfigPageInterface *iface);
 
-G_DEFINE_DYNAMIC_TYPE_EXTENDED (EMailConfigImportProgressPage, e_mail_config_import_progress_page, GTK_TYPE_SCROLLED_WINDOW, 0,
+G_DEFINE_DYNAMIC_TYPE_EXTENDED (EMailConfigImportProgressPage, e_mail_config_import_progress_page, E_GTK_TYPE_BIN, 0,
 	G_ADD_PRIVATE_DYNAMIC (EMailConfigImportProgressPage)
 	G_IMPLEMENT_INTERFACE_DYNAMIC (E_TYPE_MAIL_CONFIG_PAGE, e_mail_config_import_progress_page_interface_init))
 

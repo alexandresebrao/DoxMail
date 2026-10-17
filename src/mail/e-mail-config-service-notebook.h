@@ -47,12 +47,12 @@ typedef struct _EMailConfigServiceNotebookClass EMailConfigServiceNotebookClass;
 typedef struct _EMailConfigServiceNotebookPrivate EMailConfigServiceNotebookPrivate;
 
 struct _EMailConfigServiceNotebook {
-	GtkNotebook parent;
+	EGtkBin parent;
 	EMailConfigServiceNotebookPrivate *priv;
 };
 
 struct _EMailConfigServiceNotebookClass {
-	GtkNotebookClass parent_class;
+	EGtkBinClass parent_class;
 };
 
 GType		e_mail_config_service_notebook_get_type

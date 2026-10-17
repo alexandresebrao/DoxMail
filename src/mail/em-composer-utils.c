@@ -989,7 +989,7 @@ composer_send_completed (GObject *source_object,
 	 * time out and then destroy the composer window. */
 	g_object_weak_ref (
 		G_OBJECT (activity), (GWeakNotify)
-		gtk_widget_destroy, async_context->composer);
+		e_gtk_widget_destroy, async_context->composer);
 
 exit:
 	g_clear_error (&local_error);
@@ -1546,7 +1546,7 @@ composer_save_to_outbox_completed (GObject *source_object,
 	 * time out and then destroy the composer window. */
 	g_object_weak_ref (
 		G_OBJECT (activity), (GWeakNotify)
-		gtk_widget_destroy, async_context->composer);
+		e_gtk_widget_destroy, async_context->composer);
 
 	emcu_manage_flush_outbox (session);
 

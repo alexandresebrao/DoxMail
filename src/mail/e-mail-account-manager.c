@@ -117,11 +117,9 @@ mail_account_manager_build_goa_message (EMailAccountManager *manager)
 		G_CALLBACK (mail_account_manager_open_goa_cb),
 		manager);
 
-	container = gtk_info_bar_get_content_area (GTK_INFO_BAR (widget));
-
-	/* Set spacing to 8 to match the default value
-	 * of the "content-area-border" style property. */
-	gtk_box_set_spacing (GTK_BOX (container), 8);
+	/* GTK 4 info bars have no content area: add a box */
+	container = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 8);
+	gtk_info_bar_add_child (GTK_INFO_BAR (widget), container);
 
 	gtk_orientable_set_orientation (
 		GTK_ORIENTABLE (container), GTK_ORIENTATION_HORIZONTAL);
@@ -203,11 +201,9 @@ mail_account_manager_build_uoa_message (EMailAccountManager *manager)
 		G_CALLBACK (mail_account_manager_open_uoa_cb),
 		manager);
 
-	container = gtk_info_bar_get_content_area (GTK_INFO_BAR (widget));
-
-	/* Set spacing to 8 to match the default value
-	 * of the "content-area-border" style property. */
-	gtk_box_set_spacing (GTK_BOX (container), 8);
+	/* GTK 4 info bars have no content area: add a box */
+	container = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 8);
+	gtk_info_bar_add_child (GTK_INFO_BAR (widget), container);
 
 	gtk_orientable_set_orientation (
 		GTK_ORIENTABLE (container), GTK_ORIENTATION_HORIZONTAL);
@@ -681,7 +677,9 @@ mail_account_manager_constructed (GObject *object)
 		G_CALLBACK (mail_account_manager_info_bar_response_cb),
 		manager);
 
-	container = gtk_info_bar_get_content_area (GTK_INFO_BAR (widget));
+	/* GTK 4 info bars have no content area */
+	container = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
+	gtk_info_bar_add_child (GTK_INFO_BAR (widget), container);
 
 	widget = gtk_label_new (
 		_("You can drag and drop account names to reorder them."));

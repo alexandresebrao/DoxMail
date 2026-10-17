@@ -52,12 +52,12 @@ typedef struct _EMailConfigActivityPageClass EMailConfigActivityPageClass;
 typedef struct _EMailConfigActivityPagePrivate EMailConfigActivityPagePrivate;
 
 struct _EMailConfigActivityPage {
-	GtkScrolledWindow parent;
+	EGtkBin parent;
 	EMailConfigActivityPagePrivate *priv;
 };
 
 struct _EMailConfigActivityPageClass {
-	GtkScrolledWindowClass parent_class;
+	EGtkBinClass parent_class;
 };
 
 GType		e_mail_config_activity_page_get_type

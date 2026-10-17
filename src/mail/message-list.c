@@ -76,7 +76,6 @@ struct _MLSelection {
 };
 
 struct _MessageListPrivate {
-	GtkWidget *invisible;	/* 4 selection */
 
 	EMailSession *session;
 
@@ -1414,6 +1413,22 @@ message_list_select_subthread (MessageList *message_list)
 	select_thread (message_list, subthread_select_foreach);
 }
 
+static void	ml_clipboard_get		(GdkClipboard *clipboard,
+						 EGtkSelectionData *data,
+						 guint info,
+						 gpointer owner);
+static void	ml_clipboard_clear		(GdkClipboard *clipboard,
+						 gpointer owner);
+static void	ml_clipboard_received		(GdkClipboard *clipboard,
+						 EGtkSelectionData *selection_data,
+						 gpointer user_data);
+
+/* info 2 is text/plain, see ml_clipboard_get() */
+static const EGtkTargetEntry ml_clipboard_targets[] = {
+	{ (gchar *) "x-uid-list", 0, 0 },
+	{ (gchar *) "STRING", 0, 2 }
+};
+
 void
 message_list_copy (MessageList *message_list,
                    gboolean cut)
@@ -1454,14 +1469,16 @@ message_list_copy (MessageList *message_list,
 		priv->clipboard.uids = g_ptr_array_ref (uids);
 		priv->clipboard.folder = message_list_ref_folder (message_list);
 
-		gtk_selection_owner_set (
-			priv->invisible,
-			E_GTK_SELECTION_CLIPBOARD,
-			e_gtk_get_current_event_time ());
+		e_gtk_clipboard_set_with_owner (
+			e_gtk_clipboard_get (E_GTK_SELECTION_CLIPBOARD),
+			ml_clipboard_targets, G_N_ELEMENTS (ml_clipboard_targets),
+			ml_clipboard_get, ml_clipboard_clear,
+			G_OBJECT (message_list));
 	} else {
-		gtk_selection_owner_set (
-			NULL, E_GTK_SELECTION_CLIPBOARD,
-			e_gtk_get_current_event_time ());
+		GdkClipboard *clipboard = e_gtk_clipboard_get (E_GTK_SELECTION_CLIPBOARD);
+
+		if (e_gtk_clipboard_get_owner (clipboard) == G_OBJECT (message_list))
+			e_gtk_clipboard_clear (clipboard);
 	}
 
 	g_ptr_array_unref (uids);
@@ -1472,11 +1489,10 @@ message_list_paste (MessageList *message_list)
 {
 	g_return_if_fail (IS_MESSAGE_LIST (message_list));
 
-	gtk_selection_convert (
-		message_list->priv->invisible,
-		E_GTK_SELECTION_CLIPBOARD,
+	e_gtk_clipboard_request_contents (
+		e_gtk_clipboard_get (E_GTK_SELECTION_CLIPBOARD),
 		e_gtk_atom_intern ("x-uid-list", FALSE),
-		GDK_CURRENT_TIME);
+		ml_clipboard_received, g_object_ref (message_list));
 }
 
 static void
@@ -2541,12 +2557,12 @@ message_list_setup_etree (MessageList *message_list)
 }
 
 static void
-ml_selection_get (GtkWidget *widget,
+ml_clipboard_get (GdkClipboard *clipboard,
                   EGtkSelectionData *data,
                   guint info,
-                  guint time_stamp,
-                  MessageList *message_list)
+                  gpointer owner)
 {
+	MessageList *message_list = owner;
 	struct _MLSelection *selection;
 
 	selection = &message_list->priv->clipboard;
@@ -2565,32 +2581,32 @@ ml_selection_get (GtkWidget *widget,
 	}
 }
 
-static gboolean
-ml_selection_clear_event (GtkWidget *widget,
-                          GdkEventSelection *event,
-                          MessageList *message_list)
+static void
+ml_clipboard_clear (GdkClipboard *clipboard,
+                    gpointer owner)
 {
-	MessageListPrivate *p = message_list->priv;
+	MessageList *message_list = owner;
 
-	clear_selection (message_list, &p->clipboard);
-
-	return TRUE;
+	clear_selection (message_list, &message_list->priv->clipboard);
 }
 
+/* takes the reference on @user_data from message_list_paste() */
 static void
-ml_selection_received (GtkWidget *widget,
+ml_clipboard_received (GdkClipboard *clipboard,
                        EGtkSelectionData *selection_data,
-                       guint time,
-                       MessageList *message_list)
+                       gpointer user_data)
 {
+	MessageList *message_list = user_data;
 	EMailSession *session;
 	CamelFolder *folder;
 	EGtkAtom target;
 
-	target = e_gtk_selection_data_get_target (selection_data);
+	target = selection_data ? e_gtk_selection_data_get_target (selection_data) : NULL;
 
-	if (target != e_gtk_atom_intern ("x-uid-list", FALSE)) {
+	if (target != e_gtk_atom_intern ("x-uid-list", FALSE) ||
+	    message_list->priv->destroyed) {
 		d (printf ("Unknown selection received by message-list\n"));
+		g_object_unref (message_list);
 		return;
 	}
 
@@ -2602,6 +2618,7 @@ ml_selection_received (GtkWidget *widget,
 		selection_data, session, folder, FALSE, NULL, NULL);
 
 	g_clear_object (&folder);
+	g_object_unref (message_list);
 }
 
 static void
@@ -3470,7 +3487,6 @@ message_list_dispose (GObject *object)
 
 	g_clear_object (&priv->session);
 	g_clear_object (&priv->folder);
-	g_clear_object (&priv->invisible);
 	g_clear_object (&priv->mail_settings);
 	g_clear_object (&priv->eds_settings);
 
@@ -4298,7 +4314,6 @@ message_list_init (MessageList *message_list)
 {
 	MessageListPrivate *p;
 	EGtkTargetList *target_list;
-	EGtkAtom matom;
 
 	message_list->priv = message_list_get_instance_private (message_list);
 
@@ -4317,24 +4332,8 @@ message_list_init (MessageList *message_list)
 
 	/* TODO: Should this only get the selection if we're realised? */
 	p = message_list->priv;
-	p->invisible = gtk_invisible_new ();
 	p->destroyed = FALSE;
-	g_object_ref_sink (p->invisible);
 	p->any_row_changed = FALSE;
-
-	matom = e_gtk_atom_intern ("x-uid-list", FALSE);
-	gtk_selection_add_target (p->invisible, E_GTK_SELECTION_CLIPBOARD, matom, 0);
-	gtk_selection_add_target (p->invisible, E_GTK_SELECTION_CLIPBOARD, E_GTK_SELECTION_TYPE_STRING, 2);
-
-	g_signal_connect (
-		p->invisible, "selection_get",
-		G_CALLBACK (ml_selection_get), message_list);
-	g_signal_connect (
-		p->invisible, "selection_clear_event",
-		G_CALLBACK (ml_selection_clear_event), message_list);
-	g_signal_connect (
-		p->invisible, "selection_received",
-		G_CALLBACK (ml_selection_received), message_list);
 
 	/* FIXME This is currently unused. */
 	target_list = e_gtk_target_list_new (NULL, 0);
@@ -4407,10 +4406,8 @@ message_list_construct (MessageList *message_list)
 	if (constructed)
 		e_tree_table_adapter_root_node_set_visible (adapter, FALSE);
 
-	if (atk_get_root () != NULL) {
-		a11y = GTK_WIDGET (GTK_WIDGET (message_list));
-		e_gtk_widget_set_accessible_name (a11y, _("Messages"));
-	}
+	a11y = GTK_WIDGET (message_list);
+	e_gtk_widget_set_accessible_name (a11y, _("Messages"));
 
 	g_signal_connect (
 		adapter, "model_row_changed",

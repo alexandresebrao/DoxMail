@@ -1213,18 +1213,10 @@ mail_display_attachment_menu_clicked_cb (EWebView *web_view,
 		g_object_weak_ref (G_OBJECT (popup_menu), mail_display_attachment_menu_freed_cb,
 			g_object_ref (display->priv->attachment_inline_group));
 
-		g_object_set (GTK_MENU (popup_menu),
-		              "anchor-hints", (GDK_ANCHOR_FLIP_Y |
-		                               GDK_ANCHOR_SLIDE |
-		                               GDK_ANCHOR_RESIZE),
-		              NULL);
-
-		gtk_menu_popup_at_rect (GTK_MENU (popup_menu),
-		                        gtk_widget_get_parent_window (GTK_WIDGET (display)),
-		                        element_position,
-		                        GDK_GRAVITY_SOUTH_WEST,
-		                        GDK_GRAVITY_NORTH_WEST,
-		                        NULL);
+		/* below the element, like GTK 3 did with south-west gravity */
+		e_util_popup_menu (popup_menu, GTK_WIDGET (display),
+			element_position->x,
+			element_position->y + element_position->height);
 	}
 
 	g_clear_object (&attachment);
@@ -1840,6 +1832,14 @@ e_mail_display_ui_manager_create_item_cb (EUIManager *manager,
 }
 
 static void
+mail_display_style_updated (GtkWidget *widget)
+{
+	EMailDisplay *display = E_MAIL_DISPLAY (widget);
+
+	mail_display_update_formatter_colors (display);
+}
+
+static void
 mail_display_constructed (GObject *object)
 {
 	EContentRequest *content_request;
@@ -1850,6 +1850,10 @@ mail_display_constructed (GObject *object)
 
 	/* Chain up to parent's constructed() method. */
 	G_OBJECT_CLASS (e_mail_display_parent_class)->constructed (object);
+
+	g_signal_connect (
+		e_gtk_widget_style_updates (object), "style-updated",
+		G_CALLBACK (mail_display_style_updated), NULL);
 
 	if (mail_display_can_use_frame_flattening ()) {
 		g_object_set (webkit_web_view_get_settings (WEBKIT_WEB_VIEW (object)),
@@ -2164,17 +2168,6 @@ mail_display_realize (GtkWidget *widget)
 	GTK_WIDGET_CLASS (e_mail_display_parent_class)->realize (widget);
 
 	mail_display_update_formatter_colors (E_MAIL_DISPLAY (widget));
-}
-
-static void
-mail_display_style_updated (GtkWidget *widget)
-{
-	EMailDisplay *display = E_MAIL_DISPLAY (widget);
-
-	mail_display_update_formatter_colors (display);
-
-	/* Chain up to parent's style_updated() method. */
-	GTK_WIDGET_CLASS (e_mail_display_parent_class)->style_updated (widget);
 }
 
 static gboolean
@@ -2913,7 +2906,6 @@ e_mail_display_class_init (EMailDisplayClass *class)
 
 	widget_class = GTK_WIDGET_CLASS (class);
 	widget_class->realize = mail_display_realize;
-	widget_class->style_updated = mail_display_style_updated;
 
 	web_view_class = E_WEB_VIEW_CLASS (class);
 	web_view_class->suggest_filename = mail_display_suggest_filename;

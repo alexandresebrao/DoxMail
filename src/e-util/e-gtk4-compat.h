@@ -109,6 +109,7 @@ void		e_gtk_widget_get_monitor_area	(GtkWidget *widget,
 						 GdkRectangle *out_area);
 void		e_gtk_button_set_image		(GtkButton *button,
 						 GtkWidget *image);
+GtkWidget *	e_gtk_button_get_image		(GtkButton *button);
 void		e_gtk_button_set_label_and_icon	(GtkButton *button,
 						 const gchar *label,
 						 const gchar *icon_name);

@@ -32,6 +32,7 @@
 typedef struct _AsyncContext AsyncContext;
 
 struct _EMailConfigNotebookPrivate {
+	GtkNotebook *notebook;  /* the bin child */
 	EMailSession *session;
 	ESource *original_source;
 	ESource *account_source;
@@ -56,7 +57,7 @@ enum {
 	PROP_TRANSPORT_SOURCE
 };
 
-G_DEFINE_TYPE_WITH_CODE (EMailConfigNotebook, e_mail_config_notebook, GTK_TYPE_NOTEBOOK,
+G_DEFINE_TYPE_WITH_CODE (EMailConfigNotebook, e_mail_config_notebook, E_GTK_TYPE_BIN,
 	G_ADD_PRIVATE (EMailConfigNotebook)
 	G_IMPLEMENT_INTERFACE (E_TYPE_EXTENSIBLE, NULL))
 
@@ -81,12 +82,12 @@ mail_config_notebook_sort_pages (EMailConfigNotebook *notebook)
 	gint ii = 0;
 
 	list = g_list_sort (
-		e_gtk_widget_get_children (notebook),
+		e_gtk_widget_get_children (notebook->priv->notebook),
 		(GCompareFunc) e_mail_config_page_compare);
 
 	for (link = list; link != NULL; link = g_list_next (link))
 		gtk_notebook_reorder_child (
-			GTK_NOTEBOOK (notebook),
+			notebook->priv->notebook,
 			GTK_WIDGET (link->data), ii++);
 
 	g_list_free (list);
@@ -475,47 +476,40 @@ mail_config_notebook_constructed (GObject *object)
 }
 
 static void
-mail_config_notebook_page_removed (GtkNotebook *notebook,
+mail_config_notebook_page_removed (GtkNotebook *inner,
                                    GtkWidget *child,
-                                   guint page_num)
+                                   guint page_num,
+                                   EMailConfigNotebook *notebook)
 {
-	/* Do not chain up.  GtkNotebook does not implement this method. */
-
 	if (E_IS_MAIL_CONFIG_PAGE (child))
 		g_signal_handlers_disconnect_by_func (
 			child, mail_config_notebook_page_changed,
-			E_MAIL_CONFIG_NOTEBOOK (notebook));
+			notebook);
 }
 
 static void
-mail_config_notebook_page_added (GtkNotebook *notebook,
+mail_config_notebook_page_added (GtkNotebook *inner,
                                  GtkWidget *child,
-                                 guint page_num)
+                                 guint page_num,
+                                 EMailConfigNotebook *notebook)
 {
-	/* Do not chain up.  GtkNotebook does not implement this method. */
-
 	if (E_IS_MAIL_CONFIG_PAGE (child))
 		g_signal_connect (
 			child, "changed",
 			G_CALLBACK (mail_config_notebook_page_changed),
-			E_MAIL_CONFIG_NOTEBOOK (notebook));
+			notebook);
 }
 
 static void
 e_mail_config_notebook_class_init (EMailConfigNotebookClass *class)
 {
 	GObjectClass *object_class;
-	GtkNotebookClass *notebook_class;
 
 	object_class = G_OBJECT_CLASS (class);
 	object_class->set_property = mail_config_notebook_set_property;
 	object_class->get_property = mail_config_notebook_get_property;
 	object_class->dispose = mail_config_notebook_dispose;
 	object_class->constructed = mail_config_notebook_constructed;
-
-	notebook_class = GTK_NOTEBOOK_CLASS (class);
-	notebook_class->page_removed = mail_config_notebook_page_removed;
-	notebook_class->page_added = mail_config_notebook_page_added;
 
 	g_object_class_install_property (
 		object_class,
@@ -605,6 +599,26 @@ static void
 e_mail_config_notebook_init (EMailConfigNotebook *notebook)
 {
 	notebook->priv = e_mail_config_notebook_get_instance_private (notebook);
+
+	/* GtkNotebook is final with GTK 4, thus wrap one */
+	notebook->priv->notebook = GTK_NOTEBOOK (gtk_notebook_new ());
+	e_gtk_bin_set_bin_child (E_GTK_BIN (notebook), GTK_WIDGET (notebook->priv->notebook));
+
+	g_signal_connect (
+		notebook->priv->notebook, "page-added",
+		G_CALLBACK (mail_config_notebook_page_added), notebook);
+
+	g_signal_connect (
+		notebook->priv->notebook, "page-removed",
+		G_CALLBACK (mail_config_notebook_page_removed), notebook);
+}
+
+GtkNotebook *
+e_mail_config_notebook_get_notebook (EMailConfigNotebook *notebook)
+{
+	g_return_val_if_fail (E_IS_MAIL_CONFIG_NOTEBOOK (notebook), NULL);
+
+	return notebook->priv->notebook;
 }
 
 GtkWidget *
@@ -699,7 +713,7 @@ e_mail_config_notebook_add_page (EMailConfigNotebook *notebook,
 	gtk_widget_show (GTK_WIDGET (page));
 
 	gtk_notebook_append_page (
-		GTK_NOTEBOOK (notebook),
+		notebook->priv->notebook,
 		GTK_WIDGET (page), tab_label);
 
 	mail_config_notebook_sort_pages (notebook);
@@ -713,7 +727,7 @@ e_mail_config_notebook_check_complete (EMailConfigNotebook *notebook)
 
 	g_return_val_if_fail (E_IS_MAIL_CONFIG_NOTEBOOK (notebook), FALSE);
 
-	list = e_gtk_widget_get_children (notebook);
+	list = e_gtk_widget_get_children (notebook->priv->notebook);
 
 	for (link = list; link != NULL; link = g_list_next (link)) {
 		if (E_IS_MAIL_CONFIG_PAGE (link->data)) {
@@ -863,7 +877,7 @@ e_mail_config_notebook_commit (EMailConfigNotebook *notebook,
 	if (source != NULL && e_source_get_writable (source))
 		g_queue_push_tail (source_queue, g_object_ref (source));
 
-	list = e_gtk_widget_get_children (notebook);
+	list = e_gtk_widget_get_children (notebook->priv->notebook);
 
 	/* Tell all EMailConfigPages to commit their UI state to their
 	 * scratch ESources and push any additional data sources on to

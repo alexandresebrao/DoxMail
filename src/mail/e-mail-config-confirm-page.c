@@ -36,7 +36,7 @@ enum {
 static void	e_mail_config_confirm_page_interface_init
 					(EMailConfigPageInterface *iface);
 
-G_DEFINE_TYPE_WITH_CODE (EMailConfigConfirmPage, e_mail_config_confirm_page, GTK_TYPE_SCROLLED_WINDOW,
+G_DEFINE_TYPE_WITH_CODE (EMailConfigConfirmPage, e_mail_config_confirm_page, E_GTK_TYPE_BIN,
 	G_ADD_PRIVATE (EMailConfigConfirmPage)
 	G_IMPLEMENT_INTERFACE (E_TYPE_EXTENSIBLE, NULL)
 	G_IMPLEMENT_INTERFACE (E_TYPE_MAIL_CONFIG_PAGE, e_mail_config_confirm_page_interface_init))

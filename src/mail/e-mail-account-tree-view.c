@@ -57,6 +57,20 @@ mail_account_tree_view_enabled_toggled_cb (GtkCellRendererToggle *cell_renderer,
 }
 
 static void
+mail_account_tree_view_drag_end (GtkDragSource *source,
+                                 GdkDrag *drag,
+                                 gboolean delete_data,
+                                 GtkTreeView *tree_view)
+{
+	GtkTreeModel *tree_model;
+
+	tree_model = gtk_tree_view_get_model (tree_view);
+	g_return_if_fail (E_IS_MAIL_ACCOUNT_STORE (tree_model));
+
+	g_signal_emit_by_name (tree_model, "services-reordered", FALSE);
+}
+
+static void
 mail_account_tree_view_constructed (GObject *object)
 {
 	GtkTreeView *tree_view;
@@ -69,6 +83,29 @@ mail_account_tree_view_constructed (GObject *object)
 	tree_view = GTK_TREE_VIEW (object);
 
 	gtk_tree_view_set_reorderable (tree_view, TRUE);
+
+	/* GTK 4 has no drag-end widget signal: use the GtkDragSource
+	 * the tree view added for reordering */
+	{
+		GListModel *controllers;
+		guint ii, n_items;
+
+		controllers = gtk_widget_observe_controllers (GTK_WIDGET (tree_view));
+		n_items = g_list_model_get_n_items (controllers);
+
+		for (ii = 0; ii < n_items; ii++) {
+			GObject *controller = g_list_model_get_item (controllers, ii);
+
+			if (GTK_IS_DRAG_SOURCE (controller))
+				g_signal_connect (
+					controller, "drag-end",
+					G_CALLBACK (mail_account_tree_view_drag_end), tree_view);
+
+			g_object_unref (controller);
+		}
+
+		g_object_unref (controllers);
+	}
 
 	/* Column: Enabled */
 
@@ -161,32 +198,12 @@ mail_account_tree_view_constructed (GObject *object)
 }
 
 static void
-mail_account_tree_view_drag_end (GtkWidget *widget,
-                                 EGtkDragContext *context)
-{
-	GtkTreeModel *tree_model;
-
-	/* Chain up to parent's drag_end() method. */
-	GTK_WIDGET_CLASS (e_mail_account_tree_view_parent_class)->
-		drag_end (widget, context);
-
-	tree_model = gtk_tree_view_get_model (GTK_TREE_VIEW (widget));
-	g_return_if_fail (E_IS_MAIL_ACCOUNT_STORE (tree_model));
-
-	g_signal_emit_by_name (tree_model, "services-reordered", FALSE);
-}
-
-static void
 e_mail_account_tree_view_class_init (EMailAccountTreeViewClass *class)
 {
 	GObjectClass *object_class;
-	GtkWidgetClass *widget_class;
 
 	object_class = G_OBJECT_CLASS (class);
 	object_class->constructed = mail_account_tree_view_constructed;
-
-	widget_class = GTK_WIDGET_CLASS (class);
-	g_signal_override_class_handler ("drag-end", G_TYPE_FROM_CLASS (widget_class), G_CALLBACK (mail_account_tree_view_drag_end));
 
 	signals[ENABLE] = g_signal_new (
 		"enable",

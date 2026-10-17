@@ -31,7 +31,7 @@ struct _EMailConfigActivityPagePrivate {
 static void	e_mail_config_activity_page_alert_sink_init
 					(EAlertSinkInterface *iface);
 
-G_DEFINE_ABSTRACT_TYPE_WITH_CODE (EMailConfigActivityPage, e_mail_config_activity_page, GTK_TYPE_SCROLLED_WINDOW,
+G_DEFINE_ABSTRACT_TYPE_WITH_CODE (EMailConfigActivityPage, e_mail_config_activity_page, E_GTK_TYPE_BIN,
 	G_ADD_PRIVATE (EMailConfigActivityPage)
 	G_IMPLEMENT_INTERFACE (E_TYPE_ALERT_SINK, e_mail_config_activity_page_alert_sink_init))
 

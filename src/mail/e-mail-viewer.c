@@ -2192,7 +2192,7 @@ mail_viewer_constructed (GObject *object)
 
 	e_extensible_load_extensions (E_EXTENSIBLE (object));
 
-	e_gtk_window_add_accel_group (GTK_WINDOW (self), e_ui_manager_get_accel_group (e_web_view_get_ui_manager (E_WEB_VIEW (mail_display))));
+	gtk_widget_add_controller (GTK_WIDGET (self), e_ui_manager_create_shortcut_controller (e_web_view_get_ui_manager (E_WEB_VIEW (mail_display))));
 }
 
 static void

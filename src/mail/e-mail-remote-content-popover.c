@@ -110,13 +110,48 @@ get_from_mail_addresses (EMailDisplay *mail_display)
 }
 
 static void
-remote_content_menu_deactivate_cb (GtkMenuShell *popup_menu,
-				   GtkToggleButton *toggle_button)
+remote_content_menu_closed_cb (GtkPopover *popup_menu,
+			       GtkToggleButton *toggle_button)
 {
 	g_return_if_fail (GTK_IS_TOGGLE_BUTTON (toggle_button));
 
 	e_gtk_toggle_button_set_active (toggle_button, FALSE);
-	gtk_menu_detach (GTK_MENU (popup_menu));
+	g_idle_add_full (G_PRIORITY_DEFAULT_IDLE, (GSourceFunc) gtk_widget_unparent,
+		g_object_ref (popup_menu), g_object_unref);
+}
+
+/* GtkMenu is gone with GTK 4: the menu is a popover with a box of flat
+ * buttons, each closing the popover when clicked */
+static GtkWidget *
+remote_content_menu_append (GtkWidget *popup_menu,
+			    GtkWidget *item)
+{
+	GtkWidget *box;
+
+	box = gtk_popover_get_child (GTK_POPOVER (popup_menu));
+
+	if (GTK_IS_BUTTON (item)) {
+		gtk_button_set_has_frame (GTK_BUTTON (item), FALSE);
+		gtk_label_set_xalign (GTK_LABEL (gtk_button_get_child (GTK_BUTTON (item))), 0.0);
+		g_signal_connect_swapped (item, "clicked", G_CALLBACK (gtk_popover_popdown), popup_menu);
+	}
+
+	gtk_box_append (GTK_BOX (box), item);
+
+	return item;
+}
+
+static GtkWidget *
+remote_content_menu_new (void)
+{
+	GtkWidget *popup_menu;
+
+	popup_menu = gtk_popover_new ();
+	gtk_popover_set_has_arrow (GTK_POPOVER (popup_menu), FALSE);
+	gtk_widget_add_css_class (popup_menu, "menu");
+	gtk_popover_set_child (GTK_POPOVER (popup_menu), gtk_box_new (GTK_ORIENTATION_VERTICAL, 0));
+
+	return popup_menu;
 }
 
 static void
@@ -128,7 +163,7 @@ remote_content_menu_activate_cb (GObject *item,
 	gboolean is_mail;
 	const gchar *value;
 
-	g_return_if_fail (GTK_IS_MENU_ITEM (item));
+	g_return_if_fail (GTK_IS_BUTTON (item));
 	g_return_if_fail (E_IS_MAIL_READER (reader));
 
 	is_mail = GPOINTER_TO_INT (g_object_get_data (item, REMOTE_CONTENT_KEY_IS_MAIL)) == 1;
@@ -187,19 +222,20 @@ add_remote_content_menu_item (EMailReader *reader,
 	GObject *object;
 
 	g_return_if_fail (E_IS_MAIL_READER (reader));
-	g_return_if_fail (GTK_IS_MENU (popup_menu));
+	g_return_if_fail (GTK_IS_POPOVER (popup_menu));
 	g_return_if_fail (label != NULL);
 	g_return_if_fail (value != NULL);
 
-	item = gtk_menu_item_new_with_label (label);
+	item = gtk_button_new_with_label (label);
 	object = G_OBJECT (item);
 
 	g_object_set_data (object, REMOTE_CONTENT_KEY_IS_MAIL, is_mail ? GINT_TO_POINTER (1) : NULL);
 	g_object_set_data_full (object, REMOTE_CONTENT_KEY_VALUE, g_strdup (value), g_free);
 
-	g_signal_connect (item, "activate", G_CALLBACK (remote_content_menu_activate_cb), reader);
+	/* first, to close the menu before the reader drops the alert */
+	remote_content_menu_append (popup_menu, item);
 
-	gtk_menu_shell_append (GTK_MENU_SHELL (popup_menu), item);
+	g_signal_connect (item, "clicked", G_CALLBACK (remote_content_menu_activate_cb), reader);
 }
 
 static void
@@ -225,7 +261,7 @@ show_remote_content_popup (EMailReader *reader,
 			continue;
 
 		if (!popup_menu)
-			popup_menu = gtk_menu_new ();
+			popup_menu = remote_content_menu_new ();
 
 		if (*mail == '@')
 			label = g_strdup_printf (_("Allow remote content for anyone from %s"), mail);
@@ -245,7 +281,7 @@ show_remote_content_popup (EMailReader *reader,
 			continue;
 
 		if (!popup_menu)
-			popup_menu = gtk_menu_new ();
+			popup_menu = remote_content_menu_new ();
 
 		label = g_strdup_printf (_("Allow remote content from %s"), site);
 
@@ -261,34 +297,21 @@ show_remote_content_popup (EMailReader *reader,
 		GtkWidget *box = gtk_widget_get_parent (GTK_WIDGET (toggle_button));
 		GtkWidget *item;
 
-		item = gtk_separator_menu_item_new ();
-		gtk_menu_shell_append (GTK_MENU_SHELL (popup_menu), item);
+		remote_content_menu_append (popup_menu, gtk_separator_new (GTK_ORIENTATION_HORIZONTAL));
 
-		item = gtk_menu_item_new_with_label (_("Do not show this message again"));
-		gtk_menu_shell_append (GTK_MENU_SHELL (popup_menu), item);
-		g_signal_connect (item, "activate", G_CALLBACK (remote_content_disable_activate_cb), reader);
+		item = remote_content_menu_append (popup_menu, gtk_button_new_with_label (_("Do not show this message again")));
+		g_signal_connect (item, "clicked", G_CALLBACK (remote_content_disable_activate_cb), reader);
 
 		e_gtk_toggle_button_set_active (toggle_button, TRUE);
 
 		g_signal_connect (
-			popup_menu, "deactivate",
-			G_CALLBACK (remote_content_menu_deactivate_cb), toggle_button);
+			popup_menu, "closed",
+			G_CALLBACK (remote_content_menu_closed_cb), toggle_button);
 
-		gtk_widget_set_visible (popup_menu, TRUE);
-
-		gtk_menu_attach_to_widget (GTK_MENU (popup_menu), box, NULL);
-
-		g_object_set (popup_menu,
-		              "anchor-hints", (GDK_ANCHOR_FLIP_Y |
-		                               GDK_ANCHOR_SLIDE |
-		                               GDK_ANCHOR_RESIZE),
-		              NULL);
-
-		gtk_menu_popup_at_widget (GTK_MENU (popup_menu),
-		                          box,
-		                          GDK_GRAVITY_SOUTH_WEST,
-		                          GDK_GRAVITY_NORTH_WEST,
-		                          (const GdkEvent *) event);
+		gtk_widget_set_parent (popup_menu, box);
+		gtk_popover_set_position (GTK_POPOVER (popup_menu), GTK_POS_BOTTOM);
+		gtk_widget_set_halign (popup_menu, GTK_ALIGN_START);
+		gtk_popover_popup (GTK_POPOVER (popup_menu));
 	}
 }
 

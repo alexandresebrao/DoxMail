@@ -133,12 +133,12 @@ tweaks_custom_icon_check_toggled_cb (GtkToggleButton *toggle_button,
 		return;
 	}
 
-	image = gtk_button_get_image (GTK_BUTTON (ftd->widget));
+	image = e_gtk_button_get_image (GTK_BUTTON (ftd->widget));
 
 	if (image && gtk_image_get_storage_type (GTK_IMAGE (image))) {
-		GIcon *icon = NULL;
+		GIcon *icon;
 
-		gtk_image_get_gicon (GTK_IMAGE (image), &icon, NULL);
+		icon = gtk_image_get_gicon (GTK_IMAGE (image));
 
 		if (G_IS_FILE_ICON (icon)) {
 			GFile *file;
@@ -178,7 +178,7 @@ tweaks_custom_icon_button_clicked_cb (GtkWidget *button,
 			GtkWidget *image;
 			GIcon *custom_icon;
 
-			image = gtk_button_get_image (GTK_BUTTON (button));
+			image = e_gtk_button_get_image (GTK_BUTTON (button));
 			custom_icon = g_file_icon_new (file);
 
 			gtk_image_set_from_gicon (GTK_IMAGE (image), custom_icon);

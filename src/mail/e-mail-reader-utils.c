@@ -2899,6 +2899,26 @@ mail_reader_save_messages_cb (GObject *source_object,
 	async_context_free (async_context);
 }
 
+/* GtkFileFilterInfo is gone with GTK 4: filters match a GFileInfo */
+static gboolean
+emru_file_filter_matches (GtkFileFilter *filter,
+			  const gchar *filename,
+			  const gchar *mime_type)
+{
+	GFileInfo *info;
+	gboolean matches;
+
+	info = g_file_info_new ();
+	g_file_info_set_display_name (info, filename);
+	g_file_info_set_content_type (info, mime_type);
+
+	matches = gtk_filter_match (GTK_FILTER (filter), info);
+
+	g_object_unref (info);
+
+	return matches;
+}
+
 static void
 emru_file_chooser_filter_changed_cb (GtkFileChooser *file_chooser,
 				     GParamSpec *param,
@@ -2907,7 +2927,6 @@ emru_file_chooser_filter_changed_cb (GtkFileChooser *file_chooser,
 	GtkFileFilter *filter;
 	const gchar *extension = NULL;
 	gchar *current_name;
-	GtkFileFilterInfo file_info = { 0, };
 
 	g_return_if_fail (GTK_IS_FILE_CHOOSER (file_chooser));
 
@@ -2915,20 +2934,11 @@ emru_file_chooser_filter_changed_cb (GtkFileChooser *file_chooser,
 	if (!filter)
 		return;
 
-	file_info.contains = GTK_FILE_FILTER_FILENAME | GTK_FILE_FILTER_MIME_TYPE;
-	file_info.filename = "message.eml";
-	file_info.mime_type = "message/rfc822";
-
-	if (gtk_file_filter_filter (filter, &file_info))
+	if (emru_file_filter_matches (filter, "message.eml", "message/rfc822"))
 		extension = ".eml";
 
-	if (!extension) {
-		file_info.filename = "message.mbox";
-		file_info.mime_type = "application/mbox";
-
-		if (gtk_file_filter_filter (filter, &file_info))
-			extension = ".mbox";
-	}
+	if (!extension && emru_file_filter_matches (filter, "message.mbox", "application/mbox"))
+		extension = ".mbox";
 
 	if (!extension)
 		return;
@@ -2966,18 +2976,13 @@ emru_setup_filters (GtkFileChooserNative *file_chooser_native,
 
 	if (g_strcmp0 (default_extension, ".eml") == 0) {
 		GSList *filters, *link;
-		GtkFileFilterInfo file_info = { 0, };
-
-		file_info.contains = GTK_FILE_FILTER_FILENAME | GTK_FILE_FILTER_MIME_TYPE;
-		file_info.filename = "message.eml";
-		file_info.mime_type = "message/rfc822";
 
 		filters = e_gtk_file_chooser_list_filters (file_chooser);
 
 		for (link = filters; link; link = g_slist_next (link)) {
 			GtkFileFilter *filter = link->data;
 
-			if (gtk_file_filter_filter (filter, &file_info)) {
+			if (emru_file_filter_matches (filter, "message.eml", "message/rfc822")) {
 				e_gtk_file_chooser_set_filter (file_chooser, filter);
 				break;
 			}

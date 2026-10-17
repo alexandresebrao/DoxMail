@@ -341,8 +341,8 @@ mail_config_window_constructed (GObject *object)
 	gtk_widget_set_vexpand (widget, TRUE);
 	gtk_widget_set_margin_bottom (widget, 17);
 	requisition.height += 17 + 5; /* margin bottom + border width of the grid */
-	gtk_notebook_set_show_tabs (GTK_NOTEBOOK (widget), FALSE);
-	gtk_notebook_set_show_border (GTK_NOTEBOOK (widget), FALSE);
+	gtk_notebook_set_show_tabs (e_mail_config_notebook_get_notebook (E_MAIL_CONFIG_NOTEBOOK (widget)), FALSE);
+	gtk_notebook_set_show_border (e_mail_config_notebook_get_notebook (E_MAIL_CONFIG_NOTEBOOK (widget)), FALSE);
 	gtk_grid_attach (GTK_GRID (container), widget, 2, 1, 1, 1);
 	window->priv->notebook = widget;  /* not referenced */
 	gtk_widget_show (widget);
@@ -370,9 +370,9 @@ mail_config_window_constructed (GObject *object)
 		widget, "sensitive",
 		G_BINDING_SYNC_CREATE);
 
-	npages = gtk_notebook_get_n_pages (GTK_NOTEBOOK (window->priv->notebook));
+	npages = gtk_notebook_get_n_pages (e_mail_config_notebook_get_notebook (E_MAIL_CONFIG_NOTEBOOK (window->priv->notebook)));
 	for (ii = 0; ii < npages; ii++) {
-		children = g_slist_prepend (children, gtk_notebook_get_nth_page (GTK_NOTEBOOK (window->priv->notebook), ii));
+		children = g_slist_prepend (children, gtk_notebook_get_nth_page (e_mail_config_notebook_get_notebook (E_MAIL_CONFIG_NOTEBOOK (window->priv->notebook)), ii));
 	}
 
 	e_util_resize_window_for_screen (GTK_WINDOW (window), requisition.width, requisition.height, children);

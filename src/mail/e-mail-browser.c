@@ -210,7 +210,7 @@ mail_browser_popup_event_cb (EMailBrowser *browser,
 {
 	EMailReader *reader;
 	EWebView *web_view;
-	GtkMenu *menu;
+	GtkWidget *menu;
 	guint32 state;
 
 	if (uri != NULL)
@@ -226,7 +226,7 @@ mail_browser_popup_event_cb (EMailBrowser *browser,
 	e_mail_reader_update_actions (reader, state);
 
 	menu = e_mail_reader_get_popup_menu (reader);
-	gtk_menu_popup_at_pointer (menu, event);
+	e_util_popup_menu_at_event (menu, GTK_WIDGET (web_view), event);
 
 	return TRUE;
 }
@@ -700,7 +700,7 @@ mail_browser_constructed (GObject *object)
 	browser->priv->preview_pane = g_object_ref (widget);
 	gtk_widget_show (widget);
 
-	e_gtk_window_add_accel_group (GTK_WINDOW (browser), e_ui_manager_get_accel_group (e_web_view_get_ui_manager (E_WEB_VIEW (display))));
+	gtk_widget_add_controller (GTK_WIDGET (browser), e_ui_manager_create_shortcut_controller (e_web_view_get_ui_manager (E_WEB_VIEW (display))));
 
 	browser->priv->ui_manager = e_ui_manager_new (e_ui_customizer_util_dup_filename_for_component ("mail-browser"));
 

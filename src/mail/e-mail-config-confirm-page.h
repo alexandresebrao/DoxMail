@@ -19,6 +19,7 @@
 #define E_MAIL_CONFIG_CONFIRM_PAGE_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-util.h>
 
 #include <mail/e-mail-config-page.h>
 
@@ -50,12 +51,12 @@ typedef struct _EMailConfigConfirmPageClass EMailConfigConfirmPageClass;
 typedef struct _EMailConfigConfirmPagePrivate EMailConfigConfirmPagePrivate;
 
 struct _EMailConfigConfirmPage {
-	GtkScrolledWindow parent;
+	EGtkBin parent;
 	EMailConfigConfirmPagePrivate *priv;
 };
 
 struct _EMailConfigConfirmPageClass {
-	GtkScrolledWindowClass parent_class;
+	EGtkBinClass parent_class;
 };
 
 GType		e_mail_config_confirm_page_get_type
