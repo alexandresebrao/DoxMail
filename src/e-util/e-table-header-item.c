@@ -932,7 +932,7 @@ ethi_realize (GnomeCanvasItem *item)
 	}
 
 	g_signal_connect (
-		item->canvas, "style-updated",
+		e_gtk_widget_style_updates (item->canvas), "style-updated",
 		G_CALLBACK (ethi_style_updated_cb), ethi);
 
 	/*

@@ -6089,7 +6089,7 @@ e_webkit_editor_init (EWebKitEditor *wk_editor)
 		G_CALLBACK (webkit_editor_web_process_terminated_cb), NULL);
 
 	g_signal_connect (
-		wk_editor, "style-updated",
+		e_gtk_widget_style_updates (wk_editor), "style-updated",
 		G_CALLBACK (webkit_editor_style_updated_cb), NULL);
 
 	g_signal_connect (

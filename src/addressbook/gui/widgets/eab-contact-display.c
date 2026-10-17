@@ -309,7 +309,7 @@ contact_display_contructed (GObject *object)
 		web_view, "content-loaded",
 		G_CALLBACK (contact_display_content_loaded_cb), NULL);
 	g_signal_connect (
-		web_view, "style-updated",
+		e_gtk_widget_style_updates (web_view), "style-updated",
 		G_CALLBACK (load_contact), NULL);
 
 	e_ui_manager_add_actions_with_eui_data (ui_manager, "internal-mailto", NULL,

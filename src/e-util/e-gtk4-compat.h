@@ -269,6 +269,10 @@ gint		e_gtk_entry_get_index_at_position
 						 gdouble x,
 						 gdouble y);
 
+/* a font for the widget through its own CSS provider; NULL unsets it */
+void		e_gtk_widget_override_font	(GtkWidget *widget,
+						 const PangoFontDescription *font_desc);
+
 /* the "labelled-by" ATK relation */
 void		e_gtk_widget_set_labelled_by	(GtkWidget *widget,
 						 GtkWidget *label);

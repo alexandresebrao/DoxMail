@@ -2654,7 +2654,7 @@ e_web_view_init (EWebView *web_view)
 		G_CALLBACK (web_view_load_changed_cb), NULL);
 
 	g_signal_connect (
-		web_view, "style-updated",
+		e_gtk_widget_style_updates (web_view), "style-updated",
 		G_CALLBACK (style_updated_cb), NULL);
 
 	g_signal_connect (

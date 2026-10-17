@@ -656,7 +656,7 @@ html_editor_show_context_menu_idle_cb (gpointer user_data)
 
 	editor = g_weak_ref_get (cmd->editor_weakref);
 	if (editor) {
-		GtkMenu *menu;
+		GtkWidget *menu;
 		GObject *ui_item;
 
 		e_ui_menu_freeze (editor->priv->main_menu);
@@ -664,13 +664,10 @@ html_editor_show_context_menu_idle_cb (gpointer user_data)
 		e_ui_menu_thaw (editor->priv->main_menu);
 
 		ui_item = e_ui_manager_create_item (editor->priv->ui_manager, "context-menu");
-		menu = GTK_MENU (gtk_popover_menu_new_from_model (G_MENU_MODEL (ui_item)));
+		menu = gtk_popover_menu_new_from_model (G_MENU_MODEL (ui_item));
 		g_clear_object (&ui_item);
 
-		gtk_menu_attach_to_widget (menu, GTK_WIDGET (editor), NULL);
-		e_util_connect_menu_detach_after_deactivate (menu);
-
-		gtk_menu_popup_at_pointer (menu, cmd->event);
+		e_util_popup_menu_at_event (menu, GTK_WIDGET (editor), cmd->event);
 
 		g_object_unref (editor);
 	}
@@ -729,20 +726,18 @@ html_editor_find_ui_file (const gchar *basename)
 }
 
 static void
-html_editor_parent_changed (GtkWidget *widget,
-                            GtkWidget *previous_parent)
+html_editor_root_changed_cb (GtkWidget *widget,
+			     GParamSpec *param,
+			     gpointer user_data)
 {
 	GtkWidget *top_level;
 	EHTMLEditor *editor = E_HTML_EDITOR (widget);
 
-	/* If we now have a window, then install our accelerators to it */
-	top_level = e_gtk_widget_get_toplevel (widget);
-	if (GTK_IS_WINDOW (top_level)) {
-		e_gtk_window_add_accel_group (
-			GTK_WINDOW (top_level),
-			e_ui_manager_get_accel_group (editor->priv->ui_manager));
+	/* If we now have a window, then the actions belong to it; the
+	 * shortcuts are a managed controller of the editor itself */
+	top_level = GTK_WIDGET (gtk_widget_get_root (widget));
+	if (GTK_IS_WINDOW (top_level))
 		e_ui_manager_set_action_groups_widget (editor->priv->ui_manager, top_level);
-	}
 }
 
 static void
@@ -1180,13 +1175,8 @@ e_html_editor_ui_manager_create_item_cb (EUIManager *ui_manager,
 		}
 
 		if (widget) {
-			GtkToolItem *tool_item;
-
-			tool_item = gtk_tool_item_new ();
-			e_gtk_container_add (tool_item, widget);
-			gtk_widget_set_visible (GTK_WIDGET (tool_item), TRUE);
-
-			*out_item = G_OBJECT (tool_item);
+			/* toolbars hold widgets directly with GTK 4 */
+			*out_item = G_OBJECT (widget);
 		} else if (!claimed) {
 			g_warning ("%s: Did not get toolbar widget for '%s'", G_STRFUNC, name);
 		}
@@ -1348,7 +1338,6 @@ html_editor_constructed (GObject *object)
 
 	widget = GTK_WIDGET (e_ui_manager_create_item (editor->priv->ui_manager, "edit-toolbar"));
 	gtk_widget_set_hexpand (widget, TRUE);
-	gtk_toolbar_set_style (GTK_TOOLBAR (widget), GTK_TOOLBAR_BOTH_HORIZ);
 	gtk_grid_attach (GTK_GRID (editor), widget, 0, 0, 1, 1);
 	priv->edit_toolbar = g_object_ref (widget);
 	gtk_widget_show (widget);
@@ -1358,7 +1347,6 @@ html_editor_constructed (GObject *object)
 
 	widget = GTK_WIDGET (e_ui_manager_create_item (editor->priv->ui_manager, "html-toolbar"));
 	gtk_widget_set_hexpand (widget, TRUE);
-	gtk_toolbar_set_style (GTK_TOOLBAR (widget), GTK_TOOLBAR_BOTH_HORIZ);
 	gtk_grid_attach (GTK_GRID (editor), widget, 0, 1, 1, 1);
 	priv->html_toolbar = g_object_ref (widget);
 	e_ui_customizer_register (customizer, "html-toolbar", _("HTML Toolbar"));
@@ -1536,7 +1524,6 @@ e_html_editor_class_init (EHTMLEditorClass *class)
 	object_class->finalize = html_editor_finalize;
 
 	widget_class = GTK_WIDGET_CLASS (class);
-	widget_class->parent_set = html_editor_parent_changed;
 
 	class->update_actions = html_editor_update_actions;
 	class->spell_languages_changed = html_editor_spell_languages_changed;
@@ -1619,6 +1606,9 @@ e_html_editor_init (EHTMLEditor *self)
 	self->priv = e_html_editor_get_instance_private (self);
 	self->priv->mode = E_CONTENT_EDITOR_MODE_HTML;
 	self->priv->ui_manager = e_ui_manager_new (e_ui_customizer_util_dup_filename_for_component ("html-editor"));
+
+	gtk_widget_add_controller (GTK_WIDGET (self), e_ui_manager_create_shortcut_controller (self->priv->ui_manager));
+	g_signal_connect (self, "notify::root", G_CALLBACK (html_editor_root_changed_cb), NULL);
 	self->priv->core_actions = e_ui_manager_get_action_group (self->priv->ui_manager, "core");
 	self->priv->core_editor_actions = e_ui_manager_get_action_group (self->priv->ui_manager, "core-editor");
 	self->priv->html_actions = e_ui_manager_get_action_group (self->priv->ui_manager, "html");
@@ -2270,8 +2260,7 @@ e_html_editor_set_mode (EHTMLEditor *editor,
 
 			if (E_IS_MARKDOWN_EDITOR (cnt_editor)) {
 				if (!g_object_get_data (G_OBJECT (cnt_editor), "EHTMLEditor::has-editing-mode")) {
-					GtkToolbar *toolbar;
-					GtkToolItem *tool_item;
+					GtkWidget *toolbar;
 					GtkWidget *widget;
 
 					g_object_set_data (G_OBJECT (cnt_editor), "EHTMLEditor::has-editing-mode", GINT_TO_POINTER (1));
@@ -2280,12 +2269,8 @@ e_html_editor_set_mode (EHTMLEditor *editor,
 					gtk_widget_set_focus_on_click (widget, FALSE);
 					gtk_widget_set_tooltip_text (widget, _("Editing Mode"));
 
-					tool_item = gtk_tool_item_new ();
-					e_gtk_container_add (tool_item, widget);
-					gtk_widget_set_visible (GTK_WIDGET (tool_item), TRUE);
-
 					toolbar = e_markdown_editor_get_action_toolbar (E_MARKDOWN_EDITOR (cnt_editor));
-					gtk_toolbar_insert (toolbar, tool_item, 0);
+					gtk_box_prepend (GTK_BOX (toolbar), widget);
 				}
 
 				gtk_widget_hide (GTK_WIDGET (editor->priv->edit_toolbar));

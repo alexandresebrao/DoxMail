@@ -4464,7 +4464,7 @@ message_list_construct (MessageList *message_list)
 	g_signal_connect (message_list, "realize",
 		G_CALLBACK (ml_style_updated_cb), NULL);
 
-	g_signal_connect (message_list, "style-updated",
+	g_signal_connect (e_gtk_widget_style_updates (message_list), "style-updated",
 		G_CALLBACK (ml_style_updated_cb), NULL);
 
 	message_list_user_headers_changed_cb (message_list->priv->eds_settings, NULL, message_list);

@@ -234,6 +234,9 @@ RENAMES = {
 
 # GTK 3 calls with nothing to do in GTK 4, dropped when they are a statement
 DROPPED = [
+    'gtk_toolbar_set_style',
+    'gtk_toolbar_set_show_arrow',
+    'gtk_toolbar_set_icon_size',
     'gtk_combo_box_set_wrap_width',
     'gtk_event_box_set_visible_window',
     'gtk_event_box_set_above_child',
@@ -458,10 +461,14 @@ def wrap_legacy_connects(text):
         first = text[m.end():i]
         sig = re.match(r',\s*("[a-z_-]+")', text[i:])
         out.append(text[pos:m.end()])
-        if (sig and sig.group(1).replace('_', '-') in LEGACY_EVENT_SIGNALS and
+        name = sig.group(1).replace('_', '-') if sig else None
+        if (name in LEGACY_EVENT_SIGNALS and
                 not first.startswith('e_gtk_widget_legacy_events')):
             out.append('e_gtk_widget_legacy_events (%s)' % first.strip())
             counts['legacy event connect'] += 1
+        elif name == '"style-updated"' and not first.startswith('e_gtk_widget_style_updates'):
+            out.append('e_gtk_widget_style_updates (%s)' % first.strip())
+            counts['style-updated connect'] += 1
         else:
             out.append(first)
         pos = i
@@ -596,6 +603,7 @@ REGEX_RENAMES = [
     (r'\bGTK_BUTTON_BOX\s*\(', 'GTK_BOX ('),
     (r'\bgtk_button_clicked \(\s*GTK_BUTTON \(([^()]*(?:\([^()]*\))?[^()]*)\)\s*\)', r'g_signal_emit_by_name (\1, "clicked")'),
     (r'\bGtkAccelGroup\b', 'EGtkAccelGroup'),
+    (r'\bgtk_widget_override_font\s*\(', 'e_gtk_widget_override_font ('),
     (r'\bGtkBindingSet \*', 'GtkWidgetClass *'),
     (r'\bgtk_button_box_set_child_secondary \(\s*GTK_BUTTON_BOX \(([^()]*)\)', r'e_gtk_button_box_set_child_secondary (\1'),
     (r'\n[ \t]*"layout-style", GTK_BUTTONBOX_[A-Z]+,', ''),

@@ -2027,3 +2027,47 @@ e_gtk_entry_get_index_at_position (GtkEntry *entry,
 
 	return index;
 }
+
+void
+e_gtk_widget_override_font (GtkWidget *widget,
+			    const PangoFontDescription *font_desc)
+{
+	GtkCssProvider *provider;
+	GString *css;
+
+	g_return_if_fail (GTK_IS_WIDGET (widget));
+
+	provider = g_object_get_data (G_OBJECT (widget), "e-gtk-font-provider");
+	if (!provider) {
+		provider = gtk_css_provider_new ();
+		G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+		gtk_style_context_add_provider (gtk_widget_get_style_context (widget),
+			GTK_STYLE_PROVIDER (provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+		G_GNUC_END_IGNORE_DEPRECATIONS
+		g_object_set_data_full (G_OBJECT (widget), "e-gtk-font-provider", provider, g_object_unref);
+	}
+
+	css = g_string_new ("* {");
+
+	if (font_desc) {
+		PangoFontMask mask = pango_font_description_get_set_fields (font_desc);
+
+		if (mask & PANGO_FONT_MASK_FAMILY)
+			g_string_append_printf (css, " font-family: \"%s\";", pango_font_description_get_family (font_desc));
+		if (mask & PANGO_FONT_MASK_SIZE)
+			g_string_append_printf (css, " font-size: %g%s;",
+				(gdouble) pango_font_description_get_size (font_desc) / PANGO_SCALE,
+				pango_font_description_get_size_is_absolute (font_desc) ? "px" : "pt");
+		if (mask & PANGO_FONT_MASK_WEIGHT)
+			g_string_append_printf (css, " font-weight: %d;", (gint) pango_font_description_get_weight (font_desc));
+		if (mask & PANGO_FONT_MASK_STYLE)
+			g_string_append_printf (css, " font-style: %s;",
+				pango_font_description_get_style (font_desc) == PANGO_STYLE_ITALIC ? "italic" :
+				pango_font_description_get_style (font_desc) == PANGO_STYLE_OBLIQUE ? "oblique" : "normal");
+	}
+
+	g_string_append (css, " }");
+
+	gtk_css_provider_load_from_string (provider, css->str);
+	g_string_free (css, TRUE);
+}

@@ -68,7 +68,7 @@ GtkWidget *	e_markdown_editor_new			(void);
 void		e_markdown_editor_connect_focus_tracker	(EMarkdownEditor *self,
 							 EFocusTracker *focus_tracker);
 GtkTextView *	e_markdown_editor_get_text_view		(EMarkdownEditor *self);
-GtkToolbar *	e_markdown_editor_get_action_toolbar	(EMarkdownEditor *self);
+GtkWidget *	e_markdown_editor_get_action_toolbar	(EMarkdownEditor *self);
 void		e_markdown_editor_set_text		(EMarkdownEditor *self,
 							 const gchar *text);
 gchar *		e_markdown_editor_dup_text		(EMarkdownEditor *self);

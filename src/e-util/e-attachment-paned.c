@@ -621,7 +621,7 @@ e_attachment_paned_init (EAttachmentPaned *paned)
 	attachment_paned_style_updated_cb (paned);
 
 	g_signal_connect (
-		GTK_PANED (paned), "style-updated",
+		e_gtk_widget_style_updates (GTK_PANED (paned)), "style-updated",
 		G_CALLBACK (attachment_paned_style_updated_cb), NULL);
 
 	container = widget;

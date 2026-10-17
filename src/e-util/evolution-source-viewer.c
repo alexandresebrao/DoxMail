@@ -766,7 +766,7 @@ source_viewer_constructed (GObject *object)
 
 	font_name = source_viewer_get_monospace_font_name ();
 	desc = pango_font_description_from_string (font_name);
-	gtk_widget_override_font (widget, desc);
+	e_gtk_widget_override_font (widget, desc);
 	pango_font_description_free (desc);
 	g_free (font_name);
 

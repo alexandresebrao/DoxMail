@@ -20,6 +20,7 @@ enum {
 	FOCUS_IN_EVENT,
 	FOCUS_OUT_EVENT,
 	POPUP_MENU,
+	STYLE_UPDATED,
 	LAST_SIGNAL
 };
 
@@ -70,6 +71,12 @@ e_gtk_event_register_signals (void)
 		G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION, 0,
 		g_signal_accumulator_true_handled, NULL, NULL,
 		G_TYPE_BOOLEAN, 0);
+
+	signals[STYLE_UPDATED] = g_signal_new (
+		"style-updated", GTK_TYPE_WIDGET,
+		G_SIGNAL_RUN_FIRST, 0,
+		NULL, NULL, NULL,
+		G_TYPE_NONE, 0);
 }
 
 static gboolean
@@ -388,6 +395,42 @@ e_gtk_widget_chain_legacy_popup_menu (GtkWidget *widget)
 	g_value_unset (&ret);
 
 	return handled;
+}
+
+static void
+style_settings_notify_cb (GtkSettings *settings,
+			  GParamSpec *param,
+			  GtkWidget *widget)
+{
+	g_signal_emit (widget, signals[STYLE_UPDATED], 0);
+}
+
+gpointer
+e_gtk_widget_style_updates (gpointer widget)
+{
+	static const gchar *properties[] = {
+		"notify::gtk-theme-name",
+		"notify::gtk-application-prefer-dark-theme",
+		"notify::gtk-font-name",
+		"notify::gtk-icon-theme-name"
+	};
+	GtkSettings *settings;
+	guint ii;
+
+	g_return_val_if_fail (GTK_IS_WIDGET (widget), widget);
+
+	if (g_object_get_data (widget, "e-gtk-style-updates"))
+		return widget;
+
+	g_object_set_data (widget, "e-gtk-style-updates", GINT_TO_POINTER (1));
+
+	settings = gtk_settings_get_default ();
+	for (ii = 0; settings && ii < G_N_ELEMENTS (properties); ii++) {
+		g_signal_connect_object (settings, properties[ii],
+			G_CALLBACK (style_settings_notify_cb), widget, 0);
+	}
+
+	return widget;
 }
 
 GdkEventType

@@ -31,6 +31,10 @@ G_BEGIN_DECLS
 
 gpointer	e_gtk_widget_legacy_events	(gpointer widget);
 
+/* "style-updated" (void (GtkWidget *)) is emitted for widgets passed
+ * through this when the theme, the dark preference or the font change */
+gpointer	e_gtk_widget_style_updates	(gpointer widget);
+
 /* GtkWidgetClass key_press_event and the other event vfuncs: the handler
  * overrides the class closure of the legacy signal for the class, whose
  * widgets then get the legacy events once realized; a chain-up becomes
