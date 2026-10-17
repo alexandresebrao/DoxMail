@@ -822,7 +822,7 @@ customize_shortcuts_popover_key_press_cb (GtkWidget *widget,
 	GdkModifierType mods;
 	gboolean consumed = FALSE;
 
-	switch (event->keyval) {
+	switch (e_gdk_event_keyval (event)) {
 	case GDK_KEY_Num_Lock:
 	case GDK_KEY_Shift_L:
 	case GDK_KEY_Shift_R:
@@ -842,15 +842,15 @@ customize_shortcuts_popover_key_press_cb (GtkWidget *widget,
 	case GDK_KEY_Return:
 	case GDK_KEY_KP_Enter:
 	case GDK_KEY_ISO_Enter:
-		if (!(event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_ALT_MASK))) {
+		if (!(e_gdk_event_state (event) & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_ALT_MASK))) {
 			gtk_button_clicked (GTK_BUTTON (sd->save_button));
 			return TRUE;
 		}
 		return FALSE;
 	}
 
-	key = event->keyval;
-	mods = (event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_ALT_MASK));
+	key = e_gdk_event_keyval (event);
+	mods = (e_gdk_event_state (event) & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_ALT_MASK));
 
 	if (key != GDK_KEY_Tab && key != GDK_KEY_ISO_Left_Tab && key != GDK_KEY_KP_Tab && key != GDK_KEY_Escape && (
 	    sd->current_key != key || sd->current_mods != mods)) {
@@ -996,7 +996,7 @@ customize_shortcuts_run_popover (EUICustomizeDialog *self,
 	sd->current_mods = 0;
 	sd->save_current = FALSE;
 
-	g_signal_connect (sd->entry, "key-press-event",
+	g_signal_connect (e_gtk_widget_legacy_events (sd->entry), "key-press-event",
 		G_CALLBACK (customize_shortcuts_popover_key_press_cb), sd);
 	g_signal_connect_data (popover, "closed",
 		G_CALLBACK (customize_shortcuts_popover_closed_cb), sd, (GClosureNotify) shortcuts_data_free, 0);

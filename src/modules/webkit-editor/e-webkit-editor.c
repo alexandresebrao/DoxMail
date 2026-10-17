@@ -5679,9 +5679,9 @@ webkit_editor_button_press_event (GtkWidget *widget,
 
 	wk_editor = E_WEBKIT_EDITOR (widget);
 
-	if (event->button == 2) {
-		if (event->type == GDK_BUTTON_PRESS) {
-			if (event->time) {
+	if (e_gdk_event_button (event) == 2) {
+		if (e_gdk_event_type (event) == GDK_BUTTON_PRESS) {
+			if (e_gdk_event_time (event)) {
 				GtkSettings *settings;
 				guint32 last_button_press_time_ms;
 
@@ -5694,14 +5694,14 @@ webkit_editor_button_press_event (GtkWidget *widget,
 					g_object_get (G_OBJECT (settings), "gtk-double-click-time", &double_click_time_ms, NULL);
 
 					/* it's too early, double-click or triple-click event will follow */
-					if (double_click_time_ms >= event->time - last_button_press_time_ms)
+					if (double_click_time_ms >= e_gdk_event_time (event) - last_button_press_time_ms)
 						return TRUE;
 				}
 
-				wk_editor->priv->last_button_press_time_ms = event->time;
+				wk_editor->priv->last_button_press_time_ms = e_gdk_event_time (event);
 			}
 
-			if ((event->state & GDK_SHIFT_MASK) != 0) {
+			if ((e_gdk_event_state (event) & GDK_SHIFT_MASK) != 0) {
 				paste_primary_clipboard_quoted (E_CONTENT_EDITOR (widget));
 			} else if (!e_content_editor_emit_paste_primary_clipboard (E_CONTENT_EDITOR (widget)))
 				webkit_editor_paste_primary (E_CONTENT_EDITOR( (widget)));
@@ -5711,11 +5711,11 @@ webkit_editor_button_press_event (GtkWidget *widget,
 	}
 
 	/* Ctrl + Left Click on link opens it. */
-	if (event->button == 1 && wk_editor->priv->last_hover_uri &&
+	if (e_gdk_event_button (event) == 1 && wk_editor->priv->last_hover_uri &&
 	    *wk_editor->priv->last_hover_uri &&
-	    (event->state & GDK_CONTROL_MASK) != 0 &&
-	    (event->state & GDK_SHIFT_MASK) == 0 &&
-	    (event->state & GDK_ALT_MASK) == 0) {
+	    (e_gdk_event_state (event) & GDK_CONTROL_MASK) != 0 &&
+	    (e_gdk_event_state (event) & GDK_SHIFT_MASK) == 0 &&
+	    (e_gdk_event_state (event) & GDK_ALT_MASK) == 0) {
 		if (*wk_editor->priv->last_hover_uri == '#') {
 			MoveToAnchorData *data;
 
@@ -5736,14 +5736,14 @@ webkit_editor_button_press_event (GtkWidget *widget,
 
 	/* Chain up to parent's button_press_event() method. */
 	return GTK_WIDGET_CLASS (e_webkit_editor_parent_class)->button_press_event &&
-	       GTK_WIDGET_CLASS (e_webkit_editor_parent_class)->button_press_event (widget, event);
+	       e_gtk_widget_chain_legacy_event (widget, event);
 }
 
 static gboolean
 webkit_editor_button_release_event (GtkWidget *widget,
 				    GdkEvent *event)
 {
-	if (event->button == 2) {
+	if (e_gdk_event_button (event) == 2) {
 		/* WebKitGTK 2.46.1 changed the middle-click paste behavior and moved
 		   the paste handler from the button-press event into the button-release
 		   event, which causes double paste of the clipboard content. As the paste
@@ -5754,7 +5754,7 @@ webkit_editor_button_release_event (GtkWidget *widget,
 	}
 
 	/* Chain up to parent's method. */
-	return GTK_WIDGET_CLASS (e_webkit_editor_parent_class)->button_release_event (widget, event);
+	return e_gtk_widget_chain_legacy_event (widget, event);
 }
 
 static gboolean
@@ -5766,12 +5766,12 @@ webkit_editor_key_press_event (GtkWidget *widget,
 	gboolean is_shift, is_ctrl;
 	gboolean is_webkit_keypress = FALSE;
 
-	key.keycode = event->hardware_keycode;
+	key.keycode = e_gdk_event_keycode (event);
 
 	/* Translate the keyval to the base group, thus it's independent of the current user keyboard layout */
 	keyval = gdk_keymap_lookup_key (gdk_keymap_get_for_display (gtk_widget_get_display (widget)), &key);
 	if (!keyval)
-		keyval = event->keyval;
+		keyval = e_gdk_event_keyval (event);
 
 	is_shift = ((event)->state & GDK_SHIFT_MASK) != 0;
 	is_ctrl = ((event)->state & GDK_CONTROL_MASK) != 0;
@@ -5828,7 +5828,7 @@ webkit_editor_key_press_event (GtkWidget *widget,
 
 	/* Chain up to parent's key_press_event() method. */
 	return GTK_WIDGET_CLASS (e_webkit_editor_parent_class)->key_press_event &&
-	       GTK_WIDGET_CLASS (e_webkit_editor_parent_class)->key_press_event (widget, event);
+	       e_gtk_widget_chain_legacy_event (widget, event);
 }
 
 static gdouble
@@ -5859,9 +5859,9 @@ e_webkit_editor_class_init (EWebKitEditorClass *class)
 	object_class->finalize = webkit_editor_finalize;
 
 	widget_class = GTK_WIDGET_CLASS (class);
-	widget_class->button_press_event = webkit_editor_button_press_event;
-	widget_class->button_release_event = webkit_editor_button_release_event;
-	widget_class->key_press_event = webkit_editor_key_press_event;
+	e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (widget_class), "button-press-event", G_CALLBACK (webkit_editor_button_press_event));
+	e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (widget_class), "button-release-event", G_CALLBACK (webkit_editor_button_release_event));
+	e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (widget_class), "key-press-event", G_CALLBACK (webkit_editor_key_press_event));
 
 	g_object_class_override_property (
 		object_class, PROP_IS_MALFUNCTION, "is-malfunction");
@@ -6045,7 +6045,7 @@ e_webkit_editor_init (EWebKitEditor *wk_editor)
 		G_CALLBACK (webkit_editor_load_changed_cb), NULL);
 
 	g_signal_connect (
-		wk_editor, "focus-in-event",
+		e_gtk_widget_legacy_events (wk_editor), "focus-in-event",
 		G_CALLBACK (webkit_editor_focus_in_event_cb), NULL);
 
 	g_signal_connect (

@@ -363,11 +363,11 @@ e_card_view_button_press_event_cb (GtkWidget *widget,
 {
 	ECardView *self = E_CARD_VIEW (widget);
 
-	if (event->type == GDK_2BUTTON_PRESS && event->button.button == GDK_BUTTON_PRIMARY) {
+	if (e_gdk_event_type (event) == E_GDK_2BUTTON_PRESS && e_gdk_event_button (event) == GDK_BUTTON_PRIMARY) {
 		g_signal_emit (self, signals[DOUBLE_CLICK], 0, NULL);
 
 		return TRUE;
-	} else if (event->type == GDK_BUTTON_PRESS && event->button.button == GDK_BUTTON_SECONDARY) {
+	} else if (e_gdk_event_type (event) == GDK_BUTTON_PRESS && e_gdk_event_button (event) == GDK_BUTTON_SECONDARY) {
 		gboolean ret = FALSE;
 
 		g_signal_emit_by_name (self, "popup-menu", &ret);
@@ -550,7 +550,7 @@ e_card_view_constructed (GObject *object)
 
 	self->priv->empty_label = GTK_LABEL (widget);
 
-	g_signal_connect (self, "button-press-event",
+	g_signal_connect (e_gtk_widget_legacy_events (self), "button-press-event",
 		G_CALLBACK (e_card_view_button_press_event_cb), NULL);
 	g_signal_connect_object (self->priv->card_box, "card-drag-begin",
 		G_CALLBACK (e_card_view_card_drag_begin_cb), self, 0);

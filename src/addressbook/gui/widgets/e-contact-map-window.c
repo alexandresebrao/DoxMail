@@ -223,7 +223,7 @@ contact_map_window_contact_added_cb (EContactMap *map,
 	gtk_list_store_set (list_store, &iter, 0, name, -1);
 
 	g_signal_connect (
-		marker, "button-release-event",
+		e_gtk_widget_legacy_events (marker), "button-release-event",
 		G_CALLBACK (contact_map_marker_button_release_event_cb),
 		window);
 
@@ -312,7 +312,7 @@ contact_map_window_entry_key_pressed_cb (GtkWidget *entry,
                                          GdkEvent *event,
                                          gpointer user_data)
 {
-	if (event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter)
+	if (e_gdk_event_keyval (event) == GDK_KEY_Return || e_gdk_event_keyval (event) == GDK_KEY_KP_Enter)
 		contact_map_window_find_contact_cb (NULL, user_data);
 
 	return FALSE;
@@ -482,7 +482,7 @@ e_contact_map_window_init (EContactMapWindow *window)
 	entry = gtk_entry_new ();
 	gtk_entry_set_completion (GTK_ENTRY (entry), entry_completion);
 	g_signal_connect (
-		entry, "key-press-event",
+		e_gtk_widget_legacy_events (entry), "key-press-event",
 		G_CALLBACK (contact_map_window_entry_key_pressed_cb), window);
 	window->priv->search_entry = entry;
 	e_gtk_container_add (hbox, entry);

@@ -249,12 +249,12 @@ cal_base_shell_sidebar_date_navigator_scroll_event_cb (ECalBaseShellSidebar *cal
 	if (year == -1 || month == -1)
 		return FALSE;
 
-	direction = event->direction;
+	direction = e_gdk_event_direction (event);
 
 	if (direction == GDK_SCROLL_SMOOTH) {
 		static gdouble total_delta_y = 0.0;
 
-		total_delta_y += event->delta_y;
+		total_delta_y += e_gdk_event_delta_y (event);
 
 		if (total_delta_y >= 1.0) {
 			total_delta_y = 0.0;
@@ -785,7 +785,7 @@ cal_base_shell_sidebar_constructed (GObject *object)
 			NULL);
 
 		cal_base_shell_sidebar->priv->date_navigator_scroll_event_handler_id = g_signal_connect_swapped (
-			cal_base_shell_sidebar->priv->date_navigator, "scroll-event",
+			e_gtk_widget_legacy_events (cal_base_shell_sidebar->priv->date_navigator), "scroll-event",
 			G_CALLBACK (cal_base_shell_sidebar_date_navigator_scroll_event_cb), cal_base_shell_sidebar);
 	}
 

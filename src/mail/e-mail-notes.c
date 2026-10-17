@@ -1177,7 +1177,6 @@ e_mail_notes_editor_new_with_editor (EHTMLEditor *html_editor,
 	g_object_set (G_OBJECT (notes_editor),
 		"transient-for", parent,
 		"destroy-with-parent", TRUE,
-		"window-position", GTK_WIN_POS_CENTER_ON_PARENT,
 		NULL);
 
 	gtk_window_set_default_size (GTK_WINDOW (notes_editor), 600, 440);

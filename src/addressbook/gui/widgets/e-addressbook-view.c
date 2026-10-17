@@ -259,8 +259,8 @@ addressbook_view_card_event_cb (EContactCardBox *box,
 	EAddressbookView *view = user_data;
 	guint event_button = 0;
 
-	switch (event->type) {
-	case GDK_2BUTTON_PRESS:
+	switch (e_gdk_event_type (event)) {
+	case E_GDK_2BUTTON_PRESS:
 		e_gdk_event_get_button (event, &event_button);
 		if (event_button == GDK_BUTTON_PRIMARY) {
 			if (e_addressbook_view_get_editable (view)) {
@@ -290,8 +290,8 @@ addressbook_view_card_event_cb (EContactCardBox *box,
 		}
 		break;
 	case GDK_KEY_PRESS:
-		if (((event->key.state & GDK_SHIFT_MASK) != 0 && event->key.keyval == GDK_KEY_F10) ||
-		    ((event->key.state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_ALT_MASK)) == 0 && event->key.keyval == GDK_KEY_Menu)) {
+		if (((e_gdk_event_state (event) & GDK_SHIFT_MASK) != 0 && e_gdk_event_keyval (event) == GDK_KEY_F10) ||
+		    ((e_gdk_event_state (event) & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_ALT_MASK)) == 0 && e_gdk_event_keyval (event) == GDK_KEY_Menu)) {
 			addressbook_view_emit_popup_event (view, event);
 			return TRUE;
 		}
@@ -410,7 +410,7 @@ table_white_space_event (ETable *table,
 
 	e_gdk_event_get_button (event, &event_button);
 
-	if (event->type == GDK_BUTTON_PRESS && event_button == 3) {
+	if (e_gdk_event_type (event) == GDK_BUTTON_PRESS && event_button == 3) {
 		addressbook_view_emit_popup_event (view, event);
 		return TRUE;
 	}
@@ -519,7 +519,7 @@ addressbook_view_create_table_view (EAddressbookView *view,
 		widget, "right_click",
 		G_CALLBACK (table_right_click), view);
 	g_signal_connect (
-		widget, "popup-menu",
+		e_gtk_widget_legacy_events (widget), "popup-menu",
 		G_CALLBACK (addressbook_view_popup_menu_cb), view);
 	g_signal_connect (
 		widget, "white_space_event",
@@ -599,7 +599,7 @@ addressbook_view_create_minicard_view (EAddressbookView *view,
 		G_CALLBACK (card_view_double_click_cb), view, 0);
 
 	g_signal_connect_object (
-		card_view, "popup-menu",
+		e_gtk_widget_legacy_events (card_view), "popup-menu",
 		G_CALLBACK (addressbook_view_popup_menu_cb), view, 0);
 
 	view->priv->object = G_OBJECT (card_view);
@@ -948,7 +948,7 @@ addressbook_view_constructed (GObject *object)
 	/* Chain up to parent's constructed() method. */
 	G_OBJECT_CLASS (e_addressbook_view_parent_class)->constructed (object);
 
-	g_signal_connect (object, "focus-in-event", G_CALLBACK (address_book_view_focus_in_cb), NULL);
+	g_signal_connect (e_gtk_widget_legacy_events (object), "focus-in-event", G_CALLBACK (address_book_view_focus_in_cb), NULL);
 }
 
 static void

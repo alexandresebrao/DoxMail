@@ -648,7 +648,7 @@ ecep_general_list_view_event_cb (EMeetingListView *list_view,
 	g_return_val_if_fail (event != NULL, FALSE);
 	g_return_val_if_fail (E_IS_COMP_EDITOR_PAGE_GENERAL (page_general), FALSE);
 
-	if (event->type == GDK_2BUTTON_PRESS && gtk_widget_get_sensitive (GTK_WIDGET (list_view)) &&
+	if (e_gdk_event_type (event) == E_GDK_2BUTTON_PRESS && gtk_widget_get_sensitive (GTK_WIDGET (list_view)) &&
 	    gtk_widget_get_sensitive (page_general->priv->attendees_button_add)) {
 		EMeetingAttendee *attendee;
 		ECompEditor *comp_editor;
@@ -685,11 +685,11 @@ ecep_general_list_view_key_press_cb (EMeetingListView *list_view,
 	g_return_val_if_fail (event != NULL, FALSE);
 	g_return_val_if_fail (E_IS_COMP_EDITOR_PAGE_GENERAL (page_general), FALSE);
 
-	if (event->keyval == GDK_KEY_Delete) {
+	if (e_gdk_event_keyval (event) == GDK_KEY_Delete) {
 		if (gtk_widget_get_sensitive (page_general->priv->attendees_button_remove))
 			ecep_general_attendees_remove_clicked_cb (NULL, page_general);
 		return TRUE;
-	} else if (event->keyval == GDK_KEY_Insert) {
+	} else if (e_gdk_event_keyval (event) == GDK_KEY_Insert) {
 		if (gtk_widget_get_sensitive (page_general->priv->attendees_button_add))
 			ecep_general_attendees_add_clicked_cb (NULL, page_general);
 		return TRUE;

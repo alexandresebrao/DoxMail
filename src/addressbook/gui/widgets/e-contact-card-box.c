@@ -599,7 +599,7 @@ e_contact_card_container_update (EContactCardContainer *self)
 
 			g_signal_connect_object (card, "event",
 				G_CALLBACK (e_contact_card_container_card_event_cb), self, 0);
-			g_signal_connect_object (card, "popup-menu",
+			g_signal_connect_object (e_gtk_widget_legacy_events (card), "popup-menu",
 				G_CALLBACK (e_contact_card_container_card_popup_menu_cb), self, 0);
 			g_signal_connect_object (card, "drag-begin",
 				G_CALLBACK (e_contact_card_container_card_drag_begin_cb), self, 0);
@@ -1413,7 +1413,7 @@ e_contact_card_box_card_event_cb (GtkWidget *container,
 	if (card)
 		item_index = e_contact_card_box_get_card_index (self, card);
 
-	if (event->type == GDK_BUTTON_PRESS && event->button.button == GDK_BUTTON_PRIMARY) {
+	if (e_gdk_event_type (event) == GDK_BUTTON_PRESS && e_gdk_event_button (event) == GDK_BUTTON_PRIMARY) {
 		if (card) {
 			gboolean modify;
 			gboolean extend;
@@ -1508,7 +1508,7 @@ e_contact_card_box_container_selected_changed_cb (GtkWidget *container,
 }
 
 static void
-e_contact_card_box_add_move_binding (GtkBindingSet *binding_set,
+e_contact_card_box_add_move_binding (GtkWidgetClass *binding_set,
 				     guint keyval,
 				     GdkModifierType modmask,
 				     GtkMovementStep step,
@@ -1524,29 +1524,13 @@ e_contact_card_box_add_move_binding (GtkBindingSet *binding_set,
 		modify_mod_mask = gdk_keymap_get_modifier_mask (gdk_keymap_get_for_display (display), GDK_MODIFIER_INTENT_MODIFY_SELECTION);
 	}
 
-	gtk_binding_entry_add_signal (binding_set, keyval, modmask,
-		"move-cursor", 2,
-		GTK_TYPE_MOVEMENT_STEP, step,
-		G_TYPE_INT, count,
-		NULL);
+	gtk_widget_class_add_binding_signal (binding_set, keyval, modmask, "move-cursor", "(ii)", step, count);
 
-	gtk_binding_entry_add_signal (binding_set, keyval, modmask | extend_mod_mask,
-		"move-cursor", 2,
-		GTK_TYPE_MOVEMENT_STEP, step,
-		G_TYPE_INT, count,
-		NULL);
+	gtk_widget_class_add_binding_signal (binding_set, keyval, modmask | extend_mod_mask, "move-cursor", "(ii)", step, count);
 
-	gtk_binding_entry_add_signal (binding_set, keyval, modmask | modify_mod_mask,
-		"move-cursor", 2,
-		GTK_TYPE_MOVEMENT_STEP, step,
-		G_TYPE_INT, count,
-		NULL);
+	gtk_widget_class_add_binding_signal (binding_set, keyval, modmask | modify_mod_mask, "move-cursor", "(ii)", step, count);
 
-	gtk_binding_entry_add_signal (binding_set, keyval, modmask | extend_mod_mask | modify_mod_mask,
-		"move-cursor", 2,
-		GTK_TYPE_MOVEMENT_STEP, step,
-		G_TYPE_INT, count,
-		NULL);
+	gtk_widget_class_add_binding_signal (binding_set, keyval, modmask | extend_mod_mask | modify_mod_mask, "move-cursor", "(ii)", step, count);
 }
 
 static void
@@ -1649,7 +1633,7 @@ e_contact_card_box_constructed (GObject *object)
 		G_CALLBACK (e_contact_card_box_card_drag_data_get_cb), self, 0);
 	g_signal_connect_object (self->priv->container, "card-drag-end",
 		G_CALLBACK (e_contact_card_box_card_drag_end_cb), self, 0);
-	g_signal_connect_object (self->priv->container, "popup-menu",
+	g_signal_connect_object (e_gtk_widget_legacy_events (self->priv->container), "popup-menu",
 		G_CALLBACK (e_contact_card_box_container_popup_menu_cb), self, 0);
 	g_signal_connect_object (self->priv->container, "selected-changed",
 		G_CALLBACK (e_contact_card_box_container_selected_changed_cb), self, 0);
@@ -1669,7 +1653,7 @@ e_contact_card_box_finalize (GObject *object)
 static void
 e_contact_card_box_class_init (EContactCardBoxClass *klass)
 {
-	GtkBindingSet *binding_set;
+	GtkWidgetClass *binding_set;
 	GObjectClass *object_class;
 	GtkWidgetClass *widget_class;
 
@@ -1798,7 +1782,7 @@ e_contact_card_box_class_init (EContactCardBoxClass *klass)
 
 	widget_class->activate_signal = box_signals[BOX_ACTIVATE_CURSOR_CHILD];
 
-	binding_set = gtk_binding_set_by_class (klass);
+	binding_set = GTK_WIDGET_CLASS (klass);
 
 	e_contact_card_box_add_move_binding (binding_set, GDK_KEY_Home, 0, GTK_MOVEMENT_BUFFER_ENDS, -1);
 	e_contact_card_box_add_move_binding (binding_set, GDK_KEY_KP_Home, 0, GTK_MOVEMENT_BUFFER_ENDS, -1);
@@ -1816,10 +1800,10 @@ e_contact_card_box_class_init (EContactCardBoxClass *klass)
 	e_contact_card_box_add_move_binding (binding_set, GDK_KEY_KP_Right, 0, GTK_MOVEMENT_VISUAL_POSITIONS, 1);
 	e_contact_card_box_add_move_binding (binding_set, GDK_KEY_Left, 0, GTK_MOVEMENT_VISUAL_POSITIONS, -1);
 	e_contact_card_box_add_move_binding (binding_set, GDK_KEY_KP_Left, 0, GTK_MOVEMENT_VISUAL_POSITIONS, -1);
-	gtk_binding_entry_add_signal (binding_set, GDK_KEY_space, GDK_CONTROL_MASK, "toggle-cursor-child", 0, NULL);
-	gtk_binding_entry_add_signal (binding_set, GDK_KEY_KP_Space, GDK_CONTROL_MASK, "toggle-cursor-child", 0, NULL);
-	gtk_binding_entry_add_signal (binding_set, GDK_KEY_a, GDK_CONTROL_MASK, "select-all", 0);
-	gtk_binding_entry_add_signal (binding_set, GDK_KEY_a, GDK_CONTROL_MASK | GDK_SHIFT_MASK, "unselect-all", 0);
+	gtk_widget_class_add_binding_signal (binding_set, GDK_KEY_space, GDK_CONTROL_MASK, "toggle-cursor-child", NULL);
+	gtk_widget_class_add_binding_signal (binding_set, GDK_KEY_KP_Space, GDK_CONTROL_MASK, "toggle-cursor-child", NULL);
+	gtk_widget_class_add_binding_signal (binding_set, GDK_KEY_a, GDK_CONTROL_MASK, "select-all", NULL);
+	gtk_widget_class_add_binding_signal (binding_set, GDK_KEY_a, GDK_CONTROL_MASK | GDK_SHIFT_MASK, "unselect-all", NULL);
 }
 
 static void

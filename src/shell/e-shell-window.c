@@ -595,7 +595,7 @@ e_shell_window_class_init (EShellWindowClass *class)
 {
 	GObjectClass *object_class;
 	GtkWidgetClass *widget_class;
-	GtkBindingSet *binding_set;
+	GtkWidgetClass *binding_set;
 
 	object_class = G_OBJECT_CLASS (class);
 	object_class->set_property = shell_window_set_property;
@@ -762,9 +762,8 @@ e_shell_window_class_init (EShellWindowClass *class)
 		G_TYPE_NONE, 0,
 		G_TYPE_NONE);
 
-	binding_set = gtk_binding_set_by_class (class);
-	gtk_binding_entry_add_signal (
-		binding_set, GDK_KEY_Escape, 0, "close-alert", 0);
+	binding_set = GTK_WIDGET_CLASS (class);
+	gtk_widget_class_add_binding_signal (binding_set, GDK_KEY_Escape, 0, "close-alert", NULL);
 }
 
 static void

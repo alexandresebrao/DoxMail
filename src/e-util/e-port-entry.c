@@ -230,18 +230,13 @@ port_entry_get_preferred_width (GtkWidget *widget,
 	PangoContext *context;
 	PangoFontMetrics *metrics;
 	PangoFontDescription *font_desc;
-	GtkStyleContext *style_context;
-	GtkStateFlags state;
 	gint digit_width;
 	gint parent_entry_width_min;
 	gint parent_width_min;
 	GtkWidget *entry;
 
-	style_context = gtk_widget_get_style_context (widget);
-	state = gtk_widget_get_state_flags (widget);
-	gtk_style_context_get (
-		style_context, state, "font", &font_desc, NULL);
 	context = gtk_widget_get_pango_context (GTK_WIDGET (widget));
+	font_desc = pango_font_description_copy (pango_context_get_font_description (context));
 	metrics = pango_context_get_metrics (
 		context, font_desc, pango_context_get_language (context));
 

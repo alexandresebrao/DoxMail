@@ -29,6 +29,7 @@
 
 #include <gtk/gtk.h>
 #include <e-util/e-gtk-dnd-compat.h>
+#include <e-util/e-gtk-event-compat.h>
 #include <e-util/e-gtk-file-chooser-compat.h>
 
 G_BEGIN_DECLS

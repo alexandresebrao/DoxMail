@@ -467,7 +467,7 @@ search_bar_key_press_event (GtkWidget *widget,
 {
 	GtkWidgetClass *widget_class;
 
-	if (event->keyval == GDK_KEY_Escape &&
+	if (e_gdk_event_keyval (event) == GDK_KEY_Escape &&
 	    e_search_bar_get_can_hide (E_SEARCH_BAR (widget))) {
 		gtk_widget_hide (widget);
 		return TRUE;
@@ -475,7 +475,7 @@ search_bar_key_press_event (GtkWidget *widget,
 
 	/* Chain up to parent's key_press_event() method. */
 	widget_class = GTK_WIDGET_CLASS (e_search_bar_parent_class);
-	return widget_class->key_press_event (widget, event);
+	return e_gtk_widget_chain_legacy_event (widget, event);
 }
 
 static void
@@ -511,7 +511,7 @@ e_search_bar_class_init (ESearchBarClass *class)
 	widget_class = GTK_WIDGET_CLASS (class);
 	widget_class->show = search_bar_show;
 	widget_class->hide = search_bar_hide;
-	widget_class->key_press_event = search_bar_key_press_event;
+	e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (widget_class), "key-press-event", G_CALLBACK (search_bar_key_press_event));
 
 	class->clear = search_bar_clear;
 

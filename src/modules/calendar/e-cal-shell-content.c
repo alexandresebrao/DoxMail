@@ -630,7 +630,7 @@ cal_shell_content_datepicker_button_press_cb (ECalendar *calendar,
 	if (!event)
 		return FALSE;
 
-	if (event->type == GDK_2BUTTON_PRESS) {
+	if (e_gdk_event_type (event) == E_GDK_2BUTTON_PRESS) {
 		ECalendarItem *calitem = e_calendar_get_item (calendar);
 		gdouble xwin = 0.0, ywin = 0.0;
 		GDate sel_start, sel_end;
@@ -1592,7 +1592,7 @@ cal_shell_content_view_created (ECalBaseShellContent *cal_base_shell_content)
 		g_signal_connect (e_calendar_get_item (calendar), "date-range-moved",
 		G_CALLBACK (cal_shell_content_datepicker_range_moved_cb), cal_shell_content);
 
-	g_signal_connect_after (calendar, "button-press-event",
+	g_signal_connect_after (e_gtk_widget_legacy_events (calendar), "button-press-event",
 		G_CALLBACK (cal_shell_content_datepicker_button_press_cb), cal_shell_content);
 
 	data_model = e_cal_base_shell_content_get_data_model (E_CAL_BASE_SHELL_CONTENT (cal_shell_content));

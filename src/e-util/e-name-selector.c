@@ -491,9 +491,7 @@ e_name_selector_peek_dialog (ENameSelector *name_selector)
 		model = e_name_selector_peek_model (name_selector);
 		e_name_selector_dialog_set_model (dialog, model);
 
-		g_signal_connect (
-			dialog, "delete-event",
-			G_CALLBACK (gtk_widget_hide_on_delete), name_selector);
+		gtk_window_set_hide_on_close (GTK_WINDOW (dialog), TRUE);
 	}
 
 	return name_selector->priv->dialog;

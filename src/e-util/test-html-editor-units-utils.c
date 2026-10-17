@@ -244,8 +244,8 @@ wk_editor_key_press_event_cb (WebKitWebView *web_view,
 
 	inspector = webkit_web_view_get_inspector (web_view);
 
-	if ((event->state & WEBKIT_INSPECTOR_MOD) == WEBKIT_INSPECTOR_MOD &&
-	    event->keyval == WEBKIT_INSPECTOR_KEY) {
+	if ((e_gdk_event_state (event) & WEBKIT_INSPECTOR_MOD) == WEBKIT_INSPECTOR_MOD &&
+	    e_gdk_event_keyval (event) == WEBKIT_INSPECTOR_KEY) {
 		webkit_web_inspector_show (inspector);
 		handled = TRUE;
 	}
@@ -322,7 +322,7 @@ test_utils_html_editor_created_cb (GObject *source_object,
 		webkit_settings_set_enable_write_console_messages_to_stdout (web_settings, TRUE);
 
 		g_signal_connect (
-			cnt_editor, "key-press-event",
+			e_gtk_widget_legacy_events (cnt_editor), "key-press-event",
 			G_CALLBACK (wk_editor_key_press_event_cb), NULL);
 
 		if (!test_utils_get_multiple_web_processes () && !global_web_context) {

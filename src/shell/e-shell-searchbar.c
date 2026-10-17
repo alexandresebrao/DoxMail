@@ -428,10 +428,10 @@ shell_searchbar_entry_key_press_cb (EShellSearchbar *searchbar,
 	guint mask;
 
 	mask = gtk_accelerator_get_default_mod_mask ();
-	if ((key_event->state & mask) != GDK_ALT_MASK)
+	if ((e_gdk_event_state (key_event) & mask) != GDK_ALT_MASK)
 		return FALSE;
 
-	if (key_event->keyval != GDK_KEY_Down)
+	if (e_gdk_event_keyval (key_event) != GDK_KEY_Down)
 		return FALSE;
 
 	shell_view = e_shell_searchbar_get_shell_view (searchbar);
@@ -960,17 +960,17 @@ e_shell_searchbar_init (EShellSearchbar *searchbar)
 		searchbar);
 
 	g_signal_connect_swapped (
-		widget, "key-press-event",
+		e_gtk_widget_legacy_events (widget), "key-press-event",
 		G_CALLBACK (shell_searchbar_entry_key_press_cb),
 		searchbar);
 
 	g_signal_connect (
-		widget, "focus-in-event",
+		e_gtk_widget_legacy_events (widget), "focus-in-event",
 		G_CALLBACK (shell_searchbar_entry_focus_in_cb),
 		searchbar);
 
 	g_signal_connect (
-		widget, "focus-out-event",
+		e_gtk_widget_legacy_events (widget), "focus-out-event",
 		G_CALLBACK (shell_searchbar_entry_focus_out_cb),
 		searchbar);
 

@@ -388,7 +388,7 @@ proxy_editor_constructed (GObject *object)
 	gtk_widget_show (widget);
 
 	g_signal_connect_after (
-		widget, "focus-out-event",
+		e_gtk_widget_legacy_events (widget), "focus-out-event",
 		G_CALLBACK (proxy_editor_focus_out_event_cb), editor);
 
 	widget = gtk_spin_button_new_with_range (0, G_MAXUINT16, 1);
@@ -400,7 +400,7 @@ proxy_editor_constructed (GObject *object)
 	gtk_widget_show (widget);
 
 	g_signal_connect_after (
-		widget, "focus-out-event",
+		e_gtk_widget_legacy_events (widget), "focus-out-event",
 		G_CALLBACK (proxy_editor_focus_out_event_cb), editor);
 
 	widget = gtk_label_new_with_mnemonic (_("H_TTPS Proxy:"));
@@ -419,7 +419,7 @@ proxy_editor_constructed (GObject *object)
 	gtk_widget_show (widget);
 
 	g_signal_connect_after (
-		widget, "focus-out-event",
+		e_gtk_widget_legacy_events (widget), "focus-out-event",
 		G_CALLBACK (proxy_editor_focus_out_event_cb), editor);
 
 	widget = gtk_spin_button_new_with_range (0, G_MAXUINT16, 1);
@@ -431,7 +431,7 @@ proxy_editor_constructed (GObject *object)
 	gtk_widget_show (widget);
 
 	g_signal_connect_after (
-		widget, "focus-out-event",
+		e_gtk_widget_legacy_events (widget), "focus-out-event",
 		G_CALLBACK (proxy_editor_focus_out_event_cb), editor);
 
 	widget = gtk_label_new_with_mnemonic (_("_Socks Proxy:"));
@@ -450,7 +450,7 @@ proxy_editor_constructed (GObject *object)
 	gtk_widget_show (widget);
 
 	g_signal_connect_after (
-		widget, "focus-out-event",
+		e_gtk_widget_legacy_events (widget), "focus-out-event",
 		G_CALLBACK (proxy_editor_focus_out_event_cb), editor);
 
 	widget = gtk_spin_button_new_with_range (0, G_MAXUINT16, 1);
@@ -462,7 +462,7 @@ proxy_editor_constructed (GObject *object)
 	gtk_widget_show (widget);
 
 	g_signal_connect_after (
-		widget, "focus-out-event",
+		e_gtk_widget_legacy_events (widget), "focus-out-event",
 		G_CALLBACK (proxy_editor_focus_out_event_cb), editor);
 
 	widget = gtk_label_new_with_mnemonic (_("_Ignore Hosts:"));
@@ -481,7 +481,7 @@ proxy_editor_constructed (GObject *object)
 	gtk_widget_show (widget);
 
 	g_signal_connect_after (
-		widget, "focus-out-event",
+		e_gtk_widget_legacy_events (widget), "focus-out-event",
 		G_CALLBACK (proxy_editor_focus_out_event_cb), editor);
 
 	/*** Automatic ***/
@@ -526,7 +526,7 @@ proxy_editor_constructed (GObject *object)
 	gtk_widget_show (widget);
 
 	g_signal_connect_after (
-		widget, "focus-out-event",
+		e_gtk_widget_legacy_events (widget), "focus-out-event",
 		G_CALLBACK (proxy_editor_focus_out_event_cb), editor);
 
 	/*** None ***/

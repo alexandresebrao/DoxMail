@@ -895,7 +895,7 @@ e_memo_table_class_init (EMemoTableClass *class)
 	object_class->constructed = memo_table_constructed;
 
 	widget_class = GTK_WIDGET_CLASS (class);
-	widget_class->popup_menu = memo_table_popup_menu;
+	e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (widget_class), "popup-menu", G_CALLBACK (memo_table_popup_menu));
 	widget_class->query_tooltip = memo_table_query_tooltip;
 
 	table_class = E_TABLE_CLASS (class);

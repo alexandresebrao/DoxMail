@@ -765,7 +765,7 @@ contact_list_editor_email_entry_key_press_event_cb (GtkWidget *widget,
 
 	editor = contact_list_editor_extract (widget);
 
-	if (event->keyval == GDK_KEY_comma) {
+	if (e_gdk_event_keyval (event) == GDK_KEY_comma) {
 		GtkEntry *entry;
 		gint cpos = -1;
 
@@ -789,7 +789,7 @@ contact_list_editor_email_entry_key_press_event_cb (GtkWidget *widget,
 		}
 	}
 
-	if (can_comma || event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter) {
+	if (can_comma || e_gdk_event_keyval (event) == GDK_KEY_Return || e_gdk_event_keyval (event) == GDK_KEY_KP_Enter) {
 		g_signal_emit_by_name (WIDGET (EMAIL_ENTRY), "activate", 0);
 
 		return TRUE;
@@ -1029,7 +1029,7 @@ contact_list_editor_tree_view_key_press_event_cb (GtkWidget *widget,
 
 	editor = contact_list_editor_extract (widget);
 
-	if (event->keyval == GDK_KEY_Delete) {
+	if (e_gdk_event_keyval (event) == GDK_KEY_Delete) {
 		g_signal_emit_by_name (WIDGET (REMOVE_BUTTON), "clicked");
 		return TRUE;
 	}
@@ -1316,7 +1316,7 @@ setup_custom_widgets (EContactListEditor *editor)
 		name_selector_entry, "changed", G_CALLBACK (
 		contact_list_editor_email_entry_changed_cb), NULL);
 	g_signal_connect (
-		name_selector_entry, "key-press-event", G_CALLBACK (
+		e_gtk_widget_legacy_events (name_selector_entry), "key-press-event", G_CALLBACK (
 		contact_list_editor_email_entry_key_press_event_cb), NULL);
 }
 

@@ -189,7 +189,7 @@ e_message_popover_constructed (GObject *object)
 
 	self->label = GTK_LABEL (widget);
 
-	g_signal_connect (self, "key-press-event",
+	g_signal_connect (e_gtk_widget_legacy_events (self), "key-press-event",
 		G_CALLBACK (e_message_popover_key_press_event_cb), NULL);
 	g_signal_connect (self, "closed",
 		G_CALLBACK (e_message_popover_closed_cb), NULL);

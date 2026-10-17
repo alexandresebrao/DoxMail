@@ -2430,7 +2430,7 @@ etdp_button_press_event_cb (GtkWidget *widget,
 
 	g_return_val_if_fail (E_IS_TO_DO_PANE (to_do_pane), FALSE);
 
-	if (event->type == GDK_BUTTON_PRESS &&
+	if (e_gdk_event_type (event) == GDK_BUTTON_PRESS &&
 	    gdk_event_triggers_context_menu (event)) {
 		GtkTreeSelection *selection;
 		GtkTreePath *path;
@@ -2439,7 +2439,7 @@ etdp_button_press_event_cb (GtkWidget *widget,
 		if (gtk_tree_selection_get_mode (selection) == GTK_SELECTION_SINGLE)
 			gtk_tree_selection_unselect_all (selection);
 
-		if (gtk_tree_view_get_path_at_pos (to_do_pane->priv->tree_view, event->button.x, event->button.y, &path, NULL, NULL, NULL)) {
+		if (gtk_tree_view_get_path_at_pos (to_do_pane->priv->tree_view, e_gdk_event_x (event), e_gdk_event_y (event), &path, NULL, NULL, NULL)) {
 			gtk_tree_selection_select_path (selection, path);
 			gtk_tree_view_set_cursor (to_do_pane->priv->tree_view, path, NULL, FALSE);
 
@@ -2862,10 +2862,10 @@ e_to_do_pane_constructed (GObject *object)
 	g_signal_connect (tree_view, "row-activated",
 		G_CALLBACK (etdp_row_activated_cb), to_do_pane);
 
-	g_signal_connect (tree_view, "button-press-event",
+	g_signal_connect (e_gtk_widget_legacy_events (tree_view), "button-press-event",
 		G_CALLBACK (etdp_button_press_event_cb), to_do_pane);
 
-	g_signal_connect (tree_view, "popup-menu",
+	g_signal_connect (e_gtk_widget_legacy_events (tree_view), "popup-menu",
 		G_CALLBACK (etdp_popup_menu_cb), to_do_pane);
 
 	to_do_pane->priv->tree_view = tree_view;

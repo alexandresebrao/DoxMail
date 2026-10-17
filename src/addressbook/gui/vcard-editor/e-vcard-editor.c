@@ -4334,16 +4334,16 @@ eve_event_after_cb (EVCardEditor *self,
 		    GdkEvent *event,
 		    gpointer user_data)
 {
-	if (event->type == GDK_KEY_PRESS) {
+	if (e_gdk_event_type (event) == GDK_KEY_PRESS) {
 		GdkEvent *key_event;
 		gboolean has_modifier_pressed;
 
 		key_event = (GdkEvent *) event;
-		has_modifier_pressed = (key_event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK |
+		has_modifier_pressed = (e_gdk_event_state (key_event) & (GDK_SHIFT_MASK | GDK_CONTROL_MASK |
 					GDK_SUPER_MASK | GDK_HYPER_MASK |
 					GDK_META_MASK)) != 0;
 
-		if (key_event->keyval == GDK_KEY_F10 && !has_modifier_pressed && self->add_menu_button) {
+		if (e_gdk_event_keyval (key_event) == GDK_KEY_F10 && !has_modifier_pressed && self->add_menu_button) {
 			if (self->add_menu_needs_update)
 				eve_update_add_menu (self);
 
@@ -4572,7 +4572,7 @@ e_vcard_editor_constructed (GObject *object)
 		"always-show-image", TRUE,
 		NULL);
 
-	g_signal_connect (self->add_menu_button, "button-press-event",
+	g_signal_connect (e_gtk_widget_legacy_events (self->add_menu_button), "button-press-event",
 		G_CALLBACK (eve_add_menu_button_press_event_cb), self);
 
 	if (e_util_get_use_header_bar ()) {
@@ -5119,7 +5119,6 @@ e_vcard_editor_new (GtkWindow *transient_for,
 	self = g_object_new (E_TYPE_VCARD_EDITOR,
 		"can-focus", FALSE,
 		"border-width", 6,
-		"window-position", GTK_WIN_POS_CENTER,
 		"type-hint", GDK_WINDOW_TYPE_HINT_NORMAL,
 		"transient-for", transient_for,
 		"use-header-bar", e_util_get_use_header_bar (),

@@ -950,15 +950,8 @@ e_gdk_event_get_coords (GdkEvent *event,
                         gdouble *x,
                         gdouble *y)
 {
-	gdouble ex = 0, ey = 0;
-	gboolean has = event && gdk_event_get_position (event, &ex, &ey);
-
-	if (x)
-		*x = ex;
-	if (y)
-		*y = ey;
-
-	return has;
+	/* relative to the widget of a legacy event signal, as with GTK 3 */
+	return e_gdk_event_get_widget_coords (event, e_gtk_event_get_legacy_widget (event), x, y);
 }
 
 /* GTK 4 has no global coordinates; these are surface coordinates */

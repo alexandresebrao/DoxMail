@@ -1809,13 +1809,13 @@ html_editor_scroll_event_cb (GtkWidget *widget,
 {
 	EHTMLEditor *editor = user_data;
 
-	if ((event->state & GDK_CONTROL_MASK) != 0) {
-		GdkScrollDirection direction = event->direction;
+	if ((e_gdk_event_state (event) & GDK_CONTROL_MASK) != 0) {
+		GdkScrollDirection direction = e_gdk_event_direction (event);
 
 		if (direction == GDK_SCROLL_SMOOTH) {
 			static gdouble total_delta_y = 0.0;
 
-			total_delta_y += event->delta_y;
+			total_delta_y += e_gdk_event_delta_y (event);
 
 			if (total_delta_y >= 1.0) {
 				total_delta_y = 0.0;
@@ -1823,7 +1823,7 @@ html_editor_scroll_event_cb (GtkWidget *widget,
 			} else if (total_delta_y <= -1.0) {
 				total_delta_y = 0.0;
 				direction = GDK_SCROLL_UP;
-			} else if (event->delta_y >= 1e-9 || event->delta_y <= -1e-9) {
+			} else if (e_gdk_event_delta_y (event) >= 1e-9 || e_gdk_event_delta_y (event) <= -1e-9) {
 				return TRUE;
 			} else {
 				return FALSE;
@@ -1993,7 +1993,7 @@ e_html_editor_get_content_editor_for_mode (EHTMLEditor *editor,
 			G_CALLBACK (html_editor_context_menu_requested_cb), editor);
 
 		g_signal_connect (
-			cnt_editor, "scroll-event",
+			e_gtk_widget_legacy_events (cnt_editor), "scroll-event",
 			G_CALLBACK (html_editor_scroll_event_cb), editor);
 
 		g_hash_table_insert (editor->priv->content_editors_for_mode, GINT_TO_POINTER (mode), cnt_editor);

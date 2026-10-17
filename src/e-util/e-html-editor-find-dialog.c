@@ -138,10 +138,10 @@ entry_key_release_event (GtkWidget *widget,
                          GdkEvent *event,
                          gpointer user_data)
 {
-	GdkEvent *key = &event->key;
+	GdkEvent *key = event;
 	EHTMLEditorFindDialog *dialog = user_data;
 
-	if (key->keyval == GDK_KEY_Return || key->keyval == GDK_KEY_KP_Enter) {
+	if (e_gdk_event_keyval (key) == GDK_KEY_Return || e_gdk_event_keyval (key) == GDK_KEY_KP_Enter) {
 		html_editor_find_dialog_find_cb (dialog);
 		return TRUE;
 	}
@@ -196,7 +196,7 @@ e_html_editor_find_dialog_init (EHTMLEditorFindDialog *dialog)
 	gtk_grid_attach (main_layout, widget, 0, 0, 1, 1);
 	dialog->priv->entry = widget;
 	g_signal_connect (
-		widget, "key-release-event",
+		e_gtk_widget_legacy_events (widget), "key-release-event",
 		G_CALLBACK (entry_key_release_event), dialog);
 
 	box = GTK_BOX (gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5));

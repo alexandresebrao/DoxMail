@@ -345,7 +345,5 @@ e_html_editor_replace_dialog_new (EHTMLEditor *editor)
 			"resizable", FALSE,
 			"title", C_("dialog-title", "Replace"),
 			"transient-for", e_gtk_widget_get_toplevel (GTK_WIDGET (editor)),
-			"type", GTK_WINDOW_TOPLEVEL,
-			"window-position", GTK_WIN_POS_CENTER_ON_PARENT,
 			NULL));
 }

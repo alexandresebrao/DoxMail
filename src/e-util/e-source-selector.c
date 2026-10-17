@@ -133,12 +133,12 @@ safe_toggle_activate (GtkCellRenderer *cell,
 {
 	gboolean point_in_cell_area = TRUE;
 
-	if (event && event->type == GDK_BUTTON_PRESS && cell_area != NULL) {
+	if (event && e_gdk_event_type (event) == GDK_BUTTON_PRESS && cell_area != NULL) {
 		cairo_region_t *region;
 
 		region = cairo_region_create_rectangle (cell_area);
 		point_in_cell_area = cairo_region_contains_point (
-			region, event->button.x, event->button.y);
+			region, e_gdk_event_x (event), e_gdk_event_y (event));
 		cairo_region_destroy (region);
 	}
 
@@ -1493,15 +1493,15 @@ source_selector_button_press_event (GtkWidget *widget,
 
 	/* Triple-clicking a source selects it exclusively. */
 
-	if (event->button == 3 && event->type == GDK_BUTTON_PRESS)
+	if (e_gdk_event_button (event) == 3 && e_gdk_event_type (event) == GDK_BUTTON_PRESS)
 		right_click = TRUE;
-	else if (event->button == 1 && event->type == GDK_3BUTTON_PRESS)
+	else if (e_gdk_event_button (event) == 1 && e_gdk_event_type (event) == E_GDK_3BUTTON_PRESS)
 		triple_click = TRUE;
 	else
 		goto chainup;
 
 	row_exists = gtk_tree_view_get_path_at_pos (
-		GTK_TREE_VIEW (widget), event->x, event->y,
+		GTK_TREE_VIEW (widget), e_gdk_event_x (event), e_gdk_event_y (event),
 		&path, NULL, NULL, NULL);
 
 	/* Get the source/group */
@@ -1559,7 +1559,7 @@ chainup:
 
 	/* Chain up to parent's button_press_event() method. */
 	widget_class = GTK_WIDGET_CLASS (e_source_selector_parent_class);
-	return widget_class->button_press_event (widget, event);
+	return e_gtk_widget_chain_legacy_event (widget, event);
 }
 
 static void
@@ -1877,12 +1877,12 @@ e_source_selector_class_init (ESourceSelectorClass *class)
 	object_class->constructed = source_selector_constructed;
 
 	widget_class = GTK_WIDGET_CLASS (class);
-	widget_class->button_press_event = source_selector_button_press_event;
+	e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (widget_class), "button-press-event", G_CALLBACK (source_selector_button_press_event));
 	widget_class->drag_leave = source_selector_drag_leave;
 	widget_class->drag_motion = source_selector_drag_motion;
 	widget_class->drag_drop = source_selector_drag_drop;
 	widget_class->drag_data_received = source_selector_drag_data_received;
-	widget_class->popup_menu = source_selector_popup_menu;
+	e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (widget_class), "popup-menu", G_CALLBACK (source_selector_popup_menu));
 
 	tree_view_class = GTK_TREE_VIEW_CLASS (class);
 	tree_view_class->test_collapse_row = source_selector_test_collapse_row;

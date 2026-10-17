@@ -158,11 +158,11 @@ mail_shell_view_folder_tree_key_press_event_cb (EMailShellView *mail_shell_view,
 	mail_shell_content = mail_shell_view->priv->mail_shell_content;
 	mail_view = e_mail_shell_content_get_mail_view (mail_shell_content);
 
-	if ((event->state & GDK_CONTROL_MASK) != 0)
+	if ((e_gdk_event_state (event) & GDK_CONTROL_MASK) != 0)
 		goto ctrl;
 
 	/* <keyval> alone */
-	switch (event->keyval) {
+	switch (e_gdk_event_keyval (event)) {
 		case GDK_KEY_period:
 		case GDK_KEY_comma:
 		case GDK_KEY_bracketleft:
@@ -175,7 +175,7 @@ mail_shell_view_folder_tree_key_press_event_cb (EMailShellView *mail_shell_view,
 
 ctrl:
 	/* Ctrl + <keyval> */
-	switch (event->keyval) {
+	switch (e_gdk_event_keyval (event)) {
 		case GDK_KEY_period:
 		case GDK_KEY_comma:
 			goto emit;
@@ -344,7 +344,7 @@ mail_shell_view_reader_changed_cb (EMailShellView *mail_shell_view,
 		return;
 
 	g_signal_connect_object (
-		message_list, "popup-menu",
+		e_gtk_widget_legacy_events (message_list), "popup-menu",
 		G_CALLBACK (mail_shell_view_message_list_popup_menu_cb),
 		mail_shell_view, G_CONNECT_SWAPPED);
 
@@ -595,7 +595,7 @@ e_mail_shell_view_private_constructed (EMailShellView *mail_shell_view)
 		mail_shell_view, G_CONNECT_SWAPPED);
 
 	g_signal_connect_object (
-		folder_tree, "key-press-event",
+		e_gtk_widget_legacy_events (folder_tree), "key-press-event",
 		G_CALLBACK (mail_shell_view_folder_tree_key_press_event_cb),
 		mail_shell_view, G_CONNECT_SWAPPED);
 
@@ -605,7 +605,7 @@ e_mail_shell_view_private_constructed (EMailShellView *mail_shell_view)
 		mail_shell_view, G_CONNECT_SWAPPED);
 
 	g_signal_connect_object (
-		message_list, "popup-menu",
+		e_gtk_widget_legacy_events (message_list), "popup-menu",
 		G_CALLBACK (mail_shell_view_message_list_popup_menu_cb),
 		mail_shell_view, G_CONNECT_SWAPPED);
 

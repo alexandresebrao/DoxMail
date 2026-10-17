@@ -1297,7 +1297,7 @@ week_view_key_press (GtkWidget *widget,
 
 	/* if not handled, try key bindings */
 	if (!handled)
-		handled = GTK_WIDGET_CLASS (e_week_view_parent_class)->key_press_event (widget, event);
+		handled = e_gtk_widget_chain_legacy_event (widget, event);
 	return handled;
 }
 
@@ -1810,11 +1810,11 @@ e_week_view_class_init (EWeekViewClass *class)
 	widget_class->unrealize = week_view_unrealize;
 	widget_class->style_updated = week_view_style_updated;
 	widget_class->size_allocate = week_view_size_allocate;
-	widget_class->focus_in_event = week_view_focus_in;
-	widget_class->focus_out_event = week_view_focus_out;
-	widget_class->key_press_event = week_view_key_press;
+	e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (widget_class), "focus-in-event", G_CALLBACK (week_view_focus_in));
+	e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (widget_class), "focus-out-event", G_CALLBACK (week_view_focus_out));
+	e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (widget_class), "key-press-event", G_CALLBACK (week_view_key_press));
 	widget_class->focus = week_view_focus;
-	widget_class->popup_menu = week_view_popup_menu;
+	e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (widget_class), "popup-menu", G_CALLBACK (week_view_popup_menu));
 
 	view_class = E_CALENDAR_VIEW_CLASS (class);
 	view_class->get_selected_events = week_view_get_selected_events;

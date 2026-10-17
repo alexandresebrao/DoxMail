@@ -128,9 +128,9 @@ month_widget_day_clicked_cb (EMonthWidget *widget,
 	void (* func) (EMonthWidget *widget, guint day, const gchar *name);
 	gchar buff[128];
 
-	if (event->button == GDK_BUTTON_PRIMARY)
+	if (e_gdk_event_button (event) == GDK_BUTTON_PRIMARY)
 		func = e_month_widget_add_day_css_class;
-	else if (event->button == GDK_BUTTON_SECONDARY)
+	else if (e_gdk_event_button (event) == GDK_BUTTON_SECONDARY)
 		func = e_month_widget_remove_day_css_class;
 	else
 		return;
@@ -201,7 +201,7 @@ on_idle_create_widget (ESourceRegistry *registry)
 
 	month_widget = e_month_widget_new ();
 
-	g_signal_connect (month_widget, "motion-notify-event",
+	g_signal_connect (e_gtk_widget_legacy_events (month_widget), "motion-notify-event",
 		G_CALLBACK (month_widget_montion_notify_event_cb), &selected_day);
 
 	g_signal_connect (month_widget, "day-clicked",

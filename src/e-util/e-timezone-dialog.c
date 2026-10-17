@@ -362,16 +362,16 @@ e_timezone_dialog_construct (ETimezoneDialog *etd)
 	gtk_widget_set_size_request (priv->map_window, 200, 200);
 
 	g_signal_connect (
-		map, "motion-notify-event",
+		e_gtk_widget_legacy_events (map), "motion-notify-event",
 		G_CALLBACK (on_map_motion), etd);
 	g_signal_connect (
-		map, "leave-notify-event",
+		e_gtk_widget_legacy_events (map), "leave-notify-event",
 		G_CALLBACK (on_map_leave), etd);
 	g_signal_connect (
 		map, "visibility-notify-event",
 		G_CALLBACK (on_map_visibility_changed), etd);
 	g_signal_connect (
-		map, "button-press-event",
+		e_gtk_widget_legacy_events (map), "button-press-event",
 		G_CALLBACK (on_map_button_pressed), etd);
 
 	g_signal_connect (
@@ -583,7 +583,7 @@ on_map_motion (GtkWidget *widget,
 	priv = etd->priv;
 
 	e_map_window_to_world (
-		priv->map, (gdouble) event->x, (gdouble) event->y,
+		priv->map, (gdouble) e_gdk_event_x (event), (gdouble) e_gdk_event_y (event),
 		&longitude, &latitude);
 
 	if (priv->point_hover && priv->point_hover != priv->point_selected)
@@ -652,7 +652,7 @@ on_map_visibility_changed (GtkWidget *w,
 	etd = E_TIMEZONE_DIALOG (data);
 	priv = etd->priv;
 
-	if (event->state != GDK_VISIBILITY_FULLY_OBSCURED) {
+	if (e_gdk_event_state (event) != GDK_VISIBILITY_FULLY_OBSCURED) {
 		/* Map is visible, at least partly, so make sure we flash the
 		 * selected point. */
 		if (priv->timeout_id == 0) {

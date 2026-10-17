@@ -136,7 +136,7 @@ e_cal_list_view_class_init (ECalListViewClass *class)
 	object_class->dispose = e_cal_list_view_dispose;
 	object_class->get_property = e_cal_list_view_get_property;
 
-	widget_class->popup_menu = e_cal_list_view_popup_menu;
+	e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (widget_class), "popup-menu", G_CALLBACK (e_cal_list_view_popup_menu));
 
 	view_class->get_selected_events = e_cal_list_view_get_selected_events;
 	view_class->get_selected_time_range = e_cal_list_view_get_selected_time_range;
@@ -493,9 +493,9 @@ e_cal_list_view_on_table_key_press (ETable *table,
 				    GdkEvent *event,
 				    gpointer data)
 {
-	if (event && event->type == GDK_KEY_PRESS &&
-	    (event->key.keyval == GDK_KEY_Return || event->key.keyval == GDK_KEY_KP_Enter) &&
-	    (event->key.state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_ALT_MASK)) == 0 &&
+	if (event && e_gdk_event_type (event) == GDK_KEY_PRESS &&
+	    (e_gdk_event_keyval (event) == GDK_KEY_Return || e_gdk_event_keyval (event) == GDK_KEY_KP_Enter) &&
+	    (e_gdk_event_state (event) & (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_ALT_MASK)) == 0 &&
 	    !e_table_is_editing (table)) {
 		e_cal_list_view_open_at_row (data, row);
 		return TRUE;
@@ -515,7 +515,7 @@ e_cal_list_view_on_table_white_space_event (ETable *table,
 	g_return_val_if_fail (E_IS_CAL_LIST_VIEW (cal_list_view), FALSE);
 	g_return_val_if_fail (event != NULL, FALSE);
 
-	if (event->type == GDK_BUTTON_PRESS &&
+	if (e_gdk_event_type (event) == GDK_BUTTON_PRESS &&
 	    e_gdk_event_get_button (event, &event_button) &&
 	    event_button == 3) {
 		GtkWidget *table_canvas;

@@ -1017,6 +1017,19 @@ e_gtk_drag_set_icon_surface (EGtkDragContext *context,
 }
 
 void
+e_gtk_drag_set_icon_paintable (EGtkDragContext *context,
+			       GdkPaintable *paintable,
+			       gint hot_x,
+			       gint hot_y)
+{
+	g_return_if_fail (E_GTK_IS_DRAG_CONTEXT (context));
+	g_return_if_fail (GDK_IS_PAINTABLE (paintable));
+
+	if (context->drag)
+		gtk_drag_icon_set_from_paintable (context->drag, paintable, hot_x, hot_y);
+}
+
+void
 e_gtk_drag_set_icon_pixbuf (EGtkDragContext *context,
                             GdkPixbuf *pixbuf,
                             gint hot_x,

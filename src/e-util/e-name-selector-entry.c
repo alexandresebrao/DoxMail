@@ -2182,14 +2182,14 @@ static gboolean
 user_focus_out (ENameSelectorEntry *name_selector_entry,
                 GdkEvent *event_focus)
 {
-	if (!event_focus->in) {
+	if (!e_gdk_event_focus_in (event_focus)) {
 		entry_activate (name_selector_entry);
 	}
 
 	remove_completion_timeout_sources (name_selector_entry);
 	clear_completion_model (name_selector_entry);
 
-	if (!event_focus->in) {
+	if (!e_gdk_event_focus_in (event_focus)) {
 		sanitize_entry (name_selector_entry);
 	}
 
@@ -2205,8 +2205,8 @@ user_key_press_event_cb (ENameSelectorEntry *name_selector_entry,
 	g_return_val_if_fail (E_IS_NAME_SELECTOR_ENTRY (name_selector_entry), FALSE);
 	g_return_val_if_fail (event_key != NULL, FALSE);
 
-	if ((event_key->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_ALT_MASK)) == 0 &&
-	    event_key->keyval == GDK_KEY_comma &&
+	if ((e_gdk_event_state (event_key) & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_ALT_MASK)) == 0 &&
+	    e_gdk_event_keyval (event_key) == GDK_KEY_comma &&
 	    gtk_editable_get_selection_bounds (GTK_EDITABLE (name_selector_entry), NULL, &end)) {
 		entry_activate (name_selector_entry);
 
@@ -2764,10 +2764,10 @@ prepare_popup_destination (ENameSelectorEntry *name_selector_entry,
 	gint          x, y;
 	gint          index;
 
-	if (event_button->type != GDK_BUTTON_PRESS)
+	if (e_gdk_event_type (event_button) != GDK_BUTTON_PRESS)
 		return FALSE;
 
-	if (event_button->button != 3)
+	if (e_gdk_event_button (event_button) != 3)
 		return FALSE;
 
 	g_clear_object (&name_selector_entry->priv->popup_destination);
@@ -2775,8 +2775,8 @@ prepare_popup_destination (ENameSelectorEntry *name_selector_entry,
 	gtk_entry_get_layout_offsets (
 		GTK_ENTRY (name_selector_entry),
 		&layout_offset_x, &layout_offset_y);
-	x = (event_button->x + 0.5) - layout_offset_x;
-	y = (event_button->y + 0.5) - layout_offset_y;
+	x = (e_gdk_event_x (event_button) + 0.5) - layout_offset_x;
+	y = (e_gdk_event_y (event_button) + 0.5) - layout_offset_y;
 
 	if (x < 0 || y < 0)
 		return FALSE;
@@ -3467,13 +3467,13 @@ e_name_selector_entry_init (ENameSelectorEntry *name_selector_entry)
 		name_selector_entry, "delete-text",
 		G_CALLBACK (user_delete_text), name_selector_entry);
 	g_signal_connect (
-		name_selector_entry, "focus-out-event",
+		e_gtk_widget_legacy_events (name_selector_entry), "focus-out-event",
 		G_CALLBACK (user_focus_out), name_selector_entry);
 	g_signal_connect_after (
-		name_selector_entry, "focus-in-event",
+		e_gtk_widget_legacy_events (name_selector_entry), "focus-in-event",
 		G_CALLBACK (user_focus_in), name_selector_entry);
 	g_signal_connect (
-		name_selector_entry, "key-press-event",
+		e_gtk_widget_legacy_events (name_selector_entry), "key-press-event",
 		G_CALLBACK (user_key_press_event_cb), name_selector_entry);
 
 	/* Drawing */
@@ -3491,7 +3491,7 @@ e_name_selector_entry_init (ENameSelectorEntry *name_selector_entry)
 	/* Pop-up menu */
 
 	g_signal_connect (
-		name_selector_entry, "button-press-event",
+		e_gtk_widget_legacy_events (name_selector_entry), "button-press-event",
 		G_CALLBACK (prepare_popup_destination), name_selector_entry);
 	g_signal_connect (
 		name_selector_entry, "populate-popup",

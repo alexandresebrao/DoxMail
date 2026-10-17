@@ -488,7 +488,7 @@ e_timezone_entry_init (ETimezoneEntry *timezone_entry)
 		widget, "changed",
 		G_CALLBACK (timezone_entry_emit_changed), timezone_entry);
 
-	g_signal_connect_object (widget, "focus-out-event",
+	g_signal_connect_object (e_gtk_widget_legacy_events (widget), "focus-out-event",
 		G_CALLBACK (timezone_entry_focus_out_event_cb), timezone_entry, G_CONNECT_AFTER);
 
 	widget = gtk_button_new_with_label (_("Select…"));

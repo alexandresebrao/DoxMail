@@ -981,9 +981,6 @@ e_table_config_new (const gchar *header,
 void
 e_table_config_raise (ETableConfig *config)
 {
-	GdkSurface *window;
-
-	window = e_gtk_widget_get_surface (GTK_WIDGET (config->dialog_toplevel));
-	gtk_window_present (window);
+	gtk_window_present (GTK_WINDOW (config->dialog_toplevel));
 }
 

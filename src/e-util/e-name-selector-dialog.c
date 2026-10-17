@@ -1046,7 +1046,7 @@ add_section (ENameSelectorDialog *name_selector_dialog,
 		section.destination_view, "row-activated",
 		G_CALLBACK (destination_activated), name_selector_dialog);
 	g_signal_connect_swapped (
-		section.destination_view, "key-press-event",
+		e_gtk_widget_legacy_events (section.destination_view), "key-press-event",
 		G_CALLBACK (destination_key_press), name_selector_dialog);
 
 	/* Done! */
@@ -1507,7 +1507,7 @@ destination_key_press (ENameSelectorDialog *name_selector_dialog,
 {
 
 	/* we only care about DEL key */
-	if (event->keyval != GDK_KEY_Delete)
+	if (e_gdk_event_keyval (event) != GDK_KEY_Delete)
 		return FALSE;
 	return remove_selection (name_selector_dialog, tree_view);
 

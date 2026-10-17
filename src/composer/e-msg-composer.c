@@ -3085,13 +3085,13 @@ msg_composer_key_press_event (GtkWidget *widget,
 		e_msg_composer_get_header_table (composer),
 		E_COMPOSER_HEADER_SUBJECT)->input_widget;
 
-	if (event->keyval == GDK_KEY_Tab && gtk_widget_is_focus (input_widget)) {
+	if (e_gdk_event_keyval (event) == GDK_KEY_Tab && gtk_widget_is_focus (input_widget)) {
 		e_content_editor_grab_focus (cnt_editor);
 		return TRUE;
 	}
 
 	if (e_content_editor_is_focus (cnt_editor)) {
-		if (event->keyval == GDK_KEY_ISO_Left_Tab) {
+		if (e_gdk_event_keyval (event) == GDK_KEY_ISO_Left_Tab) {
 			gboolean view_processed = FALSE;
 
 			g_signal_emit_by_name (cnt_editor, "key-press-event", event, &view_processed);
@@ -3104,8 +3104,7 @@ msg_composer_key_press_event (GtkWidget *widget,
 	}
 
 	/* Chain up to parent's key_press_event() method. */
-	return GTK_WIDGET_CLASS (e_msg_composer_parent_class)->
-		key_press_event (widget, event);
+	return e_gtk_widget_chain_legacy_event (widget, event);
 }
 
 static gboolean
@@ -3178,7 +3177,7 @@ e_msg_composer_class_init (EMsgComposerClass *class)
 
 	widget_class = GTK_WIDGET_CLASS (class);
 	widget_class->map = msg_composer_map;
-	widget_class->key_press_event = msg_composer_key_press_event;
+	e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (widget_class), "key-press-event", G_CALLBACK (msg_composer_key_press_event));
 
 	class->presend = msg_composer_presend;
 

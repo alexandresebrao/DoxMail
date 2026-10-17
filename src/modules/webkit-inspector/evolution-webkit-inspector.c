@@ -103,7 +103,7 @@ webkit_inspector_constructed (GObject *object)
 	webkit_settings_set_enable_developer_extras (settings, TRUE);
 
 	g_signal_connect (
-		web_view, "key-press-event",
+		e_gtk_widget_legacy_events (web_view), "key-press-event",
 		G_CALLBACK (webkit_inspector_key_press_event_cb), NULL);
 }
 

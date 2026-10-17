@@ -1145,7 +1145,7 @@ e_calendar_view_class_init (ECalendarViewClass *class)
 {
 	GObjectClass *object_class;
 	GtkWidgetClass *widget_class;
-	GtkBindingSet *binding_set;
+	GtkWidgetClass *binding_set;
 
 	object_class = G_OBJECT_CLASS (class);
 	object_class->set_property = calendar_view_set_property;
@@ -1312,10 +1312,9 @@ e_calendar_view_class_init (ECalendarViewClass *class)
 
 	/* Key bindings */
 
-	binding_set = gtk_binding_set_by_class (class);
+	binding_set = GTK_WIDGET_CLASS (class);
 
-	gtk_binding_entry_add_signal (
-		binding_set, GDK_KEY_o, GDK_CONTROL_MASK, "open-event", 0);
+	gtk_widget_class_add_binding_signal (binding_set, GDK_KEY_o, GDK_CONTROL_MASK, "open-event", NULL);
 
 	/* init the accessibility support for e_day_view */
 	widget_class = GTK_WIDGET_CLASS (class);

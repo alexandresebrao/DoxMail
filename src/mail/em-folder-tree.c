@@ -1515,11 +1515,11 @@ folder_tree_button_press_event (GtkWidget *widget,
 
 	self->priv->cursor_set = TRUE;
 
-	if (event->button != 3)
+	if (e_gdk_event_button (event) != 3)
 		goto chainup;
 
 	if (!gtk_tree_view_get_path_at_pos (
-		tree_view, event->x, event->y,
+		tree_view, e_gdk_event_x (event), e_gdk_event_y (event),
 		&path, NULL, NULL, NULL))
 		goto chainup;
 
@@ -1540,7 +1540,7 @@ folder_tree_button_press_event (GtkWidget *widget,
 chainup:
 
 	/* Chain up to parent's button_press_event() method. */
-	return GTK_WIDGET_CLASS (em_folder_tree_parent_class)->button_press_event (widget, event);
+	return e_gtk_widget_chain_legacy_event (widget, event);
 }
 
 static gboolean
@@ -1551,12 +1551,12 @@ folder_tree_key_press_event (GtkWidget *widget,
 	GtkTreeSelection *selection;
 	GtkTreeView *tree_view;
 
-	if (event && event->type == GDK_KEY_PRESS &&
-		(event->keyval == GDK_KEY_space ||
-		 event->keyval == '.' ||
-		 event->keyval == ',' ||
-		 event->keyval == '[' ||
-		 event->keyval == ']')) {
+	if (event && e_gdk_event_type (event) == GDK_KEY_PRESS &&
+		(e_gdk_event_keyval (event) == GDK_KEY_space ||
+		 e_gdk_event_keyval (event) == '.' ||
+		 e_gdk_event_keyval (event) == ',' ||
+		 e_gdk_event_keyval (event) == '[' ||
+		 e_gdk_event_keyval (event) == ']')) {
 		g_signal_emit (widget, signals[HIDDEN_KEY_EVENT], 0, event);
 
 		return TRUE;
@@ -1572,7 +1572,7 @@ folder_tree_key_press_event (GtkWidget *widget,
 	self->priv->cursor_set = TRUE;
 
 	/* Chain up to parent's key_press_event() method. */
-	return GTK_WIDGET_CLASS (em_folder_tree_parent_class)->key_press_event (widget, event);
+	return e_gtk_widget_chain_legacy_event (widget, event);
 }
 
 static gboolean
@@ -1750,9 +1750,9 @@ em_folder_tree_class_init (EMFolderTreeClass *class)
 	object_class->constructed = folder_tree_constructed;
 
 	widget_class = GTK_WIDGET_CLASS (class);
-	widget_class->button_press_event = folder_tree_button_press_event;
-	widget_class->key_press_event = folder_tree_key_press_event;
-	widget_class->popup_menu = folder_tree_popup_menu;
+	e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (widget_class), "button-press-event", G_CALLBACK (folder_tree_button_press_event));
+	e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (widget_class), "key-press-event", G_CALLBACK (folder_tree_key_press_event));
+	e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (widget_class), "popup-menu", G_CALLBACK (folder_tree_popup_menu));
 	widget_class->style_updated = folder_tree_style_updated;
 
 	tree_view_class = GTK_TREE_VIEW_CLASS (class);

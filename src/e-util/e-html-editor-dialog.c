@@ -149,7 +149,7 @@ key_press_event_cb (GtkWidget *widget,
                     GdkEvent *event,
                     gpointer user_data)
 {
-	if (event->keyval == GDK_KEY_Escape) {
+	if (e_gdk_event_keyval (event) == GDK_KEY_Escape) {
 		gtk_widget_hide (widget);
 		return TRUE;
 	}
@@ -195,14 +195,13 @@ e_html_editor_dialog_init (EHTMLEditorDialog *dialog)
 		"destroy-with-parent", TRUE,
 		"modal", TRUE,
 		"resizable", FALSE,
-		"window-position", GTK_WIN_POS_CENTER_ON_PARENT,
 		NULL);
 
 	/* Don't destroy the dialog when closed! */
 	gtk_window_set_hide_on_close (GTK_WINDOW (dialog), TRUE);
 
 	g_signal_connect (
-		dialog, "key-press-event",
+		e_gtk_widget_legacy_events (dialog), "key-press-event",
 		G_CALLBACK (key_press_event_cb), NULL);
 }
 

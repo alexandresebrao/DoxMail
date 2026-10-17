@@ -444,7 +444,7 @@ e_attachment_popover_constructed (GObject *object)
 	g_signal_connect_swapped (self->uri_entry, "changed",
 		G_CALLBACK (e_attachment_popover_sensitize_save_button), self);
 
-	g_signal_connect_swapped (self->uri_entry, "focus-out-event",
+	g_signal_connect_swapped (e_gtk_widget_legacy_events (self->uri_entry), "focus-out-event",
 		G_CALLBACK (e_attachment_popover_uri_entry_focus_out_cb), self);
 }
 

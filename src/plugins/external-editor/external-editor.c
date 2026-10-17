@@ -494,7 +494,7 @@ key_press_cb (GtkWidget *widget,
 	gboolean immediately;
 
 	/* we don't want to start the editor on any modifier keys */
-	switch (event->keyval) {
+	switch (e_gdk_event_keyval (event)) {
 	case GDK_KEY_Alt_L:
 	case GDK_KEY_Alt_R:
 	case GDK_KEY_Super_L:

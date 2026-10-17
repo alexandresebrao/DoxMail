@@ -313,7 +313,7 @@ update_hover (GtkWidget *widget,
               GdkEvent  *event,
               gpointer   data)
 {
-  if (event->type == GDK_ENTER_NOTIFY)
+  if (e_gdk_event_type (event) == GDK_ENTER_NOTIFY)
     gtk_widget_set_state_flags (widget, GTK_STATE_FLAG_PRELIGHT, FALSE);
   else
     gtk_widget_unset_state_flags (widget, GTK_STATE_FLAG_PRELIGHT);
@@ -419,14 +419,14 @@ add_emoji (GtkWidget    *box,
     g_object_set_data (G_OBJECT (child), "modifier", GUINT_TO_POINTER (modifier));
 
   ebox = gtk_event_box_new ();
-  g_signal_connect (ebox, "enter-notify-event", G_CALLBACK (update_hover), FALSE);
-  g_signal_connect (ebox, "leave-notify-event", G_CALLBACK (update_hover), FALSE);
+  g_signal_connect (e_gtk_widget_legacy_events (ebox), "enter-notify-event", G_CALLBACK (update_hover), FALSE);
+  g_signal_connect (e_gtk_widget_legacy_events (ebox), "leave-notify-event", G_CALLBACK (update_hover), FALSE);
   e_gtk_container_add (child, ebox);
   e_gtk_container_add (ebox, label);
   gtk_widget_set_visible (child, TRUE);
 
   if (chooser)
-    g_signal_connect (child, "popup-menu", G_CALLBACK (popup_menu), chooser);
+    g_signal_connect (e_gtk_widget_legacy_events (child), "popup-menu", G_CALLBACK (popup_menu), chooser);
 
   gtk_flow_box_insert (GTK_FLOW_BOX (box), child, prepend ? 0 : -1);
 }

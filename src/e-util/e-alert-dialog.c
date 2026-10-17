@@ -344,7 +344,7 @@ e_alert_run_dialog (GtkWindow *parent,
 		parent_destroyed_signal_id = g_signal_connect (parent, "destroy", G_CALLBACK (e_gtk_widget_destroyed), &parent);
 
 		signal_id = g_signal_connect (
-			dialog, "focus-in-event",
+			e_gtk_widget_legacy_events (dialog), "focus-in-event",
 			G_CALLBACK (dialog_focus_in_event_cb), parent);
 	} else {
 	}

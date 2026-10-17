@@ -466,7 +466,7 @@ e_meeting_time_selector_construct (EMeetingTimeSelector *mts,
 		mts->display_main, "size_allocate",
 		G_CALLBACK (e_meeting_time_selector_on_canvas_size_allocate), mts);
 	g_signal_connect (
-		mts->display_main, "scroll-event",
+		e_gtk_widget_legacy_events (mts->display_main), "scroll-event",
 		G_CALLBACK (e_meeting_time_selector_on_canvas_scroll_event), mts);
 	/* used for displaying extended free/busy (XFB) display when hovering
 	 * over a busy period which carries XFB information */

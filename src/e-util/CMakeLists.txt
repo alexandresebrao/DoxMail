@@ -179,6 +179,7 @@ set(SOURCES
 	e-menu-tool-button.c
 	e-message-popover.c
 	e-gtk-dnd-compat.c
+	e-gtk-event-compat.c
 	e-gtk-file-chooser-compat.c
 	e-gtk4-compat.c
 	e-misc-utils.c
@@ -441,6 +442,7 @@ set(HEADERS
 	e-menu-tool-button.h
 	e-message-popover.h
 	e-gtk-dnd-compat.h
+	e-gtk-event-compat.h
 	e-gtk-file-chooser-compat.h
 	e-gtk4-compat.h
 	e-misc-utils.h

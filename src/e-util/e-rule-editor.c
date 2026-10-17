@@ -783,7 +783,7 @@ editor_tree_drag_begin_cb (GtkWidget *widget,
 {
 	ERuleEditor *editor = user_data;
 	GtkTreeSelection *selection;
-	cairo_surface_t *surface;
+	GdkPaintable *paintable;
 	GtkTreeModel *model;
 	GtkTreePath *path;
 	GtkTreeIter iter;
@@ -807,9 +807,11 @@ editor_tree_drag_begin_cb (GtkWidget *widget,
 
 	path = gtk_tree_model_get_path (model, &iter);
 
-	surface = gtk_tree_view_create_row_drag_icon (editor->list, path);
-	e_gtk_drag_set_icon_surface (context, surface);
-	cairo_surface_destroy (surface);
+	paintable = gtk_tree_view_create_row_drag_icon (editor->list, path);
+	if (paintable) {
+		e_gtk_drag_set_icon_paintable (context, paintable, 0, 0);
+		g_object_unref (paintable);
+	}
 
 	gtk_tree_path_free (path);
 }

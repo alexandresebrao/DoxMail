@@ -2610,7 +2610,7 @@ static void
 e_markdown_editor_class_init (EMarkdownEditorClass *klass)
 {
 	GObjectClass *object_class;
-	GtkBindingSet *binding_set;
+	GtkWidgetClass *binding_set;
 
 	klass->format_bold = e_markdown_editor_format_bold_text_cb;
 	klass->format_italic = e_markdown_editor_format_italic_text_cb;
@@ -2828,11 +2828,11 @@ e_markdown_editor_class_init (EMarkdownEditorClass *klass)
 		G_TYPE_NONE, 0,
 		G_TYPE_NONE);
 
-	binding_set = gtk_binding_set_by_class (klass);
+	binding_set = GTK_WIDGET_CLASS (klass);
 
-	gtk_binding_entry_add_signal (binding_set, GDK_KEY_b, GDK_CONTROL_MASK, "format-bold", 0);
-	gtk_binding_entry_add_signal (binding_set, GDK_KEY_i, GDK_CONTROL_MASK, "format-italic", 0);
-	gtk_binding_entry_add_signal (binding_set, GDK_KEY_k, GDK_CONTROL_MASK, "insert-link", 0);
+	gtk_widget_class_add_binding_signal (binding_set, GDK_KEY_b, GDK_CONTROL_MASK, "format-bold", NULL);
+	gtk_widget_class_add_binding_signal (binding_set, GDK_KEY_i, GDK_CONTROL_MASK, "format-italic", NULL);
+	gtk_widget_class_add_binding_signal (binding_set, GDK_KEY_k, GDK_CONTROL_MASK, "insert-link", NULL);
 }
 
 static void

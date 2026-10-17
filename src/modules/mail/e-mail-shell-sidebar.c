@@ -130,8 +130,8 @@ mail_shell_sidebar_tree_view_key_press_cb (GtkWidget *widget,
 
 	g_return_val_if_fail (E_IS_MAIL_SHELL_SIDEBAR (mail_shell_sidebar), FALSE);
 
-	if ((key_event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_ALT_MASK)) == 0 &&
-	    (key_event->keyval == GDK_KEY_Return || key_event->keyval == GDK_KEY_KP_Enter) &&
+	if ((e_gdk_event_state (key_event) & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_ALT_MASK)) == 0 &&
+	    (e_gdk_event_keyval (key_event) == GDK_KEY_Return || e_gdk_event_keyval (key_event) == GDK_KEY_KP_Enter) &&
 	    gtk_widget_has_focus (widget)) {
 		EShellView *shell_view;
 		EShellContent *shell_content;
@@ -265,7 +265,7 @@ mail_shell_sidebar_constructed (GObject *object)
 	g_signal_connect (gtk_tree_view_get_model (tree_view), "row-changed",
 		G_CALLBACK (mail_shell_sidebar_model_row_changed_cb), shell_sidebar);
 
-	g_signal_connect (tree_view, "key-press-event",
+	g_signal_connect (e_gtk_widget_legacy_events (tree_view), "key-press-event",
 		G_CALLBACK (mail_shell_sidebar_tree_view_key_press_cb), shell_sidebar);
 }
 

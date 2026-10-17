@@ -914,11 +914,10 @@ spell_entry_button_press (GtkWidget *widget,
 	ESpellEntry *spell_entry = E_SPELL_ENTRY (widget);
 
 	spell_entry->priv->mark_character = spell_entry_find_position (
-		spell_entry, event->x + spell_entry->priv->entry_scroll_offset);
+		spell_entry, e_gdk_event_x (event) + spell_entry->priv->entry_scroll_offset);
 
 	/* Chain up to parent's button_press_event() method. */
-	return GTK_WIDGET_CLASS (e_spell_entry_parent_class)->
-		button_press_event (widget, event);
+	return e_gtk_widget_chain_legacy_event (widget, event);
 }
 
 static void
@@ -936,7 +935,7 @@ e_spell_entry_class_init (ESpellEntryClass *class)
 
 	widget_class = GTK_WIDGET_CLASS (class);
 	widget_class->draw = spell_entry_draw;
-	widget_class->button_press_event = spell_entry_button_press;
+	e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (widget_class), "button-press-event", G_CALLBACK (spell_entry_button_press));
 
 	g_object_class_install_property (
 		object_class,
@@ -970,7 +969,7 @@ e_spell_entry_init (ESpellEntry *spell_entry)
 	spell_entry->priv->im_in_preedit = FALSE;
 
 	g_signal_connect (
-		spell_entry, "popup-menu",
+		e_gtk_widget_legacy_events (spell_entry), "popup-menu",
 		G_CALLBACK (spell_entry_popup_menu), NULL);
 	g_signal_connect (
 		spell_entry, "populate-popup",

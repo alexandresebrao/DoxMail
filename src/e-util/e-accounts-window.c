@@ -1261,7 +1261,7 @@ accounts_window_key_press_event_cb (GtkWidget *widget,
 
 	g_return_val_if_fail (E_IS_ACCOUNTS_WINDOW (accounts_window), FALSE);
 
-	if (event->keyval == GDK_KEY_Delete) {
+	if (e_gdk_event_keyval (event) == GDK_KEY_Delete) {
 		if (gtk_widget_is_sensitive (accounts_window->priv->delete_button))
 			gtk_button_clicked (GTK_BUTTON (accounts_window->priv->delete_button));
 
@@ -1731,7 +1731,7 @@ accounts_window_constructed (GObject *object)
 	accounts_window->priv->tree_view = widget;
 
 	g_signal_connect (
-		widget, "key-press-event",
+		e_gtk_widget_legacy_events (widget), "key-press-event",
 		G_CALLBACK (accounts_window_key_press_event_cb),
 		accounts_window);
 

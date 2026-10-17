@@ -299,7 +299,7 @@ options_remote_content_button_press_cb (GtkToggleButton *toggle_button,
 {
 	g_return_val_if_fail (E_IS_MAIL_READER (reader), FALSE);
 
-	if (event && event->button == 1) {
+	if (event && e_gdk_event_button (event) == 1) {
 		show_remote_content_popup (reader, event, toggle_button);
 		return TRUE;
 	}
@@ -325,7 +325,7 @@ create_remote_content_alert_button (EMailReader *reader)
 	button = gtk_toggle_button_new ();
 	e_gtk_box_pack_start (GTK_BOX (box), button, FALSE, FALSE, 0);
 
-	g_signal_connect (button, "button-press-event",
+	g_signal_connect (e_gtk_widget_legacy_events (button), "button-press-event",
 		G_CALLBACK (options_remote_content_button_press_cb), reader);
 
 	arrow = gtk_image_new_from_icon_name ("pan-down-symbolic");

@@ -1944,7 +1944,7 @@ comp_editor_key_press_event (GtkWidget *widget,
 
 	comp_editor = E_COMP_EDITOR (widget);
 
-	if (event->keyval == GDK_KEY_Escape &&
+	if (e_gdk_event_keyval (event) == GDK_KEY_Escape &&
 	    !e_alert_bar_close_alert (comp_editor->priv->alert_bar)) {
 		EUIAction *action;
 
@@ -1955,7 +1955,7 @@ comp_editor_key_press_event (GtkWidget *widget,
 	}
 
 	/* Chain up to parent's method. */
-	return GTK_WIDGET_CLASS (e_comp_editor_parent_class)->key_press_event (widget, event);
+	return e_gtk_widget_chain_legacy_event (widget, event);
 }
 
 static void
@@ -1996,7 +1996,7 @@ e_comp_editor_set_urgency_hint (ECompEditor *comp_editor)
 	    !gtk_window_get_urgency_hint (window)) {
 
 		g_signal_connect (
-			window, "focus-in-event",
+			e_gtk_widget_legacy_events (window), "focus-in-event",
 			G_CALLBACK (e_comp_editor_focus_in_event_cb), NULL);
 	}
 }
@@ -2693,7 +2693,7 @@ e_comp_editor_class_init (ECompEditorClass *klass)
 
 	widget_class = GTK_WIDGET_CLASS (klass);
 	widget_class->delete_event = comp_editor_delete_event;
-	widget_class->key_press_event = comp_editor_key_press_event;
+	e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (widget_class), "key-press-event", G_CALLBACK (comp_editor_key_press_event));
 
 	object_class = G_OBJECT_CLASS (klass);
 	object_class->set_property = e_comp_editor_set_property;

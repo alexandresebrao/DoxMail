@@ -713,7 +713,7 @@ e_shell_switcher_add_action (EShellSwitcher *switcher,
 	button = tool_item_get_button (widget);
 	if (button != NULL) {
 		g_signal_connect_object (
-			button, "button-release-event",
+			e_gtk_widget_legacy_events (button), "button-release-event",
 			G_CALLBACK (tool_item_button_release_cb),
 			new_window_action, 0);
 	}

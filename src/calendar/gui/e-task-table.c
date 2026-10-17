@@ -1158,7 +1158,7 @@ e_task_table_class_init (ETaskTableClass *class)
 	object_class->constructed = task_table_constructed;
 
 	widget_class = GTK_WIDGET_CLASS (class);
-	widget_class->popup_menu = task_table_popup_menu;
+	e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (widget_class), "popup-menu", G_CALLBACK (task_table_popup_menu));
 	widget_class->query_tooltip = task_table_query_tooltip;
 
 	table_class = E_TABLE_CLASS (class);

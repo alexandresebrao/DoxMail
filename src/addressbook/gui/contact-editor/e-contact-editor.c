@@ -5138,7 +5138,6 @@ e_contact_editor_init (EContactEditor *e_contact_editor)
 	setup_tab_order (builder);
 
 	e_contact_editor->priv->app = g_object_new (GTK_TYPE_DIALOG,
-		"window-position", GTK_WIN_POS_CENTER,
 		"can-focus", FALSE,
 		"title", _("Contact Editor"),
 		"use-header-bar", e_util_get_use_header_bar (),

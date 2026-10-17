@@ -209,7 +209,7 @@ static void
 e_preferences_window_class_init (EPreferencesWindowClass *class)
 {
 	GObjectClass *object_class;
-	GtkBindingSet *binding_set;
+	GtkWidgetClass *binding_set;
 
 	object_class = G_OBJECT_CLASS (class);
 	object_class->dispose = preferences_window_dispose;
@@ -232,8 +232,8 @@ e_preferences_window_class_init (EPreferencesWindowClass *class)
 			NULL, NULL, NULL,
 			G_TYPE_NONE, 0);
 
-	binding_set = gtk_binding_set_by_class (class);
-	gtk_binding_entry_add_signal (binding_set, GDK_KEY_Escape, 0, "close", 0);
+	binding_set = GTK_WIDGET_CLASS (class);
+	gtk_widget_class_add_binding_signal (binding_set, GDK_KEY_Escape, 0, "close", NULL);
 }
 
 static void

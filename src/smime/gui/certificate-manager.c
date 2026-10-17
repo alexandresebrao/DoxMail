@@ -455,7 +455,7 @@ treeview_add_column (CertPage *cp,
 
 	header = gtk_tree_view_column_get_button (column);
 	g_signal_connect (
-		header, "button-release-event",
+		e_gtk_widget_legacy_events (header), "button-release-event",
 		G_CALLBACK (treeview_header_clicked), cp->popup_menu);
 
 	/* The first column should not be concealable so there's no point in displaying
@@ -730,7 +730,7 @@ run_cert_backup_dialog (CertPage *cp,
 		G_CALLBACK (run_cert_backup_dialog_file_chooser),
 		&data);
 	g_signal_connect (
-		button, "focus-in-event",
+		e_gtk_widget_legacy_events (button), "focus-in-event",
 		G_CALLBACK (cert_backup_dialog_sensitize),
 		&data);
 	gtk_grid_attach (grid, button, col++, row++, 1, 1);
@@ -755,7 +755,7 @@ run_cert_backup_dialog (CertPage *cp,
 
 	data.entry1 = gtk_entry_new ();
 	g_signal_connect(
-		data.entry1, "key-release-event",
+		e_gtk_widget_legacy_events (data.entry1), "key-release-event",
 		G_CALLBACK (cert_backup_dialog_sensitize),
 		&data);
 	gtk_entry_set_visibility (GTK_ENTRY (data.entry1), FALSE);
@@ -769,7 +769,7 @@ run_cert_backup_dialog (CertPage *cp,
 
 	data.entry2 = gtk_entry_new ();
 	g_signal_connect(
-		data.entry2, "key-release-event",
+		e_gtk_widget_legacy_events (data.entry2), "key-release-event",
 		G_CALLBACK (cert_backup_dialog_sensitize),
 		&data);
 	gtk_entry_set_visibility (GTK_ENTRY (data.entry2), FALSE);

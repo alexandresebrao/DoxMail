@@ -199,6 +199,10 @@ EGtkDragContext *
 void		e_gtk_drag_cancel		(EGtkDragContext *context);
 void		e_gtk_drag_set_icon_surface	(EGtkDragContext *context,
 						 cairo_surface_t *surface);
+void		e_gtk_drag_set_icon_paintable	(EGtkDragContext *context,
+						 GdkPaintable *paintable,
+						 gint hot_x,
+						 gint hot_y);
 void		e_gtk_drag_set_icon_pixbuf	(EGtkDragContext *context,
 						 GdkPixbuf *pixbuf,
 						 gint hot_x,

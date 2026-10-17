@@ -192,7 +192,7 @@ static gboolean
 categories_selector_key_press_event (ECategoriesSelector *selector,
                                      GdkEvent *event)
 {
-	if (event->keyval == GDK_KEY_Delete) {
+	if (e_gdk_event_keyval (event) == GDK_KEY_Delete) {
 		e_categories_selector_delete_selection (selector);
 		return TRUE;
 	}
@@ -367,7 +367,7 @@ e_categories_selector_init (ECategoriesSelector *selector)
 		G_CALLBACK (categories_selector_selection_changed), selector);
 
 	g_signal_connect (
-		selector, "key-press-event",
+		e_gtk_widget_legacy_events (selector), "key-press-event",
 		G_CALLBACK (categories_selector_key_press_event), NULL);
 
 	e_categories_register_change_listener (

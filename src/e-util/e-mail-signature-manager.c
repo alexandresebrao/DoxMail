@@ -77,7 +77,7 @@ static gboolean
 mail_signature_manager_key_press_event_cb (EMailSignatureManager *manager,
                                            GdkEvent *event)
 {
-	if (event->keyval == GDK_KEY_Delete) {
+	if (e_gdk_event_keyval (event) == GDK_KEY_Delete) {
 		e_mail_signature_manager_remove_signature (manager);
 		return TRUE;
 	}
@@ -278,7 +278,7 @@ mail_signature_manager_constructed (GObject *object)
 	gtk_widget_show (widget);
 
 	g_signal_connect_swapped (
-		widget, "key-press-event",
+		e_gtk_widget_legacy_events (widget), "key-press-event",
 		G_CALLBACK (mail_signature_manager_key_press_event_cb),
 		manager);
 
@@ -426,10 +426,8 @@ static void
 mail_signature_manager_editor_created (EMailSignatureManager *manager,
                                        EMailSignatureEditor *editor)
 {
-	GtkWindowPosition position;
 	gpointer parent;
 
-	position = GTK_WIN_POS_CENTER_ON_PARENT;
 	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (manager));
 	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 

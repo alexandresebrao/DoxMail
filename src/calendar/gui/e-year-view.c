@@ -843,7 +843,7 @@ year_view_month_widget_day_clicked_cb (EMonthWidget *month_widget,
 {
 	EYearView *self = user_data;
 
-	if (event->button == GDK_BUTTON_PRIMARY)
+	if (e_gdk_event_button (event) == GDK_BUTTON_PRIMARY)
 		year_view_set_year (self, year, month, day);
 }
 
@@ -1314,7 +1314,7 @@ year_view_tree_view_button_press_event_cb (GtkWidget *widget,
 {
 	EYearView *self = user_data;
 
-	if (event->type == GDK_BUTTON_PRESS &&
+	if (e_gdk_event_type (event) == GDK_BUTTON_PRESS &&
 	    gdk_event_triggers_context_menu (event)) {
 		GtkTreeSelection *selection;
 		GtkTreePath *path;
@@ -1323,7 +1323,7 @@ year_view_tree_view_button_press_event_cb (GtkWidget *widget,
 		if (gtk_tree_selection_get_mode (selection) == GTK_SELECTION_SINGLE)
 			gtk_tree_selection_unselect_all (selection);
 
-		if (gtk_tree_view_get_path_at_pos (self->priv->tree_view, event->button.x, event->button.y, &path, NULL, NULL, NULL)) {
+		if (gtk_tree_view_get_path_at_pos (self->priv->tree_view, e_gdk_event_x (event), e_gdk_event_y (event), &path, NULL, NULL, NULL)) {
 			gtk_tree_selection_select_path (selection, path);
 			gtk_tree_view_set_cursor (self->priv->tree_view, path, NULL, FALSE);
 
@@ -2078,10 +2078,10 @@ year_view_constructed (GObject *object)
 	g_signal_connect_object (selection, "changed",
 		G_CALLBACK (year_view_selection_changed_cb), self, 0);
 
-	g_signal_connect_object (self->priv->tree_view, "popup-menu",
+	g_signal_connect_object (e_gtk_widget_legacy_events (self->priv->tree_view), "popup-menu",
 		G_CALLBACK (year_view_tree_view_popup_menu_cb), self, 0);
 
-	g_signal_connect_object (self->priv->tree_view, "button-press-event",
+	g_signal_connect_object (e_gtk_widget_legacy_events (self->priv->tree_view), "button-press-event",
 		G_CALLBACK (year_view_tree_view_button_press_event_cb), self, 0);
 
 	g_signal_connect_object (self->priv->tree_view, "row-activated",

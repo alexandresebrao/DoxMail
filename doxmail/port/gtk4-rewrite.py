@@ -234,6 +234,7 @@ RENAMES = {
 
 # GTK 3 calls with nothing to do in GTK 4, dropped when they are a statement
 DROPPED = [
+    'gtk_window_set_position',
     'webkit_web_context_set_sandbox_enabled',
     'gtk_grab_add',
     'gtk_grab_remove',
@@ -387,7 +388,86 @@ def r_icon_lookup(new):
     return f
 
 
+BINDING_TYPES = {
+    'G_TYPE_INT': 'i', 'G_TYPE_UINT': 'u', 'G_TYPE_BOOLEAN': 'b',
+    'G_TYPE_STRING': 's', 'G_TYPE_DOUBLE': 'd', 'G_TYPE_INT64': 'x',
+}
+
+
+def r_binding_signal(args, *_):
+    """gtk_binding_entry_add_signal (set, key, mods, signal, n, type, value, ...)"""
+    if len(args) < 5:
+        return None
+    try:
+        n = int(args[4])
+    except ValueError:
+        return None
+    rest = [a for a in args[5:] if a != 'NULL']
+    if len(rest) != 2 * n:
+        return None
+    fmt = ''
+    values = []
+    for i in range(n):
+        t, v = rest[2 * i], rest[2 * i + 1]
+        # enums travel as ints
+        fmt += BINDING_TYPES.get(t, 'i')
+        values.append(v)
+    cls = args[0]
+    m = re.match(r'^gtk_binding_set_by_class\s*\((.*)\)$', cls, re.S)
+    if m:
+        cls = 'GTK_WIDGET_CLASS (%s)' % m.group(1).strip()
+    if n == 0:
+        return call('gtk_widget_class_add_binding_signal', [cls] + args[1:4] + ['NULL'])
+    return call('gtk_widget_class_add_binding_signal', [cls] + args[1:4] + ['"(%s)"' % fmt] + values)
+
+
+LEGACY_EVENT_SIGNALS = {
+    '"key-press-event"', '"key-release-event"', '"button-press-event"',
+    '"button-release-event"', '"motion-notify-event"', '"scroll-event"',
+    '"enter-notify-event"', '"leave-notify-event"', '"focus-in-event"',
+    '"focus-out-event"', '"popup-menu"',
+}
+
+
+def wrap_legacy_connects(text):
+    """g_signal_connect (w, "key-press-event", ...) ->
+    g_signal_connect (e_gtk_widget_legacy_events (w), "key-press-event", ...)"""
+    pattern = re.compile(r'\bg_signal_connect(?:_swapped|_after|_object|_data)?\s*\(\s*')
+    pos = 0
+    out = []
+    while True:
+        m = pattern.search(text, pos)
+        if not m:
+            break
+        # the first argument ends at the first top-level comma
+        depth, i = 0, m.end()
+        while i < len(text):
+            c = text[i]
+            if c in '([':
+                depth += 1
+            elif c in ')]':
+                if depth == 0:
+                    break
+                depth -= 1
+            elif c == ',' and depth == 0:
+                break
+            i += 1
+        first = text[m.end():i]
+        sig = re.match(r',\s*("[a-z-]+")', text[i:])
+        out.append(text[pos:m.end()])
+        if (sig and sig.group(1) in LEGACY_EVENT_SIGNALS and
+                not first.startswith('e_gtk_widget_legacy_events')):
+            out.append('e_gtk_widget_legacy_events (%s)' % first.strip())
+            counts['legacy event connect'] += 1
+        else:
+            out.append(first)
+        pos = i
+    out.append(text[pos:])
+    return ''.join(out)
+
+
 CALLS = {
+    'gtk_binding_entry_add_signal': r_binding_signal,
     'gtk_icon_theme_lookup_icon': r_icon_lookup('e_gtk_icon_theme_lookup_icon'),
     'gtk_icon_theme_lookup_by_gicon': r_icon_lookup('e_gtk_icon_theme_lookup_by_gicon'),
     'gtk_scrolled_window_new': r_no_args('gtk_scrolled_window_new'),
@@ -493,6 +573,12 @@ REGEX_RENAMES = [
     (r'\batk_object_set_description\s*\(', 'e_gtk_widget_set_accessible_description ('),
     (r'\bGtkRadioButton\b', 'GtkCheckButton'),
     (r'\bGtkAccelGroup\b', 'EGtkAccelGroup'),
+    (r'\bGtkBindingSet \*', 'GtkWidgetClass *'),
+    (r'\n[ \t]*"type", GTK_WINDOW_TOPLEVEL,', ''),
+    # GTK 4 does not place windows
+    (r'\n[ \t]*"window-position", GTK_WIN_POS_[A-Z_]+,', ''),
+    (r'= gtk_binding_set_by_class \(([^;]*)\);', r'= GTK_WIDGET_CLASS (\1);'),
+    (r'\bgtk_window_new \(\s*GTK_WINDOW_(TOPLEVEL|POPUP)\s*\)', 'gtk_window_new ()'),
     (r'\bgtk_container_child_(set|get)(_property)?\s*\(\s*GTK_CONTAINER\s*\(([^()]*)\)', r'e_gtk_container_child_\1\2 (\3'),
     (r'\bgtk_container_child_(set|get)(_property)?\s*\(', r'e_gtk_container_child_\1\2 ('),
     (r'\bGtkIconInfo\b', 'EGtkIconInfo'),
@@ -513,6 +599,13 @@ REGEX_RENAMES = [
     (r'\bGTK_RADIO_BUTTON\s*\(', 'GTK_CHECK_BUTTON ('),
     (r'\bGTK_IS_RADIO_BUTTON\s*\(', 'GTK_IS_CHECK_BUTTON ('),
     (r'\bGTK_TYPE_RADIO_BUTTON\b', 'GTK_TYPE_CHECK_BUTTON'),
+    # GTK 3 event vfuncs -> overrides of the emulated signals
+    (r'(\w+)->(key_press_event|key_release_event|button_press_event|button_release_event|motion_notify_event|scroll_event|enter_notify_event|leave_notify_event|focus_in_event|focus_out_event|popup_menu)\s*=\s*(\w+);',
+     lambda m: 'e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (%s), "%s", G_CALLBACK (%s));' % (m.group(1), m.group(2).replace('_', '-'), m.group(3))),
+    (r'(?:\(\s*\*\s*)?(?:\w+|GTK_WIDGET_CLASS\s*\(\s*\w+\s*\))\s*->\s*popup_menu\s*\)?\s*\(\s*(\w+)\s*\)',
+     r'e_gtk_widget_chain_legacy_popup_menu (\1)'),
+    (r'(?:\(\s*\*\s*)?(?:\w+|GTK_WIDGET_CLASS\s*\(\s*\w+\s*\))\s*->\s*(?:key_press_event|key_release_event|button_press_event|button_release_event|motion_notify_event|scroll_event|enter_notify_event|leave_notify_event|focus_in_event|focus_out_event)\s*\)?\s*\(\s*(\w+)\s*,\s*([^;()]+?)\s*\)',
+     r'e_gtk_widget_chain_legacy_event (\1, \2)'),
     # GtkAssistant is final -> EAssistant (src/e-util/e-assistant.[ch])
     (r'\bGtkAssistant(Class|PageFunc)?\b', r'EAssistant\1'),
     (r'\bGTK_TYPE_ASSISTANT\b', 'E_TYPE_ASSISTANT'),
@@ -541,6 +634,7 @@ def rewrite(text):
         text = rewrite_calls(text, name, func)
     for name in DROPPED:
         text = drop_statement(text, name)
+    text = wrap_legacy_connects(text)
     return text
 
 

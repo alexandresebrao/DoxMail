@@ -738,7 +738,7 @@ create_children (EDateEdit *dedit)
 	    && (priv->show_time || priv->make_time_insensitive))
 		gtk_widget_show (priv->space);
 
-	priv->cal_popup = gtk_window_new (GTK_WINDOW_POPUP);
+	priv->cal_popup = gtk_window_new ();
 	g_signal_connect (
 		priv->cal_popup, "delete_event",
 		G_CALLBACK (on_date_popup_delete_event), dedit);
@@ -1695,7 +1695,7 @@ on_date_popup_key_press (GtkWidget *widget,
                          GdkEvent *event,
                          EDateEdit *dedit)
 {
-	if (event->keyval == GDK_KEY_Escape) {
+	if (e_gdk_event_keyval (event) == GDK_KEY_Escape) {
 		g_signal_stop_emission_by_name (widget, "key_press_event");
 		hide_date_popup (dedit);
 		return TRUE;

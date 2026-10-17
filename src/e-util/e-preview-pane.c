@@ -218,7 +218,7 @@ static void
 e_preview_pane_class_init (EPreviewPaneClass *class)
 {
 	GObjectClass *object_class;
-	GtkBindingSet *binding_set;
+	GtkWidgetClass *binding_set;
 
 	object_class = G_OBJECT_CLASS (class);
 	object_class->set_property = preview_pane_set_property;
@@ -258,12 +258,9 @@ e_preview_pane_class_init (EPreviewPaneClass *class)
 		g_cclosure_marshal_VOID__VOID,
 		G_TYPE_NONE, 0);
 
-	binding_set = gtk_binding_set_by_class (class);
+	binding_set = GTK_WIDGET_CLASS (class);
 
-	gtk_binding_entry_add_signal (
-		binding_set, GDK_KEY_f,
-		GDK_SHIFT_MASK | GDK_CONTROL_MASK,
-		"show-search-bar", 0);
+	gtk_widget_class_add_binding_signal (binding_set, GDK_KEY_f, GDK_SHIFT_MASK | GDK_CONTROL_MASK, "show-search-bar", NULL);
 }
 
 static void

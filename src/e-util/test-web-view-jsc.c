@@ -100,8 +100,8 @@ window_key_press_event_cb (GtkWindow *window,
 
 	inspector = webkit_web_view_get_inspector (web_view);
 
-	if ((event->state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)) == (GDK_CONTROL_MASK | GDK_SHIFT_MASK) &&
-	    event->keyval == GDK_KEY_I) {
+	if ((e_gdk_event_state (event) & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)) == (GDK_CONTROL_MASK | GDK_SHIFT_MASK) &&
+	    e_gdk_event_keyval (event) == GDK_KEY_I) {
 		webkit_web_inspector_show (inspector);
 		handled = TRUE;
 	}
@@ -150,7 +150,7 @@ test_utils_fixture_set_up (TestFixture *fixture,
 	webkit_settings_set_enable_write_console_messages_to_stdout (settings, TRUE);
 
 	g_signal_connect (
-		fixture->window, "key-press-event",
+		e_gtk_widget_legacy_events (fixture->window), "key-press-event",
 		G_CALLBACK (window_key_press_event_cb), fixture->web_view);
 
 	g_signal_connect (
