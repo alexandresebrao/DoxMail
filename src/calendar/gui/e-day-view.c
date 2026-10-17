@@ -1691,8 +1691,12 @@ e_day_view_handle_size_allocate_idle_cb (gpointer user_data)
 
 static void
 day_view_size_allocate (GtkWidget *widget,
-                        GtkAllocation *allocation)
+                        gint width,
+                        gint height,
+                        gint baseline)
 {
+	GtkAllocation allocation_local = { 0, 0, width, height };
+	GtkAllocation *allocation = &allocation_local;
 	(*GTK_WIDGET_CLASS (e_day_view_parent_class)->size_allocate) (widget, allocation);
 
 	g_idle_add_full (G_PRIORITY_HIGH_IDLE, e_day_view_handle_size_allocate_idle_cb,

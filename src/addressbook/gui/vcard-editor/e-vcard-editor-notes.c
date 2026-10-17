@@ -6,11 +6,14 @@
 #include "evolution-config.h"
 
 #include <gtk/gtk.h>
+#include <e-util/e-util.h>
 
 #include "e-vcard-editor-notes.h"
 
 struct _EVCardEditorNotes {
-	GtkScrolledWindow parent_object;
+	EGtkBin parent_object;
+
+	GtkWidget *scrolled_window; /* GtkScrolledWindow is final with GTK 4 */
 
 	GtkTextView *text_view; /* not owned */
 
@@ -24,7 +27,7 @@ enum {
 
 static guint signals[LAST_SIGNAL];
 
-G_DEFINE_TYPE (EVCardEditorNotes, e_vcard_editor_notes, GTK_TYPE_SCROLLED_WINDOW)
+G_DEFINE_TYPE (EVCardEditorNotes, e_vcard_editor_notes, E_GTK_TYPE_BIN)
 
 static void
 eve_notes_emit_changed (EVCardEditorNotes *self)
@@ -33,13 +36,12 @@ eve_notes_emit_changed (EVCardEditorNotes *self)
 		g_signal_emit (self, signals[CHANGED], 0, NULL);
 }
 
-static void
+static gboolean
 e_vcard_editor_notes_grab_focus (GtkWidget *widget)
 {
 	EVCardEditorNotes *self = E_VCARD_EDITOR_NOTES (widget);
 
-	if (self->text_view)
-		gtk_widget_grab_focus (GTK_WIDGET (self->text_view));
+	return self->text_view && gtk_widget_grab_focus (GTK_WIDGET (self->text_view));
 }
 
 static void
@@ -55,9 +57,15 @@ e_vcard_editor_notes_constructed (GObject *object)
 		"hexpand", TRUE,
 		"valign", GTK_ALIGN_FILL,
 		"vexpand", TRUE,
+		NULL);
+
+	self->scrolled_window = gtk_scrolled_window_new ();
+	e_gtk_bin_set_bin_child (E_GTK_BIN (self), self->scrolled_window);
+
+	g_object_set (self->scrolled_window,
 		"hscrollbar-policy", GTK_POLICY_AUTOMATIC,
 		"vscrollbar-policy", GTK_POLICY_AUTOMATIC,
-		"shadow-type", GTK_SHADOW_IN,
+		"has-frame", TRUE,
 		"kinetic-scrolling", TRUE,
 		"min-content-width", 200,
 		"min-content-height", 250,
@@ -77,7 +85,7 @@ e_vcard_editor_notes_constructed (GObject *object)
 		"bottom-margin", 6,
 		NULL);
 
-	e_gtk_container_add (self, widget);
+	gtk_scrolled_window_set_child (GTK_SCROLLED_WINDOW (self->scrolled_window), widget);
 
 	self->text_view = GTK_TEXT_VIEW (widget);
 

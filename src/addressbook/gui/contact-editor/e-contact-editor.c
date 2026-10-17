@@ -1599,7 +1599,7 @@ config_sensitize_item (EContactEditor *editor,
 
 	if (has_data) {
 		gtk_widget_set_sensitive (item, FALSE);
-		gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (item), TRUE);
+		e_gtk_toggle_button_set_active (item, TRUE);
 	} else {
 		gtk_widget_set_sensitive (item, TRUE);
 	}
@@ -1692,7 +1692,7 @@ config_menuitem_save (EContactEditor *editor,
 	gboolean active, sensitive;
 
 	item      = e_builder_get_widget (editor->priv->builder, item_name);
-	active    = gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (item));
+	active    = e_gtk_toggle_button_get_active (item);
 	sensitive = gtk_widget_get_sensitive (item);
 
 	if (sensitive)
@@ -1739,7 +1739,7 @@ init_config_menuitem (EContactEditor *editor,
 
 	show = g_settings_get_boolean (settings, key);
 	item = e_builder_get_widget (editor->priv->builder, item_name);
-	gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (item), show);
+	e_gtk_toggle_button_set_active (item, show);
 
 	g_signal_connect (
 		item, "activate",
@@ -1754,7 +1754,7 @@ init_config (EContactEditor *editor)
 
 	button = e_builder_get_widget (editor->priv->builder, "button-config");
 	menu   = e_builder_get_widget (editor->priv->builder, "menu-editor-config");
-	gtk_menu_button_set_popup (GTK_MENU_BUTTON (button), menu);
+	gtk_menu_button_set_popover (GTK_MENU_BUTTON (button), menu);
 
 	/* save resources by only doing the data checks and sensitizing upon request,
 	 * instead of doing it with each change in object_changed()
@@ -3992,10 +3992,22 @@ init_all (EContactEditor *editor)
 		height = tab_req.height - 240 + 24;
 
 		display = gtk_widget_get_display (window);
-		gtk_window_get_position (GTK_WINDOW (window), &x, &y);
 
-		monitor = gdk_display_get_monitor_at_point (display, x, y);
-		gdk_monitor_get_workarea (monitor, &monitor_area);
+		/* GTK 4 windows have no position; their monitor is known
+		 * once they are shown, else the first one is used */
+		monitor = gtk_widget_get_realized (window) ?
+			gdk_display_get_monitor_at_surface (display, gtk_native_get_surface (GTK_NATIVE (window))) : NULL;
+		if (!monitor)
+			monitor = g_list_model_get_item (gdk_display_get_monitors (display), 0);
+		else
+			g_object_ref (monitor);
+		if (monitor) {
+			gdk_monitor_get_geometry (monitor, &monitor_area);
+			g_object_unref (monitor);
+		} else {
+			monitor_area.width = 1024;
+			monitor_area.height = 768;
+		}
 
 		if (requisition.width > monitor_area.width - width)
 			requisition.width = monitor_area.width - width;
@@ -4983,7 +4995,7 @@ setup_tab_order (GtkBuilder *builder)
 */
 
 	container = e_builder_get_widget (builder, "grid-home-address");
-	gtk_container_get_focus_chain (GTK_WIDGET (container), &list);
+	e_gtk_container_get_focus_chain (GTK_WIDGET (container), &list);
 
 	list = add_to_tab_order (list, builder, "scrolledwindow-home-address");
 	list = add_to_tab_order (list, builder, "entry-home-city");
@@ -4993,11 +5005,11 @@ setup_tab_order (GtkBuilder *builder)
 	list = add_to_tab_order (list, builder, "entry-home-country");
 	list = g_list_reverse (list);
 
-	gtk_container_set_focus_chain (GTK_WIDGET (container), list);
+	e_gtk_container_set_focus_chain (GTK_WIDGET (container), list);
 	g_list_free (list);
 
 	container = e_builder_get_widget (builder, "grid-work-address");
-	gtk_container_get_focus_chain (GTK_WIDGET (container), &list);
+	e_gtk_container_get_focus_chain (GTK_WIDGET (container), &list);
 
 	list = add_to_tab_order (list, builder, "scrolledwindow-work-address");
 	list = add_to_tab_order (list, builder, "entry-work-city");
@@ -5007,11 +5019,11 @@ setup_tab_order (GtkBuilder *builder)
 	list = add_to_tab_order (list, builder, "entry-work-country");
 	list = g_list_reverse (list);
 
-	gtk_container_set_focus_chain (GTK_WIDGET (container), list);
+	e_gtk_container_set_focus_chain (GTK_WIDGET (container), list);
 	g_list_free (list);
 
 	container = e_builder_get_widget (builder, "grid-other-address");
-	gtk_container_get_focus_chain (GTK_WIDGET (container), &list);
+	e_gtk_container_get_focus_chain (GTK_WIDGET (container), &list);
 
 	list = add_to_tab_order (list, builder, "scrolledwindow-other-address");
 	list = add_to_tab_order (list, builder, "entry-other-city");
@@ -5021,7 +5033,7 @@ setup_tab_order (GtkBuilder *builder)
 	list = add_to_tab_order (list, builder, "entry-other-country");
 	list = g_list_reverse (list);
 
-	gtk_container_set_focus_chain (GTK_WIDGET (container), list);
+	e_gtk_container_set_focus_chain (GTK_WIDGET (container), list);
 	g_list_free (list);
 }
 
@@ -5339,9 +5351,7 @@ e_contact_editor_constructed (GObject *object)
 	editor->priv->focus_tracker = e_focus_tracker_new (GTK_WINDOW (editor->priv->app));
 	editor->priv->ui_manager = e_ui_manager_new (NULL);
 
-	e_gtk_window_add_accel_group (
-		GTK_WINDOW (editor->priv->app),
-		e_ui_manager_get_accel_group (editor->priv->ui_manager));
+	gtk_widget_add_controller (GTK_WIDGET (GTK_WINDOW (editor->priv->app)), e_ui_manager_create_shortcut_controller (editor->priv->ui_manager));
 
 	e_signal_connect_notify (
 		editor->priv->focus_tracker, "notify::focus",
@@ -5791,12 +5801,9 @@ static void
 e_contact_editor_raise (EABEditor *editor)
 {
 	EContactEditor *ce = E_CONTACT_EDITOR (editor);
-	GdkSurface *window;
 
-	window = e_gtk_widget_get_surface (ce->priv->app);
-
-	if (window != NULL)
-		gtk_window_present (window);
+	if (ce->priv->app)
+		gtk_window_present (GTK_WINDOW (ce->priv->app));
 }
 
 /**

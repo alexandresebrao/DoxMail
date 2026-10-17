@@ -7,6 +7,7 @@
 #define E_VCARD_EDITOR_SECTION_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-util.h>
 #include <libebook-contacts/libebook-contacts.h>
 
 #include "e-vcard-editor-item.h"
@@ -16,7 +17,7 @@ G_BEGIN_DECLS
 struct _EVCardEditor;
 
 #define E_TYPE_VCARD_EDITOR_SECTION (e_vcard_editor_section_get_type ())
-G_DECLARE_FINAL_TYPE (EVCardEditorSection, e_vcard_editor_section, E, VCARD_EDITOR_SECTION, GtkExpander)
+G_DECLARE_FINAL_TYPE (EVCardEditorSection, e_vcard_editor_section, E, VCARD_EDITOR_SECTION, EGtkBin)
 
 /* reads data from the contact to the section */
 typedef void	(* EVCardEditorSectionReadFunc)	(EVCardEditorSection *section,

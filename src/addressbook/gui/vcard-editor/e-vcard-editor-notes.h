@@ -7,11 +7,12 @@
 #define E_VCARD_EDITOR_NOTES_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-util.h>
 
 G_BEGIN_DECLS
 
 #define E_TYPE_VCARD_EDITOR_NOTES (e_vcard_editor_notes_get_type ())
-G_DECLARE_FINAL_TYPE (EVCardEditorNotes, e_vcard_editor_notes, E, VCARD_EDITOR_NOTES, GtkScrolledWindow)
+G_DECLARE_FINAL_TYPE (EVCardEditorNotes, e_vcard_editor_notes, E, VCARD_EDITOR_NOTES, EGtkBin)
 
 GtkWidget *	e_vcard_editor_notes_new	(void);
 void		e_vcard_editor_notes_set_text	(EVCardEditorNotes *self,

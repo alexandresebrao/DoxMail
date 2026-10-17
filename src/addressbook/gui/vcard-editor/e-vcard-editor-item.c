@@ -7,6 +7,7 @@
 
 #include <glib/gi18n-lib.h>
 #include <gtk/gtk.h>
+#include <e-util/e-util.h>
 
 #include "e-vcard-editor-item.h"
 /* it's after, because of predefined type for the section in the header */

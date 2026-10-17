@@ -33,6 +33,7 @@
 #include <glib/gi18n.h>
 #include <glib/gstdio.h>
 #include <gtk/gtk.h>
+#include <e-util/e-util.h>
 #include <gdk/gdkkeysyms.h>
 
 #include "calendar-config.h"

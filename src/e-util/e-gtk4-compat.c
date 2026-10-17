@@ -2595,3 +2595,19 @@ e_gtk_layout_get_size (EGtkLayout *layout,
 	if (height)
 		*height = priv->height;
 }
+
+gboolean
+e_gtk_container_get_focus_chain (gpointer container,
+				 GList **focusable_widgets)
+{
+	if (focusable_widgets)
+		*focusable_widgets = NULL;
+
+	return FALSE;
+}
+
+void
+e_gtk_container_set_focus_chain (gpointer container,
+				 GList *focusable_widgets)
+{
+}

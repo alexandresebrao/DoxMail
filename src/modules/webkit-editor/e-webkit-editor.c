@@ -5171,7 +5171,7 @@ webkit_editor_paste_clipboard_targets_cb (GdkClipboard *clipboard,
 	}
 
 	if (wk_editor->priv->mode == E_CONTENT_EDITOR_MODE_HTML &&
-	    gtk_targets_include_image (targets, n_targets, TRUE) &&
+	    e_gtk_targets_include_image (targets, n_targets, TRUE) &&
 	    (!content || !*content || !is_libreoffice_content (targets, n_targets))) {
 		gchar *uri;
 

@@ -617,6 +617,37 @@ e_gtk_targets_include_text (EGtkAtom *targets,
 	return FALSE;
 }
 
+gboolean
+e_gtk_targets_include_image (EGtkAtom *targets,
+			     gint n_targets,
+			     gboolean writable)
+{
+	gint ii;
+
+	for (ii = 0; ii < n_targets; ii++) {
+		if (targets[ii] && (g_str_has_prefix (targets[ii], "image/") ||
+		    g_str_equal (targets[ii], "PIXBUF")))
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
+gboolean
+e_gtk_targets_include_uri (EGtkAtom *targets,
+			   gint n_targets)
+{
+	gint ii;
+
+	for (ii = 0; ii < n_targets; ii++) {
+		if (targets[ii] && (g_str_equal (targets[ii], "text/uri-list") ||
+		    g_str_equal (targets[ii], "x-special/gnome-copied-files")))
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
 static void
 selection_data_set_targets (EGtkSelectionData *data,
                             GdkContentFormats *formats)

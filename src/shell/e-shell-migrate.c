@@ -24,6 +24,7 @@
 #include <glib/gi18n-lib.h>
 #include <glib/gstdio.h>
 #include <gtk/gtk.h>
+#include <e-util/e-util.h>
 
 #include <camel/camel.h>
 #include <libedataserver/libedataserver.h>

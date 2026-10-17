@@ -352,7 +352,7 @@ static void
 on_set_day_second_zone (GtkWidget *item,
                         ECalendarPreferences *prefs)
 {
-	if (!gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (item)))
+	if (!e_gtk_toggle_button_get_active (item))
 		return;
 
 	calendar_config_set_day_second_zone (g_object_get_data (G_OBJECT (item), "timezone"));
@@ -389,7 +389,7 @@ day_second_zone_clicked (GtkWidget *widget,
 	item = gtk_radio_menu_item_new_with_label (group, C_("cal-second-zone", "None"));
 	group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (item));
 	if (!second_zone)
-		gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (item), TRUE);
+		e_gtk_toggle_button_set_active (item, TRUE);
 	gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
 	g_signal_connect (
 		item, "toggled",
@@ -405,7 +405,7 @@ day_second_zone_clicked (GtkWidget *widget,
 		group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (item));
 		/* both comes from builtin, thus no problem to compare pointers */
 		if (zone == second_zone)
-			gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (item), TRUE);
+			e_gtk_toggle_button_set_active (item, TRUE);
 		gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
 		g_object_set_data_full (G_OBJECT (item), "timezone", g_strdup (s->data), g_free);
 		g_signal_connect (

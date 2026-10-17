@@ -2386,7 +2386,7 @@ ecep_recurrence_constructed (GObject *object)
 		"margin-bottom", 6,
 		"hscrollbar-policy", GTK_POLICY_AUTOMATIC,
 		"vscrollbar-policy", GTK_POLICY_AUTOMATIC,
-		"shadow-type", GTK_SHADOW_IN,
+		"has-frame", TRUE,
 		NULL);
 	gtk_widget_show (widget);
 	gtk_grid_attach (grid, widget, 0, 5, 1, 1);

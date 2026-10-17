@@ -25,6 +25,7 @@
 
 #include <string.h>
 #include <gtk/gtk.h>
+#include <e-util/e-util.h>
 #include <camel/camel.h>
 
 #include "shell/e-shell-utils.h"

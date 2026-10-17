@@ -140,10 +140,22 @@ GMenu + actions + GtkPopoverMenu (context menus of entries go through
 - no window placement (`window-position` dropped);
 - real mouse and keyboard input is not tested automatically.
 
+### 3. shell, libemail-engine, smime, em-format, addressbook, composer
+
+All build with GTK 4, and the `evolution` binary starts and shows its
+window (`doxmail/port/run-isolated.sh 15 _build-gtk4/src/shell/evolution`
+with `GSETTINGS_SCHEMA_DIR=_build/data` runs it with its own HOME and
+D-Bus session; without modules it only knows no views yet). More compat:
+`EGtkBin` (GtkBin), `EGtkLayout` (GtkLayout), GtkToolbarStyle,
+`delete-event`/`owner-change` emulation, nested main loops; and the
+`size-allocate.py` tool. **GtkBuilder `.ui` files are not converted yet**
+(contact editor, contact list editor, mail and calendar dialogs):
+`gtk4-builder-tool simplify --3to4`, then fix by hand.
+
 ## Next
 
-In dependency order: shell → libemail-engine (no GTK) → em-format →
-composer → mail → addressbook → calendar → smime → modules → plugins.
+mail → calendar → modules (they give the shell its views) → plugins;
+then the `.ui` files and `data/` (schemas, icons) in the GTK 4 build.
 For each: add it to the `WITH_GTK4` list, rerun `rewrite-all.sh`, run
 `canvas-events.py` on canvas code and `gdk-event-fields.py` on the rest,
 then fix what the compiler reports. Calendar views mix canvas and widget

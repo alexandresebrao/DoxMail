@@ -1282,7 +1282,7 @@ e_comp_editor_event_constructed (GObject *object)
 		"valign", GTK_ALIGN_FILL,
 		"vexpand", TRUE,
 		"can-focus", FALSE,
-		"shadow-type", GTK_SHADOW_NONE,
+		"has-frame", FALSE,
 		"hscrollbar-policy", GTK_POLICY_AUTOMATIC,
 		"vscrollbar-policy", GTK_POLICY_AUTOMATIC,
 		"propagate-natural-width", FALSE,

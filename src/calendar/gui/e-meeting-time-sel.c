@@ -589,8 +589,7 @@ e_meeting_time_selector_construct (EMeetingTimeSelector *mts,
 	child = e_gtk_bin_get_child (menuitem);
 	gtk_label_set_text_with_mnemonic (GTK_LABEL (child), _("Show _only working hours"));
 	gtk_menu_shell_append (GTK_MENU_SHELL (mts->options_menu), menuitem);
-	gtk_check_menu_item_set_active (
-		GTK_CHECK_MENU_ITEM (menuitem),
+	e_gtk_toggle_button_set_active (menuitem,
 		mts->working_hours_only);
 
 	g_signal_connect (
@@ -602,8 +601,7 @@ e_meeting_time_selector_construct (EMeetingTimeSelector *mts,
 	child = e_gtk_bin_get_child (menuitem);
 	gtk_label_set_text_with_mnemonic (GTK_LABEL (child), _("Show _zoomed out"));
 	gtk_menu_shell_append (GTK_MENU_SHELL (mts->options_menu), menuitem);
-	gtk_check_menu_item_set_active (
-		GTK_CHECK_MENU_ITEM (menuitem),
+	e_gtk_toggle_button_set_active (menuitem,
 		mts->zoomed_out);
 
 	g_signal_connect (
@@ -1507,15 +1505,15 @@ e_meeting_time_selector_get_autopick_option (EMeetingTimeSelector *mts)
 	GtkWidget *widget;
 
 	widget = mts->autopick_all_item;
-	if (gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (widget)))
+	if (e_gtk_toggle_button_get_active (widget))
 		return E_MEETING_TIME_SELECTOR_ALL_PEOPLE_AND_RESOURCES;
 
 	widget = mts->autopick_all_people_one_resource_item;
-	if (gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (widget)))
+	if (e_gtk_toggle_button_get_active (widget))
 		return E_MEETING_TIME_SELECTOR_ALL_PEOPLE_AND_ONE_RESOURCE;
 
 	widget = mts->autopick_required_people_item;
-	if (gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (widget)))
+	if (e_gtk_toggle_button_get_active (widget))
 		return E_MEETING_TIME_SELECTOR_REQUIRED_PEOPLE;
 
 	return E_MEETING_TIME_SELECTOR_REQUIRED_PEOPLE_AND_ONE_RESOURCE;
@@ -1529,16 +1527,16 @@ e_meeting_time_selector_set_autopick_option (EMeetingTimeSelector *mts,
 
 	switch (autopick_option) {
 	case E_MEETING_TIME_SELECTOR_ALL_PEOPLE_AND_RESOURCES:
-		gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (mts->autopick_all_item), TRUE);
+		e_gtk_toggle_button_set_active (mts->autopick_all_item, TRUE);
 		break;
 	case E_MEETING_TIME_SELECTOR_ALL_PEOPLE_AND_ONE_RESOURCE:
-		gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (mts->autopick_all_people_one_resource_item), TRUE);
+		e_gtk_toggle_button_set_active (mts->autopick_all_people_one_resource_item, TRUE);
 		break;
 	case E_MEETING_TIME_SELECTOR_REQUIRED_PEOPLE:
-		gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (mts->autopick_required_people_item), TRUE);
+		e_gtk_toggle_button_set_active (mts->autopick_required_people_item, TRUE);
 		break;
 	case E_MEETING_TIME_SELECTOR_REQUIRED_PEOPLE_AND_ONE_RESOURCE:
-		gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (mts->autopick_required_people_one_resource_item), TRUE);
+		e_gtk_toggle_button_set_active (mts->autopick_required_people_one_resource_item, TRUE);
 		break;
 	}
 }

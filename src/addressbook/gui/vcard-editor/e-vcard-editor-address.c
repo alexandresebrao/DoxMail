@@ -7,6 +7,7 @@
 
 #include <glib/gi18n-lib.h>
 #include <gtk/gtk.h>
+#include <e-util/e-util.h>
 
 #include "e-vcard-editor-address.h"
 
@@ -40,13 +41,12 @@ eve_address_emit_changed (EVCardEditorAddress *self)
 		g_signal_emit (self, signals[CHANGED], 0, NULL);
 }
 
-static void
+static gboolean
 e_vcard_editor_address_grab_focus (GtkWidget *widget)
 {
 	EVCardEditorAddress *self = E_VCARD_EDITOR_ADDRESS (widget);
 
-	if (self->type_combo)
-		gtk_widget_grab_focus (GTK_WIDGET (self->type_combo));
+	return self->type_combo && gtk_widget_grab_focus (GTK_WIDGET (self->type_combo));
 }
 
 static gboolean
@@ -132,7 +132,7 @@ e_vcard_editor_address_constructed (GObject *object)
 		"can-focus", FALSE,
 		"hscrollbar-policy", GTK_POLICY_AUTOMATIC,
 		"vscrollbar-policy", GTK_POLICY_AUTOMATIC,
-		"shadow-type", GTK_SHADOW_IN,
+		"has-frame", TRUE,
 		"kinetic-scrolling", TRUE,
 		"propagate-natural-height", TRUE,
 		"propagate-natural-width", TRUE,

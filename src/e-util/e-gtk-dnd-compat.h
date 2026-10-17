@@ -150,6 +150,11 @@ gboolean	e_gtk_selection_data_targets_include_text
 						(const EGtkSelectionData *data);
 gboolean	e_gtk_targets_include_text	(EGtkAtom *targets,
 						 gint n_targets);
+gboolean	e_gtk_targets_include_image	(EGtkAtom *targets,
+						 gint n_targets,
+						 gboolean writable);
+gboolean	e_gtk_targets_include_uri	(EGtkAtom *targets,
+						 gint n_targets);
 
 /* Drag contexts */
 

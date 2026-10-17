@@ -22,6 +22,7 @@
 #include "evolution-config.h"
 
 #include <gtk/gtk.h>
+#include <e-util/e-util.h>
 #include <glib/gi18n.h>
 #include <string.h>
 

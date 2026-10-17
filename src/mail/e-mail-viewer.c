@@ -1973,7 +1973,7 @@ mail_viewer_init_ui_manager (EMailViewer *self)
 	action = e_ui_manager_get_action (self->priv->ui_manager, "EMailViewer::menu-button");
 	e_ui_action_set_usable_for_kinds (action, E_UI_ELEMENT_KIND_HEADERBAR);
 
-	e_gtk_window_add_accel_group (GTK_WINDOW (self), e_ui_manager_get_accel_group (self->priv->ui_manager));
+	gtk_widget_add_controller (GTK_WIDGET (GTK_WINDOW (self)), e_ui_manager_create_shortcut_controller (self->priv->ui_manager));
 	e_ui_manager_set_action_groups_widget (self->priv->ui_manager, GTK_WIDGET (self));
 }
 

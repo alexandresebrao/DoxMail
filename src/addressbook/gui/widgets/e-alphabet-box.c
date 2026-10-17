@@ -6,6 +6,7 @@
 #include "evolution-config.h"
 
 #include <gtk/gtk.h>
+#include <e-util/e-util.h>
 #include <libebook-contacts/libebook-contacts.h>
 
 #include "e-alphabet-box.h"

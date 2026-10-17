@@ -324,13 +324,12 @@ eve_certificate_fill_widgets_from_data (EVCardEditorCertificate *self,
 	return has_cert;
 }
 
-static void
+static gboolean
 e_vcard_editor_certificate_grab_focus (GtkWidget *widget)
 {
 	EVCardEditorCertificate *self = E_VCARD_EDITOR_CERTIFICATE (widget);
 
-	if (self->expander)
-		gtk_widget_grab_focus (self->expander);
+	return self->expander && gtk_widget_grab_focus (self->expander);
 }
 
 static void
@@ -544,7 +543,7 @@ e_vcard_editor_certificate_constructed (GObject *object)
 		"no-show-all", TRUE,
 		"hscrollbar-policy", GTK_POLICY_AUTOMATIC,
 		"vscrollbar-policy", GTK_POLICY_AUTOMATIC,
-		"shadow-type", GTK_SHADOW_IN,
+		"has-frame", TRUE,
 		"kinetic-scrolling", TRUE,
 		"min-content-width", 200,
 		"min-content-height", 30,
@@ -566,7 +565,7 @@ e_vcard_editor_certificate_constructed (GObject *object)
 		"vexpand", TRUE,
 		"no-show-all", TRUE,
 		"visible", TRUE,
-		"shadow-type", GTK_SHADOW_IN,
+		"has-frame", TRUE,
 		"min-content-width", 200,
 		"min-content-height", 150,
 		NULL);

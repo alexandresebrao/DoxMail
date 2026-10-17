@@ -41,6 +41,7 @@
 #include <glib/gprintf.h>
 
 #include <gtk/gtk.h>
+#include <e-util/e-util.h>
 #include <libecal/libecal.h>
 #include <libebook/libebook.h>
 

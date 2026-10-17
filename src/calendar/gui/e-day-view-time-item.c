@@ -24,6 +24,7 @@
 
 #include <string.h>
 #include <gtk/gtk.h>
+#include <e-util/e-util.h>
 #include <glib/gi18n.h>
 
 #include "e-day-view-time-item.h"
@@ -761,7 +762,7 @@ static void
 edvti_on_set_zone (GtkWidget *item,
                    EDayViewTimeItem *time_item)
 {
-	if (!gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (item)))
+	if (!e_gtk_toggle_button_get_active (item))
 		return;
 
 	calendar_config_set_day_second_zone (
@@ -810,8 +811,7 @@ e_day_view_time_item_show_popup_menu (EDayViewTimeItem *time_item,
 		gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
 
 		if (current_divisions == divisions[i])
-			gtk_check_menu_item_set_active (
-				GTK_CHECK_MENU_ITEM (item), TRUE);
+			e_gtk_toggle_button_set_active (item, TRUE);
 
 		g_object_set_data (
 			G_OBJECT (item), "divisions",
@@ -848,7 +848,7 @@ e_day_view_time_item_show_popup_menu (EDayViewTimeItem *time_item,
 	item = gtk_radio_menu_item_new_with_label (group, C_("cal-second-zone", "None"));
 	group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (item));
 	if (!time_item->priv->second_zone)
-		gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (item), TRUE);
+		e_gtk_toggle_button_set_active (item, TRUE);
 	gtk_menu_shell_append (GTK_MENU_SHELL (submenu), item);
 	g_signal_connect (
 		item, "toggled",
@@ -865,7 +865,7 @@ e_day_view_time_item_show_popup_menu (EDayViewTimeItem *time_item,
 		group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (item));
 		/* both comes from builtin, thus no problem to compare pointers */
 		if (zone == time_item->priv->second_zone)
-			gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (item), TRUE);
+			e_gtk_toggle_button_set_active (item, TRUE);
 		gtk_menu_shell_append (GTK_MENU_SHELL (submenu), item);
 		g_object_set_data_full (
 			G_OBJECT (item), "timezone",
@@ -904,7 +904,7 @@ e_day_view_time_item_on_set_divisions (GtkWidget *item,
 	day_view = e_day_view_time_item_get_day_view (time_item);
 	g_return_if_fail (day_view != NULL);
 
-	if (!gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (item)))
+	if (!e_gtk_toggle_button_get_active (item))
 		return;
 
 	divisions = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (item), "divisions"));

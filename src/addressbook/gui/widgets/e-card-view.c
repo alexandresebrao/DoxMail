@@ -7,6 +7,7 @@
 
 #include <glib/gi18n-lib.h>
 #include <gtk/gtk.h>
+#include <e-util/e-util.h>
 
 #include "util/eab-book-util.h"
 #include "e-alphabet-box.h"

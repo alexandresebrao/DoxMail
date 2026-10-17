@@ -180,7 +180,7 @@ on_idle_create_widget (gpointer user_data)
 		"vexpand", TRUE,
 		"hscrollbar-policy", GTK_POLICY_AUTOMATIC,
 		"vscrollbar-policy", GTK_POLICY_AUTOMATIC,
-		"shadow-type", GTK_SHADOW_NONE,
+		"has-frame", FALSE,
 		"kinetic-scrolling", TRUE,
 		"min-content-height", 120,
 		"propagate-natural-height", TRUE,

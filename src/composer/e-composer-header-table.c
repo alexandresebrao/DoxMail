@@ -666,11 +666,15 @@ composer_header_table_size_allocated_idle_cb (gpointer user_data)
 
 static void
 composer_header_table_size_allocate (GtkWidget *widget,
-				     GtkAllocation *allocation)
+                                     gint width,
+                                     gint height,
+                                     gint baseline)
 {
+	GtkAllocation allocation_local = { 0, 0, width, height };
+	GtkAllocation *allocation = &allocation_local;
 	EComposerHeaderTable *self = E_COMPOSER_HEADER_TABLE (widget);
 
-	GTK_WIDGET_CLASS (e_composer_header_table_parent_class)->size_allocate (widget, allocation);
+	GTK_WIDGET_CLASS (e_composer_header_table_parent_class)->size_allocate (widget, width, height, baseline);
 
 	if (allocation->width != self->priv->last_allocated_width && !self->priv->size_allocated_idle_id)
 		self->priv->size_allocated_idle_id = g_idle_add_full (G_PRIORITY_HIGH_IDLE + 50, composer_header_table_size_allocated_idle_cb, self, NULL);

@@ -3818,13 +3818,14 @@ eve_update (EVCardEditor *self)
 #define ADD_MENU_ITEM_INDEX "eve-add-menu-item-index"
 
 static void
-eve_add_menu_item_activated_cb (GtkMenuItem *menu_item,
+eve_add_menu_item_activated_cb (GSimpleAction *action,
+				GVariant *parameter,
 				gpointer user_data)
 {
 	EVCardEditor *self = user_data;
 	EVCardEditorSection *section;
 	EVCardEditorItem *item;
-	guint item_index = GPOINTER_TO_UINT (g_object_get_data (G_OBJECT (menu_item), ADD_MENU_ITEM_INDEX));
+	guint item_index = GPOINTER_TO_UINT (g_object_get_data (G_OBJECT (action), ADD_MENU_ITEM_INDEX));
 
 	g_return_if_fail (item_index >= 1 && item_index <= G_N_ELEMENTS (add_items));
 
@@ -3838,12 +3839,13 @@ eve_add_menu_item_activated_cb (GtkMenuItem *menu_item,
 	eve_focus_added_item (item);
 }
 
+/* a GMenu for the Add button; each item has its own "eve-add.item-N"
+ * action, so it can be insensitive on its own */
 static void
 eve_update_add_menu (EVCardEditor *self)
 {
-	GtkWidget *menu;
-	GtkMenuShell *menu_shell;
-	GtkMenuShell *submenu_shell = NULL;
+	GMenu *menu, *section, *submenu = NULL;
+	GSimpleActionGroup *actions;
 	GHashTable *unused_onces;
 	const gchar *need_submenu = NULL;
 	gboolean has_supported_fields;
@@ -3856,8 +3858,10 @@ eve_update_add_menu (EVCardEditor *self)
 
 	has_supported_fields = self->supported_fields && g_hash_table_size (self->supported_fields) > 0;
 
-	menu = gtk_menu_new ();
-	menu_shell = GTK_MENU_SHELL (menu);
+	menu = g_menu_new ();
+	section = g_menu_new ();
+	g_menu_append_section (menu, NULL, G_MENU_MODEL (section));
+	actions = g_simple_action_group_new ();
 
 	unused_onces = g_hash_table_new (g_direct_hash, g_direct_equal);
 
@@ -3866,14 +3870,14 @@ eve_update_add_menu (EVCardEditor *self)
 			gboolean used = FALSE;
 
 			if (self->sections) {
-				EVCardEditorSection *section;
+				EVCardEditorSection *sect;
 				guint n_items, jj;
 
-				section = g_hash_table_lookup (self->sections, GINT_TO_POINTER (add_items[ii].kind));
-				n_items = e_vcard_editor_section_get_n_items (section);
+				sect = g_hash_table_lookup (self->sections, GINT_TO_POINTER (add_items[ii].kind));
+				n_items = e_vcard_editor_section_get_n_items (sect);
 
 				for (jj = 0; jj < n_items && !used; jj++) {
-					EVCardEditorItem *item = e_vcard_editor_section_get_item (section, jj);
+					EVCardEditorItem *item = e_vcard_editor_section_get_item (sect, jj);
 
 					used = e_vcard_editor_item_get_field_id (item) == add_items[ii].field_id;
 				}
@@ -3885,57 +3889,62 @@ eve_update_add_menu (EVCardEditor *self)
 	}
 
 	for (ii = 0; ii < G_N_ELEMENTS (add_items); ii++) {
-		GtkWidget *menu_item;
+		GSimpleAction *action;
+		gchar *name, *detailed;
 
 		if (add_items[ii].cardinality == 1 && add_items[ii].field_id != E_CONTACT_FIELD_LAST &&
 		    !g_hash_table_contains (unused_onces, GINT_TO_POINTER (add_items[ii].field_id)))
 			continue;
 
 		if (add_items[ii].kind == SECTION_KIND_SEPARATOR) {
-			if (need_submenu)
+			if (need_submenu || submenu)
 				continue;
 
-			menu_item = gtk_separator_menu_item_new ();
+			g_object_unref (section);
+			section = g_menu_new ();
+			g_menu_append_section (menu, NULL, G_MENU_MODEL (section));
+			continue;
 		} else if (add_items[ii].kind == SECTION_KIND_SUBMENU_START) {
-			g_warn_if_fail (submenu_shell == NULL && need_submenu == NULL);
+			g_warn_if_fail (submenu == NULL && need_submenu == NULL);
 			need_submenu = _(add_items[ii].label);
 			continue;
 		} else if (add_items[ii].kind == SECTION_KIND_SUBMENU_END) {
-			g_warn_if_fail (submenu_shell != NULL || need_submenu != NULL);
-			submenu_shell = NULL;
+			g_warn_if_fail (submenu != NULL || need_submenu != NULL);
+			g_clear_object (&submenu);
 			need_submenu = NULL;
 			continue;
-		} else {
-			menu_item = gtk_menu_item_new_with_mnemonic (_(add_items[ii].label));
-			g_object_set_data (G_OBJECT (menu_item), ADD_MENU_ITEM_INDEX, GUINT_TO_POINTER (ii + 1));
-			g_signal_connect (menu_item, "activate",
-				G_CALLBACK (eve_add_menu_item_activated_cb), self);
-
-			if (add_items[ii].field_id != E_CONTACT_FIELD_LAST && has_supported_fields)
-				gtk_widget_set_sensitive (menu_item, eve_is_supported_field (self, add_items[ii].field_id));
 		}
 
 		if (need_submenu) {
-			GtkWidget *submenu, *subitem;
-
-			g_warn_if_fail (submenu_shell == NULL);
-
-			submenu = gtk_menu_new ();
-			subitem = gtk_menu_item_new_with_mnemonic (need_submenu);
-			gtk_menu_item_set_submenu (GTK_MENU_ITEM (subitem), submenu);
-			submenu_shell = GTK_MENU_SHELL (submenu);
-			gtk_menu_shell_append (menu_shell, subitem);
-
+			submenu = g_menu_new ();
+			g_menu_append_submenu (section, need_submenu, G_MENU_MODEL (submenu));
 			need_submenu = NULL;
 		}
 
-		gtk_menu_shell_append (submenu_shell ? submenu_shell : menu_shell, menu_item);
+		name = g_strdup_printf ("item-%u", ii + 1);
+		detailed = g_strconcat ("eve-add.", name, NULL);
+
+		action = g_simple_action_new (name, NULL);
+		g_object_set_data (G_OBJECT (action), ADD_MENU_ITEM_INDEX, GUINT_TO_POINTER (ii + 1));
+		g_signal_connect (action, "activate", G_CALLBACK (eve_add_menu_item_activated_cb), self);
+		if (add_items[ii].field_id != E_CONTACT_FIELD_LAST && has_supported_fields)
+			g_simple_action_set_enabled (action, eve_is_supported_field (self, add_items[ii].field_id));
+		g_action_map_add_action (G_ACTION_MAP (actions), G_ACTION (action));
+		g_object_unref (action);
+
+		g_menu_append (submenu ? submenu : section, _(add_items[ii].label), detailed);
+
+		g_free (detailed);
+		g_free (name);
 	}
 
-	gtk_widget_set_visible (menu, TRUE);
+	gtk_widget_insert_action_group (self->add_menu_button, "eve-add", G_ACTION_GROUP (actions));
+	gtk_menu_button_set_menu_model (GTK_MENU_BUTTON (self->add_menu_button), G_MENU_MODEL (menu));
 
-	gtk_menu_button_set_popup (GTK_MENU_BUTTON (self->add_menu_button), menu);
-
+	g_clear_object (&submenu);
+	g_object_unref (section);
+	g_object_unref (actions);
+	g_object_unref (menu);
 	g_hash_table_destroy (unused_onces);
 }
 
@@ -4394,18 +4403,10 @@ static void
 eve_add_button_with_menu_clicked_cb (GtkWidget *button,
 				     gpointer user_data)
 {
-	GtkMenu *menu = user_data;
-	GdkEvent *event;
+	GMenuModel *menu = user_data;
 
-	g_object_set (menu,
-		"anchor-hints", GDK_ANCHOR_FLIP_Y | GDK_ANCHOR_SLIDE | GDK_ANCHOR_RESIZE,
-		NULL);
-
-	event = e_gtk_get_current_event ();
-
-	gtk_menu_popup_at_widget (menu, button, GDK_GRAVITY_SOUTH_WEST, GDK_GRAVITY_NORTH_WEST, event);
-
-	g_clear_pointer (&event, gdk_event_unref);
+	/* below the button */
+	e_util_popup_menu_model (menu, button, 0, gtk_widget_get_height (button));
 }
 
 static void
@@ -4674,7 +4675,8 @@ e_vcard_editor_constructed (GObject *object)
 	g_signal_connect (widget, "response",
 		G_CALLBACK (eve_info_bar_response_cb), self);
 
-	container = gtk_info_bar_get_content_area (GTK_INFO_BAR (widget));
+	/* GTK 4 info bars take children directly */
+	container = widget;
 
 	widget = gtk_label_new (_("Saving changes, please wait…"));
 	g_object_set (widget,
@@ -4769,7 +4771,7 @@ e_vcard_editor_constructed (GObject *object)
 		"vexpand", TRUE,
 		"hscrollbar-policy", GTK_POLICY_AUTOMATIC,
 		"vscrollbar-policy", GTK_POLICY_AUTOMATIC,
-		"shadow-type", GTK_SHADOW_NONE,
+		"has-frame", FALSE,
 		"kinetic-scrolling", TRUE,
 		"min-content-height", 120,
 		"propagate-natural-height", TRUE,
@@ -4861,37 +4863,45 @@ e_vcard_editor_constructed (GObject *object)
 			g_signal_connect (button, "clicked", G_CALLBACK (eve_section_add_item_cb), sections[ii].add_item_func);
 		} else if (sections[ii].kind == SECTION_KIND_WEB) {
 			GtkButton *button;
-			GtkWidget *menu;
-			GtkMenuShell *menu_shell;
+			GMenu *menu;
+			GSimpleActionGroup *actions;
 			guint jj;
 
 			button = e_vcard_editor_section_get_add_button (E_VCARD_EDITOR_SECTION (widget));
 
 			gtk_widget_set_visible (GTK_WIDGET (button), TRUE);
 
-			menu = gtk_menu_new ();
-			menu_shell = GTK_MENU_SHELL (menu);
+			menu = g_menu_new ();
+			actions = g_simple_action_group_new ();
 
 			for (jj = 0; jj < G_N_ELEMENTS (add_items); jj++) {
-				GtkWidget *menu_item;
+				GSimpleAction *action;
+				gchar *name, *detailed;
 
 				if (add_items[jj].kind != sections[ii].kind || !add_items[jj].add_item_func)
 					continue;
 
-				menu_item = gtk_menu_item_new_with_mnemonic (_(add_items[jj].label));
-				g_object_set_data (G_OBJECT (menu_item), ADD_MENU_ITEM_INDEX, GUINT_TO_POINTER (jj + 1));
-				g_signal_connect (menu_item, "activate",
-					G_CALLBACK (eve_add_menu_item_activated_cb), self);
+				name = g_strdup_printf ("item-%u", jj + 1);
+				detailed = g_strconcat ("eve-web.", name, NULL);
 
-				gtk_menu_shell_append (menu_shell, menu_item);
+				action = g_simple_action_new (name, NULL);
+				g_object_set_data (G_OBJECT (action), ADD_MENU_ITEM_INDEX, GUINT_TO_POINTER (jj + 1));
+				g_signal_connect (action, "activate",
+					G_CALLBACK (eve_add_menu_item_activated_cb), self);
+				g_action_map_add_action (G_ACTION_MAP (actions), G_ACTION (action));
+				g_object_unref (action);
+
+				g_menu_append (menu, _(add_items[jj].label), detailed);
+
+				g_free (detailed);
+				g_free (name);
 			}
 
-			gtk_widget_set_visible (menu, TRUE);
-
-			gtk_menu_attach_to_widget (GTK_MENU (menu), GTK_WIDGET (button), NULL);
+			gtk_widget_insert_action_group (GTK_WIDGET (button), "eve-web", G_ACTION_GROUP (actions));
+			g_object_unref (actions);
 
 			g_signal_connect_data (button, "clicked",
-				G_CALLBACK (eve_add_button_with_menu_clicked_cb), g_object_ref_sink (menu), (GClosureNotify) g_object_unref, 0);
+				G_CALLBACK (eve_add_button_with_menu_clicked_cb), menu, (GClosureNotify) g_object_unref, 0);
 		}
 	}
 

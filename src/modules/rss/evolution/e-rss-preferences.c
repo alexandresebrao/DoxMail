@@ -1714,7 +1714,7 @@ e_rss_preferences_new (EPreferencesWindow *window)
 		"margin-start", 12,
 		"hscrollbar-policy", GTK_POLICY_AUTOMATIC,
 		"vscrollbar-policy", GTK_POLICY_AUTOMATIC,
-		"shadow-type", GTK_SHADOW_IN,
+		"has-frame", TRUE,
 		NULL);
 
 	list_store = gtk_list_store_new (N_COLUMNS,

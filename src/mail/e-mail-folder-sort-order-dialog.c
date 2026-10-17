@@ -19,6 +19,7 @@
 
 #include <glib/gi18n-lib.h>
 #include <gtk/gtk.h>
+#include <e-util/e-util.h>
 
 #include "em-folder-tree.h"
 #include "em-folder-tree-model.h"

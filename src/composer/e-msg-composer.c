@@ -2291,12 +2291,12 @@ msg_composer_paste_clipboard_targets (EMsgComposer *composer,
 	editor = e_msg_composer_get_editor (composer);
 
 	if (e_html_editor_get_mode (editor) != E_CONTENT_EDITOR_MODE_HTML &&
-	    gtk_targets_include_image (targets, n_targets, TRUE)) {
+	    e_gtk_targets_include_image (targets, n_targets, TRUE)) {
 		e_composer_paste_image (composer, clipboard);
 		return TRUE;
 	}
 
-	if (gtk_targets_include_uri (targets, n_targets)) {
+	if (e_gtk_targets_include_uri (targets, n_targets)) {
 		e_composer_paste_uris (composer, clipboard);
 		return TRUE;
 	}
@@ -6768,8 +6768,7 @@ e_msg_composer_can_close (EMsgComposer *composer,
 	    e_content_editor_is_malfunction (cnt_editor))
 		return TRUE;
 
-	window = e_gtk_widget_get_surface (widget);
-	gtk_window_present (window);
+		gtk_window_present (GTK_WINDOW (widget));
 
 	table = e_msg_composer_get_header_table (composer);
 	subject = e_composer_header_table_get_subject (table);

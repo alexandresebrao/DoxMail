@@ -7,6 +7,7 @@
 
 #include <glib/gi18n.h>
 #include <gtk/gtk.h>
+#include <e-util/e-util.h>
 
 #include "e-estimated-duration-entry.h"
 

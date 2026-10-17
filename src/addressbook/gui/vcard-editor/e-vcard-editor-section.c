@@ -7,12 +7,15 @@
 
 #include <glib/gi18n-lib.h>
 #include <gtk/gtk.h>
+#include <e-util/e-util.h>
 
 #include "e-vcard-editor-item.h"
 #include "e-vcard-editor-section.h"
 
 struct _EVCardEditorSection {
-	GtkExpander parent_object;
+	EGtkBin parent_object;
+
+	GtkWidget *expander; /* GtkExpander is final with GTK 4 */
 
 	EVCardEditorSectionReadFunc fill_section_func;
 	EVCardEditorSectionWriteFunc fill_contact_func;
@@ -36,7 +39,7 @@ enum {
 
 static guint signals[LAST_SIGNAL];
 
-G_DEFINE_TYPE (EVCardEditorSection, e_vcard_editor_section, GTK_TYPE_EXPANDER)
+G_DEFINE_TYPE (EVCardEditorSection, e_vcard_editor_section, E_GTK_TYPE_BIN)
 
 static void
 eve_section_maybe_move_add_button (EVCardEditorSection *self)
@@ -57,22 +60,10 @@ eve_section_notify_expanded_cb (GObject *object,
 				GParamSpec *param,
 				gpointer user_data)
 {
-	EVCardEditorSection *self = E_VCARD_EDITOR_SECTION (object);
+	EVCardEditorSection *self = E_VCARD_EDITOR_SECTION (user_data);
 
 	if (self->top_box)
-		gtk_widget_set_sensitive (GTK_WIDGET (self->top_box), gtk_expander_get_expanded (GTK_EXPANDER (self)));
-}
-
-static void
-e_vcard_editor_section_show_all (GtkWidget *widget)
-{
-	EVCardEditorSection *self = E_VCARD_EDITOR_SECTION (widget);
-	gboolean was_visible = self->add_button ? gtk_widget_get_visible (self->add_button) : FALSE;
-
-	GTK_WIDGET_CLASS (e_vcard_editor_section_parent_class)->show_all (widget);
-
-	if (self->add_button)
-		gtk_widget_set_visible (self->add_button, was_visible);
+		gtk_widget_set_sensitive (GTK_WIDGET (self->top_box), gtk_expander_get_expanded (GTK_EXPANDER (self->expander)));
 }
 
 static void
@@ -94,13 +85,10 @@ static void
 e_vcard_editor_section_class_init (EVCardEditorSectionClass *klass)
 {
 	GObjectClass *object_class;
-	GtkWidgetClass *widget_class;
 
 	object_class = G_OBJECT_CLASS (klass);
 	object_class->dispose = e_vcard_editor_section_dispose;
 
-	widget_class = GTK_WIDGET_CLASS (klass);
-	widget_class->show_all = e_vcard_editor_section_show_all;
 
 	signals[CHANGED] = g_signal_new (
 		"changed",
@@ -120,13 +108,16 @@ e_vcard_editor_section_init (EVCardEditorSection *self)
 	self->items = g_ptr_array_new_with_free_func (g_object_unref);
 	self->single_line = TRUE;
 
+	self->expander = gtk_expander_new (NULL);
+	e_gtk_bin_set_bin_child (E_GTK_BIN (self), self->expander);
+
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 12);
 	g_object_set (widget,
 		"visible", TRUE,
 		"margin-start", 12,
 		NULL);
 	gtk_widget_remove_css_class (widget, "vertical");
-	e_gtk_container_add (self, widget);
+	gtk_expander_set_child (GTK_EXPANDER (self->expander), widget);
 
 	self->top_box = GTK_BOX (widget);
 
@@ -153,8 +144,8 @@ e_vcard_editor_section_init (EVCardEditorSection *self)
 
 	self->add_button = g_object_ref_sink (widget);
 
-	g_signal_connect (self, "notify::expanded",
-		G_CALLBACK (eve_section_notify_expanded_cb), NULL);
+	g_signal_connect (self->expander, "notify::expanded",
+		G_CALLBACK (eve_section_notify_expanded_cb), self);
 }
 
 GtkWidget *
@@ -188,7 +179,7 @@ e_vcard_editor_section_new (struct _EVCardEditor *editor, /* transfer none */
 		"margin-start", 4,
 		"ellipsize", PANGO_ELLIPSIZE_END,
 		NULL);
-	gtk_expander_set_label_widget (GTK_EXPANDER (self), widget);
+	gtk_expander_set_label_widget (GTK_EXPANDER (self->expander), widget);
 
 	g_clear_pointer (&bold, pango_attr_list_unref);
 
@@ -322,7 +313,7 @@ e_vcard_editor_section_take_item (EVCardEditorSection *self,
 
 		g_signal_connect_object (item, "changed", G_CALLBACK (e_vcard_editor_section_item_changed_cb), self, G_CONNECT_SWAPPED);
 		gtk_widget_set_visible (GTK_WIDGET (self), TRUE);
-		gtk_expander_set_expanded (GTK_EXPANDER (self), TRUE);
+		gtk_expander_set_expanded (GTK_EXPANDER (self->expander), TRUE);
 
 		eve_section_maybe_move_add_button (self);
 		self->changed = TRUE;

@@ -739,7 +739,7 @@ mail_browser_constructed (GObject *object)
 		G_BINDING_SYNC_CREATE);
 
 	e_ui_manager_set_action_groups_widget (browser->priv->ui_manager, GTK_WIDGET (browser));
-	e_gtk_window_add_accel_group (GTK_WINDOW (browser), e_ui_manager_get_accel_group (browser->priv->ui_manager));
+	gtk_widget_add_controller (GTK_WIDGET (GTK_WINDOW (browser)), e_ui_manager_create_shortcut_controller (browser->priv->ui_manager));
 
 	/* Configure an EFocusTracker to manage selection actions. */
 

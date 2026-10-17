@@ -272,7 +272,7 @@ e_cal_day_column_place_component (ECalDayColumn *self,
 		allocation.x = first_col_offset + (item->span_index * (one_column_width + COLUMNS_GAP));
 	allocation.width = one_column_width;
 
-	gtk_widget_size_allocate (comp_data->widget, &allocation);
+	gtk_widget_size_allocate (comp_data->widget, &allocation, -1);
 	gtk_widget_set_size_request (comp_data->widget, allocation.width, allocation.height);
 
 	if (is_existing)

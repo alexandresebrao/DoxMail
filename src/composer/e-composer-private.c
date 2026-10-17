@@ -428,7 +428,12 @@ e_composer_private_constructed (EMsgComposer *composer)
 	gtk_widget_show (widget);
 
 	widget = e_html_editor_get_content_box (editor);
-	gtk_widget_reparent (widget, container);
+	/* GTK 4 has no reparenting */
+	g_object_ref (widget);
+	if (gtk_widget_get_parent (widget))
+		e_gtk_container_remove (gtk_widget_get_parent (widget), widget);
+	e_gtk_container_add (container, widget);
+	g_object_unref (widget);
 
 	/* Construct the picture gallery. */
 

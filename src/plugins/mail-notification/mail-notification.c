@@ -24,6 +24,7 @@
 #include <string.h>
 #include <glib/gi18n.h>
 #include <gtk/gtk.h>
+#include <e-util/e-util.h>
 #include <gio/gio.h>
 
 #ifndef G_OS_WIN32
@@ -1171,7 +1172,7 @@ get_config_widget_accounts (void)
 		"vexpand", TRUE,
 		"hscrollbar-policy", GTK_POLICY_AUTOMATIC,
 		"vscrollbar-policy", GTK_POLICY_AUTOMATIC,
-		"shadow-type", GTK_SHADOW_IN,
+		"has-frame", TRUE,
 		NULL);
 
 	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);

@@ -281,7 +281,7 @@ add_empty_entry (EContactEditorDynTable *dyntable)
 	entry = class->widget_create (dyntable);
 	g_object_set (entry, "margin-start", 2, NULL);
 	g_object_set (entry, "margin-end", 5, NULL);
-	gtk_widget_set_hexpand (entry, GTK_EXPAND);
+	gtk_widget_set_hexpand (entry, TRUE);
 	gtk_grid_attach (grid, entry, col + 1, row, 1, 1);
 	gtk_widget_show (entry);
 

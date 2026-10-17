@@ -126,11 +126,15 @@ e_cal_component_widget_style_updated (GtkWidget *widget)
 
 static void
 e_cal_component_widget_size_allocate (GtkWidget *widget,
-				      GtkAllocation *allocation)
+                                      gint width,
+                                      gint height,
+                                      gint baseline)
 {
+	GtkAllocation allocation_local = { 0, 0, width, height };
+	GtkAllocation *allocation = &allocation_local;
 	ECalComponentWidget *self = E_CAL_COMPONENT_WIDGET (widget);
 
-	GTK_WIDGET_CLASS (e_cal_component_widget_parent_class)->size_allocate (widget, allocation);
+	GTK_WIDGET_CLASS (e_cal_component_widget_parent_class)->size_allocate (widget, width, height, baseline);
 
 	gtk_label_set_lines (GTK_LABEL (self->text_label), MAX (allocation->height / self->row_height, 1));
 }

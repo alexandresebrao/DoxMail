@@ -26,6 +26,7 @@
 #include <string.h>
 
 #include <gtk/gtk.h>
+#include <e-util/e-util.h>
 #include <glib/gi18n.h>
 #include <gdk/gdkkeysyms.h>
 
@@ -1442,7 +1443,7 @@ contact_list_editor_constructed (GObject *object)
 	editor->priv->builder = gtk_builder_new ();
 	e_load_ui_builder_definition (
 		editor->priv->builder, "contact-list-editor.ui");
-	gtk_builder_connect_signals (editor->priv->builder, NULL);
+	/* GTK 4 builders connect signals while building */
 
 	/* Embed a pointer to the EContactListEditor in the top-level
 	 * widget.  Signal handlers can then access the pointer from any
@@ -1459,7 +1460,7 @@ contact_list_editor_constructed (GObject *object)
 		selection, "changed",
 		G_CALLBACK (contact_list_editor_selection_changed_cb), editor);
 
-	gtk_tree_view_enable_model_drag_dest (view, NULL, 0, GDK_ACTION_LINK);
+	gtk_tree_view_enable_model_drag_dest (view, NULL, GDK_ACTION_LINK);
 	e_drag_dest_add_directory_targets (WIDGET (TREE_VIEW));
 	e_gtk_drag_dest_add_text_targets (WIDGET (TREE_VIEW));
 
@@ -1515,8 +1516,7 @@ contact_list_editor_raise (EABEditor *editor)
 {
 	GdkSurface *window;
 
-	window = e_gtk_widget_get_surface (WIDGET (DIALOG));
-	gtk_window_present (window);
+		gtk_window_present (GTK_WINDOW (WIDGET (DIALOG)));
 }
 
 static void

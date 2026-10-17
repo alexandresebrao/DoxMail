@@ -494,7 +494,15 @@ def r_similar_surface(args, *_):
     return None
 
 
+def r_size_allocate(args, *_):
+    """GTK 4 takes a baseline too"""
+    if len(args) == 2:
+        return call('gtk_widget_size_allocate', args + ['-1'])
+    return None
+
+
 CALLS = {
+    'gtk_widget_size_allocate': r_size_allocate,
     'gdk_window_create_similar_surface': r_similar_surface,
     'gdk_surface_create_similar_surface': r_similar_surface,
     'gtk_tree_view_get_tooltip_context': r_tooltip_context,
@@ -589,6 +597,17 @@ REGEX_RENAMES = [
     # GtkBin subclasses -> EGtkBin of e-gtk4-compat
     (r'\bGTK_TYPE_BIN\b', 'E_GTK_TYPE_BIN'),
     (r'\bGTK_TYPE_EVENT_BOX\b', 'E_GTK_TYPE_BIN'),
+    (r'(\w+) = e_gtk_widget_get_surface \(([^;]*)\);\n(\s*)gtk_window_present \(\1\);', r'\3gtk_window_present (GTK_WINDOW (\2));'),
+    (r'\bgtk_targets_include_(image|uri)\s*\(', r'e_gtk_targets_include_\1 ('),
+    (r'\bgtk_builder_connect_signals \([^;]*\);', '/* GTK 4 builders connect signals while building */'),
+    (r'\bgtk_container_(get|set)_focus_chain\s*\(', r'e_gtk_container_\1_focus_chain ('),
+    (r'\bgtk_check_menu_item_(get|set)_active \(\s*GTK_CHECK_MENU_ITEM \(([^()]*)\)', r'e_gtk_toggle_button_\1_active (\2'),
+    (r'\bgtk_menu_button_set_popup\s*\(', 'gtk_menu_button_set_popover ('),
+    (r'\be_gtk_window_add_accel_group \(\s*([^,;]+?),\s*e_ui_manager_get_accel_group \(([^()]*(?:\([^()]*\))?[^()]*)\)\);', r'gtk_widget_add_controller (GTK_WIDGET (\1), e_ui_manager_create_shortcut_controller (\2));'),
+    # scrolled windows and frames only have or have not a frame
+    (r'"shadow-type", GTK_SHADOW_NONE,', '"has-frame", FALSE,'),
+    (r'"shadow-type", GTK_SHADOW_(?:IN|OUT|ETCHED_IN|ETCHED_OUT),', '"has-frame", TRUE,'),
+    (r'\bgtk_window_present \(\s*e_gtk_widget_get_surface \(([^()]*(?:\([^()]*\))?[^()]*)\)\s*\)', r'gtk_window_present (GTK_WINDOW (\1))'),
     # the default modifier intents of GTK 3
     (r'\b(?:gtk_widget_get_modifier_mask|gdk_keymap_get_modifier_mask)\s*\((?:[^()]|\([^()]*\)|\((?:[^()]|\([^()]*\))*\))*?GDK_MODIFIER_INTENT_MODIFY_SELECTION\s*\)', 'GDK_CONTROL_MASK'),
     (r'\b(?:gtk_widget_get_modifier_mask|gdk_keymap_get_modifier_mask)\s*\((?:[^()]|\([^()]*\)|\((?:[^()]|\([^()]*\))*\))*?GDK_MODIFIER_INTENT_EXTEND_SELECTION\s*\)', 'GDK_SHIFT_MASK'),

@@ -340,6 +340,12 @@ GSList *	e_gtk_radio_button_get_group	(gpointer button);
 void		e_gtk_radio_button_join_group	(gpointer button,
 						 gpointer group_source);
 
+/* GTK 4 has no focus chains; the default order applies */
+gboolean	e_gtk_container_get_focus_chain	(gpointer container,
+						 GList **focusable_widgets);
+void		e_gtk_container_set_focus_chain	(gpointer container,
+						 GList *focusable_widgets);
+
 /* gtk_main() and gtk_main_quit(): nested GMainLoop-s */
 void		e_gtk_main			(void);
 void		e_gtk_main_quit			(void);

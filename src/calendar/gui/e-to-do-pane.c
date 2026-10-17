@@ -20,6 +20,7 @@
 #include <glib.h>
 #include <glib/gi18n-lib.h>
 #include <gtk/gtk.h>
+#include <e-util/e-util.h>
 
 #include <libedataserverui4/libedataserverui4.h>
 #include <libecal/libecal.h>
@@ -2399,7 +2400,7 @@ etdp_fill_popup_menu (EToDoPane *to_do_pane,
 	gtk_menu_shell_append (menu_shell, item);
 
 	item = gtk_check_menu_item_new_with_mnemonic (_("_Show Tasks without Due date"));
-	gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (item), to_do_pane->priv->show_no_duedate_tasks);
+	e_gtk_toggle_button_set_active (item, to_do_pane->priv->show_no_duedate_tasks);
 	g_signal_connect (item, "toggled",
 		G_CALLBACK (etdp_show_tasks_without_due_date_cb), to_do_pane);
 	gtk_widget_show (item);

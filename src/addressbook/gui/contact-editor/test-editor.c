@@ -23,6 +23,7 @@
 
 #include <stdlib.h>
 #include <gtk/gtk.h>
+#include <e-util/e-util.h>
 #include "e-contact-editor.h"
 #include "ebook/e-card.h"
 
