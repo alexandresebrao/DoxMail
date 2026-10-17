@@ -277,6 +277,9 @@ alert_bar_constructed (GObject *object)
 
 	g_queue_init (&self->priv->alerts);
 
+	/* GTK 4 widgets are visible by default; the bar shows with an alert */
+	gtk_widget_set_visible (GTK_WIDGET (self), FALSE);
+
 	G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 	widget = gtk_info_bar_new ();
 	gtk_widget_set_hexpand (widget, TRUE);

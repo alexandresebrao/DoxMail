@@ -1842,9 +1842,9 @@ e_markdown_editor_toggle_preview (EMarkdownEditor *self,
 	buffer = gtk_text_view_get_buffer (self->priv->text_view);
 
 	if (active) {
-		GtkPaned *paned;
+		GtkWidget *paned; /* EPaned wraps the final GtkPaned */
 
-		paned = GTK_PANED (e_paned_new (GTK_ORIENTATION_HORIZONTAL));
+		paned = e_paned_new (GTK_ORIENTATION_HORIZONTAL);
 
 		g_object_set (paned,
 			"halign", GTK_ALIGN_FILL,

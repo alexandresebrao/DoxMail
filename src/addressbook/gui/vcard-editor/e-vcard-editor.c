@@ -2707,7 +2707,7 @@ eve_focus_added_item (EVCardEditorItem *item)
 		GtkWidget *widget;
 
 		widget = e_vcard_editor_item_get_data_widget (item, 0);
-		g_signal_connect (widget, "size-allocate",
+		g_signal_connect (e_gtk_widget_size_allocations (widget), "size-allocate",
 			G_CALLBACK (eve_focus_on_size_allocate_cb), NULL);
 	}
 }

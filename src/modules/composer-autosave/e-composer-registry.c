@@ -114,9 +114,8 @@ composer_registry_restore_orphans (EComposerRegistry *registry,
 	}
 }
 
-static gboolean
+static void
 composer_registry_map_event_cb (GtkWindow *parent,
-                                GdkEvent *event,
                                 EComposerRegistry *registry)
 {
 	composer_registry_restore_orphans (registry, parent);
@@ -127,8 +126,6 @@ composer_registry_map_event_cb (GtkWindow *parent,
 	g_signal_handler_disconnect (
 		parent, registry->priv->map_event_handler_id);
 	registry->priv->map_event_handler_id = 0;
-
-	return FALSE;
 }
 
 static void
@@ -152,7 +149,7 @@ composer_registry_window_added_cb (GtkApplication *application,
 		gulong handler_id;
 
 		handler_id = g_signal_connect (
-			window, "map-event",
+			window, "map",
 			G_CALLBACK (composer_registry_map_event_cb),
 			registry);
 		registry->priv->map_event_handler_id = handler_id;

@@ -37,6 +37,11 @@ gpointer	e_gtk_widget_legacy_events	(gpointer widget);
  * this; TRUE keeps the window open, as with GTK 3 */
 gpointer	e_gtk_window_delete_events	(gpointer window);
 
+/* "size-allocate" (void (GtkWidget *, GtkAllocation *)) is emitted after
+ * widgets passed through this got allocated, with the allocation in their
+ * own coordinates; the size_allocate method of their class is wrapped */
+gpointer	e_gtk_widget_size_allocations	(gpointer widget);
+
 /* "style-updated" (void (GtkWidget *)) is emitted for widgets passed
  * through this when the theme, the dark preference or the font change */
 gpointer	e_gtk_widget_style_updates	(gpointer widget);

@@ -1062,6 +1062,10 @@ web_view_constructor (GType type,
 				webkit_web_context_set_cache_model (web_context, WEBKIT_CACHE_MODEL_DOCUMENT_VIEWER);
 				webkit_web_context_set_web_process_extensions_directory (web_context, EVOLUTION_WEB_EXTENSIONS_DIR);
 				webkit_web_context_add_path_to_sandbox (web_context, EVOLUTION_WEBKITDATADIR, TRUE);
+				/* DoxMail: the extensions link the private libraries, which
+				 * the web process sandbox hides outside of /usr */
+				if (!g_str_has_prefix (EVOLUTION_PRIVLIBDIR, "/usr/"))
+					webkit_web_context_add_path_to_sandbox (web_context, EVOLUTION_PRIVLIBDIR, TRUE);
 
 				plugins_path = g_build_filename (e_get_user_data_dir (), "preview-plugins", NULL);
 				if (g_file_test (plugins_path, G_FILE_TEST_IS_DIR))
@@ -1821,7 +1825,7 @@ web_view_constructed (GObject *object)
 
 	g_clear_object (&settings);
 
-	g_signal_connect_object (webkit_web_view_get_context (WEBKIT_WEB_VIEW (web_view)), "initialize-web-extensions",
+	g_signal_connect_object (webkit_web_view_get_context (WEBKIT_WEB_VIEW (web_view)), "initialize-web-process-extensions",
 		G_CALLBACK (e_web_view_initialize_web_extensions_cb), web_view, 0);
 
 	/* Chain up to parent's constructed() method. */
@@ -3633,7 +3637,6 @@ e_web_view_get_default_webkit_settings (void)
 		"enable-html5-database", FALSE,
 		"enable-dns-prefetching", FALSE,
 		"enable-html5-local-storage", FALSE,
-		"enable-java", FALSE,
 		"enable-javascript", TRUE, /* Needed for JavaScriptCore API to work */
 		"enable-javascript-markup", FALSE, /* Discards user-provided javascript in HTML */
 		"enable-offline-web-application-cache", FALSE,

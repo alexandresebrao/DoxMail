@@ -601,6 +601,7 @@ target_compile_definitions(evolution-util PRIVATE
 	-DEVOLUTION_UIDIR=\"${uidir}\"
 	-DEVOLUTION_RULEDIR=\"${privdatadir}\"
 	-DEVOLUTION_WEB_EXTENSIONS_DIR=\"${webextensionsdir}\"
+	-DEVOLUTION_PRIVLIBDIR=\"${privlibdir}\"
 	-DEVOLUTION_WEBKITDATADIR=\"${webkitdatadir}\"
 	-DEVOLUTION_TESTGIOMODULESDIR=\"${CMAKE_CURRENT_BINARY_DIR}\"
 	-DEVOLUTION_TESTTOPSRCDIR=\"${CMAKE_SOURCE_DIR}\"

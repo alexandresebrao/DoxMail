@@ -3321,6 +3321,10 @@ e_util_resize_window_for_screen (GtkWindow *window,
 	for (link = children; link; link = g_slist_next (link)) {
 		GtkWidget *widget = link->data;
 
+		/* GtkScrolledWindow is final with GTK 4: pages wrap one */
+		if (E_GTK_IS_BIN (widget))
+			widget = e_gtk_bin_get_bin_child (E_GTK_BIN (widget));
+
 		if (GTK_IS_SCROLLED_WINDOW (widget))
 			widget = e_gtk_bin_get_child (widget);
 

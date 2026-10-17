@@ -1316,7 +1316,7 @@ e_comp_editor_event_constructed (GObject *object)
 
 	event_editor->priv->day_column_vadjustment = g_object_ref (gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW (scrolled_window)));
 
-	g_signal_connect (scrolled_window, "size-allocate",
+	g_signal_connect (e_gtk_widget_size_allocations (scrolled_window), "size-allocate",
 		G_CALLBACK (e_comp_editor_event_day_column_scrolled_size_allocate_cb), event_editor);
 
 	paned = gtk_paned_new (GTK_ORIENTATION_HORIZONTAL);

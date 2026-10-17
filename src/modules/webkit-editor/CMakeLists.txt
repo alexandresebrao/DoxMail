@@ -12,6 +12,7 @@ set(sources
 set(extra_defines
 	-DEVOLUTION_WEB_EXTENSIONS_WEBKIT_EDITOR_DIR=\"${webextensionswebkiteditordir}\"
 	-DEVOLUTION_WEBKITDATADIR=\"${webkitdatadir}\"
+	-DEVOLUTION_PRIVLIBDIR=\"${privlibdir}\"
 )
 set(extra_cflags)
 set(extra_incdirs)

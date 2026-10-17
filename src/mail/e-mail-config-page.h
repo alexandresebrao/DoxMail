@@ -69,6 +69,7 @@ struct _EMailConfigPageInterface {
 GType		e_mail_config_page_get_type	(void) G_GNUC_CONST;
 void		e_mail_config_page_set_content	(EMailConfigPage *page,
 						 GtkWidget *content);
+GtkWidget *	e_mail_config_page_get_content	(EMailConfigPage *page);
 gint		e_mail_config_page_compare	(GtkWidget *page_a,
 						 GtkWidget *page_b);
 void		e_mail_config_page_changed	(EMailConfigPage *page);

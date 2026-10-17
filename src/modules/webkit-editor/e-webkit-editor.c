@@ -4240,7 +4240,7 @@ webkit_editor_constructed (GObject *object)
 
 	/* Do this before calling the parent's constructed(), because
 	   that can emit the web_context's signal */
-	g_signal_connect_object (web_context, "initialize-web-extensions",
+	g_signal_connect_object (web_context, "initialize-web-process-extensions",
 		G_CALLBACK (e_webkit_editor_initialize_web_extensions_cb), wk_editor, 0);
 
 	G_OBJECT_CLASS (e_webkit_editor_parent_class)->constructed (object);
@@ -4396,6 +4396,10 @@ webkit_editor_constructor (GType type,
 				webkit_web_context_set_cache_model (web_context, WEBKIT_CACHE_MODEL_DOCUMENT_VIEWER);
 				webkit_web_context_set_web_process_extensions_directory (web_context, EVOLUTION_WEB_EXTENSIONS_WEBKIT_EDITOR_DIR);
 				webkit_web_context_add_path_to_sandbox (web_context, EVOLUTION_WEBKITDATADIR, TRUE);
+				/* DoxMail: the extensions link the private libraries, which
+				 * the web process sandbox hides outside of /usr */
+				if (!g_str_has_prefix (EVOLUTION_PRIVLIBDIR, "/usr/"))
+					webkit_web_context_add_path_to_sandbox (web_context, EVOLUTION_PRIVLIBDIR, TRUE);
 
 				plugins_path = g_build_filename (e_get_user_data_dir (), "webkit-editor-plugins", NULL);
 				if (g_file_test (plugins_path, G_FILE_TEST_IS_DIR))

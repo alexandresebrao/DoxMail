@@ -1301,10 +1301,11 @@ shell_view_init_ui_data (EShellView *self)
 }
 
 static void
-shell_view_menubar_deactivate_cb (GtkWidget *menu_bar,
+shell_view_menubar_deactivate_cb (GtkEventControllerFocus *controller,
 				  gpointer user_data)
 {
 	EShellView *self = user_data;
+	GtkWidget *menu_bar = gtk_event_controller_get_widget (GTK_EVENT_CONTROLLER (controller));
 
 	g_return_if_fail (E_IS_SHELL_VIEW (self));
 
@@ -2141,8 +2142,14 @@ shell_view_constructed (GObject *object)
 	shell_view->priv->menu_bar = e_menu_bar_new (widget, GTK_WINDOW (shell_view->priv->shell_window), &shell_view->priv->menu_button);
 	e_gtk_box_pack_start (GTK_BOX (shell_view), widget, FALSE, FALSE, 0);
 
-	g_signal_connect_object (widget, "deactivate",
-		G_CALLBACK (shell_view_menubar_deactivate_cb), shell_view, 0);
+	/* GtkPopoverMenuBar has no "deactivate"; the focus leaves it instead */
+	{
+		GtkEventController *controller = gtk_event_controller_focus_new ();
+
+		g_signal_connect_object (controller, "leave",
+			G_CALLBACK (shell_view_menubar_deactivate_cb), shell_view, 0);
+		gtk_widget_add_controller (widget, controller);
+	}
 
 	if (e_util_get_use_header_bar ()) {
 		ui_item = e_ui_manager_create_item (shell_view->priv->ui_manager, "main-headerbar");

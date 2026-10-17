@@ -18,7 +18,7 @@ if [ -n "${SHOT:-}" ]; then
 fi
 env -i PATH="$PATH" HOME="$tmp/home" XDG_RUNTIME_DIR="$tmp/run" \
 	WAYLAND_DISPLAY=wayland-iso GDK_BACKEND=wayland GSK_RENDERER=cairo \
-	GSETTINGS_SCHEMA_DIR="${GSETTINGS_SCHEMA_DIR:-}" GTK_A11Y=none \
+	GSETTINGS_SCHEMA_DIR="${GSETTINGS_SCHEMA_DIR:-}" GTK_A11Y=none G_DEBUG="${G_DEBUG:-}" \
 	dbus-run-session -- timeout "$secs" "$@"
 echo "exit: $?"
 kill $weston

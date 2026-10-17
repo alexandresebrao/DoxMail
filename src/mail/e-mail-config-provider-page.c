@@ -877,9 +877,7 @@ e_mail_config_provider_page_get_placeholder (EMailConfigProviderPage *page,
 	fpd.name = name;
 	fpd.box = NULL;
 
-	widget = e_gtk_bin_get_child (page);
-	if (GTK_IS_VIEWPORT (widget))
-		widget = e_gtk_bin_get_child (widget);
+	widget = e_mail_config_page_get_content (E_MAIL_CONFIG_PAGE (page));
 
 	if (!GTK_IS_WIDGET (widget))
 		return NULL;

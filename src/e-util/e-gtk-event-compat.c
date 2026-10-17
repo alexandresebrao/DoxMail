@@ -22,6 +22,7 @@ enum {
 	POPUP_MENU,
 	STYLE_UPDATED,
 	DELETE_EVENT,
+	SIZE_ALLOCATE,
 	LAST_SIGNAL
 };
 
@@ -85,6 +86,13 @@ e_gtk_event_register_signals (void)
 		G_SIGNAL_RUN_FIRST, 0,
 		NULL, NULL, NULL,
 		G_TYPE_NONE, 0);
+
+	signals[SIZE_ALLOCATE] = g_signal_new (
+		"size-allocate", GTK_TYPE_WIDGET,
+		G_SIGNAL_RUN_FIRST, 0,
+		NULL, NULL, NULL,
+		G_TYPE_NONE, 1,
+		G_TYPE_POINTER /* GtkAllocation */);
 }
 
 static gboolean
@@ -437,6 +445,60 @@ style_settings_notify_cb (GtkSettings *settings,
 			  GtkWidget *widget)
 {
 	g_signal_emit (widget, signals[STYLE_UPDATED], 0);
+}
+
+/* original size_allocate vfuncs of the classes wrapped below, by GType */
+static GHashTable *size_allocate_originals = NULL;
+
+#define SIZE_ALLOCATE_KEY "e-gtk-size-allocate"
+
+typedef void (* SizeAllocateFunc) (GtkWidget *widget, gint width, gint height, gint baseline);
+
+static void
+size_allocate_wrapper (GtkWidget *widget,
+		       gint width,
+		       gint height,
+		       gint baseline)
+{
+	SizeAllocateFunc original = NULL;
+	GType type;
+
+	/* classes initialized after the wrapping inherit the wrapper,
+	 * thus look up the nearest wrapped ancestor */
+	for (type = G_TYPE_FROM_INSTANCE (widget); type && !original; type = g_type_parent (type))
+		original = g_hash_table_lookup (size_allocate_originals, GSIZE_TO_POINTER (type));
+
+	if (original)
+		original (widget, width, height, baseline);
+
+	if (g_object_get_data (G_OBJECT (widget), SIZE_ALLOCATE_KEY)) {
+		GtkAllocation allocation = { 0, 0, width, height };
+
+		g_signal_emit (widget, signals[SIZE_ALLOCATE], 0, &allocation);
+	}
+}
+
+gpointer
+e_gtk_widget_size_allocations (gpointer widget)
+{
+	GtkWidgetClass *klass;
+
+	g_return_val_if_fail (GTK_IS_WIDGET (widget), widget);
+
+	g_object_set_data (G_OBJECT (widget), SIZE_ALLOCATE_KEY, GINT_TO_POINTER (1));
+
+	klass = GTK_WIDGET_GET_CLASS (widget);
+
+	if (klass->size_allocate != size_allocate_wrapper) {
+		if (!size_allocate_originals)
+			size_allocate_originals = g_hash_table_new (g_direct_hash, g_direct_equal);
+
+		g_hash_table_insert (size_allocate_originals,
+			GSIZE_TO_POINTER (G_TYPE_FROM_CLASS (klass)), klass->size_allocate);
+		klass->size_allocate = size_allocate_wrapper;
+	}
+
+	return widget;
 }
 
 gpointer

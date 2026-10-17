@@ -317,6 +317,12 @@ void		e_gtk_window_remove_accel_group	(GtkWindow *window,
 						 EGtkAccelGroup *accel_group);
 
 /* GtkToggleButton or GtkCheckButton (no longer a toggle button) */
+/* GTK 3 check and radio buttons were toggle buttons; with GTK 4 they are
+ * unrelated types, both handled by e_gtk_toggle_button_*() (which check
+ * the real type), thus this cast does not check */
+#undef GTK_TOGGLE_BUTTON
+#define GTK_TOGGLE_BUTTON(obj) ((GtkToggleButton *) (obj))
+
 gboolean	e_gtk_toggle_button_get_active	(gpointer button);
 void		e_gtk_toggle_button_set_active	(gpointer button,
 						 gboolean active);

@@ -147,7 +147,7 @@ mail_shell_content_constructed (GObject *object)
 	EShellView *shell_view;
 	EAttachmentStore *attachment_store;
 	EMailDisplay *display;
-	GtkPaned *paned;
+	gpointer paned; /* EPaned wraps the final GtkPaned */
 	GtkWidget *widget;
 	GtkBox *vbox;
 	GSettings *settings;
@@ -165,7 +165,7 @@ mail_shell_content_constructed (GObject *object)
 	e_gtk_container_add (shell_content, widget);
 	gtk_widget_show (widget);
 
-	paned = GTK_PANED (widget);
+	paned = widget;
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 4);
 	e_gtk_paned_pack1 (paned, widget, TRUE, FALSE);

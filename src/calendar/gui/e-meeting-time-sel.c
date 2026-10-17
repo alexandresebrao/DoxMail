@@ -91,9 +91,11 @@ static void e_meeting_time_selector_add_key_color (EMeetingTimeSelector * mts,
 						   GtkWidget *hbox,
 						   gchar *label_text,
 						   GdkRGBA *color);
-static gint e_meeting_time_selector_draw_key_color (GtkWidget *darea,
+static void e_meeting_time_selector_draw_key_color (GtkDrawingArea *darea,
 						      cairo_t *cr,
-						      GdkRGBA *color);
+						      gint width,
+						      gint height,
+						      gpointer color);
 static void e_meeting_time_selector_realize (GtkWidget *widget);
 static void e_meeting_time_selector_unrealize (GtkWidget *widget);
 static void e_meeting_time_selector_style_updated (GtkWidget *widget);
@@ -489,7 +491,7 @@ e_meeting_time_selector_construct (EMeetingTimeSelector *mts,
 		mts->display_main, "realize",
 		G_CALLBACK (e_meeting_time_selector_on_canvas_realized), mts);
 	g_signal_connect (
-		mts->display_main, "size_allocate",
+		e_gtk_widget_size_allocations (mts->display_main), "size_allocate",
 		G_CALLBACK (e_meeting_time_selector_on_canvas_size_allocate), mts);
 	g_signal_connect (
 		e_gtk_widget_legacy_events (mts->display_main), "scroll-event",
@@ -852,45 +854,41 @@ e_meeting_time_selector_add_key_color (EMeetingTimeSelector *mts,
 	e_gtk_box_pack_start (GTK_BOX (child_hbox), label, TRUE, TRUE, 6);
 	gtk_widget_show (label);
 
-	g_signal_connect (
-		darea, "draw",
-		G_CALLBACK (e_meeting_time_selector_draw_key_color), color);
+	gtk_drawing_area_set_draw_func (GTK_DRAWING_AREA (darea),
+		e_meeting_time_selector_draw_key_color, color, NULL);
 }
 
-static gint
-e_meeting_time_selector_draw_key_color (GtkWidget *darea,
+static void
+e_meeting_time_selector_draw_key_color (GtkDrawingArea *darea,
                                         cairo_t *cr,
-                                        GdkRGBA *color)
+                                        gint width,
+                                        gint height,
+                                        gpointer color)
 {
 	EMeetingTimeSelector * mts;
-	GtkAllocation allocation;
 	GtkStyleContext *style_context;
 
 	mts = g_object_get_data (G_OBJECT (darea), "data");
 
-	style_context = gtk_widget_get_style_context (darea);
-
-	gtk_widget_get_allocation (darea, &allocation);
+	style_context = gtk_widget_get_style_context (GTK_WIDGET (darea));
 
 	gtk_render_frame (
 		style_context, cr,
 		(gdouble) 0,
 		(gdouble) 0,
-		(gdouble) allocation.width,
-		(gdouble) allocation.height);
+		(gdouble) width,
+		(gdouble) height);
 
 	if (color) {
 		gdk_cairo_set_source_rgba (cr, color);
-	} else {
+	} else if (mts->no_info_pattern) {
 		cairo_set_source (cr, mts->no_info_pattern);
 	}
 	cairo_rectangle (
 		cr,
 		1, 1,
-		allocation.width - 2, allocation.height - 2);
+		width - 2, height - 2);
 	cairo_fill (cr);
-
-	return TRUE;
 }
 
 static void

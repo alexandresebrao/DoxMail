@@ -227,7 +227,7 @@ e_table_field_chooser_init (ETableFieldChooser *etfc)
 
 	/* Connect the signals */
 	g_signal_connect (
-		etfc->canvas, "size_allocate",
+		e_gtk_widget_size_allocations (etfc->canvas), "size_allocate",
 		G_CALLBACK (allocate_callback), etfc);
 
 	gtk_widget_set_visible (widget, TRUE);

@@ -202,11 +202,19 @@ Found at runtime: signals with a `GdkEvent` parameter must declare it as
 `G_TYPE_POINTER` (GdkEvent is a fundamental type the generic marshaller
 cannot pass), and handlers of legacy widget event signals must take
 GdkEvent, not GnomeCanvasEvent (`doxmail/port/legacy-audit.py` lists them).
-Runtime warnings still to fix: `map-event`, `size_allocate`, `deactivate`
-signal connections, `GtkCheckButton` used as `GtkToggleButton`, `EPaned`
-cast to `GtkPaned`, WebKit `enable-java` and `initialize-web-extensions`
-(WebKitGTK 6), the web extension not finding libevolution-util, duplicate
-GtkStack names in menus, empty alert/activity bars shown, assistant size.
+Also fixed at runtime: `size-allocate` handlers get the signal through
+`e_gtk_widget_size_allocations()` (it wraps the class' size_allocate);
+`map-event` became `map`; `GTK_TOGGLE_BUTTON()` is an unchecked cast, as
+check buttons are no toggle buttons with GTK 4 and the
+`e_gtk_toggle_button_*()` functions take both; WebKitGTK 6 names
+(`initialize-web-process-extensions`, no `enable-java`); the private
+library directory is added to the web process sandbox; GTK 4 widgets are
+visible by default, so widgets GTK 3 kept hidden until needed must hide
+themselves (alert and activity bars so far). `G_DEBUG=fatal-criticals
+doxmail/port/run-evolution.sh --gdb` stops at the first critical.
+
+Still open: GtkPopoverMenu keeps the submenu pages of rebuilt menu models
+("duplicate child name in GtkStack" warnings, a leak); the `.ui` files.
 
 ## Next
 

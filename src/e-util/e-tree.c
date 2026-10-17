@@ -755,7 +755,7 @@ e_tree_setup_header (ETree *tree)
 		G_CALLBACK (e_tree_header_click_can_sort_cb), tree, 0);
 
 	g_signal_connect (
-		tree->priv->header_canvas, "size_allocate",
+		e_gtk_widget_size_allocations (tree->priv->header_canvas), "size_allocate",
 		G_CALLBACK (header_canvas_size_allocate), tree);
 
 	gtk_widget_set_size_request (
@@ -1321,7 +1321,7 @@ e_tree_setup_table (ETree *tree)
 	gtk_widget_set_hexpand (GTK_WIDGET (tree->priv->table_canvas), TRUE);
 	gtk_widget_set_vexpand (GTK_WIDGET (tree->priv->table_canvas), TRUE);
 	g_signal_connect (
-		tree->priv->table_canvas, "size_allocate",
+		e_gtk_widget_size_allocations (tree->priv->table_canvas), "size_allocate",
 		G_CALLBACK (tree_canvas_size_allocate), tree);
 	g_signal_connect (
 		e_gtk_widget_legacy_events (tree->priv->table_canvas), "focus_in_event",
@@ -3329,7 +3329,7 @@ e_tree_set_info_message (ETree *tree,
 			e_canvas_item_move_absolute (tree->priv->info_text, 30, 30);
 
 			tree->priv->info_text_resize_id = g_signal_connect (
-				tree, "size_allocate",
+				e_gtk_widget_size_allocations (tree), "size_allocate",
 				G_CALLBACK (tree_size_allocate), tree);
 		}
 	} else

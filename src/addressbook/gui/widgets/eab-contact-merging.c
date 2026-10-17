@@ -345,7 +345,6 @@ cancelit (EContactMergingLookup *lookup)
 
 static void
 dialog_map (GtkWidget *window,
-            GdkEvent *event,
             GtkWidget *grid)
 {
 	GtkAllocation allocation;
@@ -707,7 +706,7 @@ merge_dialog_data_create (EContactMergingLookup *lookup,
 	e_gtk_box_pack_start (GTK_BOX (content_area), GTK_WIDGET (scrolled_window), TRUE, TRUE, 0);
 	gtk_widget_show (scrolled_window);
 	g_signal_connect (
-		mdd->dialog, "map-event",
+		mdd->dialog, "map",
 		G_CALLBACK (dialog_map), grid);
 	gtk_widget_set_visible (GTK_WIDGET (grid), TRUE);
 

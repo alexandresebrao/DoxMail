@@ -194,6 +194,24 @@ e_mail_config_page_set_content (EMailConfigPage *page,
 	gtk_widget_show (GTK_WIDGET (page));
 }
 
+/* the content set by e_mail_config_page_set_content(), inside the
+ * page's scrolled window and its viewport, or NULL */
+GtkWidget *
+e_mail_config_page_get_content (EMailConfigPage *page)
+{
+	GtkWidget *widget;
+
+	g_return_val_if_fail (E_IS_MAIL_CONFIG_PAGE (page), NULL);
+
+	widget = e_gtk_bin_get_bin_child (E_GTK_BIN (page));
+	if (GTK_IS_SCROLLED_WINDOW (widget))
+		widget = gtk_scrolled_window_get_child (GTK_SCROLLED_WINDOW (widget));
+	if (GTK_IS_VIEWPORT (widget))
+		widget = gtk_viewport_get_child (GTK_VIEWPORT (widget));
+
+	return widget;
+}
+
 gint
 e_mail_config_page_compare (GtkWidget *page_a,
                             GtkWidget *page_b)

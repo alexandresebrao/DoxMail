@@ -278,6 +278,6 @@ e_section_box_connect_parent_container (ESectionBox *self,
 	g_return_if_fail (E_IS_SECTION_BOX (self));
 	g_return_if_fail (GTK_IS_SCROLLED_WINDOW (container));
 
-	g_signal_connect_object (container, "size-allocate",
+	g_signal_connect_object (e_gtk_widget_size_allocations (container), "size-allocate",
 		G_CALLBACK (e_section_box_container_size_allocated_cb), self, 0);
 }

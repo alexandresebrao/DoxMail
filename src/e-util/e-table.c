@@ -712,7 +712,7 @@ e_table_setup_header (ETable *e_table)
 	g_free (pointer);
 
 	g_signal_connect (
-		e_table->header_canvas, "size_allocate",
+		e_gtk_widget_size_allocations (e_table->header_canvas), "size_allocate",
 		G_CALLBACK (header_canvas_size_allocate), e_table);
 
 	g_object_set (
@@ -1450,7 +1450,7 @@ e_table_setup_table (ETable *e_table,
 	gtk_widget_set_hexpand (GTK_WIDGET (e_table->table_canvas), TRUE);
 	gtk_widget_set_vexpand (GTK_WIDGET (e_table->table_canvas), TRUE);
 	g_signal_connect (
-		e_table->table_canvas, "size_allocate",
+		e_gtk_widget_size_allocations (e_table->table_canvas), "size_allocate",
 		G_CALLBACK (table_canvas_size_allocate), e_table);
 	g_signal_connect (
 		e_gtk_widget_legacy_events (e_table->table_canvas), "focus_in_event",
@@ -3622,7 +3622,7 @@ e_table_set_info_message (ETable *table,
 			e_canvas_item_move_absolute (table->priv->info_text, 30, 30);
 
 			table->priv->info_text_resize_id = g_signal_connect_object (
-				table, "size_allocate",
+				e_gtk_widget_size_allocations (table), "size_allocate",
 				G_CALLBACK (table_size_allocate), table, 0);
 		}
 	} else

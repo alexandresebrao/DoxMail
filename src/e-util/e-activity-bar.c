@@ -352,6 +352,9 @@ e_activity_bar_init (EActivityBar *bar)
 	g_signal_connect_swapped (
 		widget, "clicked",
 		G_CALLBACK (activity_bar_cancel), bar);
+
+	/* GTK 4 widgets are visible by default; the bar shows with an activity */
+	gtk_widget_set_visible (GTK_WIDGET (bar), FALSE);
 }
 
 GtkWidget *
