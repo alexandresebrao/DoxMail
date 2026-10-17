@@ -531,6 +531,7 @@ editor_running (void)
 
 static gboolean
 delete_cb (GtkWidget *widget,
+           GdkEvent *event,
            EMsgComposer *composer)
 {
 	if (editor_running ()) {

@@ -236,6 +236,12 @@ shell window (it ran a nested loop inside GApplication::activate, which
 kept the window from being created). Open: Adwaita for GTK 4 has no
 full-color `dialog-*` icons (`image-missing` shows instead).
 
+### 8. plugins
+
+`src/plugins` builds with GTK 4; publish-calendar's GtkStatusIcon became a
+GNotification of the application (unless libnotify shows the message).
+The contacts view also runs.
+
 ### 7. GtkBuilder files
 
 All 13 `.ui` files are GTK 4 files: `gtk4-builder-tool simplify --3to4
@@ -253,6 +259,11 @@ its former `<accelerator>`, handlers that GTK 3 never connected went.
 draw-indicator, no-show-all, border-width) is fixed too.
 
 ## Next
+
+Runtime: the GtkPopoverMenu duplicate stack pages of rebuilt menus,
+dialogs and editors (composer, contact/event editors, preferences), the
+account assistant pages, real mouse/keyboard use; then the DoxIA items
+below.
 
  → modules (they give the shell its views) → plugins;
 then the `.ui` files and `data/` (schemas, icons) in the GTK 4 build.

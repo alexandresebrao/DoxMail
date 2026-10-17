@@ -56,7 +56,10 @@ GtkWidget   *publish_calendar_locations (EPlugin *epl, EConfigHookItemFactoryDat
 static void  update_timestamp (EPublishUri *uri);
 static void publish (EPublishUri *uri, gboolean can_report_success);
 
-static GtkStatusIcon *status_icon = NULL;
+/* GtkStatusIcon is gone with GTK 4: the messages are a GNotification
+ * of the application, withdrawn after a while like the icon was */
+#define PUBLISH_NOTIFICATION_ID "evolution-publish-calendar"
+static gboolean status_icon = FALSE;
 static guint status_icon_timeout_id = 0;
 #ifdef HAVE_LIBNOTIFY
 static NotifyNotification *notify = NULL;
@@ -81,9 +84,9 @@ remove_notification (gpointer data)
 	notify = NULL;
 #endif
 
-	gtk_status_icon_set_visible (status_icon, FALSE);
-	g_object_unref (status_icon);
-	status_icon = NULL;
+	if (g_application_get_default ())
+		g_application_withdraw_notification (g_application_get_default (), PUBLISH_NOTIFICATION_ID);
+	status_icon = FALSE;
 
 	return FALSE;
 }
@@ -102,7 +105,7 @@ update_publish_notification (GtkMessageType msg_type,
 	g_return_if_fail (msg_text != NULL);
 
 	if (new_icon) {
-		status_icon = gtk_status_icon_new ();
+		status_icon = TRUE;
 		if (actual_msg) {
 			g_string_free (actual_msg, TRUE);
 			actual_msg = NULL;
@@ -130,8 +133,22 @@ update_publish_notification (GtkMessageType msg_type,
 		g_string_append (actual_msg, msg_text);
 	}
 
-	gtk_status_icon_set_from_icon_name (status_icon, icon_name);
-	gtk_status_icon_set_tooltip_text (status_icon, actual_msg->str);
+#ifdef HAVE_LIBNOTIFY
+	if (!can_notify && g_application_get_default ()) {
+#else
+	if (g_application_get_default ()) {
+#endif
+		GNotification *notification;
+		GIcon *icon;
+
+		notification = g_notification_new (_("Calendar Publishing"));
+		g_notification_set_body (notification, actual_msg->str);
+		icon = g_themed_icon_new (icon_name);
+		g_notification_set_icon (notification, icon);
+		g_object_unref (icon);
+		g_application_send_notification (g_application_get_default (), PUBLISH_NOTIFICATION_ID, notification);
+		g_object_unref (notification);
+	}
 
 #ifdef HAVE_LIBNOTIFY
 	if (can_notify) {
@@ -160,12 +177,6 @@ update_publish_notification (GtkMessageType msg_type,
 
 	status_icon_timeout_id =
 		e_named_timeout_add_seconds (15, remove_notification, NULL);
-
-	if (new_icon) {
-		g_signal_connect (
-			status_icon, "activate",
-			G_CALLBACK (remove_notification), NULL);
-	}
 }
 
 static void
