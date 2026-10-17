@@ -402,7 +402,7 @@ subscription_editor_subscribe_many (EMSubscriptionEditor *editor,
 	g_return_if_fail (tree_row_data != NULL);
 
 	/* Cancel any operation on this store still in progress. */
-	gtk_button_clicked (GTK_BUTTON (editor->priv->stop_button));
+	g_signal_emit_by_name (editor->priv->stop_button, "clicked");
 
 	/* Start a new 'subscription' operation. */
 	editor->priv->active->cancellable = g_cancellable_new ();
@@ -534,7 +534,7 @@ subscription_editor_unsubscribe_many (EMSubscriptionEditor *editor,
 	g_return_if_fail (tree_row_data != NULL);
 
 	/* Cancel any operation on this store still in progress. */
-	gtk_button_clicked (GTK_BUTTON (editor->priv->stop_button));
+	g_signal_emit_by_name (editor->priv->stop_button, "clicked");
 
 	/* Start a new 'subscription' operation. */
 	editor->priv->active->cancellable = g_cancellable_new ();
@@ -991,7 +991,7 @@ subscription_editor_refresh (EMSubscriptionEditor *editor)
 	GdkCursor *cursor;
 
 	/* Cancel any operation on this store still in progress. */
-	gtk_button_clicked (GTK_BUTTON (editor->priv->stop_button));
+	g_signal_emit_by_name (editor->priv->stop_button, "clicked");
 
 	/* Start a new 'refresh' operation. */
 	editor->priv->active->cancellable = g_cancellable_new ();

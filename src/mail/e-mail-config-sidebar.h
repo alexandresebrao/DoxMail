@@ -46,7 +46,7 @@ typedef struct _EMailConfigSidebarClass EMailConfigSidebarClass;
 typedef struct _EMailConfigSidebarPrivate EMailConfigSidebarPrivate;
 
 struct _EMailConfigSidebar {
-	GtkButtonBox parent;
+	GtkBox parent;
 	EMailConfigSidebarPrivate *priv;
 };
 

@@ -281,10 +281,9 @@ name_selector_entry_drag_data_received (GtkWidget *widget,
 
 	if (n_addresses <= 0)
 		/* Chain up to parent's drag_data_received() method. */
-		GTK_WIDGET_CLASS (e_name_selector_entry_parent_class)->
-			drag_data_received (
-				widget, context, x, y,
-				selection_data, info, time);
+		g_signal_chain_from_overridden_handler (
+			widget, context, x, y,
+			selection_data, info, time);
 }
 
 static void
@@ -1032,13 +1031,11 @@ find_existing_completion (ENameSelectorEntry *name_selector_entry,
 static void
 generate_attribute_list (ENameSelectorEntry *name_selector_entry)
 {
-	PangoLayout    *layout;
 	PangoAttrList  *attr_list;
 	const gchar    *text;
 	gint            i;
 
 	text = gtk_editable_get_text (GTK_EDITABLE (name_selector_entry));
-	layout = gtk_entry_get_layout (GTK_ENTRY (name_selector_entry));
 
 	/* Set up the attribute list */
 
@@ -1072,18 +1069,7 @@ generate_attribute_list (ENameSelectorEntry *name_selector_entry)
 		pango_attr_list_insert (attr_list, attr);
 	}
 
-	pango_layout_set_attributes (layout, attr_list);
-}
-
-static gboolean
-draw_event (ENameSelectorEntry *name_selector_entry)
-{
-	PangoLayout *layout;
-
-	layout = gtk_entry_get_layout (GTK_ENTRY (name_selector_entry));
-	pango_layout_set_attributes (layout, name_selector_entry->priv->attr_list);
-
-	return FALSE;
+	gtk_entry_set_attributes (GTK_ENTRY (name_selector_entry), attr_list);
 }
 
 static void
@@ -2755,37 +2741,17 @@ setup_destination_store (ENameSelectorEntry *name_selector_entry)
 
 static gboolean
 prepare_popup_destination (ENameSelectorEntry *name_selector_entry,
-                           GdkEvent *event_button)
+                           gdouble x,
+                           gdouble y)
 {
 	EDestination *destination;
-	PangoLayout  *layout;
-	gint          layout_offset_x;
-	gint          layout_offset_y;
-	gint          x, y;
 	gint          index;
-
-	if (e_gdk_event_type (event_button) != GDK_BUTTON_PRESS)
-		return FALSE;
-
-	if (e_gdk_event_button (event_button) != 3)
-		return FALSE;
 
 	g_clear_object (&name_selector_entry->priv->popup_destination);
 
-	gtk_entry_get_layout_offsets (
-		GTK_ENTRY (name_selector_entry),
-		&layout_offset_x, &layout_offset_y);
-	x = (e_gdk_event_x (event_button) + 0.5) - layout_offset_x;
-	y = (e_gdk_event_y (event_button) + 0.5) - layout_offset_y;
-
-	if (x < 0 || y < 0)
+	index = e_gtk_entry_get_index_at_position (GTK_ENTRY (name_selector_entry), x, y);
+	if (index < 0)
 		return FALSE;
-
-	layout = gtk_entry_get_layout (GTK_ENTRY (name_selector_entry));
-	if (!pango_layout_xy_to_index (layout, x * PANGO_SCALE, y * PANGO_SCALE, &index, NULL))
-		return FALSE;
-
-	index = gtk_entry_layout_index_to_text_index (GTK_ENTRY (name_selector_entry), index);
 	destination = find_destination_at_position (name_selector_entry, index);
 	/* FIXME: Add this to a private variable, in ENameSelectorEntry Class*/
 	g_object_set_data ((GObject *) name_selector_entry, "index", GINT_TO_POINTER (index));
@@ -3026,35 +2992,6 @@ popup_activate_contact (ENameSelectorEntry *name_selector_entry,
 }
 
 static void
-popup_activate_email (ENameSelectorEntry *name_selector_entry,
-                      GtkWidget *menu_item)
-{
-	EDestination *destination;
-	EContact     *contact;
-	gint          email_num;
-
-	destination = name_selector_entry->priv->popup_destination;
-	if (!destination)
-		return;
-
-	contact = e_destination_get_contact (destination);
-	if (!contact)
-		return;
-
-	email_num = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (menu_item), "order"));
-	e_destination_set_contact (destination, contact, email_num);
-}
-
-static void
-popup_activate_list (EDestination *destination,
-                     GtkWidget *item)
-{
-	gboolean status = gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (item));
-
-	e_destination_set_ignored (destination, !status);
-}
-
-static void
 popup_activate_cut (ENameSelectorEntry *name_selector_entry,
                     GtkWidget *menu_item)
 {
@@ -3111,53 +3048,82 @@ popup_activate_copy (ENameSelectorEntry *name_selector_entry,
 }
 
 static void
-destination_set_list (GtkWidget *item,
-                      EDestination *destination)
+popup_email_change_state_cb (GSimpleAction *action,
+			     GVariant *value,
+			     gpointer user_data)
 {
+	ENameSelectorEntry *name_selector_entry = user_data;
+	EDestination *destination = name_selector_entry->priv->popup_destination;
 	EContact *contact;
-	gboolean status = gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (item));
 
-	contact = e_destination_get_contact (destination);
-	if (!contact)
-		return;
+	g_simple_action_set_state (action, value);
 
-	e_destination_set_ignored (destination, !status);
+	contact = destination ? e_destination_get_contact (destination) : NULL;
+	if (contact)
+		e_destination_set_contact (destination, contact, g_variant_get_int32 (value));
 }
 
 static void
-destination_set_email (GtkWidget *item,
-                       EDestination *destination)
+popup_list_dest_change_state_cb (GSimpleAction *action,
+				 GVariant *value,
+				 gpointer user_data)
 {
-	gint email_num;
-	EContact *contact;
+	EDestination *dest = user_data;
 
-	if (!gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (item)))
-		return;
-	contact = e_destination_get_contact (destination);
-	if (!contact)
-		return;
+	g_simple_action_set_state (action, value);
 
-	email_num = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (item), "order"));
-	e_destination_set_contact (destination, contact, email_num);
+	e_destination_set_ignored (dest, !g_variant_get_boolean (value));
 }
 
 static void
-populate_popup (ENameSelectorEntry *name_selector_entry,
-                GtkMenu *menu)
+popup_action_activate_cb (GSimpleAction *action,
+			  GVariant *parameter,
+			  gpointer user_data)
+{
+	ENameSelectorEntry *name_selector_entry = user_data;
+	const gchar *name = g_action_get_name (G_ACTION (action));
+
+	if (g_str_equal (name, "expand"))
+		popup_activate_inline_expand (name_selector_entry, NULL);
+	else if (g_str_equal (name, "copy"))
+		popup_activate_copy (name_selector_entry, NULL);
+	else if (g_str_equal (name, "cut"))
+		popup_activate_cut (name_selector_entry, NULL);
+	else if (g_str_equal (name, "edit"))
+		popup_activate_contact (name_selector_entry, NULL);
+}
+
+static void
+popup_add_action (GActionMap *actions,
+		  ENameSelectorEntry *name_selector_entry,
+		  const gchar *name)
+{
+	GSimpleAction *action = g_simple_action_new (name, NULL);
+
+	g_signal_connect_object (action, "activate", G_CALLBACK (popup_action_activate_cb), name_selector_entry, 0);
+	g_action_map_add_action (actions, G_ACTION (action));
+	g_object_unref (action);
+}
+
+/* GTK 4 takes extra context menu items as a model; it is built for the
+ * destination under the pointer when the right button goes down */
+static void
+populate_popup (ENameSelectorEntry *name_selector_entry)
 {
 	EDestination *destination;
 	EContact     *contact;
-	GtkWidget    *menu_item;
+	GSimpleActionGroup *actions;
+	GMenu        *menu, *section;
 	GList        *email_list = NULL;
 	GList        *l;
 	gint          i;
-	gchar	     *edit_label;
-	gchar	     *cut_label;
-	gchar         *copy_label;
+	gchar	     *label;
 	gint	      email_num, len;
-	GSList	     *group = NULL;
 	gboolean      is_list;
-	gboolean      show_menu = FALSE;
+	const gchar  *file_as;
+
+	gtk_entry_set_extra_menu (GTK_ENTRY (name_selector_entry), NULL);
+	gtk_widget_insert_action_group (GTK_WIDGET (name_selector_entry), "nse", NULL);
 
 	destination = name_selector_entry->priv->popup_destination;
 	if (!destination)
@@ -3167,23 +3133,55 @@ populate_popup (ENameSelectorEntry *name_selector_entry,
 	if (!contact)
 		return;
 
-	/* Prepend the menu items, backwards */
+	file_as = e_contact_get_const (contact, E_CONTACT_FILE_AS);
+	actions = g_simple_action_group_new ();
+	menu = g_menu_new ();
 
-	/* Separator */
+	/* Edit, cut and copy the contact */
+	section = g_menu_new ();
 
-	menu_item = gtk_separator_menu_item_new ();
-	gtk_widget_show (menu_item);
-	gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), menu_item);
-	email_num = e_destination_get_email_num (destination);
+	label = g_strdup_printf (_("_Edit %s"), file_as);
+	g_menu_append (section, label, "nse.edit");
+	g_free (label);
+	popup_add_action (G_ACTION_MAP (actions), name_selector_entry, "edit");
+
+	label = g_strdup_printf (_("C_ut %s"), file_as);
+	g_menu_append (section, label, "nse.cut");
+	g_free (label);
+	popup_add_action (G_ACTION_MAP (actions), name_selector_entry, "cut");
+
+	label = g_strdup_printf (_("Cop_y %s"), file_as);
+	g_menu_append (section, label, "nse.copy");
+	g_free (label);
+	popup_add_action (G_ACTION_MAP (actions), name_selector_entry, "copy");
+
+	g_menu_append_section (menu, NULL, G_MENU_MODEL (section));
+	g_object_unref (section);
+
+	is_list = e_contact_get (contact, E_CONTACT_IS_LIST) ? TRUE : FALSE;
+
+	/* Expand a list inline */
+	if (is_list) {
+		section = g_menu_new ();
+		/* To Translators: This would be similiar to "Expand MyList Inline" where MyList is a Contact List*/
+		label = g_strdup_printf (_("E_xpand %s Inline"), file_as);
+		g_menu_append (section, label, "nse.expand");
+		g_free (label);
+		popup_add_action (G_ACTION_MAP (actions), name_selector_entry, "expand");
+		g_menu_append_section (menu, NULL, G_MENU_MODEL (section));
+		g_object_unref (section);
+	}
 
 	/* Addresses */
-	is_list = e_contact_get (contact, E_CONTACT_IS_LIST) ? TRUE : FALSE;
+	section = g_menu_new ();
+	email_num = e_destination_get_email_num (destination);
+
 	if (is_list) {
 		const GList *dests = e_destination_list_get_dests (destination);
 		GList *iter;
 		gint length = g_list_length ((GList *) dests);
 
-		for (iter = (GList *) dests; iter; iter = iter->next) {
+		for (iter = (GList *) dests, i = 0; iter; iter = iter->next, i++) {
 			EDestination *dest = (EDestination *) iter->data;
 			const gchar *email = e_destination_get_email (dest);
 
@@ -3191,31 +3189,39 @@ populate_popup (ENameSelectorEntry *name_selector_entry,
 				continue;
 
 			if (length > 1) {
-				menu_item = gtk_check_menu_item_new_with_label (email);
-				g_signal_connect (
-					menu_item, "toggled",
-					G_CALLBACK (destination_set_list), dest);
+				GSimpleAction *action;
+				gchar *name = g_strdup_printf ("list-%d", i);
+				gchar *detailed = g_strconcat ("nse.", name, NULL);
+
+				action = g_simple_action_new_stateful (name, NULL,
+					g_variant_new_boolean (!e_destination_is_ignored (dest)));
+				g_signal_connect_data (action, "change-state",
+					G_CALLBACK (popup_list_dest_change_state_cb),
+					g_object_ref (dest), (GClosureNotify) g_object_unref, 0);
+				g_action_map_add_action (G_ACTION_MAP (actions), G_ACTION (action));
+				g_object_unref (action);
+
+				g_menu_append (section, email, detailed);
+				g_free (detailed);
+				g_free (name);
 			} else {
-				menu_item = gtk_menu_item_new_with_label (email);
-			}
-
-			gtk_widget_show (menu_item);
-			gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), menu_item);
-			show_menu = TRUE;
-
-			if (length > 1) {
-				gtk_check_menu_item_set_active (
-					GTK_CHECK_MENU_ITEM (menu_item),
-					!e_destination_is_ignored (dest));
-				g_signal_connect_swapped (
-					menu_item, "activate",
-					G_CALLBACK (popup_activate_list), dest);
+				g_menu_append (section, email, NULL);
 			}
 		}
-
 	} else {
 		email_list = e_contact_get (contact, E_CONTACT_EMAIL);
 		len = g_list_length (email_list);
+
+		if (len > 1) {
+			GSimpleAction *action;
+
+			action = g_simple_action_new_stateful ("email", G_VARIANT_TYPE_INT32,
+				g_variant_new_int32 (email_num));
+			g_signal_connect_object (action, "change-state",
+				G_CALLBACK (popup_email_change_state_cb), name_selector_entry, 0);
+			g_action_map_add_action (G_ACTION_MAP (actions), G_ACTION (action));
+			g_object_unref (action);
+		}
 
 		for (l = email_list, i = 0; l; l = g_list_next (l), i++) {
 			gchar *email = l->data;
@@ -3224,95 +3230,39 @@ populate_popup (ENameSelectorEntry *name_selector_entry,
 				continue;
 
 			if (len > 1) {
-				menu_item = gtk_radio_menu_item_new_with_label (group, email);
-				group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (menu_item));
-				g_signal_connect (menu_item, "toggled", G_CALLBACK (destination_set_email), destination);
+				GMenuItem *item = g_menu_item_new (email, NULL);
+
+				g_menu_item_set_action_and_target (item, "nse.email", "i", i);
+				g_menu_append_item (section, item);
+				g_object_unref (item);
 			} else {
-				menu_item = gtk_menu_item_new_with_label (email);
-			}
-
-			gtk_widget_show (menu_item);
-			gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), menu_item);
-			show_menu = TRUE;
-			g_object_set_data (G_OBJECT (menu_item), "order", GINT_TO_POINTER (i));
-
-			if (i == email_num && len > 1) {
-				gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (menu_item), TRUE);
-				g_signal_connect_swapped (
-					menu_item, "activate",
-					G_CALLBACK (popup_activate_email),
-					name_selector_entry);
+				g_menu_append (section, email, NULL);
 			}
 		}
 	}
 
-	/* Separator */
+	g_menu_append_section (menu, NULL, G_MENU_MODEL (section));
+	g_object_unref (section);
 
-	if (show_menu) {
-		menu_item = gtk_separator_menu_item_new ();
-		gtk_widget_show (menu_item);
-		gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), menu_item);
-	}
+	gtk_widget_insert_action_group (GTK_WIDGET (name_selector_entry), "nse", G_ACTION_GROUP (actions));
+	gtk_entry_set_extra_menu (GTK_ENTRY (name_selector_entry), G_MENU_MODEL (menu));
 
-	/* Expand a list inline */
-	if (is_list) {
-		/* To Translators: This would be similiar to "Expand MyList Inline" where MyList is a Contact List*/
-		edit_label = g_strdup_printf (_("E_xpand %s Inline"), (gchar *) e_contact_get_const (contact, E_CONTACT_FILE_AS));
-		menu_item = gtk_menu_item_new_with_mnemonic (edit_label);
-		g_free (edit_label);
-		gtk_widget_show (menu_item);
-		gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), menu_item);
-		g_signal_connect_swapped (
-			menu_item, "activate", G_CALLBACK (popup_activate_inline_expand),
-			name_selector_entry);
-
-		/* Separator */
-		menu_item = gtk_separator_menu_item_new ();
-		gtk_widget_show (menu_item);
-		gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), menu_item);
-	}
-
-	/* Copy Contact Item */
-	copy_label = g_strdup_printf (_("Cop_y %s"), (gchar *) e_contact_get_const (contact, E_CONTACT_FILE_AS));
-	menu_item = gtk_menu_item_new_with_mnemonic (copy_label);
-	g_free (copy_label);
-	gtk_widget_show (menu_item);
-	gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), menu_item);
-
-	g_signal_connect_swapped (
-		menu_item, "activate", G_CALLBACK (popup_activate_copy),
-		name_selector_entry);
-
-	/* Cut Contact Item */
-	cut_label = g_strdup_printf (_("C_ut %s"), (gchar *) e_contact_get_const (contact, E_CONTACT_FILE_AS));
-	menu_item = gtk_menu_item_new_with_mnemonic (cut_label);
-	g_free (cut_label);
-	gtk_widget_show (menu_item);
-	gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), menu_item);
-
-	g_signal_connect_swapped (
-		menu_item, "activate", G_CALLBACK (popup_activate_cut),
-		name_selector_entry);
-
-	if (show_menu) {
-		menu_item = gtk_separator_menu_item_new ();
-		gtk_widget_show (menu_item);
-		gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), menu_item);
-	}
-
-	/* Edit Contact item */
-
-	edit_label = g_strdup_printf (_("_Edit %s"), (gchar *) e_contact_get_const (contact, E_CONTACT_FILE_AS));
-	menu_item = gtk_menu_item_new_with_mnemonic (edit_label);
-	g_free (edit_label);
-	gtk_widget_show (menu_item);
-	gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), menu_item);
-
-	g_signal_connect_swapped (
-		menu_item, "activate", G_CALLBACK (popup_activate_contact),
-		name_selector_entry);
-
+	g_object_unref (actions);
+	g_object_unref (menu);
 	deep_free_list (email_list);
+}
+
+static void
+popup_pressed_cb (GtkGestureClick *gesture,
+		  gint n_press,
+		  gdouble x,
+		  gdouble y,
+		  gpointer user_data)
+{
+	ENameSelectorEntry *name_selector_entry = user_data;
+
+	prepare_popup_destination (name_selector_entry, x, y);
+	populate_popup (name_selector_entry);
 }
 
 static gint
@@ -3476,12 +3426,6 @@ e_name_selector_entry_init (ENameSelectorEntry *name_selector_entry)
 		e_gtk_widget_legacy_events (name_selector_entry), "key-press-event",
 		G_CALLBACK (user_key_press_event_cb), name_selector_entry);
 
-	/* Drawing */
-
-	g_signal_connect (
-		name_selector_entry, "draw",
-		G_CALLBACK (draw_event), name_selector_entry);
-
 	/* Activation: Complete current entry if possible */
 
 	g_signal_connect (
@@ -3490,12 +3434,15 @@ e_name_selector_entry_init (ENameSelectorEntry *name_selector_entry)
 
 	/* Pop-up menu */
 
-	g_signal_connect (
-		e_gtk_widget_legacy_events (name_selector_entry), "button-press-event",
-		G_CALLBACK (prepare_popup_destination), name_selector_entry);
-	g_signal_connect (
-		name_selector_entry, "populate-popup",
-		G_CALLBACK (populate_popup), name_selector_entry);
+	{
+		GtkGesture *gesture = gtk_gesture_click_new ();
+
+		/* before the entry opens its context menu */
+		gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (gesture), GDK_BUTTON_SECONDARY);
+		gtk_event_controller_set_propagation_phase (GTK_EVENT_CONTROLLER (gesture), GTK_PHASE_CAPTURE);
+		g_signal_connect (gesture, "pressed", G_CALLBACK (popup_pressed_cb), name_selector_entry);
+		gtk_widget_add_controller (GTK_WIDGET (name_selector_entry), GTK_EVENT_CONTROLLER (gesture));
+	}
 
 	/* Clipboard signals */
 	g_signal_connect (

@@ -557,7 +557,7 @@ cell_edited_cb (GtkCellRendererText *cell,
 	gtk_tree_model_get_iter_from_string (model, &iter, path_string);
 
 	if (new_text == NULL || *g_strstrip (new_text) == '\0')
-		gtk_button_clicked (GTK_BUTTON (cd->header_remove));
+		g_signal_emit_by_name (cd->header_remove, "clicked");
 	else {
 		gtk_list_store_set (
 			GTK_LIST_STORE (model), &iter,
@@ -570,7 +570,7 @@ static void
 cell_editing_canceled_cb (GtkCellRenderer *cell,
                           ConfigData *cd)
 {
-	gtk_button_clicked (GTK_BUTTON (cd->header_remove));
+	g_signal_emit_by_name (cd->header_remove, "clicked");
 }
 
 static void

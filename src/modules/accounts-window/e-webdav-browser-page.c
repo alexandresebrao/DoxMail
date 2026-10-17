@@ -150,7 +150,7 @@ webdav_browser_page_constructed (GObject *object)
 	ECredentialsPrompter *credentials_prompter;
 	EWebDAVBrowserPage *page;
 	EShell *shell;
-	GtkButtonBox *button_box;
+	GtkBox *button_box;
 	GtkWidget *widget;
 	GtkWidget *vbox;
 

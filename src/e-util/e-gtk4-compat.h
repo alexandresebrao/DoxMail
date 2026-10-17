@@ -262,6 +262,17 @@ void		e_gtk_container_child_get_property
 						 const gchar *property_name,
 						 GValue *value);
 
+/* GTK 4 keeps the entry layout private: the character offset at entry
+ * coordinates, or -1; assumes the text is not scrolled */
+gint		e_gtk_entry_get_index_at_position
+						(GtkEntry *entry,
+						 gdouble x,
+						 gdouble y);
+
+/* the "labelled-by" ATK relation */
+void		e_gtk_widget_set_labelled_by	(GtkWidget *widget,
+						 GtkWidget *label);
+
 /* GTK 3 GtkCalendar API: months count from 0, day 0 means none */
 void		e_gtk_calendar_get_date		(GtkCalendar *calendar,
 						 guint *year,

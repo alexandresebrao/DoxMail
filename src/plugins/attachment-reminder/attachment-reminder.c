@@ -356,7 +356,7 @@ cell_edited_cb (GtkCellRendererText *cell,
 	gtk_tree_model_get_iter_from_string (model, &iter, path_string);
 
 	if (new_text == NULL || *g_strstrip (new_text) == '\0')
-		gtk_button_clicked (GTK_BUTTON (ui->clue_remove));
+		g_signal_emit_by_name (ui->clue_remove, "clicked");
 	else {
 		gtk_list_store_set (
 			GTK_LIST_STORE (model), &iter,
@@ -381,7 +381,7 @@ cell_editing_canceled_cb (GtkCellRenderer *cell,
 		gtk_tree_model_get (model, &iter, CLUE_KEYWORD_COLUMN, &text, -1);
 
 		if (!text || !*g_strstrip (text))
-			gtk_button_clicked (GTK_BUTTON (ui->clue_remove));
+			g_signal_emit_by_name (ui->clue_remove, "clicked");
 
 		g_free (text);
 	}

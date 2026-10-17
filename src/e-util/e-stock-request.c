@@ -76,9 +76,6 @@ process_stock_request_idle_cb (gpointer user_data)
 	GdkRGBA theme_fg = { 0, };
 	GUri *guri;
 	GHashTable *query = NULL;
-	GtkStyleContext *context;
-	GtkWidgetPath *path;
-	GtkIconSet *icon_set = NULL;
 	gssize size = GTK_ICON_SIZE_NORMAL;
 	gboolean dark_color_scheme = FALSE;
 	const gchar *icon_name;
@@ -117,37 +114,15 @@ process_stock_request_idle_cb (gpointer user_data)
 		g_hash_table_destroy (query);
 	}
 
-	/* Try style context first */
-	context = gtk_style_context_new ();
-	path = gtk_widget_path_new ();
-	gtk_widget_path_append_type (path, GTK_TYPE_WINDOW);
-	gtk_widget_path_append_type (path, GTK_TYPE_BUTTON);
-	gtk_style_context_set_path (context, path);
-	gtk_widget_path_free (path);
-
-	if (!gtk_style_context_lookup_color (context, "theme_fg_color", &theme_fg))
-		gdk_rgba_parse (&theme_fg, E_UTILS_DEFAULT_THEME_FG_COLOR);
+	/* GTK 4 has no style context outside widgets and no icon sets,
+	 * thus only the icon theme gives icons here */
+	gdk_rgba_parse (&theme_fg, E_UTILS_DEFAULT_THEME_FG_COLOR);
 
 	icon_name = g_uri_get_host (guri);
 	if (e_icon_factory_get_prefer_symbolic_icons () && !g_str_has_suffix (icon_name, "-symbolic"))
 		icon_name_symbolic = g_strconcat (icon_name, "-symbolic", NULL);
 
-	if (icon_name_symbolic)
-		icon_set = gtk_style_context_lookup_icon_set (context, icon_name_symbolic);
-	if (!icon_set)
-		icon_set = gtk_style_context_lookup_icon_set (context, icon_name);
-	if (icon_set != NULL) {
-		GdkPixbuf *pixbuf;
-
-		pixbuf = gtk_icon_set_render_icon_pixbuf (
-			icon_set, context, size);
-		gdk_pixbuf_save_to_buffer (
-			pixbuf, &buffer, &buff_len,
-			"png", &local_error, NULL);
-		g_object_unref (pixbuf);
-
-	/* Fallback to icon theme */
-	} else {
+	{
 		GtkIconTheme *icon_theme;
 		EGtkIconInfo *icon_info = NULL;
 		gint icon_width, icon_height, scale_factor;
@@ -204,13 +179,17 @@ process_stock_request_idle_cb (gpointer user_data)
 
 			cr = cairo_create (surface);
 
-			if (gtk_style_context_lookup_color (context, "color", &rgba))
-				gdk_cairo_set_source_rgba (cr, &rgba);
-			else
-				cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 1.0);
+			rgba = theme_fg;
+			cairo_set_source_rgb (cr, 1.0, 1.0, 1.0);
+			cairo_paint (cr);
 
-			gtk_render_background (context, cr, 0, 0, size, size);
-			gtk_render_arrow (context, cr, G_PI, 0, 0, size);
+			/* a down-pointing arrow, as gtk_render_arrow() drew it */
+			gdk_cairo_set_source_rgba (cr, &rgba);
+			cairo_move_to (cr, size * 0.2, size * 0.35);
+			cairo_line_to (cr, size * 0.8, size * 0.35);
+			cairo_line_to (cr, size * 0.5, size * 0.7);
+			cairo_close_path (cr);
+			cairo_fill (cr);
 
 			cairo_destroy (cr);
 
@@ -298,7 +277,6 @@ process_stock_request_idle_cb (gpointer user_data)
 	}
 
 	g_uri_unref (guri);
-	g_object_unref (context);
 	g_free (icon_name_symbolic);
 
 	e_flag_set (sid->flag);

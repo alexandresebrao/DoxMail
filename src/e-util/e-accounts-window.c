@@ -1263,7 +1263,7 @@ accounts_window_key_press_event_cb (GtkWidget *widget,
 
 	if (e_gdk_event_keyval (event) == GDK_KEY_Delete) {
 		if (gtk_widget_is_sensitive (accounts_window->priv->delete_button))
-			gtk_button_clicked (GTK_BUTTON (accounts_window->priv->delete_button));
+			g_signal_emit_by_name (accounts_window->priv->delete_button, "clicked");
 
 		return TRUE;
 	}
@@ -1282,7 +1282,7 @@ accounts_window_row_activated_cb (GtkTreeView *tree_view,
 	g_return_if_fail (E_IS_ACCOUNTS_WINDOW (accounts_window));
 
 	if (gtk_widget_is_sensitive (accounts_window->priv->edit_button))
-		gtk_button_clicked (GTK_BUTTON (accounts_window->priv->edit_button));
+		g_signal_emit_by_name (accounts_window->priv->edit_button, "clicked");
 }
 
 static gboolean
@@ -1468,17 +1468,17 @@ accounts_window_tree_view_new (EAccountsWindow *accounts_window)
 }
 
 static void
-accounts_window_add_menu_activate_cb (GObject *item,
+accounts_window_add_source_action_cb (GSimpleAction *action,
+				      GVariant *parameter,
 				      gpointer user_data)
 {
 	EAccountsWindow *accounts_window = user_data;
 	const gchar *kind;
 	gboolean handled = FALSE;
 
-	g_return_if_fail (GTK_IS_MENU_ITEM (item));
 	g_return_if_fail (E_IS_ACCOUNTS_WINDOW (accounts_window));
 
-	kind = g_object_get_data (item, ADD_POPUP_KEY_KIND);
+	kind = g_variant_get_string (parameter, NULL);
 
 	g_return_if_fail (kind && *kind);
 
@@ -1501,38 +1501,25 @@ accounts_window_show_add_popup (EAccountsWindow *accounts_window,
 		{ "memo-list",	N_("M_emo List"),		"evolution-memos" },
 		{ "task-list",	N_("_Task List"),		"evolution-tasks" }
 	};
-	GtkWidget *popup_menu;
-	GtkMenuShell *menu_shell;
+	GMenu *menu;
+	GtkWidget *add_button = accounts_window->priv->add_button;
 	gint ii;
 
 	g_return_if_fail (E_IS_ACCOUNTS_WINDOW (accounts_window));
 
-	popup_menu = gtk_menu_new ();
-	menu_shell = GTK_MENU_SHELL (popup_menu);
+	menu = g_menu_new ();
 
 	for (ii = 0; ii < G_N_ELEMENTS (items); ii++) {
-		e_accounts_window_insert_to_add_popup (accounts_window, menu_shell, items[ii].kind, _(items[ii].text), items[ii].icon_name);
+		e_accounts_window_insert_to_add_popup (accounts_window, menu, items[ii].kind, _(items[ii].text), items[ii].icon_name);
 	}
 
-	g_signal_emit (accounts_window, signals[POPULATE_ADD_POPUP], 0, menu_shell);
+	g_signal_emit (accounts_window, signals[POPULATE_ADD_POPUP], 0, menu);
 
-	g_signal_connect (popup_menu, "deactivate", G_CALLBACK (gtk_menu_detach), NULL);
+	/* below the Add button */
+	e_util_popup_menu_model (G_MENU_MODEL (menu), add_button,
+		0, gtk_widget_get_height (add_button));
 
-	gtk_widget_set_visible (popup_menu, TRUE);
-
-	gtk_menu_attach_to_widget (GTK_MENU (popup_menu), accounts_window->priv->add_button, NULL);
-
-	g_object_set (popup_menu,
-	              "anchor-hints", (GDK_ANCHOR_FLIP_Y |
-	                               GDK_ANCHOR_SLIDE |
-	                               GDK_ANCHOR_RESIZE),
-	              NULL);
-
-	gtk_menu_popup_at_widget (GTK_MENU (popup_menu),
-	                          accounts_window->priv->add_button,
-	                          GDK_GRAVITY_SOUTH_WEST,
-	                          GDK_GRAVITY_NORTH_WEST,
-	                          event);
+	g_object_unref (menu);
 }
 
 static void
@@ -1996,7 +1983,7 @@ e_accounts_window_class_init (EAccountsWindowClass *klass)
 		NULL, NULL,
 		NULL,
 		G_TYPE_NONE, 1,
-		GTK_TYPE_MENU_SHELL);
+		G_TYPE_MENU);
 
 	/**
 	 * EAccountsWindow::selection-changed:
@@ -2024,6 +2011,19 @@ e_accounts_window_init (EAccountsWindow *accounts_window)
 	accounts_window->priv = e_accounts_window_get_instance_private (accounts_window);
 
 	accounts_window->priv->references = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, (GDestroyNotify) gtk_tree_row_reference_free);
+
+	{
+		GSimpleActionGroup *actions = g_simple_action_group_new ();
+		GSimpleAction *action = g_simple_action_new ("add-source", G_VARIANT_TYPE_STRING);
+
+		/* the items of the Add popup */
+		g_signal_connect_object (action, "activate",
+			G_CALLBACK (accounts_window_add_source_action_cb), accounts_window, 0);
+		g_action_map_add_action (G_ACTION_MAP (actions), G_ACTION (action));
+		gtk_widget_insert_action_group (GTK_WIDGET (accounts_window), "accounts", G_ACTION_GROUP (actions));
+		g_object_unref (action);
+		g_object_unref (actions);
+	}
 }
 
 /**
@@ -2195,40 +2195,44 @@ e_accounts_window_select_source (EAccountsWindow *accounts_window,
  **/
 void
 e_accounts_window_insert_to_add_popup (EAccountsWindow *accounts_window,
-				       GtkMenuShell *popup_menu,
+				       GMenu *popup_menu,
 				       const gchar *kind,
 				       const gchar *label,
 				       const gchar *icon_name)
 {
-	GtkWidget *item;
+	GMenu *section;
+	GMenuItem *item;
 
 	g_return_if_fail (E_IS_ACCOUNTS_WINDOW (accounts_window));
-	g_return_if_fail (GTK_IS_MENU_SHELL (popup_menu));
+	g_return_if_fail (G_IS_MENU (popup_menu));
 
-	if (g_strcmp0 (label, "-") == 0) {
-		item = gtk_separator_menu_item_new ();
-		gtk_menu_shell_append (popup_menu, item);
+	/* items go to the last section; a separator starts a new one */
+	section = g_object_get_data (G_OBJECT (popup_menu), ADD_POPUP_KEY_KIND);
 
-		return;
+	if (!section || g_strcmp0 (label, "-") == 0) {
+		section = g_menu_new ();
+		g_menu_append_section (popup_menu, NULL, G_MENU_MODEL (section));
+		g_object_set_data_full (G_OBJECT (popup_menu), ADD_POPUP_KEY_KIND, section, g_object_unref);
+
+		if (g_strcmp0 (label, "-") == 0)
+			return;
 	}
 
 	g_return_if_fail (kind != NULL);
 	g_return_if_fail (label != NULL);
 
-	if (icon_name) {
-		item = gtk_image_menu_item_new_with_mnemonic (label);
+	item = g_menu_item_new (label, NULL);
+	g_menu_item_set_action_and_target (item, "accounts.add-source", "s", kind);
 
-		gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (item),
-			gtk_image_new_from_icon_name (icon_name));
-	} else {
-		item = gtk_menu_item_new_with_mnemonic (label);
+	if (icon_name) {
+		GIcon *icon = g_themed_icon_new (icon_name);
+
+		g_menu_item_set_icon (item, icon);
+		g_object_unref (icon);
 	}
 
-	g_object_set_data_full (G_OBJECT (item), ADD_POPUP_KEY_KIND, g_strdup (kind), g_free);
-
-	g_signal_connect (item, "activate", G_CALLBACK (accounts_window_add_menu_activate_cb), accounts_window);
-
-	gtk_menu_shell_append (popup_menu, item);
+	g_menu_append_item (section, item);
+	g_object_unref (item);
 }
 
 /**
@@ -2240,12 +2244,12 @@ e_accounts_window_insert_to_add_popup (EAccountsWindow *accounts_window,
  *
  * Since: 3.26
  **/
-GtkButtonBox *
+GtkBox *
 e_accounts_window_get_button_box (EAccountsWindow *accounts_window)
 {
 	g_return_val_if_fail (E_IS_ACCOUNTS_WINDOW (accounts_window), NULL);
 
-	return GTK_BUTTON_BOX (accounts_window->priv->button_box);
+	return GTK_BOX (accounts_window->priv->button_box);
 }
 
 /**

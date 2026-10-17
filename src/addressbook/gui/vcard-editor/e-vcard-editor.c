@@ -4347,7 +4347,7 @@ eve_event_after_cb (EVCardEditor *self,
 			if (self->add_menu_needs_update)
 				eve_update_add_menu (self);
 
-			gtk_button_clicked (GTK_BUTTON (self->add_menu_button));
+			g_signal_emit_by_name (self->add_menu_button, "clicked");
 		}
 	}
 }

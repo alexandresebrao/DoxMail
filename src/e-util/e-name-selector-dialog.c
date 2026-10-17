@@ -233,10 +233,6 @@ name_selector_dialog_constructed (GObject *object)
 	GtkWidget *label_contacts;
 	GtkWidget *scrolledwindow0;
 	GtkWidget *scrolledwindow1;
-	AtkRelationSet *tmp_relation_set;
-	AtkRelationType tmp_relationship;
-	AtkRelation *tmp_relation;
-	GtkWidget *scrolledwindow1_relation_targets[1];
 	GtkWidget *source_tree_view;
 	GtkWidget *destination_vgrid;
 	GtkWidget *status_message;
@@ -431,13 +427,7 @@ name_selector_dialog_constructed (GObject *object)
 
 	atko = GTK_WIDGET (scrolledwindow1);
 	e_gtk_widget_set_accessible_name (atko, _("Contacts"));
-	tmp_relation_set = atk_object_ref_relation_set (atko);
-	scrolledwindow1_relation_targets[0] = GTK_WIDGET (label_contacts);
-	tmp_relationship = atk_relation_type_for_name ("labelled-by");
-	tmp_relation = atk_relation_new (scrolledwindow1_relation_targets, 1, tmp_relationship);
-	atk_relation_set_add (tmp_relation_set, tmp_relation);
-	g_object_unref (G_OBJECT (tmp_relation));
-	g_object_unref (G_OBJECT (tmp_relation_set));
+	e_gtk_widget_set_labelled_by (atko, GTK_WIDGET (label_contacts));
 
 	e_gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area (GTK_DIALOG (object))), name_selector_grid, TRUE, TRUE, 0);
 
@@ -542,7 +532,7 @@ name_selector_dialog_constructed (GObject *object)
 	 */
 	gtk_window_set_default_size (
 		GTK_WINDOW (object), 700,
-		gdk_screen_height () >= 600 ? 512 : -1);
+		512);
 
 	gtk_dialog_set_default_response (
 		GTK_DIALOG (object), GTK_RESPONSE_CLOSE);

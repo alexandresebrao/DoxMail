@@ -66,12 +66,6 @@ async_context_free (AsyncContext *async_context)
 	g_slice_free (AsyncContext, async_context);
 }
 
-static gboolean
-mail_signature_script_dialog_filter_cb (const GtkFileFilterInfo *filter_info)
-{
-	return g_file_test (filter_info->filename, G_FILE_TEST_IS_EXECUTABLE);
-}
-
 static void
 mail_signature_script_dialog_update_status (EMailSignatureScriptDialog *dialog)
 {
@@ -109,14 +103,12 @@ mail_signature_script_dialog_update_status (EMailSignatureScriptDialog *dialog)
 }
 
 static void
-mail_signature_script_dialog_file_set_cb (GtkFileChooserButton *button,
+mail_signature_script_dialog_file_set_cb (EGtkFileChooserButton *button,
                                           EMailSignatureScriptDialog *dialog)
 {
-	GtkFileChooser *file_chooser;
 	gchar *filename;
 
-	file_chooser = GTK_FILE_CHOOSER (button);
-	filename = e_gtk_file_chooser_get_filename (file_chooser);
+	filename = e_gtk_file_chooser_get_filename (button);
 
 	g_free (dialog->priv->symlink_target);
 	dialog->priv->symlink_target = filename;  /* takes ownership */
@@ -442,11 +434,16 @@ mail_signature_script_dialog_constructed (GObject *object)
 		gtk_file_filter_set_name (filter, _("All files"));
 		gtk_file_filter_add_pattern (filter, "*");
 	} else {
-		/* Restrict file selection to executable files. */
-		gtk_file_filter_add_custom (
-			filter, GTK_FILE_FILTER_FILENAME,
-			(GtkFileFilterFunc) mail_signature_script_dialog_filter_cb,
-			NULL, NULL);
+		/* Restrict file selection to programs and scripts; GTK 4 has
+		 * no custom filters, the status check tells about the rest. */
+		gtk_file_filter_set_name (filter, _("Programs and scripts"));
+		gtk_file_filter_add_mime_type (filter, "application/x-executable");
+		gtk_file_filter_add_mime_type (filter, "application/x-pie-executable");
+		gtk_file_filter_add_mime_type (filter, "application/x-shellscript");
+		gtk_file_filter_add_mime_type (filter, "text/x-python");
+		gtk_file_filter_add_mime_type (filter, "text/x-python3");
+		gtk_file_filter_add_mime_type (filter, "application/x-perl");
+		gtk_file_filter_add_mime_type (filter, "text/x-script");
 	}
 
 	e_gtk_file_chooser_set_filter (widget, filter);

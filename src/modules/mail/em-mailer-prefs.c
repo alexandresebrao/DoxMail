@@ -1690,7 +1690,7 @@ emmp_use_headers_cell_edited (EMMailerPrefs *prefs,
 		g_strstrip (new_text);
 
 	if (cell == USER_HEADERS_LIST_HEADER_COLUMN && (!new_text || !*new_text)) {
-		gtk_button_clicked (GTK_BUTTON (prefs->priv->user_headers_remove));
+		g_signal_emit_by_name (prefs->priv->user_headers_remove, "clicked");
 	} else {
 		gtk_list_store_set (prefs->priv->user_headers_list_store, &iter,
 			cell, new_text,

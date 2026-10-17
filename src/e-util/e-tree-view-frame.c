@@ -548,10 +548,9 @@ tree_view_frame_constructed (GObject *object)
 		widget, "vscrollbar-policy",
 		G_BINDING_SYNC_CREATE);
 
-	widget = gtk_toolbar_new ();
-	gtk_toolbar_set_show_arrow (GTK_TOOLBAR (widget), FALSE);
-	gtk_toolbar_set_style (GTK_TOOLBAR (widget), GTK_TOOLBAR_ICONS);
-	e_util_setup_toolbar_icon_size (widget, E_GTK_ICON_SIZE_MENU);
+	/* GTK 4 has no toolbars; a box of icon buttons makes one */
+	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+	gtk_widget_add_css_class (widget, "toolbar");
 	e_gtk_box_pack_start (GTK_BOX (tree_view_frame), widget, FALSE, FALSE, 0);
 	tree_view_frame->priv->inline_toolbar = g_object_ref (widget);
 	gtk_widget_show (widget);
@@ -559,8 +558,6 @@ tree_view_frame_constructed (GObject *object)
 	style_context = gtk_widget_get_style_context (widget);
 	gtk_style_context_add_class (
 		style_context, "inline-toolbar");
-	gtk_style_context_set_junction_sides (
-		style_context, GTK_JUNCTION_TOP);
 
 	e_binding_bind_property (
 		tree_view_frame, "toolbar-visible",
@@ -1031,7 +1028,7 @@ e_tree_view_frame_set_vscrollbar_policy (ETreeViewFrame *tree_view_frame,
 }
 
 static void
-tree_view_frame_tool_item_clicked_cb (GtkToolButton *tool_button,
+tree_view_frame_tool_item_clicked_cb (GtkButton *tool_button,
 				      gpointer user_data)
 {
 	ETreeViewFrame *self = user_data;
@@ -1068,8 +1065,8 @@ e_tree_view_frame_insert_toolbar_action (ETreeViewFrame *tree_view_frame,
 					 EUIAction *action,
 					 gint position)
 {
-	GtkToolbar *toolbar;
-	GtkToolItem *tool_item;
+	GtkWidget *toolbar;
+	GtkWidget *tool_item;
 	const gchar *action_name;
 
 	g_return_if_fail (E_IS_TREE_VIEW_FRAME (tree_view_frame));
@@ -1078,23 +1075,18 @@ e_tree_view_frame_insert_toolbar_action (ETreeViewFrame *tree_view_frame,
 	action_name = g_action_get_name (G_ACTION (action));
 	g_return_if_fail (action_name != NULL);
 
-	toolbar = GTK_TOOLBAR (tree_view_frame->priv->inline_toolbar);
+	toolbar = tree_view_frame->priv->inline_toolbar;
 
 	if (g_hash_table_contains (tree_view_frame->priv->actions_ht, action_name)) {
 		g_warning ("%s: Duplicate action name '%s'", G_STRFUNC, action_name);
 		return;
 	}
 
-	tool_item = gtk_tool_button_new (NULL, NULL);
-	gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (tool_item), e_ui_action_get_icon_name (action));
-	gtk_tool_button_set_use_underline (GTK_TOOL_BUTTON (tool_item), TRUE);
+	/* icon-only, the label goes nowhere, as with GTK_TOOLBAR_ICONS */
+	tool_item = gtk_button_new_from_icon_name (e_ui_action_get_icon_name (action));
+	gtk_button_set_has_frame (GTK_BUTTON (tool_item), FALSE);
 	g_object_set_data_full (G_OBJECT (tool_item), "tree-view-frame-action",
 		g_object_ref (action), g_object_unref);
-
-	e_binding_bind_property (
-		action, "label",
-		tool_item, "label",
-		G_BINDING_SYNC_CREATE);
 
 	e_binding_bind_property (
 		action, "tooltip",
@@ -1111,7 +1103,16 @@ e_tree_view_frame_insert_toolbar_action (ETreeViewFrame *tree_view_frame,
 		tool_item, "visible",
 		G_BINDING_SYNC_CREATE);
 
-	gtk_toolbar_insert (toolbar, GTK_TOOL_ITEM (tool_item), position);
+	if (position < 0) {
+		gtk_box_append (GTK_BOX (toolbar), tool_item);
+	} else {
+		GtkWidget *sibling = NULL, *child;
+
+		for (child = gtk_widget_get_first_child (toolbar); child && position > 0; child = gtk_widget_get_next_sibling (child))
+			sibling = child, position--;
+
+		gtk_box_insert_child_after (GTK_BOX (toolbar), tool_item, sibling);
+	}
 
 	g_hash_table_replace (tree_view_frame->priv->actions_ht, (gpointer) g_action_get_name (G_ACTION (action)), g_object_ref (action));
 

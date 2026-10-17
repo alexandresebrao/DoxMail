@@ -341,7 +341,7 @@ mail_account_manager_row_activated_cb (GtkTreeView *tree_view,
 	edit_button = manager->priv->edit_button;
 
 	if (gtk_widget_is_sensitive (edit_button))
-		gtk_button_clicked (GTK_BUTTON (edit_button));
+		g_signal_emit_by_name (edit_button, "clicked");
 }
 
 static void

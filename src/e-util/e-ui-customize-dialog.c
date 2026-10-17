@@ -843,7 +843,7 @@ customize_shortcuts_popover_key_press_cb (GtkWidget *widget,
 	case GDK_KEY_KP_Enter:
 	case GDK_KEY_ISO_Enter:
 		if (!(e_gdk_event_state (event) & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_ALT_MASK))) {
-			gtk_button_clicked (GTK_BUTTON (sd->save_button));
+			g_signal_emit_by_name (sd->save_button, "clicked");
 			return TRUE;
 		}
 		return FALSE;

@@ -121,7 +121,7 @@ cal_config_local_custom_file_to_active (GBinding *binding,
 }
 
 static void
-cal_config_local_file_set_cb (GtkFileChooserButton *button,
+cal_config_local_file_set_cb (EGtkFileChooserButton *button,
                               GtkWidget *custom_file_checkbox)
 {
 	/* This will update ESourceLocal:custom-file. */

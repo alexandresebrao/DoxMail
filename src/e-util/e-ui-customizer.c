@@ -627,53 +627,35 @@ context_menu_data_free (ContextMenuData *data)
 }
 
 static void
-e_ui_customizer_toolbar_context_menu_activate_cb (GtkMenuItem *item,
-						  gpointer user_data)
+e_ui_customizer_toolbar_customize_cb (GSimpleAction *action,
+				      GVariant *parameter,
+				      gpointer user_data)
 {
 	ContextMenuData *data = user_data;
 
 	data->func (data->widget, data->id, data->user_data);
 }
 
-static gboolean
-e_ui_customizer_toolbar_context_menu_cb (GtkWidget *toolbar,
-					 gint xx,
-					 gint yy,
-					 gint button,
-					 gpointer user_data)
+static void
+e_ui_customizer_toolbar_pressed_cb (GtkGestureClick *gesture,
+				    gint n_press,
+				    gdouble xx,
+				    gdouble yy,
+				    gpointer user_data)
 {
-	ContextMenuData *data = user_data, *data2;
-	GdkEvent *event;
-	GtkMenu *menu;
-	GtkWidget *item;
+	ContextMenuData *data = user_data;
+	GMenu *menu;
 
-	g_return_val_if_fail (data != NULL, FALSE);
+	g_return_if_fail (data != NULL);
 
-	menu = GTK_MENU (gtk_menu_new ());
-	item = gtk_menu_item_new_with_mnemonic (_("_Customize Toolbar…"));
-	gtk_widget_set_visible (item, TRUE);
+	gtk_gesture_set_state (GTK_GESTURE (gesture), GTK_EVENT_SEQUENCE_CLAIMED);
 
-	data2 = g_new0 (ContextMenuData, 1);
-	data2->widget = data->widget;
-	data2->id = g_strdup (data->id);
-	data2->func = data->func;
-	data2->user_data = data->user_data;
+	menu = g_menu_new ();
+	g_menu_append (menu, _("_Customize Toolbar…"), "uicustomizer.customize");
 
-	g_signal_connect_data (item, "activate",
-		G_CALLBACK (e_ui_customizer_toolbar_context_menu_activate_cb), data2, (GClosureNotify) context_menu_data_free, 0);
+	e_util_popup_menu_model (G_MENU_MODEL (menu), data->widget, xx, yy);
 
-	gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
-
-	gtk_menu_attach_to_widget (menu, toolbar, NULL);
-	e_util_connect_menu_detach_after_deactivate (menu);
-
-	event = e_gtk_get_current_event ();
-
-	gtk_menu_popup_at_pointer (menu, event);
-
-	g_clear_pointer (&event, gdk_event_unref);
-
-	return TRUE;
+	g_object_unref (menu);
 }
 
 /**
@@ -697,7 +679,7 @@ e_ui_customizer_util_attach_toolbar_context_menu (GtkWidget *widget,
 {
 	ContextMenuData *data;
 
-	g_return_if_fail (GTK_IS_TOOLBAR (widget));
+	g_return_if_fail (GTK_IS_WIDGET (widget));
 	g_return_if_fail (toolbar_id != NULL);
 	g_return_if_fail (func != NULL);
 
@@ -707,6 +689,21 @@ e_ui_customizer_util_attach_toolbar_context_menu (GtkWidget *widget,
 	data->func = func;
 	data->user_data = user_data;
 
-	g_signal_connect_data (widget, "popup-context-menu",
-		G_CALLBACK (e_ui_customizer_toolbar_context_menu_cb), data, (GClosureNotify) context_menu_data_free, 0);
+	/* toolbars are boxes with GTK 4: a right click offers the customization */
+	{
+		GSimpleActionGroup *actions = g_simple_action_group_new ();
+		GSimpleAction *action = g_simple_action_new ("customize", NULL);
+		GtkGesture *gesture = gtk_gesture_click_new ();
+
+		g_signal_connect_data (action, "activate",
+			G_CALLBACK (e_ui_customizer_toolbar_customize_cb), data, (GClosureNotify) context_menu_data_free, 0);
+		g_action_map_add_action (G_ACTION_MAP (actions), G_ACTION (action));
+		gtk_widget_insert_action_group (widget, "uicustomizer", G_ACTION_GROUP (actions));
+		g_object_unref (action);
+		g_object_unref (actions);
+
+		gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (gesture), GDK_BUTTON_SECONDARY);
+		g_signal_connect (gesture, "pressed", G_CALLBACK (e_ui_customizer_toolbar_pressed_cb), data);
+		gtk_widget_add_controller (widget, GTK_EVENT_CONTROLLER (gesture));
+	}
 }

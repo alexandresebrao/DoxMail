@@ -138,7 +138,7 @@ G_DEFINE_DYNAMIC_TYPE (
 	E_TYPE_MAIL_CONFIG_SERVICE_BACKEND)
 
 static void
-mail_config_local_backend_file_set_cb (GtkFileChooserButton *file_chooser_button,
+mail_config_local_backend_file_set_cb (EGtkFileChooserButton *file_chooser_button,
                                        CamelLocalSettings *local_settings)
 {
 	GtkFileChooser *file_chooser;

@@ -1982,3 +1982,48 @@ e_gtk_container_child_get (gpointer container,
 
 	va_end (va);
 }
+
+void
+e_gtk_widget_set_labelled_by (GtkWidget *widget,
+			      GtkWidget *label)
+{
+	g_return_if_fail (GTK_IS_WIDGET (widget));
+	g_return_if_fail (GTK_IS_WIDGET (label));
+
+	gtk_accessible_update_relation (GTK_ACCESSIBLE (widget),
+		GTK_ACCESSIBLE_RELATION_LABELLED_BY, label, NULL,
+		-1);
+}
+
+gint
+e_gtk_entry_get_index_at_position (GtkEntry *entry,
+				   gdouble x,
+				   gdouble y)
+{
+	GtkWidget *text;
+	PangoLayout *layout;
+	graphene_point_t point;
+	const gchar *str;
+	gint index = -1, trailing = 0, height = 0;
+
+	g_return_val_if_fail (GTK_IS_ENTRY (entry), -1);
+
+	text = GTK_WIDGET (gtk_editable_get_delegate (GTK_EDITABLE (entry)));
+	if (!text || !gtk_widget_compute_point (GTK_WIDGET (entry), text, &GRAPHENE_POINT_INIT (x, y), &point))
+		return -1;
+
+	str = gtk_editable_get_text (GTK_EDITABLE (entry));
+	layout = gtk_widget_create_pango_layout (text, str);
+	pango_layout_get_pixel_size (layout, NULL, &height);
+
+	/* the text is centered vertically in the GtkText */
+	if (point.x < 0 ||
+	    !pango_layout_xy_to_index (layout, point.x * PANGO_SCALE, (height / 2) * PANGO_SCALE, &index, &trailing))
+		index = -1;
+	else
+		index = g_utf8_pointer_to_offset (str, str + index);
+
+	g_object_unref (layout);
+
+	return index;
+}
