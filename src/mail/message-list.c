@@ -4100,6 +4100,8 @@ message_list_class_init (MessageListClass *class)
 
 	widget_class = GTK_WIDGET_CLASS (class);
 	widget_class->measure = message_list_measure;
+	/* GTK 4 calls the layout manager, not these methods */
+	e_gtk_widget_class_layout_methods (widget_class);
 
 	gtk_widget_class_set_css_name (widget_class, "MessageList");
 

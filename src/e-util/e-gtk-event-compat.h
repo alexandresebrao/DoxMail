@@ -37,6 +37,14 @@ gpointer	e_gtk_widget_legacy_events	(gpointer widget);
  * this; TRUE keeps the window open, as with GTK 3 */
 gpointer	e_gtk_window_delete_events	(gpointer window);
 
+/* GTK 4 lets the layout manager of widgets that have one (GtkBox, GtkGrid,
+ * GtkFixed, GtkButton, ...) measure and allocate them, without calling
+ * the measure and size_allocate methods of their classes; call this in
+ * the class_init of classes that override them to have them called, with
+ * chain-ups that reach the layout manager */
+void		e_gtk_widget_class_layout_methods
+						(GtkWidgetClass *widget_class);
+
 /* "size-allocate" (void (GtkWidget *, GtkAllocation *)) is emitted after
  * widgets passed through this got allocated, with the allocation in their
  * own coordinates; the size_allocate method of their class is wrapped */

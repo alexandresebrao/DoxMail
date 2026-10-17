@@ -462,6 +462,8 @@ e_shell_taskbar_class_init (EShellTaskbarClass *class)
 	widget_class = GTK_WIDGET_CLASS (class);
 	widget_class->measure = e_shell_taskbar_measure;
 	widget_class->size_allocate = shell_taskbar_size_allocate;
+	/* GTK 4 calls the layout manager, not these methods */
+	e_gtk_widget_class_layout_methods (widget_class);
 
 	/**
 	 * EShellTaskbar:message

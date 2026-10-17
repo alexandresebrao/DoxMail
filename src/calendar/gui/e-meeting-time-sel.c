@@ -980,9 +980,6 @@ e_meeting_time_selector_realize (GtkWidget *widget)
 	mts = E_MEETING_TIME_SELECTOR (widget);
 
 	mts->no_info_pattern = e_meeting_time_selector_create_no_info_pattern (mts);
-
-	/* GTK 3 emitted style-updated on realize; the sizes depend on it */
-	e_meeting_time_selector_style_updated (widget);
 }
 
 static void

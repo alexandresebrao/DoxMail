@@ -294,6 +294,8 @@ e_cal_component_widget_class_init (ECalComponentWidgetClass *klass)
 
 	widget_class = GTK_WIDGET_CLASS (klass);
 	widget_class->size_allocate = e_cal_component_widget_size_allocate;
+	/* GTK 4 calls the layout manager, not these methods */
+	e_gtk_widget_class_layout_methods (widget_class);
 
 	/**
 	 * ECalComponentWidget:client:

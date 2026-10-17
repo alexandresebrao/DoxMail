@@ -505,11 +505,11 @@ week_view_time_range_changed_cb (EWeekView *week_view,
 	 * Note that we do this after updating first_day_shown so that our
 	 * signal handler will not try to reload the events. */
 	if (update_adjustment_value) {
-		GtkRange *range;
+		GtkScrollbar *range; /* GTK 4 scrollbars are no GtkRange */
 		GtkAdjustment *adjustment;
 
-		range = GTK_RANGE (week_view->vscrollbar);
-		adjustment = gtk_range_get_adjustment (range);
+		range = GTK_SCROLLBAR (week_view->vscrollbar);
+		adjustment = gtk_scrollbar_get_adjustment (range);
 		gtk_adjustment_set_value (adjustment, 0);
 	}
 
@@ -1816,6 +1816,8 @@ e_week_view_class_init (EWeekViewClass *class)
 	widget_class->realize = week_view_realize;
 	widget_class->unrealize = week_view_unrealize;
 	widget_class->size_allocate = week_view_size_allocate;
+	/* GTK 4 calls the layout manager, not these methods */
+	e_gtk_widget_class_layout_methods (widget_class);
 	e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (widget_class), "focus-in-event", G_CALLBACK (week_view_focus_in));
 	e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (widget_class), "focus-out-event", G_CALLBACK (week_view_focus_out));
 	e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (widget_class), "key-press-event", G_CALLBACK (week_view_key_press));
@@ -2511,11 +2513,11 @@ e_week_view_set_first_day_shown (EWeekView *week_view,
 	 * Note that we do this after updating first_day_shown so that our
 	 * signal handler will not try to reload the events. */
 	if (update_adjustment_value) {
-		GtkRange *range;
+		GtkScrollbar *range; /* GTK 4 scrollbars are no GtkRange */
 		GtkAdjustment *adjustment;
 
-		range = GTK_RANGE (week_view->vscrollbar);
-		adjustment = gtk_range_get_adjustment (range);
+		range = GTK_SCROLLBAR (week_view->vscrollbar);
+		adjustment = gtk_scrollbar_get_adjustment (range);
 		gtk_adjustment_set_value (adjustment, 0);
 	}
 
@@ -2563,7 +2565,7 @@ void
 e_week_view_set_multi_week_view (EWeekView *week_view,
                                  gboolean multi_week_view)
 {
-	GtkRange *range;
+	GtkScrollbar *range; /* GTK 4 scrollbars are no GtkRange */
 	GtkAdjustment *adjustment;
 	gint page_increment, page_size;
 
@@ -2599,8 +2601,8 @@ e_week_view_set_multi_week_view (EWeekView *week_view,
 		}
 	}
 
-	range = GTK_RANGE (week_view->vscrollbar);
-	adjustment = gtk_range_get_adjustment (range);
+	range = GTK_SCROLLBAR (week_view->vscrollbar);
+	adjustment = gtk_scrollbar_get_adjustment (range);
 	gtk_adjustment_set_page_increment (adjustment, page_increment);
 	gtk_adjustment_set_page_size (adjustment, page_size);
 
@@ -2646,7 +2648,7 @@ void
 e_week_view_set_weeks_shown (EWeekView *week_view,
                              gint weeks_shown)
 {
-	GtkRange *range;
+	GtkScrollbar *range; /* GTK 4 scrollbars are no GtkRange */
 	GtkAdjustment *adjustment;
 	gint page_increment, page_size;
 
@@ -2668,8 +2670,8 @@ e_week_view_set_weeks_shown (EWeekView *week_view,
 			page_size = 5;
 		}
 
-		range = GTK_RANGE (week_view->vscrollbar);
-		adjustment = gtk_range_get_adjustment (range);
+		range = GTK_SCROLLBAR (week_view->vscrollbar);
+		adjustment = gtk_scrollbar_get_adjustment (range);
 		gtk_adjustment_set_page_increment (adjustment, page_increment);
 		gtk_adjustment_set_page_size (adjustment, page_size);
 
@@ -3304,7 +3306,7 @@ e_week_view_on_scroll (GtkWidget *widget,
                        EWeekView *week_view)
 {
 	GnomeCanvasEvent cevent, *scroll = e_gdk_event_to_canvas_event (gdk_event, widget, &cevent);
-	GtkRange *range;
+	GtkScrollbar *range; /* GTK 4 scrollbars are no GtkRange */
 	GtkAdjustment *adjustment;
 	gdouble page_increment;
 	gdouble new_value;
@@ -3313,8 +3315,8 @@ e_week_view_on_scroll (GtkWidget *widget,
 	gdouble upper;
 	gdouble value;
 
-	range = GTK_RANGE (week_view->vscrollbar);
-	adjustment = gtk_range_get_adjustment (range);
+	range = GTK_SCROLLBAR (week_view->vscrollbar);
+	adjustment = gtk_scrollbar_get_adjustment (range);
 
 	page_increment = gtk_adjustment_get_page_increment (adjustment);
 	page_size = gtk_adjustment_get_page_size (adjustment);
@@ -4664,7 +4666,7 @@ e_week_view_scroll_a_step (EWeekView *week_view,
                            ECalViewMoveDirection direction)
 {
 	GtkAdjustment *adjustment;
-	GtkRange *range;
+	GtkScrollbar *range; /* GTK 4 scrollbars are no GtkRange */
 	gdouble step_increment;
 	gdouble page_size;
 	gdouble new_value;
@@ -4672,8 +4674,8 @@ e_week_view_scroll_a_step (EWeekView *week_view,
 	gdouble upper;
 	gdouble value;
 
-	range = GTK_RANGE (week_view->vscrollbar);
-	adjustment = gtk_range_get_adjustment (range);
+	range = GTK_SCROLLBAR (week_view->vscrollbar);
+	adjustment = gtk_scrollbar_get_adjustment (range);
 
 	step_increment = gtk_adjustment_get_step_increment (adjustment);
 	page_size = gtk_adjustment_get_page_size (adjustment);

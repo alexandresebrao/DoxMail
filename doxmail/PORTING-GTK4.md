@@ -216,6 +216,18 @@ doxmail/port/run-evolution.sh --gdb` stops at the first critical.
 Still open: GtkPopoverMenu keeps the submenu pages of rebuilt menu models
 ("duplicate child name in GtkStack" warnings, a leak).
 
+**Layout managers**: GTK 4 measures and allocates widgets that have a
+layout manager (GtkBox, GtkGrid, GtkFixed, GtkButton, ... and their
+subclasses) through it, never calling the `measure`/`size_allocate`
+methods of their classes. Classes that override those (the day and week
+views, ECalDayColumn, ECalComponentWidget, EComposerHeaderTable,
+EShellTaskbar, MessageList, EColorCombo) call
+`e_gtk_widget_class_layout_methods()` in their class_init: the layout
+manager class gets wrapped so that their methods run, and their chain-ups
+reach the layout manager. Also: `style-updated` is emitted on realize, as
+GTK 3 did; GtkScrollbar is no GtkRange. The calendar day view renders
+(`doxmail/screenshot-gtk4-calendar.png`).
+
 ### 7. GtkBuilder files
 
 All 13 `.ui` files are GTK 4 files: `gtk4-builder-tool simplify --3to4

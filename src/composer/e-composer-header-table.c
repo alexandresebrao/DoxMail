@@ -1063,6 +1063,8 @@ e_composer_header_table_class_init (EComposerHeaderTableClass *class)
 
 	widget_class = GTK_WIDGET_CLASS (class);
 	widget_class->size_allocate = composer_header_table_size_allocate;
+	/* GTK 4 calls the layout manager, not these methods */
+	e_gtk_widget_class_layout_methods (widget_class);
 
 	/**
 	 * EComposerHeaderTable:client-cache:

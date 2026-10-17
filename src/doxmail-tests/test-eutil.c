@@ -359,6 +359,88 @@ quit_cb (GtkWidget *widget,
 	*(gboolean *) user_data = TRUE;
 }
 
+/* a GtkBox subclass overriding measure and size_allocate, which GTK 4
+ * does not call for widgets with a layout manager by itself */
+typedef GtkBox TestLayoutBox;
+typedef GtkBoxClass TestLayoutBoxClass;
+
+G_DEFINE_TYPE (TestLayoutBox, test_layout_box, GTK_TYPE_BOX)
+
+static gint test_layout_box_allocations = 0;
+
+static void
+test_layout_box_measure (GtkWidget *widget,
+			 GtkOrientation orientation,
+			 gint for_size,
+			 gint *minimum,
+			 gint *natural,
+			 gint *minimum_baseline,
+			 gint *natural_baseline)
+{
+	GTK_WIDGET_CLASS (test_layout_box_parent_class)->measure (widget, orientation, for_size,
+		minimum, natural, minimum_baseline, natural_baseline);
+
+	if (orientation == GTK_ORIENTATION_HORIZONTAL) {
+		*minimum = MAX (*minimum, 321);
+		*natural = MAX (*natural, 321);
+	}
+}
+
+static void
+test_layout_box_size_allocate (GtkWidget *widget,
+			       gint width,
+			       gint height,
+			       gint baseline)
+{
+	GTK_WIDGET_CLASS (test_layout_box_parent_class)->size_allocate (widget, width, height, baseline);
+
+	test_layout_box_allocations++;
+}
+
+static void
+test_layout_box_class_init (TestLayoutBoxClass *klass)
+{
+	GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+
+	widget_class->measure = test_layout_box_measure;
+	widget_class->size_allocate = test_layout_box_size_allocate;
+	e_gtk_widget_class_layout_methods (widget_class);
+}
+
+static void
+test_layout_box_init (TestLayoutBox *self)
+{
+}
+
+static void
+test_layout_methods (void)
+{
+	GtkWidget *box, *label, *window;
+	gint minimum = 0;
+
+	box = g_object_new (test_layout_box_get_type (), NULL);
+	label = gtk_label_new ("child");
+	gtk_box_append (GTK_BOX (box), label);
+
+	/* the measure override runs, its chain-up measures the children */
+	gtk_widget_measure (box, GTK_ORIENTATION_HORIZONTAL, -1, &minimum, NULL, NULL, NULL);
+	g_assert_cmpint (minimum, ==, 321);
+
+	window = show_in_window (box);
+
+	/* GTK 3 style chain-ups pass NULLs the layout managers do not take */
+	GTK_WIDGET_GET_CLASS (box)->measure (box, GTK_ORIENTATION_VERTICAL, -1, &minimum, NULL, NULL, NULL);
+	g_assert_cmpint (minimum, >, 0);
+
+	/* the size_allocate override runs, its chain-up allocates the children */
+	g_assert_cmpint (test_layout_box_allocations, >, 0);
+	g_assert_cmpint (gtk_widget_get_width (box), >=, 321);
+	g_assert_cmpint (gtk_widget_get_width (label), >, 0);
+
+	gtk_window_destroy (GTK_WINDOW (window));
+	spin (50);
+}
+
 gint
 main (gint argc,
       gchar **argv)
@@ -394,6 +476,7 @@ main (gint argc,
 	g_test_add_func ("/eutil/assistant", test_assistant);
 	g_test_add_func ("/eutil/widgets", test_widgets);
 	g_test_add_func ("/eutil/picture-gallery", test_picture_gallery);
+	g_test_add_func ("/eutil/layout-methods", test_layout_methods);
 
 	return g_test_run ();
 }

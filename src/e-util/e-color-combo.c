@@ -365,6 +365,8 @@ e_color_combo_class_init (EColorComboClass *class)
 
 	widget_class = GTK_WIDGET_CLASS (class);
 	widget_class->size_allocate = color_combo_size_allocate;
+	/* GTK 4 calls the layout manager, not these methods */
+	e_gtk_widget_class_layout_methods (widget_class);
 
 	GTK_BUTTON_CLASS (class)->clicked = color_combo_clicked;
 

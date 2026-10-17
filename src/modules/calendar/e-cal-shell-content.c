@@ -1697,8 +1697,7 @@ e_cal_shell_content_create_calendar_views (ECalShellContent *cal_shell_content)
 	cal_shell_content->priv->views[E_CAL_VIEW_KIND_WEEK] = calendar_view;
 	g_object_ref_sink (calendar_view);
 
-	adjustment = gtk_range_get_adjustment (
-		GTK_RANGE (E_WEEK_VIEW (calendar_view)->vscrollbar));
+	adjustment = gtk_scrollbar_get_adjustment (GTK_SCROLLBAR (E_WEEK_VIEW (calendar_view)->vscrollbar));
 	g_signal_connect (
 		adjustment, "value-changed",
 		G_CALLBACK (week_view_adjustment_changed_cb), cal_shell_content);
@@ -1710,8 +1709,7 @@ e_cal_shell_content_create_calendar_views (ECalShellContent *cal_shell_content)
 	cal_shell_content->priv->views[E_CAL_VIEW_KIND_MONTH] = calendar_view;
 	g_object_ref_sink (calendar_view);
 
-	adjustment = gtk_range_get_adjustment (
-		GTK_RANGE (E_WEEK_VIEW (calendar_view)->vscrollbar));
+	adjustment = gtk_scrollbar_get_adjustment (GTK_SCROLLBAR (E_WEEK_VIEW (calendar_view)->vscrollbar));
 	g_signal_connect (
 		adjustment, "value-changed",
 		G_CALLBACK (month_view_adjustment_changed_cb), cal_shell_content);

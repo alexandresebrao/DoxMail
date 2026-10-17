@@ -1,5 +1,5 @@
-#!/bin/sh
-# run-evolution.sh [--gdb] [SECONDS]: installs the GTK 4 build into
+#!/bin/bash
+# run-evolution.sh [--gdb] [SECONDS [EVOLUTION ARGS...]]: installs the GTK 4 build into
 # _inst-gtk4 (configured with that prefix, camel_providerdir and
 # edsuimoduledir inside it) and runs evolution there through
 # run-isolated.sh; with --gdb, prints a backtrace on a crash; SHOT=FILE.png
@@ -10,5 +10,5 @@ gdb=
 ninja -C _build-gtk4 install >/dev/null || exit 1
 glib-compile-schemas _inst-gtk4/share/glib-2.0/schemas || exit 1
 GSETTINGS_SCHEMA_DIR=$PWD/_inst-gtk4/share/glib-2.0/schemas \
-	eval sh doxmail/port/run-isolated.sh "${1:-25}" $gdb _inst-gtk4/bin/evolution 2>&1 |
+	eval sh doxmail/port/run-isolated.sh "${1:-25}" $gdb _inst-gtk4/bin/evolution '"${@:2}"' 2>&1 |
 	grep -v '^\[New Thread\|^\[Thread\|^\[Detaching\|xdg-desktop-portal\|a11y\|AT-SPI\|MESA\|PipeWire\|^rm: \|^$'

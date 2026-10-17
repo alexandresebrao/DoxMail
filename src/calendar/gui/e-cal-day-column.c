@@ -889,6 +889,8 @@ e_cal_day_column_class_init (ECalDayColumnClass *klass)
 
 	widget_class = GTK_WIDGET_CLASS (klass);
 	widget_class->measure = e_cal_day_column_measure;
+	/* GTK 4 calls the layout manager, not these methods */
+	e_gtk_widget_class_layout_methods (widget_class);
 	widget_class->snapshot = e_cal_day_column_snapshot;
 
 	/**

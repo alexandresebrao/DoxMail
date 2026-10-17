@@ -2168,6 +2168,8 @@ e_day_view_class_init (EDayViewClass *class)
 	widget_class->realize = day_view_realize;
 	widget_class->unrealize = day_view_unrealize;
 	widget_class->size_allocate = day_view_size_allocate;
+	/* GTK 4 calls the layout manager, not these methods */
+	e_gtk_widget_class_layout_methods (widget_class);
 	widget_class->focus = day_view_focus;
 	e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (widget_class), "key-press-event", G_CALLBACK (day_view_key_press));
 	e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (widget_class), "focus-in-event", G_CALLBACK (day_view_focus_in));

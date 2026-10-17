@@ -447,10 +447,200 @@ style_settings_notify_cb (GtkSettings *settings,
 	g_signal_emit (widget, signals[STYLE_UPDATED], 0);
 }
 
-/* original size_allocate vfuncs of the classes wrapped below, by GType */
-static GHashTable *size_allocate_originals = NULL;
+/* GTK 4 hands the measuring and allocation of widgets that have a layout
+ * manager (GtkBox, GtkGrid, GtkFixed, GtkButton, ...) to the layout
+ * manager, without calling the measure and size_allocate methods of their
+ * classes.  The layout manager types used by classes set up with
+ * e_gtk_widget_class_layout_methods(), or by widgets that want the
+ * "size-allocate" signal, are wrapped: for those classes their methods run
+ * instead, and their chain-ups reach the layout manager. */
+
+typedef void (* LayoutMeasureFunc) (GtkLayoutManager *manager, GtkWidget *widget,
+				    GtkOrientation orientation, gint for_size,
+				    gint *minimum, gint *natural,
+				    gint *minimum_baseline, gint *natural_baseline);
+typedef void (* LayoutAllocateFunc) (GtkLayoutManager *manager, GtkWidget *widget,
+				     gint width, gint height, gint baseline);
+
+typedef struct _LayoutOriginals {
+	LayoutMeasureFunc measure;
+	LayoutAllocateFunc allocate;
+} LayoutOriginals;
+
+/* LayoutOriginals *, by the GType of the wrapped layout manager class */
+static GHashTable *layout_originals = NULL;
 
 #define SIZE_ALLOCATE_KEY "e-gtk-size-allocate"
+
+static GQuark
+layout_methods_quark (void)
+{
+	return g_quark_from_static_string ("e-gtk-layout-methods");
+}
+
+static LayoutOriginals *
+layout_originals_for (GtkLayoutManager *manager)
+{
+	GType type;
+
+	if (!layout_originals)
+		return NULL;
+
+	/* subclasses initialized after the wrapping inherit the wrappers */
+	for (type = G_TYPE_FROM_INSTANCE (manager); type; type = g_type_parent (type)) {
+		LayoutOriginals *originals = g_hash_table_lookup (layout_originals, GSIZE_TO_POINTER (type));
+
+		if (originals)
+			return originals;
+	}
+
+	return NULL;
+}
+
+static gboolean
+widget_uses_layout_methods (GtkWidget *widget)
+{
+	GType type;
+
+	for (type = G_TYPE_FROM_INSTANCE (widget); type; type = g_type_parent (type)) {
+		if (g_type_get_qdata (type, layout_methods_quark ()))
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
+static void
+layout_measure_wrapper (GtkLayoutManager *manager,
+			GtkWidget *widget,
+			GtkOrientation orientation,
+			gint for_size,
+			gint *minimum,
+			gint *natural,
+			gint *minimum_baseline,
+			gint *natural_baseline)
+{
+	if (widget_uses_layout_methods (widget)) {
+		GTK_WIDGET_GET_CLASS (widget)->measure (widget, orientation, for_size,
+			minimum, natural, minimum_baseline, natural_baseline);
+	} else {
+		layout_originals_for (manager)->measure (manager, widget, orientation, for_size,
+			minimum, natural, minimum_baseline, natural_baseline);
+	}
+}
+
+static void
+layout_allocate_wrapper (GtkLayoutManager *manager,
+			 GtkWidget *widget,
+			 gint width,
+			 gint height,
+			 gint baseline)
+{
+	if (widget_uses_layout_methods (widget))
+		GTK_WIDGET_GET_CLASS (widget)->size_allocate (widget, width, height, baseline);
+	else
+		layout_originals_for (manager)->allocate (manager, widget, width, height, baseline);
+
+	if (g_object_get_data (G_OBJECT (widget), SIZE_ALLOCATE_KEY)) {
+		GtkAllocation allocation = { 0, 0, width, height };
+
+		g_signal_emit (widget, signals[SIZE_ALLOCATE], 0, &allocation);
+	}
+}
+
+static void
+wrap_layout_manager_type (GType manager_type)
+{
+	GtkLayoutManagerClass *klass;
+	LayoutOriginals *originals;
+
+	if (!layout_originals)
+		layout_originals = g_hash_table_new (g_direct_hash, g_direct_equal);
+
+	if (g_hash_table_contains (layout_originals, GSIZE_TO_POINTER (manager_type)))
+		return;
+
+	klass = g_type_class_ref (manager_type);
+
+	originals = g_new0 (LayoutOriginals, 1);
+	originals->measure = klass->measure;
+	originals->allocate = klass->allocate;
+	g_hash_table_insert (layout_originals, GSIZE_TO_POINTER (manager_type), originals);
+
+	klass->measure = layout_measure_wrapper;
+	klass->allocate = layout_allocate_wrapper;
+}
+
+/* the chain-ups of the methods: they run the layout manager */
+static void
+layout_chain_measure (GtkWidget *widget,
+		      GtkOrientation orientation,
+		      gint for_size,
+		      gint *minimum,
+		      gint *natural,
+		      gint *minimum_baseline,
+		      gint *natural_baseline)
+{
+	GtkLayoutManager *manager = gtk_widget_get_layout_manager (widget);
+	LayoutOriginals *originals = manager ? layout_originals_for (manager) : NULL;
+	gint min = 0, nat = 0, min_baseline = -1, nat_baseline = -1;
+
+	/* the layout managers expect all of them, GTK 3 code passes NULLs */
+	if (originals) {
+		originals->measure (manager, widget, orientation, for_size,
+			&min, &nat, &min_baseline, &nat_baseline);
+	}
+
+	if (minimum)
+		*minimum = min;
+	if (natural)
+		*natural = nat;
+	if (minimum_baseline)
+		*minimum_baseline = min_baseline;
+	if (natural_baseline)
+		*natural_baseline = nat_baseline;
+}
+
+static void
+layout_chain_size_allocate (GtkWidget *widget,
+			    gint width,
+			    gint height,
+			    gint baseline)
+{
+	GtkLayoutManager *manager = gtk_widget_get_layout_manager (widget);
+	LayoutOriginals *originals = manager ? layout_originals_for (manager) : NULL;
+
+	if (originals)
+		originals->allocate (manager, widget, width, height, baseline);
+}
+
+void
+e_gtk_widget_class_layout_methods (GtkWidgetClass *widget_class)
+{
+	GtkWidgetClass *base_class, *parent_class;
+	GType manager_type;
+
+	g_return_if_fail (GTK_IS_WIDGET_CLASS (widget_class));
+
+	manager_type = gtk_widget_class_get_layout_manager_type (widget_class);
+	g_return_if_fail (manager_type != G_TYPE_INVALID);
+
+	g_type_set_qdata (G_TYPE_FROM_CLASS (widget_class), layout_methods_quark (), GINT_TO_POINTER (1));
+	wrap_layout_manager_type (manager_type);
+
+	/* GTK 4 does not use the methods of the parent classes either, thus
+	 * where they are the GtkWidget ones the chain-ups run the layout manager */
+	base_class = g_type_class_peek (GTK_TYPE_WIDGET);
+	parent_class = g_type_class_peek_parent (widget_class);
+
+	if (parent_class->measure == base_class->measure)
+		parent_class->measure = layout_chain_measure;
+	if (parent_class->size_allocate == base_class->size_allocate)
+		parent_class->size_allocate = layout_chain_size_allocate;
+}
+
+/* original size_allocate methods of the classes wrapped below, by GType */
+static GHashTable *size_allocate_originals = NULL;
 
 typedef void (* SizeAllocateFunc) (GtkWidget *widget, gint width, gint height, gint baseline);
 
@@ -482,10 +672,18 @@ gpointer
 e_gtk_widget_size_allocations (gpointer widget)
 {
 	GtkWidgetClass *klass;
+	GtkLayoutManager *manager;
 
 	g_return_val_if_fail (GTK_IS_WIDGET (widget), widget);
 
 	g_object_set_data (G_OBJECT (widget), SIZE_ALLOCATE_KEY, GINT_TO_POINTER (1));
+
+	/* the layout manager allocates these, not the class method */
+	manager = gtk_widget_get_layout_manager (widget);
+	if (manager) {
+		wrap_layout_manager_type (G_TYPE_FROM_INSTANCE (manager));
+		return widget;
+	}
 
 	klass = GTK_WIDGET_GET_CLASS (widget);
 
@@ -499,6 +697,13 @@ e_gtk_widget_size_allocations (gpointer widget)
 	}
 
 	return widget;
+}
+
+static void
+style_realize_cb (GtkWidget *widget,
+		  gpointer user_data)
+{
+	g_signal_emit (widget, signals[STYLE_UPDATED], 0);
 }
 
 gpointer
@@ -525,6 +730,10 @@ e_gtk_widget_style_updates (gpointer widget)
 		g_signal_connect_object (settings, properties[ii],
 			G_CALLBACK (style_settings_notify_cb), widget, 0);
 	}
+
+	/* GTK 3 emitted it also when the widget got its style, on realize;
+	 * code computes its colors and sizes there */
+	g_signal_connect (widget, "realize", G_CALLBACK (style_realize_cb), NULL);
 
 	return widget;
 }
