@@ -1,3 +1,44 @@
+DoxMail
+=======
+
+**DoxMail** is a fork of [GNOME Evolution][evolution] being ported to GTK 4,
+to become the mail, calendar and contacts app of [DoxIA][doxia].
+
+It is based on Evolution **3.60.2**, the version whose
+evolution-data-server ships with Fedora 44 (DoxIA's base), so it runs
+against the system EDS without building it too.
+
+Status: early. The `doxmail` branch still builds and runs as the regular
+GTK 3 Evolution; with `-DWITH_GTK4=ON` it builds only the parts already
+ported to GTK 4. The plan, the decisions made so far and what is next are
+in [doxmail/PORTING-GTK4.md](doxmail/PORTING-GTK4.md).
+
+```sh
+# GTK 3 (the usual Evolution build)
+cmake -S . -B _build -G Ninja
+ninja -C _build
+
+# GTK 4 port (ported parts only) and its checks, in a headless weston
+cmake -S . -B _build-gtk4 -G Ninja -DWITH_GTK4=ON
+doxmail/run-tests.sh _build-gtk4
+
+# How much GTK 3-only API is left
+doxmail/gtk4-audit.sh --dirs
+```
+
+All credit for Evolution goes to the Evolution team and its contributors;
+DoxMail keeps its license (LGPLv2 or LGPLv3, see COPYING) and its names
+in the code, so upstream changes keep merging.
+
+ps: Vibe Coding learning to port an app.
+
+[evolution]: https://gitlab.gnome.org/GNOME/evolution
+[doxia]: https://github.com/alexandresebrao/DoxIA
+
+---
+
+The original Evolution README follows.
+
 ![icon] Evolution
 ============
 
