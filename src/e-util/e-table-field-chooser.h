@@ -28,6 +28,7 @@
 #define __E_TABLE_FIELD_CHOOSER_H__
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 #include <libgnomecanvas/libgnomecanvas.h>
 
 #include <e-util/e-table-header.h>

@@ -369,7 +369,7 @@ picture_gallery_constructed (GObject *object)
 
 	renderer = gtk_cell_renderer_pixbuf_new ();
 	g_object_set (renderer,
-		"stock-size", GTK_ICON_SIZE_DIALOG,
+		"icon-size", GTK_ICON_SIZE_LARGE,
 		"xalign", 0.5,
 		"yalign", 0.5,
 		NULL);

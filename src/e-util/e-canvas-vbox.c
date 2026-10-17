@@ -36,7 +36,7 @@ static void e_canvas_vbox_set_property (GObject *object, guint property_id, cons
 static void e_canvas_vbox_get_property (GObject *object, guint property_id, GValue *value, GParamSpec *pspec);
 static void e_canvas_vbox_dispose (GObject *object);
 
-static gint e_canvas_vbox_event   (GnomeCanvasItem *item, GdkEvent *event);
+static gint e_canvas_vbox_event   (GnomeCanvasItem *item, GnomeCanvasEvent *event);
 static void e_canvas_vbox_realize (GnomeCanvasItem *item);
 
 static void e_canvas_vbox_reflow (GnomeCanvasItem *item, gint flags);
@@ -218,12 +218,12 @@ e_canvas_vbox_dispose (GObject *object)
 
 static gint
 e_canvas_vbox_event (GnomeCanvasItem *item,
-                     GdkEvent *event)
+                     GnomeCanvasEvent *event)
 {
 	gint return_val = TRUE;
 
 	switch (event->type) {
-	case GDK_KEY_PRESS:
+	case GNOME_CANVAS_KEY_PRESS:
 		switch (event->key.keyval) {
 		case GDK_KEY_Left:
 		case GDK_KEY_KP_Left:

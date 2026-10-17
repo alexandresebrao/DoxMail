@@ -464,7 +464,7 @@ ep_ask_password (EPassMsg *msg)
 	gint type = msg->flags & E_PASSWORDS_REMEMBER_MASK;
 	guint noreply = msg->noreply;
 	gboolean visible;
-	AtkObject *a11y;
+	GtkWidget *a11y;
 
 	msg->noreply = 1;
 
@@ -537,9 +537,9 @@ ep_ask_password (EPassMsg *msg)
 
 	/* Password Entry */
 	widget = gtk_entry_new ();
-	a11y = gtk_widget_get_accessible (widget);
+	a11y = GTK_WIDGET (widget);
 	visible = !(msg->flags & E_PASSWORDS_SECRET);
-	atk_object_set_description (a11y, msg->prompt);
+	e_gtk_widget_set_accessible_description (a11y, msg->prompt);
 	gtk_entry_set_visibility (GTK_ENTRY (widget), visible);
 	gtk_entry_set_activates_default (GTK_ENTRY (widget), TRUE);
 	gtk_widget_grab_focus (widget);

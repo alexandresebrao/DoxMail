@@ -23,6 +23,7 @@
 #define GAL_VIEW_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 
 /* Standard GObject macros */
 #define GAL_TYPE_VIEW \

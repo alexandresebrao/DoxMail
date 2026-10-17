@@ -187,6 +187,9 @@ RENAMES = {
     'gtk_header_bar_set_show_close_button': ('gtk_header_bar_set_show_title_buttons', []),
     'gtk_popover_set_modal': ('gtk_popover_set_autohide', []),
     'gtk_window_resize': ('gtk_window_set_default_size', []),
+    'gtk_menu_bar_new_from_model': ('gtk_popover_menu_bar_new_from_model', []),
+    'gtk_menu_new_from_model': ('gtk_popover_menu_new_from_model', []),
+    'e_menu_bar_new': ('e_menu_bar_new', ['GTK_MENU_BAR']),
     'gtk_file_chooser_button_new': ('e_gtk_file_chooser_button_new', []),
     'gtk_file_chooser_button_new_with_dialog': ('e_gtk_file_chooser_button_new_with_dialog', []),
     'gtk_file_chooser_get_filename': ('e_gtk_file_chooser_get_filename', ['GTK_FILE_CHOOSER']),
@@ -298,7 +301,42 @@ def r_gtk_init(args, *_):
     return 'gtk_init ()'
 
 
+def r_widget_clipboard(args, *_):
+    if len(args) != 2:
+        return None
+    if 'PRIMARY' in args[1]:
+        return call('gtk_widget_get_primary_clipboard', [args[0]])
+    return call('gtk_widget_get_clipboard', [args[0]])
+
+
+def r_style_get_with_state(name):
+    def f(args, *_):
+        if len(args) == 3:
+            return call(name, [args[0], args[2]])
+        return None
+    return f
+
+
+def r_cursor_from_name(args, *_):
+    if len(args) == 2 and 'display' in args[0].lower():
+        return call('gdk_cursor_new_from_name', [args[1], 'NULL'])
+    return None
+
+
+def r_css_load_data(args, *_):
+    if len(args) == 4:
+        return call('gtk_css_provider_load_from_string', [args[0], args[1]])
+    return None
+
+
 CALLS = {
+    'gtk_css_provider_load_from_data': r_css_load_data,
+    'gdk_cursor_new_from_name': r_cursor_from_name,
+    'gtk_style_context_get_padding': r_style_get_with_state('gtk_style_context_get_padding'),
+    'gtk_style_context_get_border': r_style_get_with_state('gtk_style_context_get_border'),
+    'gtk_style_context_get_margin': r_style_get_with_state('gtk_style_context_get_margin'),
+    'gtk_style_context_get_color': r_style_get_with_state('gtk_style_context_get_color'),
+    'gtk_widget_get_clipboard': r_widget_clipboard,
     'gtk_widget_show_all': r_show_all,
     'gtk_entry_get_text': r_entry_get_text,
     'gtk_entry_set_text': r_entry_set_text,
@@ -354,6 +392,16 @@ REGEX_RENAMES = [
     (r'\bgtk_show_uri_on_window\s*\(', 'e_gtk_show_uri_on_window ('),
     (r'\bGDK_MOD1_MASK\b', 'GDK_ALT_MASK'),
     (r'\bGdkEvent(Button|Key|Motion|Crossing|Scroll|Focus|Configure|WindowState|Expose|Any|Touch)\b', 'GdkEvent'),
+    (r'\bGTK_ICON_SIZE_(MENU|SMALL_TOOLBAR|BUTTON)\b', 'GTK_ICON_SIZE_NORMAL'),
+    (r'\bGTK_ICON_SIZE_(LARGE_TOOLBAR|DND|DIALOG)\b', 'GTK_ICON_SIZE_LARGE'),
+    (r'\bGTK_IS_CLIPBOARD\b', 'GDK_IS_CLIPBOARD'),
+    (r'"stock-size"', '"icon-size"'),
+    (r'\bgdk_event_free\b', 'gdk_event_unref'),
+    (r'\bAtkObject\b', 'GtkWidget'),
+    (r'\bgtk_widget_get_accessible\s*\(', 'GTK_WIDGET ('),
+    (r'\batk_object_set_name\s*\(', 'e_gtk_widget_set_accessible_name ('),
+    (r'\batk_object_set_description\s*\(', 'e_gtk_widget_set_accessible_description ('),
+    (r'\bGTK_STYLE_CLASS_([A-Z_]+)\b', lambda m: '"%s"' % m.group(1).lower().replace('_', '-')),
 ]
 
 

@@ -152,14 +152,12 @@ e_message_popover_constructed (GObject *object)
 
 	self->style_provider = GTK_STYLE_PROVIDER (css_provider);
 
-	gtk_css_provider_load_from_data (css_provider,
-		".e-message-popover-info { box-shadow: inset 0 0 0 2px @theme_selected_bg_color; }\n"
+	gtk_css_provider_load_from_string (css_provider, ".e-message-popover-info { box-shadow: inset 0 0 0 2px @theme_selected_bg_color; }\n"
 		".e-message-popover-info-border { border: solid 2px @theme_selected_bg_color; }\n"
 		".e-message-popover-warning { box-shadow: inset 0 0 0 2px #f57900; }\n"
 		".e-message-popover-warning-border { border: solid 2px #f57900; }\n"
 		".e-message-popover-error { box-shadow: inset 0 0 0 2px #ff7777; }\n"
-		".e-message-popover-error-border { border: solid 2px #ff7777; }",
-		-1, &local_error);
+		".e-message-popover-error-border { border: solid 2px #ff7777; }");
 
 	if (local_error) {
 		g_warning ("%s: Failed to parse CSS: %s", G_STRFUNC, local_error->message);

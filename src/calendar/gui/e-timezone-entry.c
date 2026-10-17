@@ -105,8 +105,8 @@ timezone_entry_update_entry (ETimezoneEntry *timezone_entry)
 static void
 timezone_entry_add_relation (ETimezoneEntry *timezone_entry)
 {
-	AtkObject *a11y_timezone_entry;
-	AtkObject *a11y_widget;
+	GtkWidget *a11y_timezone_entry;
+	GtkWidget *a11y_widget;
 	AtkRelationSet *set;
 	AtkRelation *relation;
 	GtkWidget *widget;
@@ -116,10 +116,10 @@ timezone_entry_add_relation (ETimezoneEntry *timezone_entry)
 	/* add a labelled_by relation for widget for accessibility */
 
 	widget = GTK_WIDGET (timezone_entry);
-	a11y_timezone_entry = gtk_widget_get_accessible (widget);
+	a11y_timezone_entry = GTK_WIDGET (widget);
 
 	widget = timezone_entry->priv->entry;
-	a11y_widget = gtk_widget_get_accessible (widget);
+	a11y_widget = GTK_WIDGET (widget);
 
 	set = atk_object_ref_relation_set (a11y_widget);
 	if (set != NULL) {
@@ -469,7 +469,7 @@ e_timezone_entry_class_init (ETimezoneEntryClass *class)
 static void
 e_timezone_entry_init (ETimezoneEntry *timezone_entry)
 {
-	AtkObject *a11y;
+	GtkWidget *a11y;
 	GtkWidget *widget;
 
 	timezone_entry->priv = e_timezone_entry_get_instance_private (timezone_entry);
@@ -500,9 +500,9 @@ e_timezone_entry_init (ETimezoneEntry *timezone_entry)
 		widget, "clicked",
 		G_CALLBACK (timezone_entry_button_clicked_cb), timezone_entry);
 
-	a11y = gtk_widget_get_accessible (timezone_entry->priv->button);
+	a11y = GTK_WIDGET (timezone_entry->priv->button);
 	if (a11y != NULL)
-		atk_object_set_name (a11y, _("Select Timezone"));
+		e_gtk_widget_set_accessible_name (a11y, _("Select Timezone"));
 
 	timezone_entry_set_completion (timezone_entry);
 }

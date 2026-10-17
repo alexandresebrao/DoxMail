@@ -11,6 +11,7 @@
 #define E_SPLIT_DATE_EDIT_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 
 #define E_TYPE_SPLIT_DATE_EDIT (e_split_date_edit_get_type ())
 

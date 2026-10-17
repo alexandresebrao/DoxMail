@@ -230,8 +230,7 @@ attachment_bar_set_store (EAttachmentBar *bar,
 
 	bar->priv->model = GTK_TREE_MODEL (g_object_ref (store));
 
-	gtk_icon_view_set_model (
-		GTK_ICON_VIEW (bar->priv->icon_view),
+	e_attachment_icon_view_set_model (E_ATTACHMENT_ICON_VIEW (bar->priv->icon_view),
 		bar->priv->model);
 	gtk_tree_view_set_model (
 		GTK_TREE_VIEW (bar->priv->tree_view),
@@ -785,7 +784,7 @@ e_attachment_bar_init (EAttachmentBar *bar)
 
 	widget = e_attachment_icon_view_new ();
 	gtk_widget_set_focusable (widget, TRUE);
-	gtk_icon_view_set_model (GTK_ICON_VIEW (widget), bar->priv->model);
+	e_attachment_icon_view_set_model (E_ATTACHMENT_ICON_VIEW (widget), bar->priv->model);
 	e_gtk_container_add (bar->priv->icon_scrolled_window, widget);
 	bar->priv->icon_view = g_object_ref (widget);
 	gtk_widget_show (widget);

@@ -28,6 +28,7 @@
 #define E_SELECTION_MODEL_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 #include <e-util/e-misc-utils.h>
 #include <e-util/e-sorter.h>
 #include <libgnomecanvas/libgnomecanvas.h>

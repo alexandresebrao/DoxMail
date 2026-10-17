@@ -92,7 +92,8 @@ struct _ECalendarPrivate {
 
 static void e_calendar_dispose		(GObject	*object);
 static void e_calendar_realize		(GtkWidget	*widget);
-static void e_calendar_style_updated	(GtkWidget	*widget);
+static void e_calendar_css_changed	(GtkWidget	*widget,
+					 GtkCssStyleChange *change);
 static void e_calendar_get_preferred_width (GtkWidget *widget,
 					    gint      *minimal_width,
 					    gint      *natural_width);
@@ -100,15 +101,21 @@ static void e_calendar_get_preferred_height (GtkWidget *widget,
 					     gint      *minimal_height,
 					     gint      *natural_height);
 static void e_calendar_size_allocate	(GtkWidget	*widget,
-					 GtkAllocation	*allocation);
-static gint e_calendar_drag_motion	(GtkWidget      *widget,
-					 EGtkDragContext *context,
-					 gint            x,
-					 gint            y,
-					 guint           time);
-static void e_calendar_drag_leave	(GtkWidget      *widget,
-					 EGtkDragContext *context,
-					 guint           time);
+					 gint		 width,
+					 gint		 height,
+					 gint		 baseline);
+static void e_calendar_measure		(GtkWidget	*widget,
+					 GtkOrientation	 orientation,
+					 gint		 for_size,
+					 gint		*minimum,
+					 gint		*natural,
+					 gint		*minimum_baseline,
+					 gint		*natural_baseline);
+static void e_calendar_connect_press_release
+					(GtkWidget	*button,
+					 GCallback	 pressed,
+					 GCallback	 released,
+					 gpointer	 user_data);
 static gboolean e_calendar_button_has_focus (ECalendar	*cal);
 static gboolean e_calendar_focus (GtkWidget *widget,
 				  GtkDirectionType direction);
@@ -163,12 +170,11 @@ e_calendar_create_button (gboolean start_arrow)
 	gtk_widget_show (button);
 
 	css_provider = gtk_css_provider_new ();
-	gtk_css_provider_load_from_data (css_provider,
-		"button.ecalendar {"
+	gtk_css_provider_load_from_string (css_provider, "button.ecalendar {"
 		" min-height: 0px;"
 		" min-width: 0px;"
 		" padding: 0px;"
-		"}", -1, &error);
+		"}");
 	style_context = gtk_widget_get_style_context (button);
 	gtk_style_context_add_class (style_context, "flat");
 	if (error == NULL) {
@@ -200,7 +206,7 @@ e_calendar_calc_min_column_width (ECalendar *cal)
 
 	widget = GTK_WIDGET (cal);
 	style_context = gtk_widget_get_style_context (widget);
-	gtk_style_context_get_padding (style_context, gtk_style_context_get_state (style_context), &padding);
+	gtk_style_context_get_padding (style_context, &padding);
 	xthickness = padding.left;
 
 	pango_context = gtk_widget_get_pango_context (widget);
@@ -226,6 +232,65 @@ e_calendar_calc_min_column_width (ECalendar *cal)
 		cal->priv->calitem->max_month_name_width;
 }
 
+typedef struct {
+	GCallback pressed;
+	GCallback released;
+	gpointer user_data;
+} PressRelease;
+
+static void
+e_calendar_button_pressed_cb (GtkGestureClick *gesture,
+			      gint n_press,
+			      gdouble x,
+			      gdouble y,
+			      PressRelease *pr)
+{
+	((void (*) (gpointer)) pr->pressed) (pr->user_data);
+}
+
+static void
+e_calendar_button_released_cb (GtkGestureClick *gesture,
+			       gint n_press,
+			       gdouble x,
+			       gdouble y,
+			       PressRelease *pr)
+{
+	((void (*) (gpointer)) pr->released) (pr->user_data);
+}
+
+static void
+e_calendar_button_cancel_cb (GtkGesture *gesture,
+			     GdkEventSequence *sequence,
+			     PressRelease *pr)
+{
+	((void (*) (gpointer)) pr->released) (pr->user_data);
+}
+
+/* GtkButton lost "pressed" and "released" with GTK 4; the arrows repeat
+ * the move while they are held */
+static void
+e_calendar_connect_press_release (GtkWidget *button,
+				  GCallback pressed,
+				  GCallback released,
+				  gpointer user_data)
+{
+	GtkGesture *gesture;
+	PressRelease *pr;
+
+	pr = g_new0 (PressRelease, 1);
+	pr->pressed = pressed;
+	pr->released = released;
+	pr->user_data = user_data;
+
+	gesture = gtk_gesture_click_new ();
+	gtk_event_controller_set_propagation_phase (GTK_EVENT_CONTROLLER (gesture), GTK_PHASE_CAPTURE);
+	g_object_set_data_full (G_OBJECT (gesture), "press-release", pr, g_free);
+	g_signal_connect (gesture, "pressed", G_CALLBACK (e_calendar_button_pressed_cb), pr);
+	g_signal_connect (gesture, "released", G_CALLBACK (e_calendar_button_released_cb), pr);
+	g_signal_connect (gesture, "cancel", G_CALLBACK (e_calendar_button_cancel_cb), pr);
+	gtk_widget_add_controller (button, GTK_EVENT_CONTROLLER (gesture));
+}
+
 static void
 e_calendar_class_init (ECalendarClass *class)
 {
@@ -237,12 +302,9 @@ e_calendar_class_init (ECalendarClass *class)
 
 	widget_class = (GtkWidgetClass *) class;
 	widget_class->realize = e_calendar_realize;
-	widget_class->style_updated = e_calendar_style_updated;
-	widget_class->get_preferred_width = e_calendar_get_preferred_width;
-	widget_class->get_preferred_height = e_calendar_get_preferred_height;
+	widget_class->css_changed = e_calendar_css_changed;
+	widget_class->measure = e_calendar_measure;
 	widget_class->size_allocate = e_calendar_size_allocate;
-	widget_class->drag_motion = e_calendar_drag_motion;
-	widget_class->drag_leave = e_calendar_drag_leave;
 	widget_class->focus = e_calendar_focus;
 }
 
@@ -253,7 +315,7 @@ e_calendar_init (ECalendar *cal)
 	PangoFontDescription *small_font_desc;
 	PangoContext *pango_context;
 	GtkWidget *button;
-	AtkObject *a11y;
+	GtkWidget *a11y;
 
 	cal->priv = e_calendar_get_instance_private (cal);
 
@@ -288,11 +350,8 @@ e_calendar_init (ECalendar *cal)
 
 	/* Create the arrow buttons to move to the previous/next month. */
 	button = e_calendar_create_button (TRUE);
-	g_signal_connect_swapped (
-		button, "pressed",
-		G_CALLBACK (e_calendar_on_prev_pressed), cal);
-	g_signal_connect_swapped (
-		button, "released",
+	e_calendar_connect_press_release (button,
+		G_CALLBACK (e_calendar_on_prev_pressed),
 		G_CALLBACK (e_calendar_on_prev_released), cal);
 	g_signal_connect_swapped (
 		button, "clicked",
@@ -303,15 +362,12 @@ e_calendar_init (ECalendar *cal)
 		gnome_canvas_widget_get_type (),
 		"widget", button,
 		NULL);
-	a11y = gtk_widget_get_accessible (button);
-	atk_object_set_name (a11y, _("Previous month"));
+	a11y = GTK_WIDGET (button);
+	e_gtk_widget_set_accessible_name (a11y, _("Previous month"));
 
 	button = e_calendar_create_button (FALSE);
-	g_signal_connect_swapped (
-		button, "pressed",
-		G_CALLBACK (e_calendar_on_next_pressed), cal);
-	g_signal_connect_swapped (
-		button, "released",
+	e_calendar_connect_press_release (button,
+		G_CALLBACK (e_calendar_on_next_pressed),
 		G_CALLBACK (e_calendar_on_next_released), cal);
 	g_signal_connect_swapped (
 		button, "clicked",
@@ -322,16 +378,13 @@ e_calendar_init (ECalendar *cal)
 		gnome_canvas_widget_get_type (),
 		"widget", button,
 		NULL);
-	a11y = gtk_widget_get_accessible (button);
-	atk_object_set_name (a11y, _("Next month"));
+	a11y = GTK_WIDGET (button);
+	e_gtk_widget_set_accessible_name (a11y, _("Next month"));
 
 	/* Create the arrow buttons to move to the previous/next year. */
 	button = e_calendar_create_button (TRUE);
-	g_signal_connect_swapped (
-		button, "pressed",
-		G_CALLBACK (e_calendar_on_prev_year_pressed), cal);
-	g_signal_connect_swapped (
-		button, "released",
+	e_calendar_connect_press_release (button,
+		G_CALLBACK (e_calendar_on_prev_year_pressed),
 		G_CALLBACK (e_calendar_on_prev_year_released), cal);
 	g_signal_connect_swapped (
 		button, "clicked",
@@ -342,15 +395,12 @@ e_calendar_init (ECalendar *cal)
 		gnome_canvas_widget_get_type (),
 		"widget", button,
 		NULL);
-	a11y = gtk_widget_get_accessible (button);
-	atk_object_set_name (a11y, _("Previous year"));
+	a11y = GTK_WIDGET (button);
+	e_gtk_widget_set_accessible_name (a11y, _("Previous year"));
 
 	button = e_calendar_create_button (FALSE);
-	g_signal_connect_swapped (
-		button, "pressed",
-		G_CALLBACK (e_calendar_on_next_year_pressed), cal);
-	g_signal_connect_swapped (
-		button, "released",
+	e_calendar_connect_press_release (button,
+		G_CALLBACK (e_calendar_on_next_year_pressed),
 		G_CALLBACK (e_calendar_on_next_year_released), cal);
 	g_signal_connect_swapped (
 		button, "clicked",
@@ -361,8 +411,8 @@ e_calendar_init (ECalendar *cal)
 		gnome_canvas_widget_get_type (),
 		"widget", button,
 		NULL);
-	a11y = gtk_widget_get_accessible (button);
-	atk_object_set_name (a11y, _("Next year"));
+	a11y = GTK_WIDGET (button);
+	e_gtk_widget_set_accessible_name (a11y, _("Next year"));
 
 	cal->priv->min_rows = 1;
 	cal->priv->min_cols = 1;
@@ -382,11 +432,11 @@ GtkWidget *
 e_calendar_new (void)
 {
 	GtkWidget *cal;
-	AtkObject *a11y;
+	GtkWidget *a11y;
 
 	cal = g_object_new (e_calendar_get_type (), NULL);
-	a11y = gtk_widget_get_accessible (cal);
-	atk_object_set_name (a11y, _("Month Calendar"));
+	a11y = GTK_WIDGET (cal);
+	e_gtk_widget_set_accessible_name (a11y, _("Month Calendar"));
 
 	return cal;
 }
@@ -424,40 +474,19 @@ e_calendar_dispose (GObject *object)
 }
 
 static void
-e_calendar_update_window_background (GtkWidget *widget)
-{
-	GdkWindow *window;
-	GdkRGBA bg_bg;
-
-	e_utils_get_theme_color (widget, "theme_bg_color", E_UTILS_DEFAULT_THEME_BG_COLOR, &bg_bg);
-
-	/* Set the background of the canvas window to the normal color,
-	 * or the arrow buttons are not displayed properly. */
-	window = gtk_layout_get_bin_window (GTK_LAYOUT (widget));
-	gdk_window_set_background_rgba (window, &bg_bg);
-}
-
-static void
 e_calendar_realize (GtkWidget *widget)
 {
 	(*GTK_WIDGET_CLASS (e_calendar_parent_class)->realize) (widget);
-
-	e_calendar_update_window_background (widget);
 }
 
 static void
-e_calendar_style_updated (GtkWidget *widget)
+e_calendar_css_changed (GtkWidget *widget,
+			GtkCssStyleChange *change)
 {
 	ECalendar *e_calendar;
 
 	e_calendar = E_CALENDAR (widget);
-	if (GTK_WIDGET_CLASS (e_calendar_parent_class)->style_updated)
-		(*GTK_WIDGET_CLASS (e_calendar_parent_class)->style_updated) (widget);
-
-	/* Set the background of the canvas window to the normal color,
-	 * or the arrow buttons are not displayed properly. */
-	if (gtk_widget_get_realized (widget))
-		e_calendar_update_window_background (widget);
+	GTK_WIDGET_CLASS (e_calendar_parent_class)->css_changed (widget, change);
 
 	e_calendar_item_style_updated (widget, e_calendar->priv->calitem);
 }
@@ -476,7 +505,7 @@ e_calendar_get_preferred_width (GtkWidget *widget,
 
 	g_object_get ((cal->priv->calitem), "column_width", &col_width, NULL);
 	style_context = gtk_widget_get_style_context (widget);
-	gtk_style_context_get_padding (style_context, gtk_style_context_get_state (style_context), &padding);
+	gtk_style_context_get_padding (style_context, &padding);
 
 	*minimum = *natural = col_width * cal->priv->min_cols + padding.left * 2;
 }
@@ -495,9 +524,24 @@ e_calendar_get_preferred_height (GtkWidget *widget,
 
 	g_object_get ((cal->priv->calitem), "row_height", &row_height, NULL);
 	style_context = gtk_widget_get_style_context (widget);
-	gtk_style_context_get_padding (style_context, gtk_style_context_get_state (style_context), &padding);
+	gtk_style_context_get_padding (style_context, &padding);
 
 	*minimum = *natural = row_height * cal->priv->min_rows + padding.top * 2;
+}
+
+static void
+e_calendar_measure (GtkWidget *widget,
+		    GtkOrientation orientation,
+		    gint for_size,
+		    gint *minimum,
+		    gint *natural,
+		    gint *minimum_baseline,
+		    gint *natural_baseline)
+{
+	if (orientation == GTK_ORIENTATION_HORIZONTAL)
+		e_calendar_get_preferred_width (widget, minimum, natural);
+	else
+		e_calendar_get_preferred_height (widget, minimum, natural);
 }
 
 static gboolean
@@ -520,7 +564,7 @@ e_calendar_reposition_timeout_cb (gpointer user_data)
 
 	widget = GTK_WIDGET (cal);
 	style_context = gtk_widget_get_style_context (widget);
-	gtk_style_context_get_padding (style_context, gtk_style_context_get_state (style_context), &padding);
+	gtk_style_context_get_padding (style_context, &padding);
 	xthickness = padding.left;
 	ythickness = padding.top;
 
@@ -621,11 +665,13 @@ e_calendar_reposition_timeout_cb (gpointer user_data)
 
 static void
 e_calendar_size_allocate (GtkWidget *widget,
-                          GtkAllocation *allocation)
+                          gint width,
+                          gint height,
+                          gint baseline)
 {
 	ECalendar *cal;
 
-	(*GTK_WIDGET_CLASS (e_calendar_parent_class)->size_allocate) (widget, allocation);
+	(*GTK_WIDGET_CLASS (e_calendar_parent_class)->size_allocate) (widget, width, height, baseline);
 
 	cal = E_CALENDAR (widget);
 
@@ -821,23 +867,6 @@ e_calendar_on_next_year_clicked (ECalendar *cal)
 	e_calendar_item_set_first_month (
 		cal->priv->calitem, cal->priv->calitem->year,
 		cal->priv->calitem->month + 12);
-}
-
-static gint
-e_calendar_drag_motion (GtkWidget *widget,
-                        EGtkDragContext *context,
-                        gint x,
-                        gint y,
-                        guint time)
-{
-	return FALSE;
-}
-
-static void
-e_calendar_drag_leave (GtkWidget *widget,
-                       EGtkDragContext *context,
-                       guint time)
-{
 }
 
 static gboolean

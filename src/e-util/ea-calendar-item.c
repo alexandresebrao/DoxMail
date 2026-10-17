@@ -1199,7 +1199,7 @@ e_calendar_item_get_day_extents (ECalendarItem *calitem,
 	item = GNOME_CANVAS_ITEM (calitem);
 	widget = GTK_WIDGET (item->canvas);
 	style_context = gtk_widget_get_style_context (widget);
-	gtk_style_context_get_padding (style_context, gtk_style_context_get_state (style_context), &padding);
+	gtk_style_context_get_padding (style_context, &padding);
 
 	/* Set up Pango prerequisites */
 	pango_context = gtk_widget_get_pango_context (widget);

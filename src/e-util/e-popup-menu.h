@@ -29,6 +29,7 @@
 #define E_POPUP_MENU_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 
 G_BEGIN_DECLS
 
@@ -47,11 +48,15 @@ struct _EPopupMenu {
 	guint32 disable_mask;
 };
 
-GtkMenu *	e_popup_menu_create_with_domain	(EPopupMenu *menu_list,
+/* The callbacks are called as void fn (GtkWidget *menu, gpointer closure);
+ * the menu is a GtkPopoverMenu, its items are actions in the "epm" group. */
+GtkWidget *	e_popup_menu_create_with_domain	(EPopupMenu *menu_list,
 						 guint32 disable_mask,
 						 guint32 hide_mask,
 						 gpointer default_closure,
 						 const gchar *domain);
+GMenu *		e_popup_menu_get_menu		(GtkWidget *popup_menu);
+GActionMap *	e_popup_menu_get_actions	(GtkWidget *popup_menu);
 
 G_END_DECLS
 

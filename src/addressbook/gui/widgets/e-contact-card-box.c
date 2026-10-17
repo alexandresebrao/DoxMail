@@ -1136,7 +1136,7 @@ static void
 e_contact_card_box_update_cursor (EContactCardBox *self,
 				  guint index)
 {
-	AtkObject *accessible;
+	GtkWidget *accessible;
 	GtkWidget *card = NULL;
 
 	if (self->priv->container->focused_index != index) {
@@ -1153,11 +1153,11 @@ e_contact_card_box_update_cursor (EContactCardBox *self,
 
 	e_contact_card_container_item_grab_focus (self->priv->container, index, &card);
 
-	accessible = gtk_widget_get_accessible (GTK_WIDGET (self));
+	accessible = GTK_WIDGET (GTK_WIDGET (self));
 	if (accessible) {
-		AtkObject *descendant;
+		GtkWidget *descendant;
 
-		descendant = card ? gtk_widget_get_accessible (card) : NULL;
+		descendant = card ? GTK_WIDGET (card) : NULL;
 		g_signal_emit_by_name (accessible, "active-descendant-changed", descendant);
 	}
 }
@@ -1381,9 +1381,9 @@ e_contact_card_box_unselect_all (EContactCardBox *self)
 static void
 e_contact_card_box_selected_children_changed (EContactCardBox *self)
 {
-	/*AtkObject *accessible;
+	/*GtkWidget *accessible;
 
-	accessible = gtk_widget_get_accessible (self->priv->container);
+	accessible = GTK_WIDGET (self->priv->container);
 	if (accessible)
 		g_signal_emit_by_name (accessible, "selection-changed");*/
 }
@@ -1578,8 +1578,7 @@ e_contact_card_box_constructed (GObject *object)
 
 	self->priv->css_provider = gtk_css_provider_new ();
 
-	if (!gtk_css_provider_load_from_data (self->priv->css_provider,
-		"EContactCard .econtent {"
+	if (!gtk_css_provider_load_from_string (self->priv->css_provider, "EContactCard .econtent {"
 		"   border-width:1px;"
 		"   border-color:darker(@theme_fg_color);"
 		"   border-style:solid;"
@@ -1623,13 +1622,12 @@ e_contact_card_box_constructed (GObject *object)
 		"}"
 		"EContactCard .erowvalue {"
 		"   padding:0px 12px 0px 0px;"
-		"}",
-		-1, &local_error)) {
+		"}")) {
 		g_warning ("%s: Failed to parse CSS: %s", G_STRFUNC, local_error ? local_error->message : "Unknown error");
 		g_clear_error (&local_error);
 	}
 
-	gtk_widget_add_css_class (GTK_WIDGET (self), GTK_STYLE_CLASS_VIEW);
+	gtk_widget_add_css_class (GTK_WIDGET (self), "view");
 	gtk_style_context_add_provider (gtk_widget_get_style_context (GTK_WIDGET (self)),
 		GTK_STYLE_PROVIDER (self->priv->css_provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 

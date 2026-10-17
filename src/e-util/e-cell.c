@@ -69,7 +69,7 @@ ec_draw (ECellView *ecell_view,
 
 static gint
 ec_event (ECellView *ecell_view,
-          GdkEvent *event,
+          GnomeCanvasEvent *event,
           gint model_col,
           gint view_col,
           gint row,
@@ -199,7 +199,7 @@ e_cell_init (ECell *cell)
 /**
  * e_cell_event:
  * @ecell_view: The ECellView where the event will be dispatched
- * @event: The GdkEvent.
+ * @event: The GnomeCanvasEvent.
  * @model_col: the column in the model
  * @view_col: the column in the view
  * @row: the row
@@ -209,11 +209,11 @@ e_cell_init (ECell *cell)
  *
  * Dispatches the event @event to the @ecell_view for.
  *
- * Returns: processing state from the GdkEvent handling.
+ * Returns: processing state from the GnomeCanvasEvent handling.
  */
 gint
 e_cell_event (ECellView *ecell_view,
-              GdkEvent *event,
+              GnomeCanvasEvent *event,
               gint model_col,
               gint view_col,
               gint row,

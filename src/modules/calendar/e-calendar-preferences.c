@@ -544,15 +544,15 @@ show_alarms_config (ECalendarPreferences *prefs)
 	GtkWidget *widget;
 
 	widget = e_alarm_selector_new (prefs->priv->registry, E_SOURCE_EXTENSION_CALENDAR);
-	atk_object_set_name (
-		gtk_widget_get_accessible (widget),
+	e_gtk_widget_set_accessible_name (
+		GTK_WIDGET (widget),
 		_("Selected Calendars for Notifications of Reminders"));
 	e_gtk_container_add (prefs->priv->reminder_calendars_scrolled_window, widget);
 	gtk_widget_show (widget);
 
 	widget = e_alarm_selector_new (prefs->priv->registry, E_SOURCE_EXTENSION_TASK_LIST);
-	atk_object_set_name (
-		gtk_widget_get_accessible (widget),
+	e_gtk_widget_set_accessible_name (
+		GTK_WIDGET (widget),
 		_("Selected Task Lists for Notifications of Reminders"));
 	e_gtk_container_add (prefs->priv->reminder_tasks_scrolled_window, widget);
 	gtk_widget_show (widget);
@@ -746,7 +746,7 @@ calendar_preferences_add_itip_formatter_page (EShell *shell,
 	e_gtk_box_pack_start (GTK_BOX (inner_vbox), scrolledwin, TRUE, TRUE, 0);
 
 	ess = e_conflict_search_selector_new (registry);
-	atk_object_set_name (gtk_widget_get_accessible (ess), _("Search for Meetings"));
+	e_gtk_widget_set_accessible_name (GTK_WIDGET (ess), _("Search for Meetings"));
 	e_gtk_container_add (scrolledwin, ess);
 
 	gtk_widget_set_visible (page, TRUE);

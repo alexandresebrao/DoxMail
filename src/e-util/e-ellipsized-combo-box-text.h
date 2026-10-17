@@ -22,6 +22,7 @@
 #define E_ELLIPSIZED_COMBO_BOX_TEXT_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 
 /* Standard GObject macros */
 #define E_TYPE_ELLIPSIZED_COMBO_BOX_TEXT \

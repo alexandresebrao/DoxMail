@@ -23,6 +23,7 @@
 #define E_PROXY_EDITOR_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 #include <libedataserver/libedataserver.h>
 
 /* Standard GObject macros */

@@ -27,6 +27,7 @@
 #define E_CANVAS_VBOX_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 #include <libgnomecanvas/gnome-canvas.h>
 
 /* Standard GObject macros */

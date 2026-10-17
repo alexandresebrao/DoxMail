@@ -873,7 +873,7 @@ ecep_attachments_constructed (GObject *object)
 
 	widget = e_attachment_icon_view_new ();
 	gtk_widget_set_focusable (widget, TRUE);
-	gtk_icon_view_set_model (GTK_ICON_VIEW (widget), page_attachments->priv->store);
+	e_attachment_icon_view_set_model (E_ATTACHMENT_ICON_VIEW (widget), page_attachments->priv->store);
 	e_gtk_container_add (container, widget);
 	page_attachments->priv->icon_view = widget;
 	g_object_set (G_OBJECT (widget),

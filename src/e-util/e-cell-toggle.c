@@ -27,8 +27,6 @@
 #include <gtk/gtk.h>
 #include <libgnomecanvas/libgnomecanvas.h>
 
-#include "gal-a11y-e-cell-toggle.h"
-#include "gal-a11y-e-cell-registry.h"
 
 #include "e-cell-toggle.h"
 #include "e-table-item.h"
@@ -101,7 +99,7 @@ cell_toggle_ensure_icons (ECellToggle *cell_toggle,
 	g_ptr_array_set_size (cell_toggle->priv->surfaces, 0);
 
 	icon_theme = e_gtk_icon_theme_get_default ();
-	gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, &width, &height);
+	gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &width, &height);
 
 	for (ii = 0; ii < cell_toggle->priv->n_icon_names; ii++) {
 		const gchar *icon_name = cell_toggle->priv->icon_names[ii];
@@ -288,7 +286,7 @@ etog_set_value (ECellToggleView *toggle_view,
 
 static gint
 cell_toggle_event (ECellView *ecell_view,
-                   GdkEvent *event,
+                   GnomeCanvasEvent *event,
                    gint model_col,
                    gint view_col,
                    gint row,
@@ -301,11 +299,11 @@ cell_toggle_event (ECellView *ecell_view,
 	const gint value = GPOINTER_TO_INT (_value);
 
 	switch (event->type) {
-	case GDK_KEY_PRESS:
+	case GNOME_CANVAS_KEY_PRESS:
 		if (event->key.keyval != GDK_KEY_space)
 			return FALSE;
 		/* Fall through */
-	case GDK_BUTTON_PRESS:
+	case GNOME_CANVAS_BUTTON_PRESS:
 		if (!e_table_model_is_cell_editable (
 			ecell_view->e_table_model, model_col, row))
 			return FALSE;
@@ -521,8 +519,6 @@ e_cell_toggle_class_init (ECellToggleClass *class)
 			-1, G_MAXINT, -1,
 			G_PARAM_READWRITE));
 
-	gal_a11y_e_cell_registry_add_cell_type (
-		NULL, E_TYPE_CELL_TOGGLE, gal_a11y_e_cell_toggle_new);
 }
 
 static void

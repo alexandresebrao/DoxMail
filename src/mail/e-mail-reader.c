@@ -6438,7 +6438,7 @@ e_mail_reader_get_popup_menu (EMailReader *reader)
 	ui_object = e_ui_manager_create_item (ui_manager, "mail-preview-popup");
 	g_return_val_if_fail (G_IS_MENU_MODEL (ui_object), NULL);
 
-	menu = GTK_MENU (gtk_menu_new_from_model (G_MENU_MODEL (ui_object)));
+	menu = GTK_MENU (gtk_popover_menu_new_from_model (G_MENU_MODEL (ui_object)));
 
 	g_clear_object (&ui_object);
 

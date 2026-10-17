@@ -598,7 +598,7 @@ shell_view_construct_taskbar (EShellView *self)
 		G_BINDING_SYNC_CREATE);
 
 	/* Make the status area as large as the task bar. */
-	gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, NULL, &height);
+	gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, NULL, &height);
 	gtk_widget_set_size_request (status_area, -1, (height * 2) + 6);
 
 	online_button = e_online_button_new ();
@@ -1510,7 +1510,7 @@ shell_view_ui_manager_create_item_cb (EUIManager *manager,
 
 			fallback_action = shell_view_get_new_menu_first_action (G_MENU_MODEL (self->priv->new_menu), manager);
 
-			menu = gtk_menu_new_from_model (G_MENU_MODEL (self->priv->new_menu));
+			menu = gtk_popover_menu_new_from_model (G_MENU_MODEL (self->priv->new_menu));
 			tool_item = e_menu_tool_button_new (C_("toolbar-button", "New"), manager);
 			e_menu_tool_button_set_fallback_action (E_MENU_TOOL_BUTTON (tool_item), fallback_action);
 			gtk_tool_item_set_is_important (tool_item, TRUE);
@@ -1552,7 +1552,7 @@ shell_view_ui_manager_create_item_cb (EUIManager *manager,
 
 			fallback_action = shell_view_get_new_menu_first_action (G_MENU_MODEL (self->priv->new_menu), manager);
 
-			menu = gtk_menu_new_from_model (G_MENU_MODEL (self->priv->new_menu));
+			menu = gtk_popover_menu_new_from_model (G_MENU_MODEL (self->priv->new_menu));
 			button = e_header_bar_button_new (C_("toolbar-button", "New"), fallback_action, manager);
 			e_header_bar_button_take_menu (E_HEADER_BAR_BUTTON (button), menu);
 			gtk_widget_set_visible (GTK_WIDGET (button), TRUE);
@@ -2154,12 +2154,12 @@ shell_view_constructed (GObject *object)
 	shell_view_init_ui_data (shell_view);
 
 	ui_item = e_ui_manager_create_item (shell_view->priv->ui_manager, "main-menu");
-	widget = gtk_menu_bar_new_from_model (G_MENU_MODEL (ui_item));
+	widget = gtk_popover_menu_bar_new_from_model (G_MENU_MODEL (ui_item));
 	g_clear_object (&ui_item);
 
 	e_ui_customizer_register (customizer, "main-menu", NULL);
 
-	shell_view->priv->menu_bar = e_menu_bar_new (GTK_MENU_BAR (widget), GTK_WINDOW (shell_view->priv->shell_window), &shell_view->priv->menu_button);
+	shell_view->priv->menu_bar = e_menu_bar_new (widget, GTK_WINDOW (shell_view->priv->shell_window), &shell_view->priv->menu_button);
 	e_gtk_box_pack_start (GTK_BOX (shell_view), widget, FALSE, FALSE, 0);
 
 	g_signal_connect_object (widget, "deactivate",
@@ -2818,7 +2818,7 @@ e_shell_view_init (EShellView *shell_view,
 
 	provider = gtk_css_provider_new ();
 
-	if (!gtk_css_provider_load_from_data (provider, "EShellView { padding:0px; margin:0px; border:0px; }", -1, &local_error))
+	if (!gtk_css_provider_load_from_string (provider, "EShellView { padding:0px; margin:0px; border:0px; }"))
 		g_critical ("%s: Failed to load CSS data: %s", G_STRFUNC, local_error ? local_error->message : "Unknown error");
 
 	g_clear_error (&local_error);
@@ -4038,7 +4038,7 @@ e_shell_view_show_popup_menu (EShellView *shell_view,
 		return NULL;
 	}
 
-	widget = gtk_menu_new_from_model (G_MENU_MODEL (ui_item));
+	widget = gtk_popover_menu_new_from_model (G_MENU_MODEL (ui_item));
 	g_clear_object (&ui_item);
 
 	menu = GTK_MENU (widget);

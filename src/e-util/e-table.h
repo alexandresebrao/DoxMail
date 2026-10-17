@@ -194,26 +194,26 @@ struct _ETableClass {
 	void		(*double_click)		(ETable *et,
 						 gint row,
 						 gint col,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 	gboolean	(*right_click)		(ETable *et,
 						 gint row,
 						 gint col,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 	gboolean	(*click)		(ETable *et,
 						 gint row,
 						 gint col,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 	gboolean	(*key_press)		(ETable *et,
 						 gint row,
 						 gint col,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 	gboolean	(*start_drag)		(ETable *et,
 						 gint row,
 						 gint col,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 	void		(*state_change)		(ETable *et);
 	gboolean	(*white_space_event)	(ETable *et,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 
 	/* Source side drag signals */
 	void		(*table_drag_begin)	 (ETable *table,
@@ -365,7 +365,7 @@ EGtkDragContext *e_table_drag_begin		(ETable *table,
 						 EGtkTargetList *targets,
 						 GdkDragAction actions,
 						 gint button,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 
 /* selection stuff */
 void		e_table_select_all		(ETable *table);

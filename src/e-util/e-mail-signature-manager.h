@@ -23,6 +23,7 @@
 #define E_MAIL_SIGNATURE_MANAGER_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 #include <e-util/e-paned.h>
 
 #include <e-util/e-util-enumtypes.h>

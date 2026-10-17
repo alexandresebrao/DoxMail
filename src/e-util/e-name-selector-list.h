@@ -29,6 +29,7 @@
 #define E_NAME_SELECTOR_LIST_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 #include <libebook/libebook.h>
 
 #include <e-util/e-client-cache.h>

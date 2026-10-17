@@ -201,7 +201,7 @@ e_table_group_container_new (GnomeCanvasGroup *parent,
 
 static gint
 etgc_event (GnomeCanvasItem *item,
-            GdkEvent *event)
+            GnomeCanvasEvent *event)
 {
 	ETableGroupContainer *etgc = E_TABLE_GROUP_CONTAINER (item);
 	gboolean return_val = TRUE;
@@ -212,7 +212,7 @@ etgc_event (GnomeCanvasItem *item,
 	EFocus direction = E_FOCUS_START;
 
 	switch (event->type) {
-	case GDK_KEY_PRESS:
+	case GNOME_CANVAS_KEY_PRESS:
 		if (event->key.keyval == GDK_KEY_Tab ||
 		    event->key.keyval == GDK_KEY_KP_Tab ||
 		    event->key.keyval == GDK_KEY_ISO_Left_Tab) {
@@ -399,7 +399,7 @@ static void
 child_double_click (ETableGroup *etg,
                     gint row,
                     gint col,
-                    GdkEvent *event,
+                    GnomeCanvasEvent *event,
                     ETableGroupContainer *etgc)
 {
 	e_table_group_double_click (E_TABLE_GROUP (etgc), row, col, event);
@@ -409,7 +409,7 @@ static gboolean
 child_right_click (ETableGroup *etg,
                    gint row,
                    gint col,
-                   GdkEvent *event,
+                   GnomeCanvasEvent *event,
                    ETableGroupContainer *etgc)
 {
 	return e_table_group_right_click (E_TABLE_GROUP (etgc), row, col, event);
@@ -419,7 +419,7 @@ static gboolean
 child_click (ETableGroup *etg,
              gint row,
              gint col,
-             GdkEvent *event,
+             GnomeCanvasEvent *event,
              ETableGroupContainer *etgc)
 {
 	return e_table_group_click (E_TABLE_GROUP (etgc), row, col, event);
@@ -429,7 +429,7 @@ static gboolean
 child_key_press (ETableGroup *etg,
                  gint row,
                  gint col,
-                 GdkEvent *event,
+                 GnomeCanvasEvent *event,
                  ETableGroupContainer *etgc)
 {
 	return e_table_group_key_press (E_TABLE_GROUP (etgc), row, col, event);
@@ -439,7 +439,7 @@ static gboolean
 child_start_drag (ETableGroup *etg,
                   gint row,
                   gint col,
-                  GdkEvent *event,
+                  GnomeCanvasEvent *event,
                   ETableGroupContainer *etgc)
 {
 	return e_table_group_start_drag (E_TABLE_GROUP (etgc), row, col, event);

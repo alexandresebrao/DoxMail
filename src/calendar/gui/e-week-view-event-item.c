@@ -108,7 +108,7 @@ week_view_event_item_get_position (EWeekViewEventItem *event_item,
 
 static gboolean
 week_view_event_item_double_click (EWeekViewEventItem *event_item,
-                                   GdkEvent *button_event)
+                                   GnomeCanvasEvent *button_event)
 {
 	EWeekView *week_view;
 	EWeekViewEvent *event;
@@ -164,7 +164,7 @@ week_view_event_item_double_click (EWeekViewEventItem *event_item,
 
 static gboolean
 week_view_event_item_button_press (EWeekViewEventItem *event_item,
-                                   GdkEvent *button_event)
+                                   GnomeCanvasEvent *button_event)
 {
 	EWeekView *week_view;
 	ECalendarViewPosition pos;
@@ -176,8 +176,8 @@ week_view_event_item_button_press (EWeekViewEventItem *event_item,
 	gdouble event_x_win = 0;
 	gdouble event_y_win = 0;
 
-	e_gdk_event_get_button (button_event, &event_button);
-	e_gdk_event_get_coords (button_event, &event_x_win, &event_y_win);
+	gnome_canvas_event_get_button (button_event, &event_button);
+	gnome_canvas_event_get_coords (button_event, &event_x_win, &event_y_win);
 
 	item = GNOME_CANVAS_ITEM (event_item);
 
@@ -251,7 +251,7 @@ week_view_event_item_button_press (EWeekViewEventItem *event_item,
 
 static gboolean
 week_view_event_item_button_release (EWeekViewEventItem *event_item,
-                                     GdkEvent *event)
+                                     GnomeCanvasEvent *event)
 {
 	EWeekView *week_view;
 	GnomeCanvasItem *item;
@@ -1120,20 +1120,20 @@ week_view_event_item_point (GnomeCanvasItem *item,
 
 static gint
 week_view_event_item_event (GnomeCanvasItem *item,
-                            GdkEvent *event)
+                            GnomeCanvasEvent *event)
 {
 	EWeekViewEventItem *event_item;
 
 	event_item = E_WEEK_VIEW_EVENT_ITEM (item);
 
 	switch (event->type) {
-	case GDK_2BUTTON_PRESS:
+	case GNOME_CANVAS_2BUTTON_PRESS:
 		return week_view_event_item_double_click (event_item, event);
-	case GDK_BUTTON_PRESS:
+	case GNOME_CANVAS_BUTTON_PRESS:
 		return week_view_event_item_button_press (event_item, event);
-	case GDK_BUTTON_RELEASE:
+	case GNOME_CANVAS_BUTTON_RELEASE:
 		return week_view_event_item_button_release (event_item, event);
-	case GDK_MOTION_NOTIFY:
+	case GNOME_CANVAS_MOTION_NOTIFY:
 		break;
 	default:
 		break;

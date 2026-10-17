@@ -489,7 +489,7 @@ e_card_view_constructed (GObject *object)
 	/* Chain up to parent's method. */
 	G_OBJECT_CLASS (e_card_view_parent_class)->constructed (object);
 
-	gtk_widget_add_css_class (GTK_WIDGET (self), GTK_STYLE_CLASS_VIEW);
+	gtk_widget_add_css_class (GTK_WIDGET (self), "view");
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
 	g_object_set (widget,

@@ -23,6 +23,7 @@
 #define E_MAIL_IDENTITY_COMBO_BOX_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 #include <libedataserver/libedataserver.h>
 
 /* Standard GObject macros */

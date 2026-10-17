@@ -29,6 +29,7 @@
 #define E_DIALOG_WIDGETS_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 #include <camel/camel.h>
 
 void e_dialog_combo_box_set (GtkWidget *widget, gint value, const gint *value_map);

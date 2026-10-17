@@ -26,6 +26,7 @@
 #define E_HTML_EDITOR_DIALOG_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 #include <e-util/e-html-editor.h>
 
 /* Standard GObject macros */

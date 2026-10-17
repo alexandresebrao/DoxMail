@@ -11,6 +11,7 @@
 #define E_HEADER_BAR_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 
 #define E_TYPE_HEADER_BAR \
 	(e_header_bar_get_type ())

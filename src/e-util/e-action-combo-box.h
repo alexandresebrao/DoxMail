@@ -27,6 +27,7 @@
  * (Based on GtkhtmlComboBox.) */
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 #include <e-util/e-ui-action.h>
 
 /* Standard GObject macros */

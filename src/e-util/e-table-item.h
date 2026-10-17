@@ -183,23 +183,23 @@ struct _ETableItemClass {
 	void		(*double_click)		(ETableItem *eti,
 						 gint row,
 						 gint col,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 	gboolean	(*right_click)		(ETableItem *eti,
 						 gint row,
 						 gint col,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 	gboolean	(*click)		(ETableItem *eti,
 						 gint row,
 						 gint col,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 	gboolean	(*key_press)		(ETableItem *eti,
 						 gint row,
 						 gint col,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 	gboolean	(*start_drag)		(ETableItem *eti,
 						 gint row,
 						 gint col,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 	void		(*style_updated)	(ETableItem *eti);
 	void		(*selection_model_removed)
 						(ETableItem *eti,

@@ -25,6 +25,7 @@
 #define E_NAME_SELECTOR_DIALOG_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 
 #include <e-util/e-client-cache.h>
 #include <e-util/e-contact-store.h>

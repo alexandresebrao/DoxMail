@@ -28,6 +28,7 @@
 #define _E_ICON_FACTORY_H_
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 
 void		e_icon_factory_set_prefer_symbolic_icons
 						(gboolean prefer);

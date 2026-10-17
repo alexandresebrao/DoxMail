@@ -26,6 +26,7 @@
 #define E_ACTIVITY_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 
 #include <e-util/e-alert-sink.h>
 #include <e-util/e-util-enums.h>

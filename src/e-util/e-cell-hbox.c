@@ -179,7 +179,7 @@ ecv_draw (ECellView *ecell_view,
  */
 static gint
 ecv_event (ECellView *ecell_view,
-           GdkEvent *event,
+           GnomeCanvasEvent *event,
            gint model_col,
            gint view_col,
            gint row,
@@ -192,13 +192,13 @@ ecv_event (ECellView *ecell_view,
 	gint subcell_offset = 0;
 
 	switch (event->type) {
-	case GDK_BUTTON_PRESS:
-	case GDK_BUTTON_RELEASE:
-	case GDK_2BUTTON_PRESS:
-	case GDK_3BUTTON_PRESS:
+	case GNOME_CANVAS_BUTTON_PRESS:
+	case GNOME_CANVAS_BUTTON_RELEASE:
+	case GNOME_CANVAS_2BUTTON_PRESS:
+	case GNOME_CANVAS_3BUTTON_PRESS:
 		y = event->button.y;
 		break;
-	case GDK_MOTION_NOTIFY:
+	case GNOME_CANVAS_MOTION_NOTIFY:
 		y = event->motion.y;
 		break;
 	default:

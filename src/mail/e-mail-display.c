@@ -617,7 +617,7 @@ mail_display_change_one_attachment_visibility (EMailDisplay *display,
 	g_free (element_id);
 
 	element_id = g_strdup_printf ("attachment-expander-img-%p", attachment);
-	uri = g_strdup_printf ("gtk-stock://%s?size=%d", show ? "go-down" : "go-next", GTK_ICON_SIZE_BUTTON);
+	uri = g_strdup_printf ("gtk-stock://%s?size=%d", show ? "go-down" : "go-next", GTK_ICON_SIZE_NORMAL);
 
 	e_web_view_set_element_attribute (E_WEB_VIEW (display), element_id, NULL, "src", uri);
 

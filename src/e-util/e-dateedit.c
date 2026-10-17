@@ -596,11 +596,11 @@ GtkWidget *
 e_date_edit_new (void)
 {
 	EDateEdit *dedit;
-	AtkObject *a11y;
+	GtkWidget *a11y;
 
 	dedit = g_object_new (E_TYPE_DATE_EDIT, NULL);
-	a11y = gtk_widget_get_accessible (GTK_WIDGET (dedit));
-	atk_object_set_name (a11y, _("Date and Time"));
+	a11y = GTK_WIDGET (GTK_WIDGET (dedit));
+	e_gtk_widget_set_accessible_name (a11y, _("Date and Time"));
 
 	return GTK_WIDGET (dedit);
 }
@@ -620,7 +620,7 @@ create_children (EDateEdit *dedit)
 	GtkWidget *frame;
 	GtkWidget *vbox, *bbox;
 	GtkWidget *child;
-	AtkObject *a11y;
+	GtkWidget *a11y;
 	GtkListStore *time_store;
 	GList *cells;
 	GtkCssProvider *css_provider;
@@ -633,9 +633,9 @@ create_children (EDateEdit *dedit)
 	priv = dedit->priv;
 
 	priv->date_entry = gtk_entry_new ();
-	a11y = gtk_widget_get_accessible (priv->date_entry);
-	atk_object_set_description (a11y, _("Text entry to input date"));
-	atk_object_set_name (a11y, _("Date"));
+	a11y = GTK_WIDGET (priv->date_entry);
+	e_gtk_widget_set_accessible_description (a11y, _("Text entry to input date"));
+	e_gtk_widget_set_accessible_name (a11y, _("Date"));
 	e_gtk_box_pack_start (GTK_BOX (dedit), priv->date_entry, FALSE, TRUE, 0);
 
 	g_signal_connect (
@@ -653,9 +653,9 @@ create_children (EDateEdit *dedit)
 		priv->date_button, "clicked",
 		G_CALLBACK (on_date_button_clicked), dedit);
 	e_gtk_box_pack_start (GTK_BOX (dedit), priv->date_button, FALSE, FALSE, 0);
-	a11y = gtk_widget_get_accessible (priv->date_button);
-	atk_object_set_description (a11y, _("Click this button to show a calendar"));
-	atk_object_set_name (a11y, _("Date"));
+	a11y = GTK_WIDGET (priv->date_button);
+	e_gtk_widget_set_accessible_description (a11y, _("Click this button to show a calendar"));
+	e_gtk_widget_set_accessible_name (a11y, _("Date"));
 
 	if (priv->show_date) {
 		gtk_widget_show (priv->date_entry);
@@ -675,7 +675,7 @@ create_children (EDateEdit *dedit)
 
 	css_provider = gtk_css_provider_new ();
 	css = "GtkComboBox { -GtkComboBox-appears-as-list: 1; }";
-	gtk_css_provider_load_from_data (css_provider, css, -1, &error);
+	gtk_css_provider_load_from_string (css_provider, css);
 	style_context = gtk_widget_get_style_context (priv->time_combo);
 	if (error == NULL) {
 		gtk_style_context_add_provider (
@@ -708,9 +708,9 @@ create_children (EDateEdit *dedit)
 
 	e_gtk_box_pack_start (GTK_BOX (dedit), priv->time_combo, FALSE, TRUE, 0);
 	maybe_rebuild_time_popup (dedit);
-	a11y = gtk_widget_get_accessible (priv->time_combo);
-	atk_object_set_description (a11y, _("Drop-down combination box to select time"));
-	atk_object_set_name (a11y, _("Time"));
+	a11y = GTK_WIDGET (priv->time_combo);
+	e_gtk_widget_set_accessible_description (a11y, _("Drop-down combination box to select time"));
+	e_gtk_widget_set_accessible_name (a11y, _("Time"));
 
 	g_signal_connect (
 		child, "key_press_event",
@@ -2194,7 +2194,7 @@ static void
 add_relation (EDateEdit *dedit,
               GtkWidget *widget)
 {
-	AtkObject *a11yEdit, *a11yWidget;
+	GtkWidget *a11yEdit, *a11yWidget;
 	AtkRelationSet *set;
 	AtkRelation *relation;
 	GPtrArray *target;
@@ -2202,8 +2202,8 @@ add_relation (EDateEdit *dedit,
 
 	/* add a labelled_by relation for widget for accessibility */
 
-	a11yEdit = gtk_widget_get_accessible (GTK_WIDGET (dedit));
-	a11yWidget = gtk_widget_get_accessible (widget);
+	a11yEdit = GTK_WIDGET (GTK_WIDGET (dedit));
+	a11yWidget = GTK_WIDGET (widget);
 
 	set = atk_object_ref_relation_set (a11yWidget);
 	if (set != NULL) {

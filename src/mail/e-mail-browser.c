@@ -772,10 +772,10 @@ mail_browser_constructed (GObject *object)
 	customizer = e_ui_manager_get_customizer (browser->priv->ui_manager);
 
 	ui_item = e_ui_manager_create_item (browser->priv->ui_manager, "main-menu");
-	widget = gtk_menu_bar_new_from_model (G_MENU_MODEL (ui_item));
+	widget = gtk_popover_menu_bar_new_from_model (G_MENU_MODEL (ui_item));
 	g_clear_object (&ui_item);
 
-	browser->priv->menu_bar = e_menu_bar_new (GTK_MENU_BAR (widget), GTK_WINDOW (browser), &browser->priv->menu_button);
+	browser->priv->menu_bar = e_menu_bar_new (widget, GTK_WINDOW (browser), &browser->priv->menu_button);
 	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 
 	e_ui_customizer_register (customizer, "main-menu", NULL);

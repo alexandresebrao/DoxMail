@@ -228,8 +228,7 @@ shell_searchbar_update_search_widgets (EShellSearchbar *searchbar)
 			"}",
 			e_rgba_to_value (&bg),
 			e_rgba_to_value (&fg));
-		gtk_css_provider_load_from_data (
-			searchbar->priv->css_provider, css, -1, NULL);
+		gtk_css_provider_load_from_string (searchbar->priv->css_provider, css);
 		g_free (css);
 
 		gtk_widget_set_name (widget, "searchbar_searchentry_active");

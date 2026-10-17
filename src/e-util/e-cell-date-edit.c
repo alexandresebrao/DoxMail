@@ -52,7 +52,7 @@ static void e_cell_date_edit_set_property	(GObject	*object,
 static void e_cell_date_edit_dispose		(GObject	*object);
 
 static gint e_cell_date_edit_do_popup		(ECellPopup	*ecp,
-						 GdkEvent	*event,
+						 GnomeCanvasEvent	*event,
 						 gint             row,
 						 gint             view_col);
 static void e_cell_date_edit_set_popup_values	(ECellDateEdit	*ecde);
@@ -61,21 +61,10 @@ static void e_cell_date_edit_select_matching_time (ECellDateEdit	*ecde,
 static void e_cell_date_edit_show_popup		(ECellDateEdit	*ecde,
 						 gint             row,
 						 gint             view_col);
-static void e_cell_date_edit_get_popup_pos	(ECellDateEdit	*ecde,
-						 gint             row,
-						 gint             view_col,
-						 gint		*x,
-						 gint		*y,
-						 gint		*height,
-						 gint		*width);
 
 static void e_cell_date_edit_rebuild_time_list	(ECellDateEdit	*ecde);
 
-static gint e_cell_date_edit_key_press		(GtkWidget	*popup_window,
-						 GdkEvent	*event,
-						 ECellDateEdit	*ecde);
-static gint  e_cell_date_edit_button_press	(GtkWidget	*popup_window,
-						 GdkEvent	*button_event,
+static void e_cell_date_edit_popover_closed	(GtkPopover	*popover,
 						 ECellDateEdit	*ecde);
 static void e_cell_date_edit_on_ok_clicked	(GtkWidget	*button,
 						 ECellDateEdit	*ecde);
@@ -214,7 +203,7 @@ e_cell_date_edit_class_init (ECellDateEditClass *class)
 static void
 e_cell_date_edit_init (ECellDateEdit *ecde)
 {
-	GtkWidget *frame, *vbox, *hbox, *vbox2;
+	GtkWidget *vbox, *hbox, *vbox2;
 	GtkWidget *scrolled_window, *bbox, *tree_view;
 	GtkWidget *now_button, *today_button, *none_button, *ok_button;
 	GtkListStore *store;
@@ -231,20 +220,15 @@ e_cell_date_edit_init (ECellDateEdit *ecde)
 	ecde->time_callback_data = NULL;
 	ecde->time_callback_destroy = NULL;
 
-	/* We create one popup window for the ECell, since there will only
-	 * ever be one popup in use at a time. */
-	ecde->popup_window = gtk_window_new (GTK_WINDOW_POPUP);
-
-	gtk_window_set_resizable (GTK_WINDOW (ecde->popup_window), TRUE);
-
-	frame = gtk_frame_new (NULL);
-	e_gtk_container_add (ecde->popup_window, frame);
-	gtk_widget_show (frame);
+	/* We create one popup for the ECell, since there will only ever be
+	 * one popup in use at a time.  GTK 3 used a popup window with grabs;
+	 * the popover closes itself on a click outside and on Escape. */
+	ecde->popup_window = gtk_popover_new ();
+	g_object_ref_sink (ecde->popup_window);
+	gtk_popover_set_has_arrow (GTK_POPOVER (ecde->popup_window), FALSE);
 
 	vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
-	e_gtk_widget_set_border_width (vbox, 6);
-	e_gtk_container_add (frame, vbox);
-	gtk_widget_show (vbox);
+	gtk_popover_set_child (GTK_POPOVER (ecde->popup_window), vbox);
 
 	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 4);
 	e_gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
@@ -268,7 +252,8 @@ e_cell_date_edit_init (ECellDateEdit *ecde)
 	e_gtk_box_pack_start (GTK_BOX (vbox2), ecde->time_entry, FALSE, FALSE, 0);
 	gtk_widget_show (ecde->time_entry);
 
-	scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+	scrolled_window = gtk_scrolled_window_new ();
+	gtk_scrolled_window_set_min_content_height (GTK_SCROLLED_WINDOW (scrolled_window), 120);
 	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (scrolled_window), TRUE);
 	e_gtk_box_pack_start (GTK_BOX (vbox2), scrolled_window, TRUE, TRUE, 0);
 	gtk_scrolled_window_set_policy (
@@ -343,11 +328,8 @@ e_cell_date_edit_init (ECellDateEdit *ecde)
 		G_CALLBACK (e_cell_date_edit_on_ok_clicked), ecde);
 
 	g_signal_connect (
-		ecde->popup_window, "key_press_event",
-		G_CALLBACK (e_cell_date_edit_key_press), ecde);
-	g_signal_connect (
-		ecde->popup_window, "button_press_event",
-		G_CALLBACK (e_cell_date_edit_button_press), ecde);
+		ecde->popup_window, "closed",
+		G_CALLBACK (e_cell_date_edit_popover_closed), ecde);
 }
 
 /**
@@ -479,7 +461,12 @@ e_cell_date_edit_dispose (GObject *object)
 
 	e_cell_date_edit_set_get_time_callback (ecde, NULL, NULL, NULL);
 
-	g_clear_pointer (&ecde->popup_window, gtk_widget_destroy);
+	if (ecde->popup_window) {
+		g_signal_handlers_disconnect_by_data (ecde->popup_window, ecde);
+		if (gtk_widget_get_parent (ecde->popup_window))
+			gtk_widget_unparent (ecde->popup_window);
+		g_clear_object (&ecde->popup_window);
+	}
 
 	/* Chain up to parent's dispose() method. */
 	G_OBJECT_CLASS (e_cell_date_edit_parent_class)->dispose (object);
@@ -487,24 +474,19 @@ e_cell_date_edit_dispose (GObject *object)
 
 static gint
 e_cell_date_edit_do_popup (ECellPopup *ecp,
-                           GdkEvent *event,
+                           GnomeCanvasEvent *event,
                            gint row,
                            gint view_col)
 {
 	ECellDateEdit *ecde = E_CELL_DATE_EDIT (ecp);
-	GdkWindow *window;
 
 	g_signal_emit (ecp, signals[BEFORE_POPUP], 0, row, view_col);
 
 	e_cell_date_edit_show_popup (ecde, row, view_col);
 	e_cell_date_edit_set_popup_values (ecde);
 
-	gtk_grab_add (ecde->popup_window);
-
 	/* Set the focus to the first widget. */
 	gtk_widget_grab_focus (ecde->time_entry);
-	window = e_gtk_widget_get_surface (ecde->popup_window);
-	gdk_window_focus (window, GDK_CURRENT_TIME);
 
 	return TRUE;
 }
@@ -628,148 +610,18 @@ e_cell_date_edit_show_popup (ECellDateEdit *ecde,
                              gint row,
                              gint view_col)
 {
-	ECellView *ecv = (ECellView *) E_CELL_POPUP (ecde)->popup_cell_view;
-	GtkWidget *toplevel;
-	gint x, y, width, height;
-
 	if (ecde->need_time_list_rebuild)
 		e_cell_date_edit_rebuild_time_list (ecde);
 
-	/* This code is practically copied from GtkCombo. */
-
-	toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (GNOME_CANVAS_ITEM (ecv->e_table_item_view)->canvas));
-	if (GTK_IS_WINDOW (toplevel))
-		gtk_window_set_transient_for (GTK_WINDOW (ecde->popup_window), GTK_WINDOW (toplevel));
-
-	e_cell_date_edit_get_popup_pos (ecde, row, view_col, &x, &y, &height, &width);
-
-	gtk_widget_set_size_request (ecde->popup_window, width, height);
-	gtk_widget_realize (ecde->popup_window);
-	gdk_window_resize (e_gtk_widget_get_surface (ecde->popup_window), width, height);
-	gtk_widget_show (ecde->popup_window);
-
-	e_cell_popup_set_shown (E_CELL_POPUP (ecde), TRUE);
+	e_cell_popup_show_popover (E_CELL_POPUP (ecde), ecde->popup_window);
 }
 
-/* Calculates the size and position of the popup window (like GtkCombo). */
+/* A click outside or Escape: the cell is not changed */
 static void
-e_cell_date_edit_get_popup_pos (ECellDateEdit *ecde,
-                                gint row,
-                                gint view_col,
-                                gint *x,
-                                gint *y,
-                                gint *height,
-                                gint *width)
+e_cell_date_edit_popover_closed (GtkPopover *popover,
+				 ECellDateEdit *ecde)
 {
-	ECellPopup *ecp = E_CELL_POPUP (ecde);
-	ETableItem *eti;
-	GtkWidget *canvas;
-	GtkRequisition popup_requisition;
-	GtkAdjustment *adjustment;
-	GtkScrollable *scrollable;
-	GdkWindow *window;
-	gint avail_height, screen_width, column_width, row_height;
-	gdouble x1, y1, wx, wy;
-	gint value;
-
-	eti = E_TABLE_ITEM (ecp->popup_cell_view->cell_view.e_table_item_view);
-	canvas = GTK_WIDGET (GNOME_CANVAS_ITEM (eti)->canvas);
-
-	window = e_gtk_widget_get_surface (canvas);
-	gdk_window_get_origin (window, x, y);
-
-	x1 = e_table_header_col_diff (eti->header, 0, view_col + 1);
-	y1 = e_table_item_row_diff (eti, 0, row + 1);
-	column_width = e_table_header_col_diff (
-		eti->header, view_col, view_col + 1);
-	row_height = e_table_item_row_diff (eti, row, row + 1);
-	gnome_canvas_item_i2w (GNOME_CANVAS_ITEM (eti), &x1, &y1);
-
-	gnome_canvas_world_to_window (
-		GNOME_CANVAS (canvas), x1, y1, &wx, &wy);
-
-	x1 = wx;
-	y1 = wy;
-
-	*x += x1;
-	/* The ETable positions don't include the grid lines, I think, so we
-	 * add 1. */
-	scrollable = GTK_SCROLLABLE (&GNOME_CANVAS (canvas)->layout);
-	adjustment = gtk_scrollable_get_vadjustment (scrollable);
-	value = (gint) gtk_adjustment_get_value (adjustment);
-	*y += y1 + 1 - value + ((GnomeCanvas *)canvas)->zoom_yofs;
-
-	avail_height = gdk_screen_height () - *y;
-
-	/* We'll use the entire screen width if needed, but we save space for
-	 * the vertical scrollbar in case we need to show that. */
-	screen_width = gdk_screen_width ();
-
-	gtk_widget_get_preferred_size (ecde->popup_window, &popup_requisition, NULL);
-
-	/* Calculate the desired width. */
-	*width = popup_requisition.width;
-
-	/* Use at least the same width as the column. */
-	if (*width < column_width)
-		*width = column_width;
-
-	/* Check if it fits in the available height. */
-	if (popup_requisition.height > avail_height) {
-		/* It doesn't fit, so we see if we have the minimum space
-		 * needed. */
-		if (*y - row_height > avail_height) {
-			/* We don't, so we show the popup above the cell
-			 * instead of below it. */
-			*y -= (popup_requisition.height + row_height);
-			if (*y < 0)
-				*y = 0;
-		}
-	}
-
-	/* We try to line it up with the right edge of the column, but we don't
-	 * want it to go off the edges of the screen. */
-	if (*x > screen_width)
-		*x = screen_width;
-	*x -= *width;
-	if (*x < 0)
-		*x = 0;
-
-	*height = popup_requisition.height;
-}
-
-/* This handles key press events in the popup window. If the Escape key is
- * pressed we hide the popup, and do not change the cell contents. */
-static gint
-e_cell_date_edit_key_press (GtkWidget *popup_window,
-                            GdkEvent *event,
-                            ECellDateEdit *ecde)
-{
-	/* If the Escape key is pressed we hide the popup. */
-	if (event->keyval != GDK_KEY_Escape)
-		return FALSE;
-
-	e_cell_date_edit_hide_popup (ecde);
-
-	return TRUE;
-}
-
-/* This handles button press events in the popup window. If the button is
- * pressed outside the popup, we hide it and do not change the cell contents.
-*/
-static gint
-e_cell_date_edit_button_press (GtkWidget *popup_window,
-                               GdkEvent *button_event,
-                               ECellDateEdit *ecde)
-{
-	GtkWidget *event_widget;
-
-	event_widget = gtk_get_event_widget (button_event);
-
-	if (e_gtk_widget_get_toplevel (event_widget) != popup_window)
-		e_cell_date_edit_hide_popup (ecde);
-
-	return TRUE;
+	e_cell_popup_set_shown (E_CELL_POPUP (ecde), FALSE);
 }
 
 /* Clears the time list and rebuilds it using the lower_hour, upper_hour
@@ -880,10 +732,8 @@ e_cell_date_edit_show_time_invalid_warning (ECellDateEdit *ecde)
 	e_time_format_time (&date_tm, ecde->use_24_hour_format, FALSE,
 			    buffer, sizeof (buffer));
 
-	/* FIXME: Fix transient settings - I'm not sure it works with popup
-	 * windows. Maybe we need to use a normal window without decorations.*/
 	dialog = gtk_message_dialog_new (
-		GTK_WINDOW (ecde->popup_window),
+		GTK_WINDOW (gtk_widget_get_root (ecde->popup_window)),
 		GTK_DIALOG_DESTROY_WITH_PARENT,
 		GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
 		_("The time must be in the format: %s"),
@@ -1007,8 +857,7 @@ e_cell_date_edit_on_time_selected (GtkTreeSelection *selection,
 static void
 e_cell_date_edit_hide_popup (ECellDateEdit *ecde)
 {
-	gtk_grab_remove (ecde->popup_window);
-	gtk_widget_hide (ecde->popup_window);
+	gtk_popover_popdown (GTK_POPOVER (ecde->popup_window));
 	e_cell_popup_set_shown (E_CELL_POPUP (ecde), FALSE);
 }
 

@@ -2050,7 +2050,7 @@ collection_account_wizard_constructed (GObject *object)
 		NULL);
 
 	cell_renderer = gtk_cell_renderer_pixbuf_new ();
-	g_object_set (cell_renderer, "stock-size", GTK_ICON_SIZE_MENU, NULL);
+	g_object_set (cell_renderer, "icon-size", GTK_ICON_SIZE_NORMAL, NULL);
 	gtk_tree_view_column_pack_start (column, cell_renderer, FALSE);
 
 	gtk_tree_view_column_set_attributes (column, cell_renderer,

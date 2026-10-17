@@ -23,6 +23,7 @@
 #define E_AUTH_COMBO_BOX_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 #include <camel/camel.h>
 
 /* Standard GObject macros */

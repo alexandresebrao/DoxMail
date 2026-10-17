@@ -49,7 +49,7 @@
 /* pseudo-uri to key the send task on */
 #define SEND_URI_KEY "send-task:"
 
-#define SEND_RECV_ICON_SIZE GTK_ICON_SIZE_LARGE_TOOLBAR
+#define SEND_RECV_ICON_SIZE GTK_ICON_SIZE_LARGE
 
 /* send/receive email */
 

@@ -11,6 +11,7 @@
 #define E_MARKDOWN_EDITOR_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 
 #include <e-util/e-focus-tracker.h>
 

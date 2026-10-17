@@ -1845,8 +1845,8 @@ webkit_editor_style_updated (EWebKitEditor *wk_editor,
 		gdk_rgba_parse (&fgcolor, E_UTILS_DEFAULT_THEME_FG_COLOR);
 	}
 
-	gtk_style_context_get_color (style_context, state_flags | GTK_STATE_FLAG_LINK, &link_color);
-	gtk_style_context_get_color (style_context, state_flags | GTK_STATE_FLAG_VISITED, &vlink_color);
+	gtk_style_context_get_color (style_context, &link_color);
+	gtk_style_context_get_color (style_context, &vlink_color);
 
 	if (!force &&
 	    gdk_rgba_equal (&bgcolor, &wk_editor->priv->theme_bgcolor) &&

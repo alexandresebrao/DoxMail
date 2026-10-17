@@ -54,7 +54,7 @@ emfe_error_format (EMailFormatterExtension *extension,
 	gchar *html;
 	gint icon_width, icon_height;
 
-	if (!gtk_icon_size_lookup (GTK_ICON_SIZE_DIALOG, &icon_width, &icon_height)) {
+	if (!gtk_icon_size_lookup (GTK_ICON_SIZE_LARGE, &icon_width, &icon_height)) {
 		icon_width = 48;
 		icon_height = 48;
 	}
@@ -71,7 +71,7 @@ emfe_error_format (EMailFormatterExtension *extension,
 		"<tr valign=\"top\"><td width=50>"
 		"<img src=\"gtk-stock://%s/?size=%d\" width=\"%dpx\" height=\"%dpx\"/></td>\n"
 		"<td style=\"color: red;\">",
-		"dialog-error", GTK_ICON_SIZE_DIALOG, icon_width, icon_height);
+		"dialog-error", GTK_ICON_SIZE_LARGE, icon_width, icon_height);
 
 	g_output_stream_write_all (
 		stream, html, strlen (html), NULL, cancellable, NULL);

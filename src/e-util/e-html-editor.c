@@ -638,7 +638,7 @@ context_menu_data_free (gpointer ptr)
 	ContextMenuData *cmd = ptr;
 
 	if (cmd) {
-		g_clear_pointer (&cmd->event, gdk_event_free);
+		g_clear_pointer (&cmd->event, gdk_event_unref);
 		e_weak_ref_free (cmd->editor_weakref);
 		g_free (cmd->caret_word);
 		g_free (cmd->hover_uri);
@@ -664,7 +664,7 @@ html_editor_show_context_menu_idle_cb (gpointer user_data)
 		e_ui_menu_thaw (editor->priv->main_menu);
 
 		ui_item = e_ui_manager_create_item (editor->priv->ui_manager, "context-menu");
-		menu = GTK_MENU (gtk_menu_new_from_model (G_MENU_MODEL (ui_item)));
+		menu = GTK_MENU (gtk_popover_menu_new_from_model (G_MENU_MODEL (ui_item)));
 		g_clear_object (&ui_item);
 
 		gtk_menu_attach_to_widget (menu, GTK_WIDGET (editor), NULL);

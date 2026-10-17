@@ -588,10 +588,10 @@ mail_signature_editor_constructed (GObject *object)
 	container = widget;
 
 	ui_item = e_ui_manager_create_item (ui_manager, "main-menu");
-	widget = gtk_menu_bar_new_from_model (G_MENU_MODEL (ui_item));
+	widget = gtk_popover_menu_bar_new_from_model (G_MENU_MODEL (ui_item));
 	g_clear_object (&ui_item);
 
-	window->priv->menu_bar = e_menu_bar_new (GTK_MENU_BAR (widget), GTK_WINDOW (window), &window->priv->menu_button);
+	window->priv->menu_bar = e_menu_bar_new (widget, GTK_WINDOW (window), &window->priv->menu_button);
 	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 
 	/* Construct the main menu and toolbar. */

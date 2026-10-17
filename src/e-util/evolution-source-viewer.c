@@ -674,7 +674,7 @@ source_viewer_constructed (GObject *object)
 	g_object_set (
 		renderer,
 		"icon-name", "media-record",
-		"stock-size", GTK_ICON_SIZE_MENU,
+		"icon-size", GTK_ICON_SIZE_NORMAL,
 		NULL);
 	gtk_tree_view_column_pack_start (column, renderer, FALSE);
 	gtk_tree_view_column_add_attribute (
@@ -684,7 +684,7 @@ source_viewer_constructed (GObject *object)
 	g_object_set (
 		renderer,
 		"icon-name", "list-remove",
-		"stock-size", GTK_ICON_SIZE_MENU,
+		"icon-size", GTK_ICON_SIZE_NORMAL,
 		NULL);
 	gtk_tree_view_column_pack_start (column, renderer, FALSE);
 	gtk_tree_view_column_add_attribute (
@@ -695,7 +695,7 @@ source_viewer_constructed (GObject *object)
 	g_object_set (
 		renderer,
 		"gicon", icon,
-		"stock-size", GTK_ICON_SIZE_MENU,
+		"icon-size", GTK_ICON_SIZE_NORMAL,
 		NULL);
 	gtk_tree_view_column_pack_start (column, renderer, FALSE);
 	gtk_tree_view_column_add_attribute (
@@ -707,7 +707,7 @@ source_viewer_constructed (GObject *object)
 	g_object_set (
 		renderer,
 		"gicon", icon,
-		"stock-size", GTK_ICON_SIZE_MENU,
+		"icon-size", GTK_ICON_SIZE_NORMAL,
 		NULL);
 	gtk_tree_view_column_pack_start (column, renderer, FALSE);
 	gtk_tree_view_column_add_attribute (

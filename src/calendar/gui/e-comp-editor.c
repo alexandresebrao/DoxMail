@@ -2504,12 +2504,12 @@ e_comp_editor_constructed (GObject *object)
 
 	/* Construct the main menu and headerbar. */
 	ui_item = e_ui_manager_create_item (comp_editor->priv->ui_manager, "main-menu");
-	widget = gtk_menu_bar_new_from_model (G_MENU_MODEL (ui_item));
+	widget = gtk_popover_menu_bar_new_from_model (G_MENU_MODEL (ui_item));
 	g_clear_object (&ui_item);
 
 	e_ui_customizer_register (customizer, "main-menu", NULL);
 
-	comp_editor->priv->menu_bar = e_menu_bar_new (GTK_MENU_BAR (widget), GTK_WINDOW (comp_editor), &comp_editor->priv->menu_button);
+	comp_editor->priv->menu_bar = e_menu_bar_new (widget, GTK_WINDOW (comp_editor), &comp_editor->priv->menu_button);
 	e_gtk_box_pack_start (GTK_BOX (vbox), widget, FALSE, FALSE, 0);
 
 	if (e_util_get_use_header_bar ()) {

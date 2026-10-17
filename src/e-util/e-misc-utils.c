@@ -3123,7 +3123,7 @@ e_util_save_image_from_clipboard (GdkClipboard *clipboard)
 	gchar *uri = NULL;
 	GError *error = NULL;
 
-	g_return_val_if_fail (GTK_IS_CLIPBOARD (clipboard), NULL);
+	g_return_val_if_fail (GDK_IS_CLIPBOARD (clipboard), NULL);
 
 	/* Extract the image data from the clipboard. */
 	pixbuf = e_gtk_clipboard_wait_for_image (clipboard);
@@ -3353,16 +3353,9 @@ e_util_resize_window_for_screen (GtkWindow *window,
 	}
 
 	if (content_width > 0 && content_height > 0 && width > 0 && height > 0) {
-		GdkDisplay *display;
-		GdkMonitor *monitor;
 		GdkRectangle monitor_area;
-		gint x = 0, y = 0;
 
-		display = gtk_widget_get_display (GTK_WIDGET (window));
-		gtk_window_get_position (GTK_WINDOW (window), &x, &y);
-
-		monitor = gdk_display_get_monitor_at_point (display, x, y);
-		gdk_monitor_get_workarea (monitor, &monitor_area);
+		e_gtk_widget_get_monitor_area (GTK_WIDGET (window), &monitor_area);
 
 		/* When the children are packed inside the window then influence the window
 		   size too, thus subtract it, if possible. */
@@ -4226,8 +4219,6 @@ void
 e_util_ensure_scrolled_window_height (GtkScrolledWindow *scrolled_window)
 {
 	GtkWidget *toplevel;
-	GdkDisplay *display;
-	GdkMonitor *monitor;
 	GdkRectangle workarea;
 	gint toplevel_height, scw_height, require_scw_height = 0, max_height;
 
@@ -4250,9 +4241,7 @@ e_util_ensure_scrolled_window_height (GtkScrolledWindow *scrolled_window)
 	if (!e_gtk_widget_get_surface (toplevel))
 		return;
 
-	display = gtk_widget_get_display (toplevel);
-	monitor = gdk_display_get_monitor_at_window (display, e_gtk_widget_get_surface (toplevel));
-	gdk_monitor_get_workarea (monitor, &workarea);
+	e_gtk_widget_get_monitor_area (toplevel, &workarea);
 
 	/* can enlarge up to 4 / 5 monitor's work area height */
 	max_height = workarea.height * 4 / 5;
@@ -4791,7 +4780,7 @@ e_util_ignore_accel_for_focused (GtkWidget *focused)
 					keyval == GDK_KEY_F9 || keyval == GDK_KEY_F10 || keyval == GDK_KEY_F11 || keyval == GDK_KEY_F12;
 			}
 
-			g_clear_pointer (&event, gdk_event_free);
+			g_clear_pointer (&event, gdk_event_unref);
 
 			ignore = !can_process;
 		}

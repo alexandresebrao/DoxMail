@@ -216,7 +216,7 @@ e_mail_formatter_format_address (EMailFormatter *formatter,
 			    strcmp (field, _("Bcc")) == 0) {
 				gint icon_width, icon_height;
 
-				if (!gtk_icon_size_lookup (GTK_ICON_SIZE_BUTTON, &icon_width, &icon_height)) {
+				if (!gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &icon_width, &icon_height)) {
 					icon_width = 16;
 					icon_height = 16;
 				}
@@ -230,7 +230,7 @@ e_mail_formatter_format_address (EMailFormatter *formatter,
 					"<button type=\"button\" id=\"__evo-moreaddr-button\" class=\"header-collapse\" style=\"display: inline-block;\">"
 					"<img src=\"gtk-stock://pan-end-symbolic?size=%d\" width=\"%dpx\" height=\"%dpx\"/>"
 					"</button>",
-					GTK_ICON_SIZE_BUTTON, icon_width, icon_height);
+					GTK_ICON_SIZE_NORMAL, icon_width, icon_height);
 			}
 		}
 	}
@@ -707,7 +707,7 @@ e_mail_formatter_format_security_header (EMailFormatter *formatter,
 				gint icon_width, icon_height;
 				gchar *escaped;
 
-				if (!gtk_icon_size_lookup (GTK_ICON_SIZE_BUTTON, &icon_width, &icon_height)) {
+				if (!gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &icon_width, &icon_height)) {
 					icon_width = 16;
 					icon_height = 16;
 				}
@@ -725,7 +725,7 @@ e_mail_formatter_format_security_header (EMailFormatter *formatter,
 					"<a class=\"manage-insecure-parts\" id=\"show:%s\" value=\"%s\" style=\"cursor:pointer;\"%s>%s</a>"
 					"<a class=\"manage-insecure-parts\" id=\"hide:%s\" value=\"%s\" style=\"cursor:pointer;\"%s>%s</a>"
 					")",
-					GTK_ICON_SIZE_BUTTON, icon_width, icon_height,
+					GTK_ICON_SIZE_NORMAL, icon_width, icon_height,
 					part_id_prefix, part_id_prefix, show_parts ? " hidden" : "", _("Show parts not being secured"),
 					part_id_prefix, part_id_prefix, show_parts ? "" : " hidden", _("Hide parts not being secured"));
 

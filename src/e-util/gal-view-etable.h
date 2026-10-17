@@ -23,6 +23,7 @@
 #define GAL_VIEW_ETABLE_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 #include <e-util/gal-view.h>
 #include <e-util/e-table-state.h>
 #include <e-util/e-table.h>

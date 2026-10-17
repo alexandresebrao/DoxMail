@@ -21,6 +21,7 @@
 #include "evolution-config.h"
 
 #include "e-attachment-view.h"
+#include "e-attachment-icon-view.h"
 
 #include <glib/gi18n.h>
 #include <gdk/gdkkeysyms.h>
@@ -96,15 +97,14 @@ e_attachment_view_get_attachment_popover (EAttachmentView *view)
 		/* Assume when URI-s are allowed the disposition (relevant for mail only) is not allowed */
 		e_attachment_popover_set_allow_disposition (E_ATTACHMENT_POPOVER (priv->attachment_popover),
 			!e_attachment_view_get_allow_uri (view));
-	} else if (gtk_popover_get_relative_to (priv->attachment_popover) != widget) {
-		gtk_popover_set_relative_to (priv->attachment_popover, widget);
+	} else if (gtk_widget_get_parent (GTK_WIDGET (priv->attachment_popover)) != widget) {
+		gtk_widget_unparent (GTK_WIDGET (priv->attachment_popover));
+		gtk_widget_set_parent (GTK_WIDGET (priv->attachment_popover), widget);
 	}
 
 	/* reset the pointing-to point to the middle of the 'view' widget */
-	gtk_widget_get_allocation (widget, &rect);
-
-	rect.x = rect.width / 2;
-	rect.y = rect.height / 2;
+	rect.x = gtk_widget_get_width (widget) / 2;
+	rect.y = gtk_widget_get_height (widget) / 2;
 	rect.width = 1;
 	rect.height = 1;
 
@@ -1233,7 +1233,7 @@ e_attachment_view_dispose (EAttachmentView *view)
 
 	priv = e_attachment_view_get_private (view);
 
-	g_clear_pointer (&priv->target_list, gtk_target_list_unref);
+	g_clear_pointer (&priv->target_list, e_gtk_target_list_unref);
 	g_clear_pointer (&priv->open_with_apps_hash, g_hash_table_unref);
 	g_clear_object (&priv->open_with_apps_menu);
 	g_clear_object (&priv->ui_manager);
@@ -1246,7 +1246,6 @@ e_attachment_view_finalize (EAttachmentView *view)
 
 	priv = e_attachment_view_get_private (view);
 
-	g_list_free_full (priv->event_list, (GDestroyNotify) gdk_event_free);
 	g_list_free_full (priv->selected, g_object_unref);
 }
 
@@ -1514,83 +1513,54 @@ e_attachment_view_remove_selected (EAttachmentView *view,
 	g_list_free (list);
 }
 
-static gboolean
-attachment_view_any_popup_item_visible (GtkWidget *widget)
+static void
+attachment_view_popup (EAttachmentView *view,
+		       GtkWidget *relative_to,
+		       gdouble x,
+		       gdouble y)
 {
-	GList *items, *link;
-	gboolean any_visible = FALSE;
+	GtkWidget *menu;
 
-	g_return_val_if_fail (GTK_IS_MENU (widget), FALSE);
-
-	items = e_gtk_widget_get_children (widget);
-	for (link = items; link && !any_visible; link = g_list_next (link)) {
-		any_visible = gtk_widget_get_visible (link->data);
-	}
-
-	g_list_free (items);
-
-	return any_visible;
+	e_attachment_view_update_actions (view);
+	menu = e_attachment_view_get_popup_menu (view);
+	if (menu)
+		e_util_popup_menu (menu, relative_to, x, y);
 }
 
+/**
+ * e_attachment_view_button_press:
+ * @view: an #EAttachmentView
+ * @relative_to: the widget the coordinates are relative to
+ * @button: the pressed button
+ * @x: X coordinate, as expected by e_attachment_view_get_path_at_pos()
+ * @y: Y coordinate, as expected by e_attachment_view_get_path_at_pos()
+ *
+ * Handles a button press: the secondary button shows the popup menu.
+ *
+ * Returns: whether the press was handled
+ **/
 gboolean
-e_attachment_view_button_press_event (EAttachmentView *view,
-                                      GdkEvent *event)
+e_attachment_view_button_press (EAttachmentView *view,
+				GtkWidget *relative_to,
+				guint button,
+				gdouble x,
+				gdouble y)
 {
-	EAttachmentViewPrivate *priv;
 	GtkTreePath *path;
-	GtkWidget *menu;
 	gboolean editable;
 	gboolean handled = FALSE;
 	gboolean path_is_selected = FALSE;
 
 	g_return_val_if_fail (E_IS_ATTACHMENT_VIEW (view), FALSE);
-	g_return_val_if_fail (event != NULL, FALSE);
-
-	priv = e_attachment_view_get_private (view);
-
-	if (g_list_find (priv->event_list, event) != NULL)
-		return FALSE;
-
-	if (priv->event_list != NULL) {
-		/* Save the event to be propagated in order. */
-		priv->event_list = g_list_append (
-			priv->event_list,
-			gdk_event_ref ((GdkEvent *) event));
-		return TRUE;
-	}
 
 	editable = e_attachment_view_get_editable (view);
-	path = e_attachment_view_get_path_at_pos (view, event->x, event->y);
+	path = e_attachment_view_get_path_at_pos (view, x, y);
 	path_is_selected = e_attachment_view_path_is_selected (view, path);
 
-	if (event->button == 1 && event->type == GDK_BUTTON_PRESS) {
-		GList *list, *iter;
-		gboolean busy = FALSE;
+	/* FIXME-GTK4: GTK 3 delayed the primary button press on a selected
+	 * item, so dragging several selected items kept them selected. */
 
-		list = e_attachment_view_get_selected_attachments (view);
-
-		for (iter = list; iter != NULL; iter = iter->next) {
-			EAttachment *attachment = iter->data;
-			busy |= e_attachment_get_loading (attachment);
-			busy |= e_attachment_get_saving (attachment);
-		}
-
-		/* Prepare for dragging if the clicked item is selected
-		 * and none of the selected items are loading or saving. */
-		if (path_is_selected && !busy) {
-			priv->start_x = event->x;
-			priv->start_y = event->y;
-			priv->event_list = g_list_append (
-				priv->event_list,
-				gdk_event_ref ((GdkEvent *) event));
-			handled = TRUE;
-		}
-
-		g_list_foreach (list, (GFunc) g_object_unref, NULL);
-		g_list_free (list);
-	}
-
-	if (event->button == 3 && event->type == GDK_BUTTON_PRESS) {
+	if (button == GDK_BUTTON_SECONDARY) {
 		/* If the user clicked on a selected item, retain the
 		 * current selection.  If the user clicked on an unselected
 		 * item, select the clicked item only.  If the user did not
@@ -1606,12 +1576,7 @@ e_attachment_view_button_press_event (EAttachmentView *view,
 		 * popup menu when right-clicking on an attachment,
 		 * but editable views can show the menu any time. */
 		if (path != NULL || editable) {
-			e_attachment_view_update_actions (view);
-			menu = e_attachment_view_get_popup_menu (view);
-			if (attachment_view_any_popup_item_visible (menu))
-				gtk_menu_popup_at_pointer (GTK_MENU (menu), (const GdkEvent *) event);
-			else
-				g_signal_emit_by_name (menu, "deactivate", NULL);
+			attachment_view_popup (view, relative_to, x, y);
 			handled = TRUE;
 		}
 	}
@@ -1622,81 +1587,193 @@ e_attachment_view_button_press_event (EAttachmentView *view,
 	return handled;
 }
 
+/**
+ * e_attachment_view_key_press:
+ * @view: an #EAttachmentView
+ * @relative_to: the widget showing the @view
+ * @keyval: the pressed key
+ * @state: the modifiers
+ *
+ * Handles Delete, and the popup menu keys.
+ *
+ * Returns: whether the key was handled
+ **/
 gboolean
-e_attachment_view_button_release_event (EAttachmentView *view,
-                                        GdkEvent *event)
+e_attachment_view_key_press (EAttachmentView *view,
+			     GtkWidget *relative_to,
+			     guint keyval,
+			     GdkModifierType state)
 {
-	EAttachmentViewPrivate *priv;
-	GtkWidget *widget = GTK_WIDGET (view);
-	GList *iter;
-
 	g_return_val_if_fail (E_IS_ATTACHMENT_VIEW (view), FALSE);
-	g_return_val_if_fail (event != NULL, FALSE);
 
-	priv = e_attachment_view_get_private (view);
-
-	for (iter = priv->event_list; iter != NULL; iter = iter->next) {
-		GdkEvent *an_event = iter->data;
-
-		gtk_propagate_event (widget, an_event);
-		gdk_event_unref (an_event);
-	}
-
-	g_list_free (priv->event_list);
-	priv->event_list = NULL;
-
-	return FALSE;
-}
-
-gboolean
-e_attachment_view_motion_notify_event (EAttachmentView *view,
-                                       GdkEvent *event)
-{
-	EAttachmentViewPrivate *priv;
-	GtkWidget *widget = GTK_WIDGET (view);
-	EGtkTargetList *targets;
-
-	g_return_val_if_fail (E_IS_ATTACHMENT_VIEW (view), FALSE);
-	g_return_val_if_fail (event != NULL, FALSE);
-
-	priv = e_attachment_view_get_private (view);
-
-	if (priv->event_list == NULL)
-		return FALSE;
-
-	if (!gtk_drag_check_threshold (
-		widget, priv->start_x, priv->start_y, event->x, event->y))
-		return TRUE;
-
-	g_list_foreach (priv->event_list, (GFunc) gdk_event_free, NULL);
-	g_list_free (priv->event_list);
-	priv->event_list = NULL;
-
-	targets = e_gtk_drag_source_get_target_list (widget);
-
-	e_gtk_drag_begin (
-		widget, targets, GDK_ACTION_COPY, 1, (GdkEvent *) event);
-
-	return TRUE;
-}
-
-gboolean
-e_attachment_view_key_press_event (EAttachmentView *view,
-                                   GdkEvent *event)
-{
-	gboolean editable;
-
-	g_return_val_if_fail (E_IS_ATTACHMENT_VIEW (view), FALSE);
-	g_return_val_if_fail (event != NULL, FALSE);
-
-	editable = e_attachment_view_get_editable (view);
-
-	if (event->keyval == GDK_KEY_Delete && editable) {
+	if (keyval == GDK_KEY_Delete && e_attachment_view_get_editable (view)) {
 		e_attachment_view_remove_selected (view, TRUE);
 		return TRUE;
 	}
 
+	/* GTK 3 had the "popup-menu" signal for these */
+	if (keyval == GDK_KEY_Menu ||
+	    (keyval == GDK_KEY_F10 && (state & GDK_SHIFT_MASK) != 0)) {
+		attachment_view_popup (view, relative_to, -1, -1);
+		return TRUE;
+	}
+
 	return FALSE;
+}
+
+static void
+attachment_view_pressed_cb (GtkGestureClick *gesture,
+			    gint n_press,
+			    gdouble x,
+			    gdouble y,
+			    EAttachmentView *view)
+{
+	GtkWidget *widget = gtk_event_controller_get_widget (GTK_EVENT_CONTROLLER (gesture));
+	guint button = gtk_gesture_single_get_current_button (GTK_GESTURE_SINGLE (gesture));
+
+	if (GTK_IS_TREE_VIEW (widget)) {
+		gint bx = 0, by = 0;
+
+		/* the tree view finds paths by its bin window coordinates */
+		gtk_tree_view_convert_widget_to_bin_window_coords (GTK_TREE_VIEW (widget), x, y, &bx, &by);
+		x = bx;
+		y = by;
+	}
+
+	if (e_attachment_view_button_press (view, widget, button, x, y))
+		gtk_gesture_set_state (GTK_GESTURE (gesture), GTK_EVENT_SEQUENCE_CLAIMED);
+}
+
+static gboolean
+attachment_view_key_pressed_cb (GtkEventControllerKey *controller,
+				guint keyval,
+				guint keycode,
+				GdkModifierType state,
+				EAttachmentView *view)
+{
+	return e_attachment_view_key_press (view,
+		gtk_event_controller_get_widget (GTK_EVENT_CONTROLLER (controller)),
+		keyval, state);
+}
+
+static void
+attachment_view_drag_begin_cb (GtkWidget *widget,
+			       EGtkDragContext *context,
+			       EAttachmentView *view)
+{
+	e_attachment_view_drag_begin (view, context);
+}
+
+static void
+attachment_view_drag_end_cb (GtkWidget *widget,
+			     EGtkDragContext *context,
+			     EAttachmentView *view)
+{
+	e_attachment_view_drag_end (view, context);
+}
+
+static void
+attachment_view_drag_data_get_cb (GtkWidget *widget,
+				  EGtkDragContext *context,
+				  EGtkSelectionData *selection,
+				  guint info,
+				  guint time,
+				  EAttachmentView *view)
+{
+	e_attachment_view_drag_data_get (view, context, selection, info, time);
+}
+
+static gboolean
+attachment_view_drag_motion_cb (GtkWidget *widget,
+				EGtkDragContext *context,
+				gint x,
+				gint y,
+				guint time,
+				EAttachmentView *view)
+{
+	return e_attachment_view_drag_motion (view, context, x, y, time);
+}
+
+static gboolean
+attachment_view_drag_drop_cb (GtkWidget *widget,
+			      EGtkDragContext *context,
+			      gint x,
+			      gint y,
+			      guint time,
+			      EAttachmentView *view)
+{
+	EGtkAtom target;
+
+	if (!e_attachment_view_drag_drop (view, context, x, y, time))
+		return FALSE;
+
+	/* what GtkTreeView/GtkIconView did for the model drag destination */
+	target = e_gtk_drag_dest_find_target (widget, context, NULL);
+	if (!target)
+		return FALSE;
+
+	e_gtk_drag_get_data (widget, context, target, time);
+
+	return TRUE;
+}
+
+static void
+attachment_view_drag_data_received_cb (GtkWidget *widget,
+				       EGtkDragContext *context,
+				       gint x,
+				       gint y,
+				       EGtkSelectionData *selection,
+				       guint info,
+				       guint time,
+				       EAttachmentView *view)
+{
+	e_attachment_view_drag_data_received (view, context, x, y, selection, info, time);
+}
+
+/**
+ * e_attachment_view_setup_input:
+ * @view: an #EAttachmentView
+ * @widget: the widget showing the @view, the @view itself or a child of it
+ *
+ * Installs the GTK 4 event controllers and connects the drag-and-drop
+ * signals on @widget, for what GTK 3 did in the widget class methods.
+ * The handlers connected by the caller to the drag signals of @widget
+ * run before these, thus they can stop the emission.
+ *
+ * Since: DoxMail
+ **/
+void
+e_attachment_view_setup_input (EAttachmentView *view,
+			       GtkWidget *widget)
+{
+	GtkEventController *controller;
+
+	g_return_if_fail (E_IS_ATTACHMENT_VIEW (view));
+	g_return_if_fail (GTK_IS_WIDGET (widget));
+
+	controller = GTK_EVENT_CONTROLLER (gtk_gesture_click_new ());
+	gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (controller), GDK_BUTTON_SECONDARY);
+	g_signal_connect_object (controller, "pressed",
+		G_CALLBACK (attachment_view_pressed_cb), view, 0);
+	gtk_widget_add_controller (widget, controller);
+
+	controller = gtk_event_controller_key_new ();
+	g_signal_connect_object (controller, "key-pressed",
+		G_CALLBACK (attachment_view_key_pressed_cb), view, 0);
+	gtk_widget_add_controller (widget, controller);
+
+	g_signal_connect_object (widget, "drag-begin",
+		G_CALLBACK (attachment_view_drag_begin_cb), view, G_CONNECT_AFTER);
+	g_signal_connect_object (widget, "drag-end",
+		G_CALLBACK (attachment_view_drag_end_cb), view, G_CONNECT_AFTER);
+	g_signal_connect_object (widget, "drag-data-get",
+		G_CALLBACK (attachment_view_drag_data_get_cb), view, G_CONNECT_AFTER);
+	g_signal_connect_object (widget, "drag-motion",
+		G_CALLBACK (attachment_view_drag_motion_cb), view, G_CONNECT_AFTER);
+	g_signal_connect_object (widget, "drag-drop",
+		G_CALLBACK (attachment_view_drag_drop_cb), view, G_CONNECT_AFTER);
+	g_signal_connect_object (widget, "drag-data-received",
+		G_CALLBACK (attachment_view_drag_data_received_cb), view, G_CONNECT_AFTER);
 }
 
 GtkTreePath *
@@ -1878,40 +1955,25 @@ e_attachment_view_drag_begin (EAttachmentView *view,
 	priv->selected = e_attachment_view_get_selected_attachments (view);
 	n_selected = g_list_length (priv->selected);
 
-	if (n_selected == 1) {
+	if (n_selected == 1 && e_gtk_drag_context_get_drag (context)) {
 		EAttachment *attachment;
-		GtkIconTheme *icon_theme;
-		GtkIconInfo *icon_info;
+		GtkIconPaintable *paintable;
 		GIcon *icon;
-		gint width, height;
 
 		attachment = E_ATTACHMENT (priv->selected->data);
 		icon = e_attachment_ref_icon (attachment);
 		g_return_if_fail (icon != NULL);
 
-		icon_theme = e_gtk_icon_theme_get_default ();
-		gtk_icon_size_lookup (GTK_ICON_SIZE_DND, &width, &height);
+		paintable = gtk_icon_theme_lookup_by_gicon (
+			e_gtk_icon_theme_get_default (), icon,
+			e_gtk_icon_size_to_pixels (E_GTK_ICON_SIZE_DND), 1,
+			GTK_TEXT_DIR_NONE, 0);
 
-		icon_info = gtk_icon_theme_lookup_by_gicon (
-			icon_theme, icon, MIN (width, height),
-			GTK_ICON_LOOKUP_USE_BUILTIN);
-
-		if (icon_info != NULL) {
-			GdkPixbuf *pixbuf;
-			GError *error = NULL;
-
-			pixbuf = gtk_icon_info_load_icon (icon_info, &error);
-
-			if (pixbuf != NULL) {
-				e_gtk_drag_set_icon_pixbuf (
-					context, pixbuf, 0, 0);
-				g_object_unref (pixbuf);
-			} else if (error != NULL) {
-				g_warning ("%s", error->message);
-				g_error_free (error);
-			}
-
-			g_object_unref (icon_info);
+		if (paintable) {
+			e_gtk_drag_icon_set_from_paintable (
+				e_gtk_drag_context_get_drag (context),
+				GDK_PAINTABLE (paintable), 0, 0);
+			g_object_unref (paintable);
 		}
 
 		g_object_unref (icon);
@@ -2165,7 +2227,7 @@ e_attachment_view_get_popup_menu (EAttachmentView *view)
 {
 	EUIManager *ui_manager;
 	GObject *ui_object;
-	GtkMenu *menu;
+	GtkWidget *menu;
 
 	g_return_val_if_fail (E_IS_ATTACHMENT_VIEW (view), NULL);
 
@@ -2173,14 +2235,12 @@ e_attachment_view_get_popup_menu (EAttachmentView *view)
 	ui_object = e_ui_manager_create_item (ui_manager, "context");
 	g_return_val_if_fail (G_IS_MENU_MODEL (ui_object), NULL);
 
-	menu = GTK_MENU (gtk_menu_new_from_model (G_MENU_MODEL (ui_object)));
+	/* an unparented menu, to be shown with e_util_popup_menu() */
+	menu = gtk_popover_menu_new_from_model (G_MENU_MODEL (ui_object));
 
 	g_clear_object (&ui_object);
 
-	gtk_menu_attach_to_widget (menu, GTK_WIDGET (view), NULL);
-	e_util_connect_menu_detach_after_deactivate (menu);
-
-	return GTK_WIDGET (menu);
+	return menu;
 }
 
 EUIManager *
@@ -2217,7 +2277,10 @@ e_attachment_view_position_popover (EAttachmentView *view,
 	g_return_if_fail (GTK_IS_POPOVER (popover));
 
 	relative_to = GTK_WIDGET (view);
-	gtk_widget_get_allocation (relative_to, &rect);
+	rect.x = 0;
+	rect.y = 0;
+	rect.width = gtk_widget_get_width (relative_to);
+	rect.height = gtk_widget_get_height (relative_to);
 
 	store = e_attachment_view_get_store (view);
 
@@ -2226,15 +2289,18 @@ e_attachment_view_position_popover (EAttachmentView *view,
 
 		path = gtk_tree_model_get_path (GTK_TREE_MODEL (store), &iter);
 		if (path) {
-			if (GTK_IS_ICON_VIEW (view)) {
-				gtk_icon_view_get_cell_rect (GTK_ICON_VIEW (view), path, NULL, &rect);
+			if (E_IS_ATTACHMENT_ICON_VIEW (view)) {
+				relative_to = GTK_WIDGET (e_attachment_icon_view_get_icon_view (E_ATTACHMENT_ICON_VIEW (view)));
+				G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+				gtk_icon_view_get_cell_rect (GTK_ICON_VIEW (relative_to), path, NULL, &rect);
+				G_GNUC_END_IGNORE_DEPRECATIONS
 			} else if (GTK_IS_TREE_VIEW (view)) {
 				GtkTreeView *tree_view = GTK_TREE_VIEW (view);
 
 				gtk_tree_view_get_cell_area (tree_view, path, NULL, &rect);
 				gtk_tree_view_convert_bin_window_to_widget_coords (tree_view, rect.x, rect.y, &rect.x, &rect.y);
 
-				rect.width = gtk_widget_get_allocated_width (GTK_WIDGET (tree_view));
+				rect.width = gtk_widget_get_width (GTK_WIDGET (tree_view));
 			} else {
 				g_warn_if_reached ();
 			}
@@ -2243,6 +2309,11 @@ e_attachment_view_position_popover (EAttachmentView *view,
 		}
 	}
 
-	gtk_popover_set_relative_to (popover, relative_to);
+	if (gtk_widget_get_parent (GTK_WIDGET (popover)) != relative_to) {
+		if (gtk_widget_get_parent (GTK_WIDGET (popover)))
+			gtk_widget_unparent (GTK_WIDGET (popover));
+		gtk_widget_set_parent (GTK_WIDGET (popover), relative_to);
+	}
+
 	gtk_popover_set_pointing_to (popover, &rect);
 }

@@ -175,7 +175,7 @@ mail_config_window_commit (EMailConfigWindow *window)
 	e_alert_bar_clear (E_ALERT_BAR (window->priv->alert_bar));
 
 	/* Make the cursor appear busy. */
-	gdk_cursor = gdk_cursor_new_from_name (gtk_widget_get_display (GTK_WIDGET (window)), "wait");
+	gdk_cursor = gdk_cursor_new_from_name ("wait", NULL);
 	if (gdk_cursor) {
 		GdkWindow *gdk_window;
 

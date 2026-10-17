@@ -423,7 +423,7 @@ shell_switcher_style_changed (EShellSwitcher *switcher,
 static GtkIconSize
 shell_switcher_get_icon_size (GtkToolShell *shell)
 {
-	return GTK_ICON_SIZE_BUTTON;
+	return GTK_ICON_SIZE_NORMAL;
 }
 
 static GtkOrientation

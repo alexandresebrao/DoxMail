@@ -26,6 +26,7 @@
 #define E_ATTACHMENT_ICON_VIEW_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 
 /* Standard GObject macros */
 #define E_TYPE_ATTACHMENT_ICON_VIEW \
@@ -53,16 +54,21 @@ typedef struct _EAttachmentIconViewClass EAttachmentIconViewClass;
 typedef struct _EAttachmentIconViewPrivate EAttachmentIconViewPrivate;
 
 struct _EAttachmentIconView {
-	GtkIconView parent;
+	GtkWidget parent;
 	EAttachmentIconViewPrivate *priv;
 };
 
 struct _EAttachmentIconViewClass {
-	GtkIconViewClass parent_class;
+	GtkWidgetClass parent_class;
 };
 
 GType		e_attachment_icon_view_get_type		(void) G_GNUC_CONST;
-GtkWidget *	e_attachment_icon_view_new		(void);
+GtkWidget *	e_attachment_icon_view_new	(void);
+GtkIconView *	e_attachment_icon_view_get_icon_view
+						(EAttachmentIconView *self);
+void		e_attachment_icon_view_set_model
+						(EAttachmentIconView *self,
+						 GtkTreeModel *model);
 
 G_END_DECLS
 

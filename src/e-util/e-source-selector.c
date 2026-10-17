@@ -2120,7 +2120,7 @@ e_source_selector_init (ESourceSelector *selector)
 	renderer = gtk_cell_renderer_pixbuf_new ();
 	g_object_set (
 		G_OBJECT (renderer),
-		"stock-size", GTK_ICON_SIZE_MENU, NULL);
+		"icon-size", GTK_ICON_SIZE_NORMAL, NULL);
 	gtk_tree_view_column_pack_start (column, renderer, FALSE);
 	gtk_tree_view_column_add_attribute (
 		column, renderer, "icon-name", COLUMN_ICON_NAME);

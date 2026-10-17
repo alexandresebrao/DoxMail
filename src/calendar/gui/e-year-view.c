@@ -1571,7 +1571,7 @@ year_view_construct_year_widget (EYearView *self)
 		"valign", GTK_ALIGN_FILL,
 		NULL);
 
-	gtk_widget_add_css_class (widget, GTK_STYLE_CLASS_VIEW);
+	gtk_widget_add_css_class (widget, "view");
 
 	top_container = widget;
 	container = widget;
@@ -1598,7 +1598,7 @@ year_view_construct_year_widget (EYearView *self)
 		"valign", GTK_ALIGN_BASELINE,
 		NULL);
 
-	gtk_widget_add_css_class (widget, GTK_STYLE_CLASS_FLAT);
+	gtk_widget_add_css_class (widget, "flat");
 
 	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 
@@ -1614,7 +1614,7 @@ year_view_construct_year_widget (EYearView *self)
 
 	style_context = gtk_widget_get_style_context (widget);
 	gtk_style_context_add_provider (style_context, style_provider, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-	gtk_style_context_add_class (style_context, GTK_STYLE_CLASS_FLAT);
+	gtk_style_context_add_class (style_context, "flat");
 	gtk_style_context_add_class (style_context, "prev-year");
 
 	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
@@ -1630,7 +1630,7 @@ year_view_construct_year_widget (EYearView *self)
 
 	style_context = gtk_widget_get_style_context (widget);
 	gtk_style_context_add_provider (style_context, style_provider, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-	gtk_style_context_add_class (style_context, GTK_STYLE_CLASS_FLAT);
+	gtk_style_context_add_class (style_context, "flat");
 	gtk_style_context_add_class (style_context, "prev-year");
 
 	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
@@ -1659,7 +1659,7 @@ year_view_construct_year_widget (EYearView *self)
 
 	style_context = gtk_widget_get_style_context (widget);
 	gtk_style_context_add_provider (style_context, style_provider, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-	gtk_style_context_add_class (style_context, GTK_STYLE_CLASS_FLAT);
+	gtk_style_context_add_class (style_context, "flat");
 	gtk_style_context_add_class (style_context, "next-year");
 
 	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
@@ -1675,7 +1675,7 @@ year_view_construct_year_widget (EYearView *self)
 
 	style_context = gtk_widget_get_style_context (widget);
 	gtk_style_context_add_provider (style_context, style_provider, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-	gtk_style_context_add_class (style_context, GTK_STYLE_CLASS_FLAT);
+	gtk_style_context_add_class (style_context, "flat");
 	gtk_style_context_add_class (style_context, "next-year");
 
 	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
@@ -1689,7 +1689,7 @@ year_view_construct_year_widget (EYearView *self)
 		"valign", GTK_ALIGN_BASELINE,
 		NULL);
 
-	gtk_widget_add_css_class (widget, GTK_STYLE_CLASS_FLAT);
+	gtk_widget_add_css_class (widget, "flat");
 
 	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 
@@ -1711,7 +1711,7 @@ year_view_construct_year_widget (EYearView *self)
 
 	style_context = gtk_widget_get_style_context (widget);
 	gtk_style_context_add_provider (style_context, style_provider, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-	gtk_style_context_add_class (style_context, GTK_STYLE_CLASS_FLAT);
+	gtk_style_context_add_class (style_context, "flat");
 	gtk_style_context_add_class (style_context, "calendar-window");
 
 	e_gtk_container_add (top_container, widget);
@@ -1735,7 +1735,7 @@ year_view_construct_year_widget (EYearView *self)
 
 	style_context = gtk_widget_get_style_context (widget);
 	gtk_style_context_add_provider (style_context, style_provider, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-	gtk_style_context_add_class (style_context, GTK_STYLE_CLASS_VIEW);
+	gtk_style_context_add_class (style_context, "view");
 	gtk_style_context_add_class (style_context, "calendar-flowbox");
 
 	e_gtk_container_add (container, widget);
@@ -1906,8 +1906,7 @@ year_view_constructed (GObject *object)
 
 	self->priv->css_provider = gtk_css_provider_new ();
 
-	if (!gtk_css_provider_load_from_data (self->priv->css_provider,
-		"EYearView .prev-year {"
+	if (!gtk_css_provider_load_from_string (self->priv->css_provider, "EYearView .prev-year {"
 		"   font-size:90%;"
 		"}"
 		"EYearView .current-year {"
@@ -1923,8 +1922,7 @@ year_view_constructed (GObject *object)
 		"EYearView .calendar-flowbox {"
 		"   padding-top: 12px;"
 		"   padding-bottom: 12px;"
-		"}",
-		-1, &error)) {
+		"}")) {
 		g_warning ("%s: Failed to parse CSS: %s", G_STRFUNC, error ? error->message : "Unknown error");
 		g_clear_error (&error);
 	}

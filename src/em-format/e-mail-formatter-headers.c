@@ -138,7 +138,7 @@ format_short_headers (EMailFormatter *formatter,
 		g_string_append_printf (buffer, " (%s)", from->str);
 	g_string_append (buffer, "</td>");
 
-	if (!gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, &icon_width, &icon_height)) {
+	if (!gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &icon_width, &icon_height)) {
 		icon_width = 16;
 		icon_height = 16;
 	}
@@ -147,13 +147,13 @@ format_short_headers (EMailFormatter *formatter,
 	g_string_append_printf (buffer,
 		"<img src=\"gtk-stock://insert-image/?size=%d\" width=\"%dpx\" height=\"%dpx\""
 		" id=\"__evo-remote-content-img-small\" class=\"__evo-remote-content-img\" title=\"%s\" style=\"cursor:pointer;\" hidden/>",
-		GTK_ICON_SIZE_MENU, icon_width, icon_height,
+		GTK_ICON_SIZE_NORMAL, icon_width, icon_height,
 		_("Remote content download had been blocked for this message."));
 	g_string_append_printf (buffer,
 		"&nbsp;"
 		"<img src=\"gtk-stock://stock_signature/?size=%d\" width=\"%dpx\" height=\"%dpx\""
 		" id=\"__evo-autocrypt-import-img-small\" class=\"__evo-autocrypt-import-img\" title=\"%s\" style=\"cursor:pointer;\" hidden/>",
-		GTK_ICON_SIZE_MENU, icon_width, icon_height,
+		GTK_ICON_SIZE_NORMAL, icon_width, icon_height,
 		_("Import OpenPGP key provided in this message"));
 	g_string_append (buffer, "</td>");
 
@@ -508,7 +508,7 @@ format_full_headers (EMailFormatter *formatter,
 		g_object_unref (image_part);
 	}
 
-	if (!gtk_icon_size_lookup (GTK_ICON_SIZE_LARGE_TOOLBAR, &icon_width, &icon_height)) {
+	if (!gtk_icon_size_lookup (GTK_ICON_SIZE_LARGE, &icon_width, &icon_height)) {
 		icon_width = 24;
 		icon_height = 24;
 	}
@@ -517,13 +517,13 @@ format_full_headers (EMailFormatter *formatter,
 	g_string_append_printf (buffer,
 		"<img src=\"gtk-stock://insert-image/?size=%d\" width=\"%dpx\" height=\"%dpx\""
 		" id=\"__evo-remote-content-img-large\" class=\"__evo-remote-content-img\" title=\"%s\" style=\"cursor:pointer;\" hidden/>",
-		GTK_ICON_SIZE_LARGE_TOOLBAR, icon_width, icon_height,
+		GTK_ICON_SIZE_LARGE, icon_width, icon_height,
 		_("Remote content download had been blocked for this message."));
 	g_string_append_printf (buffer,
 		"&nbsp;"
 		"<img src=\"gtk-stock://stock_signature/?size=%d\" width=\"%dpx\" height=\"%dpx\""
 		" id=\"__evo-autocrypt-import-img-large\" class=\"__evo-autocrypt-import-img\" title=\"%s\" style=\"cursor:pointer;\" hidden/>",
-		GTK_ICON_SIZE_LARGE_TOOLBAR, icon_width, icon_height,
+		GTK_ICON_SIZE_LARGE, icon_width, icon_height,
 		_("Import OpenPGP key provided in this message"));
 	g_string_append (buffer, "</td>");
 
@@ -609,7 +609,7 @@ emfe_headers_format (EMailFormatterExtension *extension,
 	if (is_collapsable) {
 		gint icon_width, icon_height;
 
-		if (!gtk_icon_size_lookup (GTK_ICON_SIZE_BUTTON, &icon_width, &icon_height)) {
+		if (!gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &icon_width, &icon_height)) {
 			icon_width = 16;
 			icon_height = 16;
 		}
@@ -622,8 +622,8 @@ emfe_headers_format (EMailFormatterExtension *extension,
 			"<img src=\"gtk-stock://%s?size=%d&amp;color-scheme=dark\" width=\"%dpx\" height=\"%dpx\" class=\"-evo-color-scheme-dark\"/>"
 			"</button>"
 			"</td>",
-			is_collapsed ? "x-evolution-pan-end" : "x-evolution-pan-down", GTK_ICON_SIZE_BUTTON, icon_width, icon_height,
-			is_collapsed ? "x-evolution-pan-end" : "x-evolution-pan-down", GTK_ICON_SIZE_BUTTON, icon_width, icon_height);
+			is_collapsed ? "x-evolution-pan-end" : "x-evolution-pan-down", GTK_ICON_SIZE_NORMAL, icon_width, icon_height,
+			is_collapsed ? "x-evolution-pan-end" : "x-evolution-pan-down", GTK_ICON_SIZE_NORMAL, icon_width, icon_height);
 	}
 
 	g_string_append (buffer, "<td>");

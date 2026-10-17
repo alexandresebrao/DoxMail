@@ -4405,7 +4405,7 @@ eve_add_button_with_menu_clicked_cb (GtkWidget *button,
 
 	gtk_menu_popup_at_widget (menu, button, GDK_GRAVITY_SOUTH_WEST, GDK_GRAVITY_NORTH_WEST, event);
 
-	g_clear_pointer (&event, gdk_event_free);
+	g_clear_pointer (&event, gdk_event_unref);
 }
 
 static void

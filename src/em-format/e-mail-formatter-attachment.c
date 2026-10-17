@@ -243,7 +243,7 @@ emfe_attachment_format (EMailFormatterExtension *extension,
 
 	button_id = g_strconcat (attachment_part_id, ".attachment_button", NULL);
 
-	if (!gtk_icon_size_lookup (GTK_ICON_SIZE_BUTTON, &icon_width, &icon_height)) {
+	if (!gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &icon_width, &icon_height)) {
 		icon_width = 16;
 		icon_height = 16;
 	}
@@ -322,9 +322,9 @@ emfe_attachment_format (EMailFormatterExtension *extension,
 		_("Toggle View Inline") : _("Open in default application"),
 		attachment_ptr,
 		part_too_large ? "go-top" : e_mail_part_should_show_inline (part) ? "go-down" : e_mail_part_attachment_get_expandable (empa) ? "go-next" : "go-top",
-		GTK_ICON_SIZE_BUTTON, icon_width, icon_height,
+		GTK_ICON_SIZE_NORMAL, icon_width, icon_height,
 		icon_uri, icon_width, icon_height,
-		part_id, attachment_ptr, _("Options"), GTK_ICON_SIZE_BUTTON, icon_width, icon_height,
+		part_id, attachment_ptr, _("Options"), GTK_ICON_SIZE_NORMAL, icon_width, icon_height,
 		html);
 
 	g_free (icon_uri);

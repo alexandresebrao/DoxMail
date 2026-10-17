@@ -408,6 +408,10 @@ struct _GnomeCanvasClass {
 	/* Private Virtual methods for groping the canvas inside bonobo */
 	void (* request_update) (GnomeCanvas *canvas);
 
+	/* Delivers an event to the items, chosen and converted to world
+	 * coordinates here; returns whether an item handled it (DoxMail) */
+	gint (* emit_event) (GnomeCanvas *canvas, GnomeCanvasEvent *event);
+
 	/* Reserved for future expansion */
 	gpointer spare_vmethods[4];
 };
@@ -484,6 +488,9 @@ void gnome_canvas_world_to_window (GnomeCanvas *canvas,
 void gnome_canvas_put_widget (GnomeCanvas *canvas, GtkWidget *child, gint x, gint y);
 void gnome_canvas_move_widget (GnomeCanvas *canvas, GtkWidget *child, gint x, gint y);
 void gnome_canvas_remove_widget (GnomeCanvas *canvas, GtkWidget *child);
+
+/* Sends @event to the items through the emit_event method (DoxMail) */
+gint gnome_canvas_emit_event (GnomeCanvas *canvas, GnomeCanvasEvent *event);
 
 G_END_DECLS
 

@@ -23,6 +23,7 @@
 #define E_URL_ENTRY_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 
 /* Standard GObject macros */
 #define E_TYPE_URL_ENTRY \

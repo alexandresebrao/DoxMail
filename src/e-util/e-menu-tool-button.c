@@ -25,7 +25,11 @@
 
 #include "e-menu-tool-button.h"
 
+/* GtkMenuToolButton is gone with GTK 4: a linked box of the action's
+ * button and a menu button */
 struct _EMenuToolButtonPrivate {
+	GtkWidget *button;
+	GtkWidget *menu_button;
 	gchar *prefer_item;
 	EUIAction *fallback_action;
 	EUIManager *ui_manager;
@@ -38,7 +42,7 @@ enum {
 	PROP_FALLBACK_ACTION
 };
 
-G_DEFINE_TYPE_WITH_PRIVATE (EMenuToolButton, e_menu_tool_button, GTK_TYPE_MENU_TOOL_BUTTON)
+G_DEFINE_TYPE_WITH_PRIVATE (EMenuToolButton, e_menu_tool_button, GTK_TYPE_BOX)
 
 static EUIAction *
 menu_tool_button_get_prefer_item_action (EMenuToolButton *self)
@@ -63,11 +67,11 @@ menu_tool_button_update_button (EMenuToolButton *self)
 		return;
 
 	/* preserve the label */
-	label = g_strdup (gtk_tool_button_get_label (GTK_TOOL_BUTTON (self)));
+	label = g_strdup (gtk_button_get_label (GTK_BUTTON (self->priv->button)));
 
-	e_ui_manager_update_item_from_action (self->priv->ui_manager, self, action);
+	e_ui_manager_update_item_from_action (self->priv->ui_manager, self->priv->button, action);
 
-	gtk_tool_button_set_label (GTK_TOOL_BUTTON (self), label);
+	gtk_button_set_label (GTK_BUTTON (self->priv->button), label);
 
 	g_free (label);
 }
@@ -186,19 +190,49 @@ e_menu_tool_button_init (EMenuToolButton *button)
 
 	button->priv->prefer_item = NULL;
 
-	e_signal_connect_notify (
-		button, "notify::menu",
-		G_CALLBACK (menu_tool_button_update_button), NULL);
+	gtk_widget_add_css_class (GTK_WIDGET (button), "linked");
+
+	button->priv->button = gtk_button_new ();
+	gtk_button_set_has_frame (GTK_BUTTON (button->priv->button), FALSE);
+	gtk_box_append (GTK_BOX (button), button->priv->button);
+
+	button->priv->menu_button = gtk_menu_button_new ();
+	gtk_menu_button_set_has_frame (GTK_MENU_BUTTON (button->priv->menu_button), FALSE);
+	gtk_box_append (GTK_BOX (button), button->priv->menu_button);
 }
 
-GtkToolItem *
+GtkWidget *
 e_menu_tool_button_new (const gchar *label,
 			EUIManager *ui_manager)
 {
-	return g_object_new (E_TYPE_MENU_TOOL_BUTTON,
-		"label", label,
+	EMenuToolButton *button;
+
+	button = g_object_new (E_TYPE_MENU_TOOL_BUTTON,
 		"ui-manager", ui_manager,
 		NULL);
+
+	gtk_button_set_label (GTK_BUTTON (button->priv->button), label);
+	gtk_button_set_use_underline (GTK_BUTTON (button->priv->button), TRUE);
+
+	return GTK_WIDGET (button);
+}
+
+/**
+ * e_menu_tool_button_set_menu_model:
+ * @button: an #EMenuToolButton
+ * @menu_model: (nullable): the menu to show from the arrow
+ *
+ * Since: DoxMail
+ **/
+void
+e_menu_tool_button_set_menu_model (EMenuToolButton *button,
+				   GMenuModel *menu_model)
+{
+	g_return_if_fail (E_IS_MENU_TOOL_BUTTON (button));
+
+	gtk_menu_button_set_menu_model (GTK_MENU_BUTTON (button->priv->menu_button), menu_model);
+
+	menu_tool_button_update_button (button);
 }
 
 const gchar *

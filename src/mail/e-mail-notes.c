@@ -1212,10 +1212,10 @@ e_mail_notes_editor_new_with_editor (EHTMLEditor *html_editor,
 	/* Construct the window content. */
 
 	ui_item = e_ui_manager_create_item (ui_manager, "main-menu");
-	widget = gtk_menu_bar_new_from_model (G_MENU_MODEL (ui_item));
+	widget = gtk_popover_menu_bar_new_from_model (G_MENU_MODEL (ui_item));
 	g_clear_object (&ui_item);
 
-	notes_editor->menu_bar = e_menu_bar_new (GTK_MENU_BAR (widget), GTK_WINDOW (notes_editor), &notes_editor->menu_button);
+	notes_editor->menu_bar = e_menu_bar_new (widget, GTK_WINDOW (notes_editor), &notes_editor->menu_button);
 	e_gtk_box_pack_start (GTK_BOX (content), widget, FALSE, FALSE, 0);
 
 	if (e_util_get_use_header_bar ()) {

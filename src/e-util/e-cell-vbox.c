@@ -28,8 +28,6 @@
 
 #include <gtk/gtk.h>
 
-#include "gal-a11y-e-cell-registry.h"
-#include "gal-a11y-e-cell-vbox.h"
 
 #include "e-cell-vbox.h"
 #include "e-table-item.h"
@@ -172,7 +170,7 @@ ecv_draw (ECellView *ecell_view,
  */
 static gint
 ecv_event (ECellView *ecell_view,
-           GdkEvent *event,
+           GnomeCanvasEvent *event,
            gint model_col,
            gint view_col,
            gint row,
@@ -185,13 +183,13 @@ ecv_event (ECellView *ecell_view,
 	gint subcell_offset = 0;
 
 	switch (event->type) {
-	case GDK_BUTTON_PRESS:
-	case GDK_BUTTON_RELEASE:
-	case GDK_2BUTTON_PRESS:
-	case GDK_3BUTTON_PRESS:
+	case GNOME_CANVAS_BUTTON_PRESS:
+	case GNOME_CANVAS_BUTTON_RELEASE:
+	case GNOME_CANVAS_2BUTTON_PRESS:
+	case GNOME_CANVAS_3BUTTON_PRESS:
 		y = event->button.y;
 		break;
-	case GDK_MOTION_NOTIFY:
+	case GNOME_CANVAS_MOTION_NOTIFY:
 		y = event->motion.y;
 		break;
 	default:
@@ -295,7 +293,6 @@ e_cell_vbox_class_init (ECellVboxClass *class)
 	ecc->height = ecv_height;
 	ecc->max_width = ecv_max_width;
 
-	gal_a11y_e_cell_registry_add_cell_type (NULL, E_TYPE_CELL_VBOX, gal_a11y_e_cell_vbox_new);
 }
 
 static void

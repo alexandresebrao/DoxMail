@@ -120,7 +120,6 @@ set(SOURCES
 	e-dialog-utils.c
 	e-dialog-widgets.c
 	e-ellipsized-combo-box-text.c
-	e-emoticon-chooser-menu.c
 	e-emoticon-chooser.c
 	e-emoticon.c
 	e-event.c
@@ -386,7 +385,6 @@ set(HEADERS
 	e-dialog-utils.h
 	e-dialog-widgets.h
 	e-ellipsized-combo-box-text.h
-	e-emoticon-chooser-menu.h
 	e-emoticon-chooser.h
 	e-emoticon.h
 	e-event.h

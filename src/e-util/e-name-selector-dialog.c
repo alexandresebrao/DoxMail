@@ -226,7 +226,7 @@ name_selector_dialog_constructed (GObject *object)
 	GtkWidget *AddressBookLabel;
 	GtkWidget *label_category;
 	GtkWidget *search;
-	AtkObject *atko;
+	GtkWidget *atko;
 	GtkWidget *label_search;
 	GtkWidget *source_menu_hgrid;
 	GtkWidget *combobox_category;
@@ -236,7 +236,7 @@ name_selector_dialog_constructed (GObject *object)
 	AtkRelationSet *tmp_relation_set;
 	AtkRelationType tmp_relationship;
 	AtkRelation *tmp_relation;
-	AtkObject *scrolledwindow1_relation_targets[1];
+	GtkWidget *scrolledwindow1_relation_targets[1];
 	GtkWidget *source_tree_view;
 	GtkWidget *destination_vgrid;
 	GtkWidget *status_message;
@@ -423,16 +423,16 @@ name_selector_dialog_constructed (GObject *object)
 	gtk_label_set_mnemonic_widget (GTK_LABEL (label_search), search);
 	gtk_label_set_mnemonic_widget (GTK_LABEL (label_contacts), source_tree_view);
 
-	atko = gtk_widget_get_accessible (search);
-	atk_object_set_name (atko, _("Search"));
+	atko = GTK_WIDGET (search);
+	e_gtk_widget_set_accessible_name (atko, _("Search"));
 
-	atko = gtk_widget_get_accessible (source_menu_hgrid);
-	atk_object_set_name (atko, _("Address Book"));
+	atko = GTK_WIDGET (source_menu_hgrid);
+	e_gtk_widget_set_accessible_name (atko, _("Address Book"));
 
-	atko = gtk_widget_get_accessible (scrolledwindow1);
-	atk_object_set_name (atko, _("Contacts"));
+	atko = GTK_WIDGET (scrolledwindow1);
+	e_gtk_widget_set_accessible_name (atko, _("Contacts"));
 	tmp_relation_set = atk_object_ref_relation_set (atko);
-	scrolledwindow1_relation_targets[0] = gtk_widget_get_accessible (label_contacts);
+	scrolledwindow1_relation_targets[0] = GTK_WIDGET (label_contacts);
 	tmp_relationship = atk_relation_type_for_name ("labelled-by");
 	tmp_relation = atk_relation_new (scrolledwindow1_relation_targets, 1, tmp_relationship);
 	atk_relation_set_add (tmp_relation_set, tmp_relation);
@@ -954,10 +954,10 @@ add_section (ENameSelectorDialog *name_selector_dialog,
 
 	if (pango_parse_markup (pretty_name, -1, '_', NULL,
 				&text, NULL, NULL))  {
-		atk_object_set_name (gtk_widget_get_accessible (
+		e_gtk_widget_set_accessible_name (GTK_WIDGET (
 					GTK_WIDGET (section.destination_view)), text);
-		atk_object_set_description (gtk_widget_get_accessible (GTK_WIDGET (section.transfer_button)), text);
-		atk_object_set_description (gtk_widget_get_accessible (GTK_WIDGET (section.remove_button)), text);
+		e_gtk_widget_set_accessible_description (GTK_WIDGET (GTK_WIDGET (section.transfer_button)), text);
+		e_gtk_widget_set_accessible_description (GTK_WIDGET (GTK_WIDGET (section.remove_button)), text);
 		g_free (text);
 	}
 

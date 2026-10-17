@@ -11,6 +11,7 @@
 #define E_UI_CUSTOMIZE_DIALOG_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 
 #include <e-util/e-ui-customizer.h>
 

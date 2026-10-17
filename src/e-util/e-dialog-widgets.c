@@ -150,14 +150,14 @@ GtkWidget *
 e_dialog_button_new_with_icon (const gchar *icon_name,
                                const gchar *label)
 {
-	GtkIconSize icon_size = GTK_ICON_SIZE_BUTTON;
+	GtkIconSize icon_size = GTK_ICON_SIZE_NORMAL;
 	GtkWidget *button;
 
 	if (label && *label) {
 		button = gtk_button_new_with_mnemonic (label);
 	} else {
 		button = gtk_button_new ();
-		icon_size = GTK_ICON_SIZE_MENU;
+		icon_size = GTK_ICON_SIZE_NORMAL;
 	}
 
 	if (icon_name)

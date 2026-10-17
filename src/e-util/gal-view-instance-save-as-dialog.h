@@ -27,6 +27,7 @@
 #define GAL_VIEW_INSTANCE_SAVE_AS_DIALOG_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 #include <e-util/gal-view-collection.h>
 #include <e-util/gal-view-instance.h>
 

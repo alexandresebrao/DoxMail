@@ -30,6 +30,7 @@
 
 #include <sys/types.h>
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 #include <libxml/tree.h>
 #include <iconv.h>
 

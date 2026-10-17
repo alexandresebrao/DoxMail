@@ -634,6 +634,41 @@ e_gtk_widget_get_surface (GtkWidget *widget)
 	return native ? gtk_native_get_surface (native) : NULL;
 }
 
+/* The monitor the @widget is on, or the first one; GTK 4 has no work area,
+ * thus this is the whole monitor */
+void
+e_gtk_widget_get_monitor_area (GtkWidget *widget,
+                               GdkRectangle *out_area)
+{
+	GdkDisplay *display;
+	GdkMonitor *monitor = NULL;
+	GdkSurface *surface;
+
+	g_return_if_fail (out_area != NULL);
+
+	out_area->x = 0;
+	out_area->y = 0;
+	out_area->width = 1024;
+	out_area->height = 768;
+
+	display = widget ? gtk_widget_get_display (widget) : gdk_display_get_default ();
+	surface = widget ? e_gtk_widget_get_surface (widget) : NULL;
+
+	if (surface)
+		monitor = gdk_display_get_monitor_at_surface (display, surface);
+
+	if (monitor) {
+		g_object_ref (monitor);
+	} else {
+		monitor = g_list_model_get_item (gdk_display_get_monitors (display), 0);
+	}
+
+	if (monitor) {
+		gdk_monitor_get_geometry (monitor, out_area);
+		g_object_unref (monitor);
+	}
+}
+
 void
 e_gtk_button_set_image (GtkButton *button,
                         GtkWidget *image)
@@ -885,8 +920,8 @@ gboolean
 e_gdk_event_get_keyval (GdkEvent *event,
                         guint *keyval)
 {
-	GdkEventType type = event ? gdk_event_get_event_type (event) : GDK_NOTHING;
-	gboolean is_key = type == GDK_KEY_PRESS || type == GDK_KEY_RELEASE;
+	gboolean is_key = event && (gdk_event_get_event_type (event) == GDK_KEY_PRESS ||
+		gdk_event_get_event_type (event) == GDK_KEY_RELEASE);
 
 	if (keyval)
 		*keyval = is_key ? gdk_key_event_get_keyval (event) : 0;
@@ -898,8 +933,8 @@ gboolean
 e_gdk_event_get_button (GdkEvent *event,
                         guint *button)
 {
-	GdkEventType type = event ? gdk_event_get_event_type (event) : GDK_NOTHING;
-	gboolean is_button = type == GDK_BUTTON_PRESS || type == GDK_BUTTON_RELEASE;
+	gboolean is_button = event && (gdk_event_get_event_type (event) == GDK_BUTTON_PRESS ||
+		gdk_event_get_event_type (event) == GDK_BUTTON_RELEASE);
 
 	if (button)
 		*button = is_button ? gdk_button_event_get_button (event) : 0;
@@ -953,4 +988,24 @@ e_gtk_show_uri_on_window (GtkWindow *parent,
 	g_object_unref (context);
 
 	return success;
+}
+
+void
+e_gtk_widget_set_accessible_name (GtkWidget *widget,
+                                  const gchar *name)
+{
+	g_return_if_fail (GTK_IS_WIDGET (widget));
+
+	gtk_accessible_update_property (GTK_ACCESSIBLE (widget),
+		GTK_ACCESSIBLE_PROPERTY_LABEL, name, -1);
+}
+
+void
+e_gtk_widget_set_accessible_description (GtkWidget *widget,
+                                         const gchar *description)
+{
+	g_return_if_fail (GTK_IS_WIDGET (widget));
+
+	gtk_accessible_update_property (GTK_ACCESSIBLE (widget),
+		GTK_ACCESSIBLE_PROPERTY_DESCRIPTION, description, -1);
 }

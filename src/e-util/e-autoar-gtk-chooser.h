@@ -8,6 +8,7 @@
 
 #ifdef HAVE_AUTOAR
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 #include <gnome-autoar/gnome-autoar.h>
 
 G_BEGIN_DECLS

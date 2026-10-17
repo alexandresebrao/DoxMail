@@ -2140,7 +2140,7 @@ e_markdown_editor_realize_cb (GtkWidget *widget,
 	/* Disconnect the handler, it's enough to add the below signal handlers once */
 	g_signal_handlers_disconnect_by_func (self, G_CALLBACK (e_markdown_editor_realize_cb), NULL);
 
-	clipboard = gtk_widget_get_clipboard (GTK_WIDGET (self->priv->text_view), E_GTK_SELECTION_CLIPBOARD);
+	clipboard = gtk_widget_get_clipboard (GTK_WIDGET (self->priv->text_view));
 	g_signal_connect_object (clipboard, "owner-change",
 		G_CALLBACK (e_markdown_editor_clipboard_owner_change_cb), self, 0);
 	e_markdown_editor_clipboard_owner_change_cb (clipboard, NULL, self);

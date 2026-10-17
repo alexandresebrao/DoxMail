@@ -79,26 +79,26 @@ static GnomeCanvasItem *
 						 gint cx,
 						 gint cy);
 static gint	e_day_view_time_item_event	(GnomeCanvasItem *item,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 static void	e_day_view_time_item_increment_time
 						(gint *hour,
 						 gint *minute,
 						 gint time_divisions);
 static void	e_day_view_time_item_show_popup_menu
 						(EDayViewTimeItem *time_item,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 static void	e_day_view_time_item_on_set_divisions
 						(GtkWidget *item,
 						 EDayViewTimeItem *time_item);
 static void	e_day_view_time_item_on_button_press
 						(EDayViewTimeItem *time_item,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 static void	e_day_view_time_item_on_button_release
 						(EDayViewTimeItem *time_item,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 static void	e_day_view_time_item_on_motion_notify
 						(EDayViewTimeItem *time_item,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 static gint	e_day_view_time_item_convert_position_to_row
 						(EDayViewTimeItem *time_item,
 						 gint y);
@@ -687,14 +687,14 @@ e_day_view_time_item_point (GnomeCanvasItem *item,
 
 static gint
 e_day_view_time_item_event (GnomeCanvasItem *item,
-                            GdkEvent *event)
+                            GnomeCanvasEvent *event)
 {
 	EDayViewTimeItem *time_item;
 
 	time_item = E_DAY_VIEW_TIME_ITEM (item);
 
 	switch (event->type) {
-	case GDK_BUTTON_PRESS:
+	case GNOME_CANVAS_BUTTON_PRESS:
 		if (event->button.button == 1) {
 			e_day_view_time_item_on_button_press (time_item, event);
 		} else if (event->button.button == 3) {
@@ -702,13 +702,13 @@ e_day_view_time_item_event (GnomeCanvasItem *item,
 			return TRUE;
 		}
 		break;
-	case GDK_BUTTON_RELEASE:
+	case GNOME_CANVAS_BUTTON_RELEASE:
 		if (event->button.button == 1)
 			e_day_view_time_item_on_button_release (
 				time_item, event);
 		break;
 
-	case GDK_MOTION_NOTIFY:
+	case GNOME_CANVAS_MOTION_NOTIFY:
 		e_day_view_time_item_on_motion_notify (time_item, event);
 		break;
 
@@ -770,7 +770,7 @@ edvti_on_set_zone (GtkWidget *item,
 
 static void
 e_day_view_time_item_show_popup_menu (EDayViewTimeItem *time_item,
-                                      GdkEvent *event)
+                                      GnomeCanvasEvent *event)
 {
 	static gint divisions[] = { 60, 30, 15, 10, 5 };
 	EDayView *day_view;
@@ -915,12 +915,12 @@ e_day_view_time_item_on_set_divisions (GtkWidget *item,
 
 static void
 e_day_view_time_item_on_button_press (EDayViewTimeItem *time_item,
-                                      GdkEvent *event)
+                                      GnomeCanvasEvent *event)
 {
 	GdkWindow *window;
 	EDayView *day_view;
 	GnomeCanvas *canvas;
-	GdkGrabStatus grab_status;
+	GnomeCanvasGrabStatus grab_status;
 	GdkDevice *event_device;
 	guint32 event_time;
 	gint row;
@@ -942,20 +942,20 @@ e_day_view_time_item_on_button_press (EDayViewTimeItem *time_item,
 
 	window = gtk_layout_get_bin_window (GTK_LAYOUT (canvas));
 
-	event_device = gdk_event_get_device (event);
-	event_time = gdk_event_get_time (event);
+	event_device = gnome_canvas_event_get_device (event);
+	event_time = gnome_canvas_event_get_time (event);
 
 	grab_status = gdk_device_grab (
 		event_device,
 		window,
 		GDK_OWNERSHIP_NONE,
 		FALSE,
-		GDK_POINTER_MOTION_MASK |
-		GDK_BUTTON_RELEASE_MASK,
+		GNOME_CANVAS_POINTER_MOTION_MASK |
+		GNOME_CANVAS_BUTTON_RELEASE_MASK,
 		NULL,
 		event_time);
 
-	if (grab_status == GDK_GRAB_SUCCESS) {
+	if (grab_status == GNOME_CANVAS_GRAB_SUCCESS) {
 		e_day_view_start_selection (day_view, -1, row);
 		time_item->priv->dragging_selection = TRUE;
 	}
@@ -963,7 +963,7 @@ e_day_view_time_item_on_button_press (EDayViewTimeItem *time_item,
 
 static void
 e_day_view_time_item_on_button_release (EDayViewTimeItem *time_item,
-                                        GdkEvent *event)
+                                        GnomeCanvasEvent *event)
 {
 	EDayView *day_view;
 
@@ -974,8 +974,8 @@ e_day_view_time_item_on_button_release (EDayViewTimeItem *time_item,
 		GdkDevice *event_device;
 		guint32 event_time;
 
-		event_device = gdk_event_get_device (event);
-		event_time = gdk_event_get_time (event);
+		event_device = gnome_canvas_event_get_device (event);
+		event_time = gnome_canvas_event_get_time (event);
 		gdk_device_ungrab (event_device, event_time);
 
 		e_day_view_finish_selection (day_view);
@@ -987,7 +987,7 @@ e_day_view_time_item_on_button_release (EDayViewTimeItem *time_item,
 
 static void
 e_day_view_time_item_on_motion_notify (EDayViewTimeItem *time_item,
-                                       GdkEvent *event)
+                                       GnomeCanvasEvent *event)
 {
 	EDayView *day_view;
 	GnomeCanvas *canvas;

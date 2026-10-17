@@ -54,13 +54,13 @@ static GnomeCanvasItem *e_meeting_time_selector_item_point (GnomeCanvasItem *ite
                                                             double x, double y,
                                                             gint cx, gint cy);
 static gint e_meeting_time_selector_item_event (GnomeCanvasItem *item,
-						GdkEvent *event);
+						GnomeCanvasEvent *event);
 static gint e_meeting_time_selector_item_button_press (EMeetingTimeSelectorItem *mts_item,
-						       GdkEvent *event);
+						       GnomeCanvasEvent *event);
 static gint e_meeting_time_selector_item_button_release (EMeetingTimeSelectorItem *mts_item,
-							 GdkEvent *event);
+							 GnomeCanvasEvent *event);
 static gint e_meeting_time_selector_item_motion_notify (EMeetingTimeSelectorItem *mts_item,
-							GdkEvent *event);
+							GnomeCanvasEvent *event);
 
 static void e_meeting_time_selector_item_paint_day_top (EMeetingTimeSelectorItem *mts_item,
 							cairo_t *cr,
@@ -126,9 +126,9 @@ e_meeting_time_selector_item_init (EMeetingTimeSelectorItem *mts_item)
 	mts_item->mts = NULL;
 
 	/* Create the cursors. */
-	mts_item->normal_cursor = gdk_cursor_new_from_name (gdk_display_get_default (), "default");
-	mts_item->resize_cursor = gdk_cursor_new_from_name (gdk_display_get_default (), "ew-resize");
-	mts_item->busy_cursor = gdk_cursor_new_from_name (gdk_display_get_default (), "wait");
+	mts_item->normal_cursor = gdk_cursor_new_from_name ("default", NULL);
+	mts_item->resize_cursor = gdk_cursor_new_from_name ("ew-resize", NULL);
+	mts_item->busy_cursor = gdk_cursor_new_from_name ("wait", NULL);
 	mts_item->last_cursor_set = NULL;
 
 	item->x1 = 0;
@@ -782,22 +782,22 @@ e_meeting_time_selector_item_point (GnomeCanvasItem *item,
 
 static gint
 e_meeting_time_selector_item_event (GnomeCanvasItem *item,
-                                    GdkEvent *event)
+                                    GnomeCanvasEvent *event)
 {
 	EMeetingTimeSelectorItem *mts_item;
 
 	mts_item = E_MEETING_TIME_SELECTOR_ITEM (item);
 
 	switch (event->type) {
-	case GDK_BUTTON_PRESS:
+	case GNOME_CANVAS_BUTTON_PRESS:
 		return e_meeting_time_selector_item_button_press (
 			mts_item,
 			event);
-	case GDK_BUTTON_RELEASE:
+	case GNOME_CANVAS_BUTTON_RELEASE:
 		return e_meeting_time_selector_item_button_release (
 			mts_item,
 			event);
-	case GDK_MOTION_NOTIFY:
+	case GNOME_CANVAS_MOTION_NOTIFY:
 		return e_meeting_time_selector_item_motion_notify (
 			mts_item,
 			event);
@@ -815,7 +815,7 @@ e_meeting_time_selector_item_event (GnomeCanvasItem *item,
  * i.e. relative to the entire canvas scroll area. */
 static gint
 e_meeting_time_selector_item_button_press (EMeetingTimeSelectorItem *mts_item,
-                                           GdkEvent *event)
+                                           GnomeCanvasEvent *event)
 {
 	EMeetingTimeSelector *mts;
 	EMeetingTime start_time, end_time;
@@ -832,22 +832,22 @@ e_meeting_time_selector_item_button_press (EMeetingTimeSelectorItem *mts_item,
 		mts_item,
 		x, y);
 	if (position != E_MEETING_TIME_SELECTOR_POS_NONE) {
-		GdkGrabStatus grab_status;
+		GnomeCanvasGrabStatus grab_status;
 		GdkDevice *event_device;
 		guint32 event_time;
 
-		event_device = gdk_event_get_device (event);
-		event_time = gdk_event_get_time (event);
+		event_device = gnome_canvas_event_get_device (event);
+		event_time = gnome_canvas_event_get_time (event);
 
 		grab_status = gnome_canvas_item_grab (
 			GNOME_CANVAS_ITEM (mts_item),
-			GDK_POINTER_MOTION_MASK |
-			GDK_BUTTON_RELEASE_MASK,
+			GNOME_CANVAS_POINTER_MOTION_MASK |
+			GNOME_CANVAS_BUTTON_RELEASE_MASK,
 			mts_item->resize_cursor,
 			event_device,
 			event_time);
 
-		if (grab_status == GDK_GRAB_SUCCESS) {
+		if (grab_status == GNOME_CANVAS_GRAB_SUCCESS) {
 			mts->dragging_position = position;
 			return TRUE;
 		}
@@ -937,7 +937,7 @@ e_meeting_time_selector_item_button_press (EMeetingTimeSelectorItem *mts_item,
  * we finish the drag. */
 static gint
 e_meeting_time_selector_item_button_release (EMeetingTimeSelectorItem *mts_item,
-                                             GdkEvent *event)
+                                             GnomeCanvasEvent *event)
 {
 	EMeetingTimeSelector *mts;
 
@@ -961,7 +961,7 @@ e_meeting_time_selector_item_button_release (EMeetingTimeSelectorItem *mts_item,
  * hints, which may affect performance. */
 static gint
 e_meeting_time_selector_item_motion_notify (EMeetingTimeSelectorItem *mts_item,
-                                            GdkEvent *event)
+                                            GnomeCanvasEvent *event)
 {
 	EMeetingTimeSelector *mts;
 	EMeetingTimeSelectorPosition position;

@@ -26,6 +26,7 @@
 #define E_PREFERENCES_WINDOW_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 
 /* Standard GObject macros */
 #define E_TYPE_PREFERENCES_WINDOW \

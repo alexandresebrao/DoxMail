@@ -22,6 +22,7 @@
 #define E_ACCOUNTS_WINDOW_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 #include <libedataserver/libedataserver.h>
 
 /* Standard GObject macros */

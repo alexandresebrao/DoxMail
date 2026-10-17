@@ -173,7 +173,7 @@ add_photo_cb (gpointer data,
 	if (!photo_filename || !g_file_test (photo_filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR))
 		return;
 
-	if (!gtk_icon_size_lookup (GTK_ICON_SIZE_DND, &width, &height)) {
+	if (!gtk_icon_size_lookup (GTK_ICON_SIZE_LARGE, &width, &height)) {
 		width = 32;
 		height = 32;
 	}
@@ -305,7 +305,7 @@ add_details_part (GString *html,
 	if (!part || !validity || !details || !*details || !ident)
 		return;
 
-	if (!gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, &icon_width, &icon_height)) {
+	if (!gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &icon_width, &icon_height)) {
 		icon_width = 16;
 		icon_height = 16;
 	}
@@ -318,7 +318,7 @@ add_details_part (GString *html,
 		"%s</span><br>"
 		"<div id=\"secure-button-details-%p-%s\" style=\"white-space:pre; margin-left:12px; font-size:smaller;\" hidden>%s</div>",
 		part, validity, ident,
-		validity, ident, icon_width, icon_height, GTK_ICON_SIZE_MENU, GTK_ICON_SIZE_MENU, /* image */
+		validity, ident, icon_width, icon_height, GTK_ICON_SIZE_NORMAL, GTK_ICON_SIZE_NORMAL, /* image */
 		_("Details"),
 		validity, ident,
 		details);
@@ -381,7 +381,7 @@ secure_button_format_validity (EMailPart *part,
 	else
 		icon_name = smime_encrypt_table[validity->encrypt.status].icon;
 
-	if (!gtk_icon_size_lookup (GTK_ICON_SIZE_LARGE_TOOLBAR, &icon_width, &icon_height)) {
+	if (!gtk_icon_size_lookup (GTK_ICON_SIZE_LARGE, &icon_width, &icon_height)) {
 		icon_width = 24;
 		icon_height = 24;
 	}
@@ -398,7 +398,7 @@ secure_button_format_validity (EMailPart *part,
 	g_string_append_printf (html,
 		"<td style=\"width:1px;\"><button type=\"button\" class=\"secure-button\" id=\"secure-button\" value=\"%p:%p\" accesskey=\"\" style=\"vertical-align:middle;\">"
 		"<img src=\"gtk-stock://%s?size=%d\" width=\"%dpx\" height=\"%dpx\" style=\"vertical-align:middle;\"></button></td><td><span style=\"vertical-align:middle;\">",
-		part, validity, icon_name, GTK_ICON_SIZE_LARGE_TOOLBAR,
+		part, validity, icon_name, GTK_ICON_SIZE_LARGE,
 		icon_width, icon_height);
 
 	g_queue_foreach (&validity->sign.signers, add_photo_cb, html);

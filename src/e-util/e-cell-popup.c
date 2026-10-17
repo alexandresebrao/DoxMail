@@ -32,8 +32,6 @@
 
 #include <gdk/gdkkeysyms.h>
 
-#include "gal-a11y-e-cell-popup.h"
-#include "gal-a11y-e-cell-registry.h"
 
 #include "e-cell-popup.h"
 #include "e-table-item.h"
@@ -61,7 +59,7 @@ static void	ecp_draw		(ECellView	*ecv,
 					 gint		 x2,
 					 gint		 y2);
 static gint	ecp_event		(ECellView	*ecv,
-					 GdkEvent	*event,
+					 GnomeCanvasEvent	*event,
 					 gint		 model_col,
 					 gint		 view_col,
 					 gint		 row,
@@ -99,7 +97,7 @@ static gint	ecp_max_width		(ECellView	*ecv,
 static gchar *ecp_get_bg_color (ECellView *ecell_view, gint row);
 
 static gint e_cell_popup_do_popup	(ECellPopupView	*ecp_view,
-					 GdkEvent	*event,
+					 GnomeCanvasEvent	*event,
 					 gint             row,
 					 gint             model_col);
 
@@ -126,9 +124,6 @@ e_cell_popup_class_init (ECellPopupClass *class)
 	ecc->max_width = ecp_max_width;
 	ecc->get_bg_color = ecp_get_bg_color;
 
-	gal_a11y_e_cell_registry_add_cell_type (
-		NULL, E_TYPE_CELL_POPUP,
-		gal_a11y_e_cell_popup_new);
 }
 
 static void
@@ -308,7 +303,7 @@ ecp_draw (ECellView *ecv,
 		gtk_style_context_save (style_context);
 
 		gtk_style_context_add_class (
-			style_context, GTK_STYLE_CLASS_CELL);
+			style_context, "cell");
 
 		cairo_save (cr);
 		gtk_render_background (
@@ -346,7 +341,7 @@ ecp_draw (ECellView *ecv,
  */
 static gint
 ecp_event (ECellView *ecv,
-           GdkEvent *event,
+           GnomeCanvasEvent *event,
            gint model_col,
            gint view_col,
            gint row,
@@ -359,7 +354,7 @@ ecp_event (ECellView *ecv,
 	gint width;
 
 	switch (event->type) {
-	case GDK_BUTTON_PRESS:
+	case GNOME_CANVAS_BUTTON_PRESS:
 		if (e_table_model_is_cell_editable (ecv->e_table_model, model_col, row) &&
 		    flags & E_CELL_CURSOR
 		    && ecp->popup_arrow_shown) {
@@ -374,7 +369,7 @@ ecp_event (ECellView *ecv,
 			}
 		}
 		break;
-	case GDK_KEY_PRESS:
+	case GNOME_CANVAS_KEY_PRESS:
 		if (e_table_model_is_cell_editable (ecv->e_table_model, model_col, row) &&
 		    event->key.state & GDK_ALT_MASK
 		    && event->key.keyval == GDK_KEY_Down) {
@@ -508,12 +503,12 @@ e_cell_popup_set_child (ECellPopup *ecp,
 
 static gint
 e_cell_popup_do_popup (ECellPopupView *ecp_view,
-                       GdkEvent *event,
+                       GnomeCanvasEvent *event,
                        gint row,
                        gint view_col)
 {
 	ECellPopup *ecp = E_CELL_POPUP (ecp_view->cell_view.ecell);
-	gint (*popup_func) (ECellPopup *ecp, GdkEvent *event, gint row, gint view_col);
+	gint (*popup_func) (ECellPopup *ecp, GnomeCanvasEvent *event, gint row, gint view_col);
 
 	ecp->popup_cell_view = ecp_view;
 
@@ -548,4 +543,101 @@ e_cell_popup_set_shown (ECellPopup *ecp,
 {
 	ecp->popup_shown = shown;
 	e_cell_popup_queue_cell_redraw (ecp);
+}
+
+/**
+ * e_cell_popup_get_cell_rect:
+ * @ecp: an #ECellPopup
+ * @out_canvas: (out): the canvas showing the popup cell
+ * @out_rect: (out): the cell area, relative to @out_canvas
+ *
+ * Gets where the cell with the popup is, to point a #GtkPopover at it.
+ *
+ * Returns: whether the cell is shown
+ *
+ * Since: DoxMail
+ **/
+gboolean
+e_cell_popup_get_cell_rect (ECellPopup *ecp,
+			    GtkWidget **out_canvas,
+			    GdkRectangle *out_rect)
+{
+	ETableItem *eti;
+	GnomeCanvas *canvas;
+	gdouble x1, y1, x2, y2, wx1, wy1, wx2, wy2, hvalue, vvalue;
+
+	g_return_val_if_fail (E_IS_CELL_POPUP (ecp), FALSE);
+	g_return_val_if_fail (out_canvas != NULL, FALSE);
+	g_return_val_if_fail (out_rect != NULL, FALSE);
+
+	if (!ecp->popup_cell_view)
+		return FALSE;
+
+	eti = E_TABLE_ITEM (ecp->popup_cell_view->cell_view.e_table_item_view);
+	canvas = GNOME_CANVAS_ITEM (eti)->canvas;
+	if (!canvas)
+		return FALSE;
+
+	x1 = e_table_header_col_diff (eti->header, 0, ecp->popup_view_col);
+	x2 = e_table_header_col_diff (eti->header, 0, ecp->popup_view_col + 1);
+	y1 = e_table_item_row_diff (eti, 0, ecp->popup_row);
+	y2 = e_table_item_row_diff (eti, 0, ecp->popup_row + 1);
+
+	gnome_canvas_item_i2w (GNOME_CANVAS_ITEM (eti), &x1, &y1);
+	gnome_canvas_item_i2w (GNOME_CANVAS_ITEM (eti), &x2, &y2);
+	gnome_canvas_world_to_window (canvas, x1, y1, &wx1, &wy1);
+	gnome_canvas_world_to_window (canvas, x2, y2, &wx2, &wy2);
+
+	/* window coordinates include the scroll offset */
+	hvalue = gtk_adjustment_get_value (gtk_scrollable_get_hadjustment (GTK_SCROLLABLE (canvas)));
+	vvalue = gtk_adjustment_get_value (gtk_scrollable_get_vadjustment (GTK_SCROLLABLE (canvas)));
+
+	out_rect->x = wx1 - hvalue;
+	out_rect->y = wy1 - vvalue;
+	out_rect->width = MAX (1, wx2 - wx1);
+	out_rect->height = MAX (1, wy2 - wy1);
+
+	*out_canvas = GTK_WIDGET (canvas);
+
+	return TRUE;
+}
+
+/**
+ * e_cell_popup_show_popover:
+ * @ecp: an #ECellPopup
+ * @popover: a #GtkPopover to show for the popup cell
+ *
+ * Parents @popover to the canvas of the popup cell and shows it pointing
+ * at the cell. GTK 3 used popup windows at screen coordinates.
+ *
+ * Returns: whether the @popover is shown
+ *
+ * Since: DoxMail
+ **/
+gboolean
+e_cell_popup_show_popover (ECellPopup *ecp,
+			   GtkWidget *popover)
+{
+	GtkWidget *canvas = NULL;
+	GdkRectangle rect;
+
+	g_return_val_if_fail (E_IS_CELL_POPUP (ecp), FALSE);
+	g_return_val_if_fail (GTK_IS_POPOVER (popover), FALSE);
+
+	if (!e_cell_popup_get_cell_rect (ecp, &canvas, &rect))
+		return FALSE;
+
+	if (gtk_widget_get_parent (popover) != canvas) {
+		if (gtk_widget_get_parent (popover))
+			gtk_widget_unparent (popover);
+		gtk_widget_set_parent (popover, canvas);
+	}
+
+	gtk_popover_set_pointing_to (GTK_POPOVER (popover), &rect);
+	gtk_popover_set_position (GTK_POPOVER (popover), GTK_POS_BOTTOM);
+	gtk_popover_popup (GTK_POPOVER (popover));
+
+	e_cell_popup_set_shown (ecp, TRUE);
+
+	return TRUE;
 }

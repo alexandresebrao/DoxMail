@@ -2572,7 +2572,7 @@ fill_in_simple_field (EContactEditor *editor,
 			gchar *file_name;
 
 			file_name = e_icon_factory_get_icon_filename (
-				"avatar-default", GTK_ICON_SIZE_DIALOG);
+				"avatar-default", GTK_ICON_SIZE_LARGE);
 			e_image_chooser_set_from_file (
 				E_IMAGE_CHOOSER (widget), file_name);
 			editor->priv->image_set = FALSE;
@@ -4316,7 +4316,7 @@ image_cleared (EContactEditor *editor)
 		editor->priv->builder, "image-chooser");
 
 	file_name = e_icon_factory_get_icon_filename (
-		"avatar-default", GTK_ICON_SIZE_DIALOG);
+		"avatar-default", GTK_ICON_SIZE_LARGE);
 
 	g_signal_handlers_block_by_func (
 		image_chooser, image_chooser_changed, editor);
@@ -4383,7 +4383,7 @@ update_preview_cb (GtkFileChooser *file_chooser,
 	if (!pixbuf) {
 		gchar *alternate_file;
 		alternate_file = e_icon_factory_get_icon_filename (
-			"avatar-default", GTK_ICON_SIZE_DIALOG);
+			"avatar-default", GTK_ICON_SIZE_LARGE);
 		if (alternate_file) {
 			pixbuf = gdk_pixbuf_new_from_file_at_size (
 				alternate_file, 128, 128, NULL);

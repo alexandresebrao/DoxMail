@@ -38,69 +38,6 @@ menu_bar_visible_settings_changed_cb (GSettings *settings,
 }
 
 static void
-menu_bar_move_items_to (GtkMenuShell *des,
-			GtkMenuShell *src)
-{
-	GList *children, *link;
-	GtkContainer *des_container;
-	GtkContainer *src_container;
-
-	des_container = GTK_CONTAINER (des);
-	src_container = GTK_CONTAINER (src);
-
-	children = e_gtk_widget_get_children (src_container);
-
-	for (link = children; link; link = g_list_next (link)) {
-		GtkWidget *widget = link->data;
-
-		g_object_ref (widget);
-		e_gtk_container_remove (src_container, widget);
-		e_gtk_container_add (des_container, widget);
-		g_object_unref (widget);
-	}
-
-	g_list_free (children);
-}
-
-static void
-menu_bar_menu_deactivate_cb (GtkMenuShell *menu,
-			     gpointer user_data)
-{
-	EMenuBar *menu_bar = user_data;
-
-	menu_bar_move_items_to (GTK_MENU_SHELL (menu_bar->priv->inner_menu_bar), menu);
-
-	gtk_menu_detach (GTK_MENU (menu));
-}
-
-static void
-e_menu_bar_popup_menu (EMenuBar *self)
-{
-	GtkMenu *menu;
-
-	g_return_if_fail (E_IS_MENU_BAR (self));
-
-	if (!self->priv->menu_button)
-		return;
-
-	menu = GTK_MENU (gtk_menu_new ());
-
-	menu_bar_move_items_to (GTK_MENU_SHELL (menu), GTK_MENU_SHELL (self->priv->inner_menu_bar));
-
-	g_signal_connect_object (menu, "deactivate", G_CALLBACK (menu_bar_menu_deactivate_cb), self, 0);
-
-	gtk_menu_attach_to_widget (menu, self->priv->menu_button, NULL);
-
-	g_object_set (menu,
-	              "anchor-hints", (GDK_ANCHOR_FLIP_Y |
-	                               GDK_ANCHOR_SLIDE |
-	                               GDK_ANCHOR_RESIZE),
-	              NULL);
-
-	gtk_menu_popup_at_widget (menu, self->priv->menu_button, GDK_GRAVITY_SOUTH_WEST, GDK_GRAVITY_NORTH_WEST, NULL);
-}
-
-static void
 menu_bar_set_property (GObject *object,
 		       guint property_id,
 		       const GValue *value,
@@ -208,10 +145,13 @@ delayed_hide_cb (gpointer user_data)
 
 	self->priv->delayed_hide_id = 0;
 
+	/* GTK 4 cannot tell whether a menu of the bar is open, thus keep
+	 * the bar while it has the focus */
 	if (!self->priv->visible && widget &&
 	    !self->priv->delayed_show_id) {
 		if (gtk_widget_get_visible (widget) &&
-		    !gtk_menu_shell_get_selected_item (GTK_MENU_SHELL (self->priv->inner_menu_bar)))
+		    !gtk_widget_has_focus (widget) &&
+		    !gtk_widget_get_focus_child (widget))
 			gtk_widget_set_visible (widget, FALSE);
 	}
 
@@ -219,86 +159,97 @@ delayed_hide_cb (gpointer user_data)
 }
 
 static void
-e_menu_bar_window_event_after_cb (GtkWindow *window,
-			          GdkEvent *event,
-			          EMenuBar *self)
+menu_bar_schedule_hide (EMenuBar *self)
 {
-	g_return_if_fail (event != NULL);
+	if (self->priv->delayed_show_id) {
+		g_source_remove (self->priv->delayed_show_id);
+		self->priv->delayed_show_id = 0;
+	}
 
-	if (event->type != GDK_KEY_PRESS &&
-	    event->type != GDK_KEY_RELEASE &&
-	    event->type != GDK_BUTTON_RELEASE &&
-	    event->type != GDK_FOCUS_CHANGE)
-		return;
-
-	if (event->type == GDK_KEY_PRESS) {
-		GdkEvent *key_event;
-		gboolean has_modifier_pressed;
-
-		key_event = (GdkEvent *) event;
-		has_modifier_pressed = (key_event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK |
-					GDK_SUPER_MASK | GDK_HYPER_MASK |
-					GDK_META_MASK)) != 0;
-
-		if ((key_event->keyval == GDK_KEY_Alt_L || key_event->keyval == GDK_KEY_Alt_R) &&
-		    !has_modifier_pressed) {
-			if (self->priv->delayed_hide_id) {
-				g_source_remove (self->priv->delayed_hide_id);
-				self->priv->delayed_hide_id = 0;
-			}
-
-			if (self->priv->delayed_show_id) {
-				g_source_remove (self->priv->delayed_show_id);
-				self->priv->delayed_show_id = 0;
-
-				delayed_show_cb (self);
-			} else {
-				/* To not flash when using Alt+Tab or
-				   similar system-wide shortcuts */
-				self->priv->delayed_show_id =
-					g_timeout_add (250, delayed_show_cb, self);
-			}
-		} else if (key_event->keyval == GDK_KEY_F10 && !has_modifier_pressed && self->priv->menu_button &&
-			   gtk_widget_get_visible (self->priv->menu_button)) {
-			e_menu_bar_popup_menu (self);
-		}
-	} else if (event->type != GDK_BUTTON_RELEASE || !(event->button.state & GDK_ALT_MASK)) {
-		if (self->priv->delayed_show_id) {
-			g_source_remove (self->priv->delayed_show_id);
-			self->priv->delayed_show_id = 0;
-		}
-
-		if (gtk_widget_get_visible (GTK_WIDGET (self->priv->inner_menu_bar)) &&
-		    !self->priv->delayed_hide_id) {
-			self->priv->delayed_hide_id =
-				g_timeout_add (500, delayed_hide_cb, self);
-		}
+	if (gtk_widget_get_visible (GTK_WIDGET (self->priv->inner_menu_bar)) &&
+	    !self->priv->delayed_hide_id) {
+		self->priv->delayed_hide_id =
+			g_timeout_add (500, delayed_hide_cb, self);
 	}
 }
 
-/**
- * e_menu_bar_new:
- * @inner_menu_bar: #GtkMenuBar to handle
- * @window: monitor #GtkWindow for &lt;Alt&gt; key event
- * @out_menu_button: (out) (optional) (transfer full): an output argument to set the menu button instance to, or %NULL
- *
- * Creates a new #EMenuBar showing @inner_menu_bar on demand. The @out_menu_button
- * is set to a menu button, which should be placed into the window's header bar.
- * The menu button is shown when the menu bar is hidden.
- *
- * Returns: (transfer full): a new #EMenuBar
- *
- * Since: 3.46
- **/
+/* GTK 3 watched "event-after" of the window; GTK 4 needs controllers */
+static gboolean
+menu_bar_window_key_pressed_cb (GtkEventControllerKey *controller,
+				guint keyval,
+				guint keycode,
+				GdkModifierType state,
+				EMenuBar *self)
+{
+	gboolean has_modifier_pressed;
+
+	has_modifier_pressed = (state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK |
+				GDK_SUPER_MASK | GDK_HYPER_MASK |
+				GDK_META_MASK)) != 0;
+
+	if ((keyval == GDK_KEY_Alt_L || keyval == GDK_KEY_Alt_R) &&
+	    !has_modifier_pressed) {
+		if (self->priv->delayed_hide_id) {
+			g_source_remove (self->priv->delayed_hide_id);
+			self->priv->delayed_hide_id = 0;
+		}
+
+		if (self->priv->delayed_show_id) {
+			g_source_remove (self->priv->delayed_show_id);
+			self->priv->delayed_show_id = 0;
+
+			delayed_show_cb (self);
+		} else {
+			/* To not flash when using Alt+Tab or
+			   similar system-wide shortcuts */
+			self->priv->delayed_show_id =
+				g_timeout_add (250, delayed_show_cb, self);
+		}
+	} else if (keyval == GDK_KEY_F10 && !has_modifier_pressed && self->priv->menu_button &&
+		   gtk_widget_get_visible (self->priv->menu_button)) {
+		gtk_menu_button_popup (GTK_MENU_BUTTON (self->priv->menu_button));
+		return TRUE;
+	} else {
+		menu_bar_schedule_hide (self);
+	}
+
+	return FALSE;
+}
+
+static void
+menu_bar_window_key_released_cb (GtkEventControllerKey *controller,
+				 guint keyval,
+				 guint keycode,
+				 GdkModifierType state,
+				 EMenuBar *self)
+{
+	if (keyval != GDK_KEY_Alt_L && keyval != GDK_KEY_Alt_R)
+		menu_bar_schedule_hide (self);
+}
+
+static void
+menu_bar_window_released_cb (GtkGestureClick *gesture,
+			     gint n_press,
+			     gdouble x,
+			     gdouble y,
+			     EMenuBar *self)
+{
+	GdkModifierType state;
+
+	state = gtk_event_controller_get_current_event_state (GTK_EVENT_CONTROLLER (gesture));
+
+	if (!(state & GDK_ALT_MASK))
+		menu_bar_schedule_hide (self);
+}
+
 EMenuBar *
-e_menu_bar_new (GtkMenuBar *inner_menu_bar,
-		GtkWindow *window,
-		GtkWidget **out_menu_button)
+e_menu_bar_new (GtkWidget *inner_menu_bar, GtkWindow *window, GtkWidget **out_menu_button)
 {
 	EMenuBar *self;
 	GSettings *settings;
+	GtkEventController *controller;
 
-	g_return_val_if_fail (GTK_IS_MENU_BAR (inner_menu_bar), NULL);
+	g_return_val_if_fail (GTK_IS_POPOVER_MENU_BAR (inner_menu_bar), NULL);
 	g_return_val_if_fail (GTK_IS_WINDOW (window), NULL);
 
 	self = g_object_new (E_TYPE_MENU_BAR, NULL);
@@ -316,15 +267,15 @@ e_menu_bar_new (GtkMenuBar *inner_menu_bar,
 	if (out_menu_button) {
 		GtkWidget *button;
 
-		button = gtk_button_new_from_icon_name ("open-menu");
+		button = gtk_menu_button_new ();
+		gtk_menu_button_set_icon_name (GTK_MENU_BUTTON (button), "open-menu");
+		gtk_menu_button_set_menu_model (GTK_MENU_BUTTON (button),
+			gtk_popover_menu_bar_get_menu_model (GTK_POPOVER_MENU_BAR (inner_menu_bar)));
 
 		g_settings_bind (
 			settings, "menubar-visible",
 			button, "visible",
 			G_SETTINGS_BIND_GET | G_SETTINGS_BIND_INVERT_BOOLEAN | G_SETTINGS_BIND_NO_SENSITIVITY);
-
-		g_signal_connect_object (button, "clicked",
-			G_CALLBACK (e_menu_bar_popup_menu), self, G_CONNECT_SWAPPED);
 
 		self->priv->menu_button = g_object_ref_sink (button);
 
@@ -333,8 +284,19 @@ e_menu_bar_new (GtkMenuBar *inner_menu_bar,
 
 	g_object_unref (settings);
 
-	g_signal_connect_object (window, "event-after",
-		G_CALLBACK (e_menu_bar_window_event_after_cb), self, G_CONNECT_AFTER);
+	controller = gtk_event_controller_key_new ();
+	gtk_event_controller_set_propagation_phase (controller, GTK_PHASE_CAPTURE);
+	g_signal_connect_object (controller, "key-pressed",
+		G_CALLBACK (menu_bar_window_key_pressed_cb), self, 0);
+	g_signal_connect_object (controller, "key-released",
+		G_CALLBACK (menu_bar_window_key_released_cb), self, 0);
+	gtk_widget_add_controller (GTK_WIDGET (window), controller);
+
+	controller = GTK_EVENT_CONTROLLER (gtk_gesture_click_new ());
+	gtk_event_controller_set_propagation_phase (controller, GTK_PHASE_CAPTURE);
+	g_signal_connect_object (controller, "released",
+		G_CALLBACK (menu_bar_window_released_cb), self, 0);
+	gtk_widget_add_controller (GTK_WIDGET (window), controller);
 
 	return self;
 }

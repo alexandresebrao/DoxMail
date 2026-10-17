@@ -113,7 +113,7 @@ action_combo_box_render_pixbuf (GtkCellLayout *layout,
 	/* If some action has an icon */
 	if (combo_box->priv->group_has_icons)
 		/* Keep the pixbuf renderer a fixed size for proper alignment. */
-		gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, &width, NULL);
+		gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &width, NULL);
 	else
 		width = 0;
 
@@ -121,7 +121,7 @@ action_combo_box_render_pixbuf (GtkCellLayout *layout,
 		G_OBJECT (renderer),
 		"sensitive", e_ui_action_get_sensitive (action),
 		"icon-name", e_ui_action_get_icon_name (action),
-		"stock-size", GTK_ICON_SIZE_MENU,
+		"icon-size", GTK_ICON_SIZE_NORMAL,
 		"visible", e_ui_action_is_visible (action),
 		"width", width,
 		NULL);

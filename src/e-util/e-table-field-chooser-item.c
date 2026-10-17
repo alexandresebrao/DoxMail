@@ -499,8 +499,8 @@ etfci_draw (GnomeCanvasItem *item,
 	style_context = gtk_widget_get_style_context (GTK_WIDGET (canvas));
 
 	gtk_style_context_save (style_context);
-	gtk_style_context_add_class (style_context, GTK_STYLE_CLASS_VIEW);
-	gtk_style_context_add_class (style_context, GTK_STYLE_CLASS_HEADER);
+	gtk_style_context_add_class (style_context, "view");
+	gtk_style_context_add_class (style_context, "header");
 
 	rows = e_table_header_count (etfci->combined_header);
 
@@ -564,7 +564,7 @@ etfci_maybe_start_drag (ETableFieldChooserItem *etfci,
 
 static void
 etfci_start_drag (ETableFieldChooserItem *etfci,
-                  GdkEvent *event,
+                  GnomeCanvasEvent *event,
                   gdouble x,
                   gdouble y)
 {
@@ -613,8 +613,8 @@ etfci_start_drag (ETableFieldChooserItem *etfci,
 	style_context = gtk_widget_get_style_context (widget);
 
 	gtk_style_context_save (style_context);
-	gtk_style_context_add_class (style_context, GTK_STYLE_CLASS_VIEW);
-	gtk_style_context_add_class (style_context, GTK_STYLE_CLASS_HEADER);
+	gtk_style_context_add_class (style_context, "view");
+	gtk_style_context_add_class (style_context, "header");
 
 	e_table_header_draw_button (
 		cr, ecol,
@@ -636,21 +636,21 @@ etfci_start_drag (ETableFieldChooserItem *etfci,
  */
 static gint
 etfci_event (GnomeCanvasItem *item,
-             GdkEvent *e)
+             GnomeCanvasEvent *e)
 {
 	ETableFieldChooserItem *etfci = E_TABLE_FIELD_CHOOSER_ITEM (item);
 	GnomeCanvas *canvas = item->canvas;
 	gint x, y;
 
 	switch (e->type) {
-	case GDK_MOTION_NOTIFY:
+	case GNOME_CANVAS_MOTION_NOTIFY:
 		gnome_canvas_w2c (canvas, e->motion.x, e->motion.y, &x, &y);
 
 		if (etfci_maybe_start_drag (etfci, x, y))
 			etfci_start_drag (etfci, e, x, y);
 		break;
 
-	case GDK_BUTTON_PRESS:
+	case GNOME_CANVAS_BUTTON_PRESS:
 		gnome_canvas_w2c (canvas, e->button.x, e->button.y, &x, &y);
 
 		if (e->button.button == 1) {
@@ -660,7 +660,7 @@ etfci_event (GnomeCanvasItem *item,
 		}
 		break;
 
-	case GDK_BUTTON_RELEASE: {
+	case GNOME_CANVAS_BUTTON_RELEASE: {
 		etfci->maybe_drag = FALSE;
 		break;
 	}

@@ -192,21 +192,16 @@ header_bar_button_add_action (EHeaderBarButton *header_bar_button,
 }
 
 static void
-header_bar_button_style_updated (GtkWidget *widget)
+header_bar_button_css_changed (GtkWidget *widget,
+			       GtkCssStyleChange *change)
 {
 	EHeaderBarButton *self = E_HEADER_BAR_BUTTON (widget);
 
 	/* Chain up to parent's method. */
-	GTK_WIDGET_CLASS (e_header_bar_button_parent_class)->style_updated (widget);
+	GTK_WIDGET_CLASS (e_header_bar_button_parent_class)->css_changed (widget, change);
 
 	self->priv->last_labeled_button_width = -1;
 	self->priv->last_icon_only_button_width = -1;
-}
-
-static void
-header_bar_button_show_all (GtkWidget *widget)
-{
-	/* visibility of the labeled/only-icon buttons already set, thus do not change them both */
 }
 
 static void
@@ -330,8 +325,7 @@ e_header_bar_button_class_init (EHeaderBarButtonClass *class)
 	object_class->finalize = header_bar_button_finalize;
 
 	widget_class = GTK_WIDGET_CLASS (class);
-	widget_class->style_updated = header_bar_button_style_updated;
-	widget_class->show_all = header_bar_button_show_all;
+	widget_class->css_changed = header_bar_button_css_changed;
 	widget_class->unmap = header_bar_button_unmap;
 
 	g_object_class_install_property (

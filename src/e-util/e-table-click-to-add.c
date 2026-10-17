@@ -36,7 +36,6 @@
 #include "e-table-header.h"
 #include "e-table-one.h"
 #include "e-text.h"
-#include "gal-a11y-e-table-click-to-add.h"
 
 enum {
 	CURSOR_CHANGE,
@@ -344,7 +343,7 @@ static gint
 item_key_press (ETableItem *item,
                 gint row,
                 gint col,
-                GdkEvent *event,
+                GnomeCanvasEvent *event,
                 ETableClickToAdd *etcta)
 {
 	switch (event->key.keyval) {
@@ -434,18 +433,18 @@ finish_editing (ETableClickToAdd *etcta)
  * it creates the ETableItem and passes in some events. */
 static gint
 etcta_event (GnomeCanvasItem *item,
-             GdkEvent *e)
+             GnomeCanvasEvent *e)
 {
 	ETableClickToAdd *etcta = E_TABLE_CLICK_TO_ADD (item);
 
 	switch (e->type) {
-	case GDK_FOCUS_CHANGE:
+	case GNOME_CANVAS_FOCUS_CHANGE:
 		if (!e->focus_change.in)
 			return TRUE;
 		/* coverity[fallthrough] */
 		/* falls through */
 
-	case GDK_BUTTON_PRESS:
+	case GNOME_CANVAS_BUTTON_PRESS:
 		if (etcta->text) {
 			g_object_run_dispose (G_OBJECT (etcta->text));
 			etcta->text = NULL;
@@ -491,7 +490,7 @@ etcta_event (GnomeCanvasItem *item,
 		}
 		break;
 
-	case GDK_KEY_PRESS:
+	case GNOME_CANVAS_KEY_PRESS:
 		switch (e->key.keyval) {
 		case GDK_KEY_Tab:
 		case GDK_KEY_KP_Tab:
@@ -651,13 +650,11 @@ e_table_click_to_add_class_init (ETableClickToAddClass *class)
 		g_cclosure_marshal_VOID__VOID,
 		G_TYPE_NONE, 0);
 
-	gal_a11y_e_table_click_to_add_init ();
 }
 
 static void
 e_table_click_to_add_init (ETableClickToAdd *etcta)
 {
-	AtkObject *a11y;
 
 	etcta->one = NULL;
 	etcta->model = NULL;
@@ -681,10 +678,7 @@ e_table_click_to_add_init (ETableClickToAdd *etcta)
 	e_canvas_item_set_reflow_callback (GNOME_CANVAS_ITEM (etcta), etcta_reflow);
 
 	/* create its a11y object at this time if accessibility is enabled*/
-	if (atk_get_root () != NULL) {
-		a11y = atk_gobject_accessible_for_object (G_OBJECT (etcta));
-		atk_object_set_name (a11y, _("click to add"));
-	}
+
 }
 
 /* The colors in this need to be themefied. */

@@ -514,8 +514,7 @@ e_month_widget_constructed (GObject *object)
 
 	self->priv->css_provider = gtk_css_provider_new ();
 
-	if (!gtk_css_provider_load_from_data (self->priv->css_provider,
-		"EMonthWidget ." CSS_CLASS_SELECTED " {"
+	if (!gtk_css_provider_load_from_string (self->priv->css_provider, "EMonthWidget ." CSS_CLASS_SELECTED " {"
 		"   background-color:@theme_selected_bg_color;"
 		"   color:@theme_selected_fg_color;"
 		"   border-radius:4px;"
@@ -540,8 +539,7 @@ e_month_widget_constructed (GObject *object)
 		"   border-width:2px;"
 		"   border-color:darker(@theme_selected_bg_color);"
 		"   border-style:solid;"
-		"}",
-		-1, &error)) {
+		"}")) {
 		g_warning ("%s: Failed to parse CSS: %s", G_STRFUNC, error ? error->message : "Unknown error");
 		g_clear_error (&error);
 	}
@@ -550,7 +548,7 @@ e_month_widget_constructed (GObject *object)
 
 	style_context = gtk_widget_get_style_context (GTK_WIDGET (self->priv->grid));
 	gtk_style_context_add_provider (style_context, style_provider, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-	gtk_style_context_add_class (style_context, GTK_STYLE_CLASS_VIEW);
+	gtk_style_context_add_class (style_context, "view");
 
 	attrs_small = pango_attr_list_new ();
 	pango_attr_list_insert (attrs_small, pango_attr_scale_new (PANGO_SCALE_SMALL));

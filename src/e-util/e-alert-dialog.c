@@ -203,7 +203,7 @@ alert_dialog_constructed (GObject *object)
 
 	container = widget;
 
-	widget = e_alert_create_image (alert, GTK_ICON_SIZE_DIALOG);
+	widget = e_alert_create_image (alert, GTK_ICON_SIZE_LARGE);
 	gtk_widget_set_halign (widget, GTK_ALIGN_START);
 	gtk_widget_set_valign (widget, GTK_ALIGN_START);
 	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);

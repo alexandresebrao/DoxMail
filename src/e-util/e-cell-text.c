@@ -45,8 +45,6 @@
 
 #include <libgnomecanvas/libgnomecanvas.h>
 
-#include "gal-a11y-e-cell-registry.h"
-#include "gal-a11y-e-cell-text.h"
 #include "e-canvas.h"
 #include "e-cell-text.h"
 #include "e-table-item.h"
@@ -385,7 +383,7 @@ ect_realize (ECellView *ecell_view)
 {
 	ECellTextView *text_view = (ECellTextView *) ecell_view;
 
-	text_view->i_cursor = gdk_cursor_new_from_name (gtk_widget_get_display (GTK_WIDGET (((GnomeCanvasItem *) ecell_view->e_table_item_view)->canvas)), "text");
+	text_view->i_cursor = gdk_cursor_new_from_name ("text", NULL);
 
 	if (E_CELL_CLASS (e_cell_text_parent_class)->realize)
 		(* E_CELL_CLASS (e_cell_text_parent_class)->realize) (ecell_view);
@@ -978,7 +976,7 @@ ect_edit_select_all (ECellTextView *text_view)
 }
 
 static gboolean
-key_begins_editing (GdkEvent *event)
+key_begins_editing (GnomeCanvasEvent *event)
 {
 	if (event->length == 0)
 		return FALSE;
@@ -991,7 +989,7 @@ key_begins_editing (GdkEvent *event)
  */
 static gint
 ect_event (ECellView *ecell_view,
-           GdkEvent *event,
+           GnomeCanvasEvent *event,
            gint model_col,
            gint view_col,
            gint row,
@@ -1019,9 +1017,9 @@ ect_event (ECellView *ecell_view,
 
 	e_tep_event.type = event->type;
 	switch (event->type) {
-	case GDK_FOCUS_CHANGE:
+	case GNOME_CANVAS_FOCUS_CHANGE:
 		break;
-	case GDK_KEY_PRESS: /* Fall Through */
+	case GNOME_CANVAS_KEY_PRESS: /* Fall Through */
 		if (edit_display) {
 			edit->show_cursor = FALSE;
 		} else {
@@ -1029,12 +1027,12 @@ ect_event (ECellView *ecell_view,
 		}
 		return_val = TRUE;
 		/* Fallthrough */
-	case GDK_KEY_RELEASE:
+	case GNOME_CANVAS_KEY_RELEASE:
 		preedit_len = edit_display ? edit->preedit_length : 0;
 		if (edit_display && edit->im_context &&
 				gtk_im_context_filter_keypress (\
 					edit->im_context,
-					(GdkEvent *) event)) {
+					(GnomeCanvasEvent *) event)) {
 
 			edit->need_im_reset = TRUE;
 			if (preedit_len && flags & E_CELL_PREEDIT)
@@ -1059,10 +1057,10 @@ ect_event (ECellView *ecell_view,
 			  edit_display = TRUE;
 		}
 		if (edit_display) {
-			GdkEvent key = event->key;
-			if (key.type == GDK_KEY_PRESS &&
+			GnomeCanvasEvent key = event->key;
+			if (key.type == GNOME_CANVAS_KEY_PRESS &&
 			    (key.keyval == GDK_KEY_KP_Enter || key.keyval == GDK_KEY_Return)) {
-				/* stop editing when it's only GDK_KEY_PRESS event */
+				/* stop editing when it's only GNOME_CANVAS_KEY_PRESS event */
 				e_table_item_leave_edit_ (text_view->cell_view.e_table_item_view);
 			} else {
 				e_tep_event.key.time = key.time;
@@ -1090,36 +1088,36 @@ ect_event (ECellView *ecell_view,
 		}
 
 		break;
-	case GDK_BUTTON_PRESS: /* Fall Through */
+	case GNOME_CANVAS_BUTTON_PRESS: /* Fall Through */
 		d (press = TRUE);
-	case GDK_BUTTON_RELEASE:
-		d (g_print ("%s: %s\n", G_STRFUNC, press ? "GDK_BUTTON_PRESS" : "GDK_BUTTON_RELEASE"));
+	case GNOME_CANVAS_BUTTON_RELEASE:
+		d (g_print ("%s: %s\n", G_STRFUNC, press ? "GNOME_CANVAS_BUTTON_PRESS" : "GNOME_CANVAS_BUTTON_RELEASE"));
 		event->button.x -= 4;
 		event->button.y -= 1;
 		if ((!edit_display)
 		    && e_table_model_is_cell_editable (ecell_view->e_table_model, model_col, row)
-		    && event->type == GDK_BUTTON_RELEASE
+		    && event->type == GNOME_CANVAS_BUTTON_RELEASE
 		    && event->button.button == 1) {
-			GdkEvent button = event->button;
+			GnomeCanvasEvent button = event->button;
 
 			e_table_item_enter_edit (text_view->cell_view.e_table_item_view, view_col, row);
 			edit = text_view->edit;
 			edit_display = TRUE;
 
-			e_tep_event.button.type = GDK_BUTTON_PRESS;
+			e_tep_event.button.type = GNOME_CANVAS_BUTTON_PRESS;
 			e_tep_event.button.time = button.time;
 			e_tep_event.button.state = button.state;
 			e_tep_event.button.button = button.button;
 			e_tep_event.button.position = get_position_from_xy (edit, event->button.x, event->button.y);
 			e_tep_event.button.device =
-				gdk_event_get_device (event);
+				gnome_canvas_event_get_device (event);
 			_get_tep (edit);
 			edit->actions = 0;
 			return_val = e_text_event_processor_handle_event (
 				edit->tep, &e_tep_event);
 			*actions = edit->actions;
 			if (event->button.button == 1) {
-				if (event->type == GDK_BUTTON_PRESS)
+				if (event->type == GNOME_CANVAS_BUTTON_PRESS)
 					edit->button_down = TRUE;
 				else
 					edit->button_down = FALSE;
@@ -1128,23 +1126,23 @@ ect_event (ECellView *ecell_view,
 			edit->lasty = button.y;
 			edit->last_state = button.state;
 
-			e_tep_event.button.type = GDK_BUTTON_RELEASE;
+			e_tep_event.button.type = GNOME_CANVAS_BUTTON_RELEASE;
 		}
 		if (edit_display) {
-			GdkEvent button = event->button;
+			GnomeCanvasEvent button = event->button;
 			e_tep_event.button.time = button.time;
 			e_tep_event.button.state = button.state;
 			e_tep_event.button.button = button.button;
 			e_tep_event.button.position = get_position_from_xy (edit, event->button.x, event->button.y);
 			e_tep_event.button.device =
-				gdk_event_get_device (event);
+				gnome_canvas_event_get_device (event);
 			_get_tep (edit);
 			edit->actions = 0;
 			return_val = e_text_event_processor_handle_event (
 				edit->tep, &e_tep_event);
 			*actions = edit->actions;
 			if (event->button.button == 1) {
-				if (event->type == GDK_BUTTON_PRESS)
+				if (event->type == GNOME_CANVAS_BUTTON_PRESS)
 					edit->button_down = TRUE;
 				else
 					edit->button_down = FALSE;
@@ -1154,11 +1152,11 @@ ect_event (ECellView *ecell_view,
 			edit->last_state = button.state;
 		}
 		break;
-	case GDK_MOTION_NOTIFY:
+	case GNOME_CANVAS_MOTION_NOTIFY:
 		event->motion.x -= 4;
 		event->motion.y -= 1;
 		if (edit_display) {
-			GdkEvent motion = event->motion;
+			GnomeCanvasEvent motion = event->motion;
 			e_tep_event.motion.time = motion.time;
 			e_tep_event.motion.state = motion.state;
 			e_tep_event.motion.position = get_position_from_xy (edit, event->motion.x, event->motion.y);
@@ -1172,7 +1170,7 @@ ect_event (ECellView *ecell_view,
 			edit->last_state = motion.state;
 		}
 		break;
-	case GDK_ENTER_NOTIFY:
+	case GNOME_CANVAS_ENTER_NOTIFY:
 #if 0
 		edit->pointer_in = TRUE;
 #endif
@@ -1186,7 +1184,7 @@ ect_event (ECellView *ecell_view,
 			}
 		}
 		break;
-	case GDK_LEAVE_NOTIFY:
+	case GNOME_CANVAS_LEAVE_NOTIFY:
 #if 0
 		text_view->pointer_in = FALSE;
 #endif
@@ -1938,7 +1936,6 @@ e_cell_text_class_init (ECellTextClass *class)
 		}
 	}
 
-	gal_a11y_e_cell_registry_add_cell_type (NULL, E_TYPE_CELL_TEXT, gal_a11y_e_cell_text_new);
 }
 
 /* IM Context Callbacks */
@@ -2291,7 +2288,7 @@ _blink_scroll_timeout (gpointer data)
 		}
 		if (redraw) {
 			ETextEventProcessorEvent e_tep_event;
-			e_tep_event.type = GDK_MOTION_NOTIFY;
+			e_tep_event.type = GNOME_CANVAS_MOTION_NOTIFY;
 			e_tep_event.motion.state = edit->last_state;
 			e_tep_event.motion.time = 0;
 			e_tep_event.motion.position = get_position_from_xy (edit, edit->lastx, edit->lasty);
@@ -2756,7 +2753,7 @@ e_cell_text_view_supply_selection (CellEdit *edit,
 #if DO_SELECTION
 	GdkClipboard *clipboard;
 
-	clipboard = gtk_widget_get_clipboard (GTK_WIDGET (edit->text_view->canvas), selection);
+	clipboard = gtk_widget_get_clipboard (GTK_WIDGET (edit->text_view->canvas));
 
 	if (selection == E_GTK_SELECTION_PRIMARY) {
 		edit->has_selection = TRUE;
@@ -2797,8 +2794,7 @@ e_cell_text_view_get_selection (CellEdit *edit,
 {
 #if DO_SELECTION
 	e_gtk_clipboard_request_text (
-		gtk_widget_get_clipboard (GTK_WIDGET (edit->text_view->canvas),
-		selection),
+		gtk_widget_get_clipboard (GTK_WIDGET (edit->text_view->canvas)),
 		paste_received, edit);
 #endif
 }

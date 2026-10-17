@@ -43,9 +43,9 @@ get_button_padding (GtkWidget *widget,
 	state_flags = gtk_widget_get_state_flags (widget);
 
 	gtk_style_context_save (context);
-	gtk_style_context_add_class (context, GTK_STYLE_CLASS_BUTTON);
+	gtk_style_context_add_class (context, "button");
 	gtk_style_context_set_state (context, state_flags);
-	gtk_style_context_get_padding (context, state_flags, padding);
+	gtk_style_context_get_padding (context, padding);
 
 	gtk_style_context_restore (context);
 }
@@ -149,9 +149,9 @@ e_table_header_draw_button (cairo_t *cr,
 
 	gtk_style_context_save (context);
 	gtk_style_context_set_state (context, state_flags);
-	gtk_style_context_add_class (context, GTK_STYLE_CLASS_BUTTON);
+	gtk_style_context_add_class (context, "button");
 
-	gtk_style_context_get_padding (context, state_flags, &padding);
+	gtk_style_context_get_padding (context, &padding);
 
 	gtk_render_background (
 		context, cr, x, y,

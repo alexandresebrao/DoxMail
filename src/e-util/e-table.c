@@ -51,7 +51,6 @@
 #include "e-text.h"
 #include "e-unicode.h"
 #include "e-misc-utils.h"
-#include "gal-a11y-e-table.h"
 
 #define COLUMN_HEADER_HEIGHT 16
 
@@ -859,7 +858,7 @@ static void
 group_double_click (ETableGroup *etg,
                     gint row,
                     gint col,
-                    GdkEvent *event,
+                    GnomeCanvasEvent *event,
                     ETable *et)
 {
 	g_signal_emit (et, et_signals[DOUBLE_CLICK], 0, row, col, event);
@@ -869,7 +868,7 @@ static gboolean
 group_right_click (ETableGroup *etg,
                    gint row,
                    gint col,
-                   GdkEvent *event,
+                   GnomeCanvasEvent *event,
                    ETable *et)
 {
 	gboolean return_val = FALSE;
@@ -885,7 +884,7 @@ static gboolean
 group_click (ETableGroup *etg,
              gint row,
              gint col,
-             GdkEvent *event,
+             GnomeCanvasEvent *event,
              ETable *et)
 {
 	gboolean return_val = 0;
@@ -901,11 +900,11 @@ static gboolean
 group_key_press (ETableGroup *etg,
                  gint row,
                  gint col,
-                 GdkEvent *event,
+                 GnomeCanvasEvent *event,
                  ETable *et)
 {
 	gboolean return_val = FALSE;
-	GdkEvent *key = (GdkEvent *) event;
+	GnomeCanvasEvent *key = (GnomeCanvasEvent *) event;
 	gint y, row_local = -1, col_local = -1;
 	GtkAdjustment *adjustment;
 	GtkScrollable *scrollable;
@@ -983,7 +982,7 @@ static gboolean
 group_start_drag (ETableGroup *etg,
                   gint row,
                   gint col,
-                  GdkEvent *event,
+                  GnomeCanvasEvent *event,
                   ETable *et)
 {
 	gboolean return_val = TRUE;
@@ -1286,7 +1285,7 @@ focus_first_etable_item (ETableGroup *group)
 
 static gboolean
 white_item_event (GnomeCanvasItem *white_item,
-                  GdkEvent *event,
+                  GnomeCanvasEvent *event,
                   ETable *e_table)
 {
 	gboolean return_val = FALSE;
@@ -1298,9 +1297,9 @@ white_item_event (GnomeCanvasItem *white_item,
 	if (!return_val && event && e_table->group) {
 		guint event_button = 0;
 
-		e_gdk_event_get_button (event, &event_button);
+		gnome_canvas_event_get_button (event, &event_button);
 
-		if (event->type == GDK_BUTTON_PRESS && (event_button == 1 || event_button == 2)) {
+		if (event->type == GNOME_CANVAS_BUTTON_PRESS && (event_button == 1 || event_button == 2)) {
 			focus_first_etable_item (e_table->group);
 			return_val = TRUE;
 		}
@@ -1325,13 +1324,13 @@ et_eti_leave_edit (ETable *et)
 
 static gint
 et_canvas_root_event (GnomeCanvasItem *root,
-                      GdkEvent *event,
+                      GnomeCanvasEvent *event,
                       ETable *e_table)
 {
 	switch (event->type) {
-	case GDK_BUTTON_PRESS:
-	case GDK_2BUTTON_PRESS:
-	case GDK_BUTTON_RELEASE:
+	case GNOME_CANVAS_BUTTON_PRESS:
+	case GNOME_CANVAS_2BUTTON_PRESS:
+	case GNOME_CANVAS_BUTTON_RELEASE:
 		if (event->button.button != 4 && event->button.button != 5) {
 			et_eti_leave_edit (e_table);
 			return TRUE;
@@ -1349,7 +1348,7 @@ et_canvas_root_event (GnomeCanvasItem *root,
  */
 static gint
 table_canvas_focus_event_cb (GtkWidget *widget,
-                             GdkEvent *event,
+                             GnomeCanvasEvent *event,
                              gpointer data)
 {
 	GnomeCanvas *canvas;
@@ -1395,11 +1394,11 @@ table_canvas_focus_event_cb (GtkWidget *widget,
 
 static gboolean
 canvas_vbox_event (ECanvasVbox *vbox,
-                   GdkEvent *key,
+                   GnomeCanvasEvent *key,
                    ETable *etable)
 {
-	if (key->type != GDK_KEY_PRESS  &&
-		key->type != GDK_KEY_RELEASE) {
+	if (key->type != GNOME_CANVAS_KEY_PRESS  &&
+		key->type != GNOME_CANVAS_KEY_RELEASE) {
 		return FALSE;
 	}
 	switch (key->keyval) {
@@ -1430,11 +1429,11 @@ click_to_add_is_editing_changed_cb (ETableClickToAdd *etcta,
 
 static gboolean
 click_to_add_event (ETableClickToAdd *etcta,
-                    GdkEvent *key,
+                    GnomeCanvasEvent *key,
                     ETable *etable)
 {
-	if (key->type != GDK_KEY_PRESS  &&
-		key->type != GDK_KEY_RELEASE) {
+	if (key->type != GNOME_CANVAS_KEY_PRESS  &&
+		key->type != GNOME_CANVAS_KEY_RELEASE) {
 		return FALSE;
 	}
 	switch (key->keyval) {
@@ -2569,7 +2568,7 @@ struct _GtkDragSourceInfo
   gint button;			  /* mouse button starting drag */
 
   GtkDragStatus      status;	  /* drag status */
-  GdkEvent          *last_event;  /* motion event waiting for response */
+  GnomeCanvasEvent          *last_event;  /* motion event waiting for response */
 
   gint               start_x, start_y; /* Initial position */
   gint               cur_x, cur_y;     /* Current Position */
@@ -2728,7 +2727,7 @@ static gint
 et_real_start_drag (ETable *table,
                     gint row,
                     gint col,
-                    GdkEvent *event)
+                    GnomeCanvasEvent *event)
 {
 	GtkDragSourceInfo *info;
 	EGtkDragContext *context;
@@ -2858,7 +2857,7 @@ e_table_drag_begin (ETable *table,
                     EGtkTargetList *targets,
                     GdkDragAction actions,
                     gint button,
-                    GdkEvent *event)
+                    GnomeCanvasEvent *event)
 {
 	g_return_val_if_fail (E_IS_TABLE (table), NULL);
 
@@ -3238,7 +3237,7 @@ e_table_class_init (ETableClass *class)
 		G_TYPE_NONE, 3,
 		G_TYPE_INT,
 		G_TYPE_INT,
-		GDK_TYPE_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
+		GNOME_TYPE_CANVAS_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
 
 	et_signals[RIGHT_CLICK] = g_signal_new (
 		"right_click",
@@ -3250,7 +3249,7 @@ e_table_class_init (ETableClass *class)
 		G_TYPE_BOOLEAN, 3,
 		G_TYPE_INT,
 		G_TYPE_INT,
-		GDK_TYPE_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
+		GNOME_TYPE_CANVAS_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
 
 	et_signals[CLICK] = g_signal_new (
 		"click",
@@ -3262,7 +3261,7 @@ e_table_class_init (ETableClass *class)
 		G_TYPE_BOOLEAN, 3,
 		G_TYPE_INT,
 		G_TYPE_INT,
-		GDK_TYPE_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
+		GNOME_TYPE_CANVAS_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
 
 	et_signals[KEY_PRESS] = g_signal_new (
 		"key_press",
@@ -3274,7 +3273,7 @@ e_table_class_init (ETableClass *class)
 		G_TYPE_BOOLEAN, 3,
 		G_TYPE_INT,
 		G_TYPE_INT,
-		GDK_TYPE_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
+		GNOME_TYPE_CANVAS_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
 
 	et_signals[START_DRAG] = g_signal_new (
 		"start_drag",
@@ -3286,7 +3285,7 @@ e_table_class_init (ETableClass *class)
 		G_TYPE_BOOLEAN, 3,
 		G_TYPE_INT,
 		G_TYPE_INT,
-		GDK_TYPE_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
+		GNOME_TYPE_CANVAS_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
 
 	et_signals[STATE_CHANGE] = g_signal_new (
 		"state_change",
@@ -3305,7 +3304,7 @@ e_table_class_init (ETableClass *class)
 		g_signal_accumulator_true_handled, NULL,
 		e_marshal_BOOLEAN__BOXED,
 		G_TYPE_BOOLEAN, 1,
-		GDK_TYPE_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
+		GNOME_TYPE_CANVAS_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
 
 	et_signals[TABLE_DRAG_BEGIN] = g_signal_new (
 		"table_drag_begin",
@@ -3508,8 +3507,6 @@ e_table_class_init (ETableClass *class)
 	g_object_class_override_property (
 		object_class, PROP_VSCROLL_POLICY, "vscroll-policy");
 
-	gtk_widget_class_set_accessible_type (widget_class,
-		GAL_A11Y_TYPE_E_TABLE);
 }
 
 static gboolean

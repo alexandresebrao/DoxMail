@@ -11,6 +11,7 @@
 #define E_UI_PARSER_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 
 #include <e-util/e-ui-action.h>
 #include <e-util/e-util-enums.h>

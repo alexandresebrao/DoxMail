@@ -1419,7 +1419,7 @@ buttons_table_write_button (GString *buffer,
 	if (icon) {
 		gint icon_width, icon_height;
 
-		if (!gtk_icon_size_lookup (GTK_ICON_SIZE_BUTTON, &icon_width, &icon_height)) {
+		if (!gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &icon_width, &icon_height)) {
 			icon_width = 16;
 			icon_height = 16;
 		}
@@ -1430,7 +1430,7 @@ buttons_table_write_button (GString *buffer,
 			"<div><img src=\"gtk-stock://%s?size=%d\" width=\"%dpx\" height=\"%dpx\"> <span>%s</span></div>"
 			"</button>%s</td>\n",
 			colspan, name, itip_part_ptr, response, name, access_key ? access_key : "" , icon,
-			GTK_ICON_SIZE_BUTTON, icon_width, icon_height, html_label, hint ? hint : "");
+			GTK_ICON_SIZE_NORMAL, icon_width, icon_height, html_label, hint ? hint : "");
 	} else {
 		g_string_append_printf (
 			buffer,
@@ -2248,7 +2248,7 @@ itip_view_write (gpointer itip_part_ptr,
 
 	itip_part->alternative_html = itip_view_dup_alternative_html (itip_part_ptr, &itip_part->alternative_html_is_from_plain_text);
 
-	if (!gtk_icon_size_lookup (GTK_ICON_SIZE_BUTTON, &icon_width, &icon_height)) {
+	if (!gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &icon_width, &icon_height)) {
 		icon_width = 16;
 		icon_height = 16;
 	}
@@ -2258,7 +2258,7 @@ itip_view_write (gpointer itip_part_ptr,
 	g_string_append_printf (
 		buffer,
 		"<img src=\"gtk-stock://%s?size=%d\" class=\"itip icon\" width=\"%dpx\" height=\"%dpx\"/>\n",
-			MEETING_ICON, GTK_ICON_SIZE_BUTTON, icon_width, icon_height);
+			MEETING_ICON, GTK_ICON_SIZE_NORMAL, icon_width, icon_height);
 
 	/* The first section listing the sender */
 	/* FIXME What to do if the send and organizer do not match */
@@ -2340,7 +2340,7 @@ itip_view_write (gpointer itip_part_ptr,
 			#undef SWAP
 		}
 
-		if (!gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, &icon_width, &icon_height)) {
+		if (!gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &icon_width, &icon_height)) {
 			icon_width = 16;
 			icon_height = 16;
 		}
@@ -2353,8 +2353,8 @@ itip_view_write (gpointer itip_part_ptr,
 			" src=\"gtk-stock://%s?size=%d&amp;color-scheme=dark\" othersrc=\"gtk-stock://%s?size=%d&amp;color-scheme=dark\" style=\"vertical-align:center;\" class=\"-evo-color-scheme-dark\">&nbsp;"
 			"<span id=\"itip-view-alternative-html-%p-spn\" othertext=\"%s\" style=\"vertical-align:center;\">%s</span></span><br>",
 			itip_part, itip_part,
-			itip_part, icon_width, icon_height, img, GTK_ICON_SIZE_MENU, other_img, GTK_ICON_SIZE_MENU, /* light color scheme image */
-			itip_part, icon_width, icon_height, img, GTK_ICON_SIZE_MENU, other_img, GTK_ICON_SIZE_MENU, /* dark color scheme image */
+			itip_part, icon_width, icon_height, img, GTK_ICON_SIZE_NORMAL, other_img, GTK_ICON_SIZE_NORMAL, /* light color scheme image */
+			itip_part, icon_width, icon_height, img, GTK_ICON_SIZE_NORMAL, other_img, GTK_ICON_SIZE_NORMAL, /* dark color scheme image */
 			itip_part,
 			other_text, text);
 

@@ -207,7 +207,7 @@ e_online_button_set_online (EOnlineButton *button,
 
 	/* Prevent GTK+ from scaling these rectangular icons. */
 	icon_info = gtk_icon_theme_lookup_icon (
-		icon_theme, icon_name, GTK_ICON_SIZE_BUTTON, 0);
+		icon_theme, icon_name, GTK_ICON_SIZE_NORMAL, 0);
 	filename = gtk_icon_info_get_filename (icon_info);
 	online_button_update_icon (image, filename);
 	g_object_unref (icon_info);

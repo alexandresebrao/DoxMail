@@ -2231,7 +2231,7 @@ web_view_submit_alert (EAlertSink *alert_sink,
 	if (secondary_text == NULL)
 		secondary_text = "";
 
-	if (!gtk_icon_size_lookup (GTK_ICON_SIZE_DIALOG, &icon_width, &icon_height)) {
+	if (!gtk_icon_size_lookup (GTK_ICON_SIZE_LARGE, &icon_width, &icon_height)) {
 		icon_width = 48;
 		icon_height = 48;
 	}
@@ -2268,7 +2268,7 @@ web_view_submit_alert (EAlertSink *alert_sink,
 		"</td>"
 		"</tr>",
 		icon_name,
-		GTK_ICON_SIZE_DIALOG,
+		GTK_ICON_SIZE_LARGE,
 		icon_width,
 		icon_height,
 		primary_text,
@@ -3306,7 +3306,7 @@ e_web_view_show_popup_menu (EWebView *web_view,
 
 	ui_manager = e_web_view_get_ui_manager (web_view);
 	ui_item = e_ui_manager_create_item (ui_manager, "context");
-	menu = GTK_MENU (gtk_menu_new_from_model (G_MENU_MODEL (ui_item)));
+	menu = GTK_MENU (gtk_popover_menu_new_from_model (G_MENU_MODEL (ui_item)));
 	g_clear_object (&ui_item);
 
 	gtk_menu_attach_to_widget (menu, GTK_WIDGET (web_view), NULL);
@@ -3515,7 +3515,7 @@ e_web_view_update_fonts_settings (GSettings *font_settings,
 
 			gtk_style_context_save (context);
 			gtk_style_context_set_state (context, state);
-			gtk_style_context_get_color (context, state, link);
+			gtk_style_context_get_color (context, link);
 			gtk_style_context_restore (context);
 		}
 
@@ -3529,7 +3529,7 @@ e_web_view_update_fonts_settings (GSettings *font_settings,
 
 			gtk_style_context_save (context);
 			gtk_style_context_set_state (context, state);
-			gtk_style_context_get_color (context, state, visited);
+			gtk_style_context_get_color (context, visited);
 			gtk_style_context_restore (context);
 		}
 

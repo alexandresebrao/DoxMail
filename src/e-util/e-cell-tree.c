@@ -37,8 +37,6 @@
 #include <gtk/gtk.h>
 #include <libgnomecanvas/libgnomecanvas.h>
 
-#include "gal-a11y-e-cell-registry.h"
-#include "gal-a11y-e-cell-tree.h"
 
 #include "e-cell-tree.h"
 #include "e-table-item.h"
@@ -235,7 +233,7 @@ draw_expander (ECellTreeView *ectv,
 
 	gtk_style_context_save (style_context);
 
-	gtk_style_context_add_class (style_context, GTK_STYLE_CLASS_EXPANDER);
+	gtk_style_context_add_class (style_context, "expander");
 
 	switch (state) {
 		case GTK_STATE_PRELIGHT:
@@ -339,17 +337,17 @@ ect_draw (ECellView *ecell_view,
 }
 
 static void
-adjust_event_position (GdkEvent *event,
+adjust_event_position (GnomeCanvasEvent *event,
                        gint offset)
 {
 	switch (event->type) {
-	case GDK_BUTTON_PRESS:
-	case GDK_BUTTON_RELEASE:
-	case GDK_2BUTTON_PRESS:
-	case GDK_3BUTTON_PRESS:
+	case GNOME_CANVAS_BUTTON_PRESS:
+	case GNOME_CANVAS_BUTTON_RELEASE:
+	case GNOME_CANVAS_2BUTTON_PRESS:
+	case GNOME_CANVAS_3BUTTON_PRESS:
 		event->button.x += offset;
 		break;
-	case GDK_MOTION_NOTIFY:
+	case GNOME_CANVAS_MOTION_NOTIFY:
 		event->motion.x += offset;
 		break;
 	default:
@@ -358,14 +356,14 @@ adjust_event_position (GdkEvent *event,
 }
 
 static gboolean
-event_in_expander (GdkEvent *event,
+event_in_expander (GnomeCanvasEvent *event,
                    gint offset,
                    gint height)
 {
 	switch (event->type) {
-	case GDK_BUTTON_PRESS:
+	case GNOME_CANVAS_BUTTON_PRESS:
 		return (event->button.x > (offset - INDENT_AMOUNT) && event->button.x < offset);
-	case GDK_MOTION_NOTIFY:
+	case GNOME_CANVAS_MOTION_NOTIFY:
 		return (event->motion.x > (offset - INDENT_AMOUNT) && event->motion.x < offset &&
 			event->motion.y > 2 && event->motion.y < (height - 2));
 	default:
@@ -436,7 +434,7 @@ animate_expander (gpointer data)
  */
 static gint
 ect_event (ECellView *ecell_view,
-           GdkEvent *event,
+           GnomeCanvasEvent *event,
            gint model_col,
            gint view_col,
            gint row,
@@ -457,7 +455,7 @@ ect_event (ECellView *ecell_view,
 	window = gtk_layout_get_bin_window (layout);
 
 	switch (event->type) {
-	case GDK_BUTTON_PRESS:
+	case GNOME_CANVAS_BUTTON_PRESS:
 
 		if (E_CELL_TREE (tree_view->cell_view.ecell)->show_expander &&
 		    event_in_expander (event, offset, 0)) {
@@ -500,7 +498,7 @@ ect_event (ECellView *ecell_view,
 			return FALSE;
 		break;
 
-	case GDK_MOTION_NOTIFY:
+	case GNOME_CANVAS_MOTION_NOTIFY:
 
 		if (E_CELL_TREE (tree_view->cell_view.ecell)->show_expander &&
 		    e_tree_model_node_is_expandable (tree_model, node)) {
@@ -532,7 +530,7 @@ ect_event (ECellView *ecell_view,
 		}
 		break;
 
-	case GDK_LEAVE_NOTIFY:
+	case GNOME_CANVAS_LEAVE_NOTIFY:
 
 		if (tree_view->prelit) {
 			gint tmp_row = row;
@@ -819,7 +817,6 @@ e_cell_tree_class_init (ECellTreeClass *class)
 	ecc->max_width = ect_max_width;
 	ecc->get_bg_color = ect_get_bg_color;
 
-	gal_a11y_e_cell_registry_add_cell_type (NULL, E_TYPE_CELL_TREE, gal_a11y_e_cell_tree_new);
 }
 
 static void

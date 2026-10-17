@@ -28,6 +28,8 @@
 #define _E_CELL_H_
 
 #include <gtk/gtk.h>
+#include <libgnomecanvas/libgnomecanvas.h>
+#include <e-util/e-gtk4-compat.h>
 
 #include <e-util/e-table-model.h>
 
@@ -125,7 +127,7 @@ struct _ECellClass {
 						 gint x2,
 						 gint y2);
 	gint		(*event)		(ECellView *ecell_view,
-						 GdkEvent *event,
+						 GnomeCanvasEvent *event,
 						 gint model_col,
 						 gint view_col,
 						 gint row,
@@ -206,7 +208,7 @@ void		e_cell_kill_view		(ECellView *ecell_view);
 
 /* Cell View methods. */
 gint		e_cell_event			(ECellView *ecell_view,
-						 GdkEvent *event,
+						 GnomeCanvasEvent *event,
 						 gint model_col,
 						 gint view_col,
 						 gint row,

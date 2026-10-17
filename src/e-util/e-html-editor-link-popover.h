@@ -11,6 +11,7 @@
 #define E_HTML_EDITOR_LINK_POPOVER_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 #include <e-util/e-html-editor.h>
 
 #define E_TYPE_HTML_EDITOR_LINK_POPOVER (e_html_editor_link_popover_get_type ())

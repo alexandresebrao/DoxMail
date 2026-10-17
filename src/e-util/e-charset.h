@@ -25,6 +25,7 @@
 #define E_CHARSET_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 
 G_BEGIN_DECLS
 

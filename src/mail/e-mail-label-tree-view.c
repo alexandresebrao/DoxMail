@@ -111,7 +111,7 @@ e_mail_label_tree_view_init (EMailLabelTreeView *tree_view)
 		mail_label_tree_view_render_text, tree_view, NULL);
 
 	tree_view->priv->css_provider = gtk_css_provider_new ();
-	gtk_css_provider_load_from_data (tree_view->priv->css_provider, "* { -gtk-icon-style:regular; }", -1, NULL);
+	gtk_css_provider_load_from_string (tree_view->priv->css_provider, "* { -gtk-icon-style:regular; }");
 	gtk_style_context_add_provider (gtk_widget_get_style_context (GTK_WIDGET (tree_view)),
 		GTK_STYLE_PROVIDER (tree_view->priv->css_provider),
 		GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);

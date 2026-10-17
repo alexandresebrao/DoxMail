@@ -473,7 +473,7 @@ void
 e_table_group_double_click (ETableGroup *e_table_group,
                             gint row,
                             gint col,
-                            GdkEvent *event)
+                            GnomeCanvasEvent *event)
 {
 	g_return_if_fail (e_table_group != NULL);
 	g_return_if_fail (E_IS_TABLE_GROUP (e_table_group));
@@ -497,7 +497,7 @@ gboolean
 e_table_group_right_click (ETableGroup *e_table_group,
                            gint row,
                            gint col,
-                           GdkEvent *event)
+                           GnomeCanvasEvent *event)
 {
 	gboolean return_val = FALSE;
 
@@ -525,7 +525,7 @@ gboolean
 e_table_group_click (ETableGroup *table_group,
                      gint row,
                      gint col,
-                     GdkEvent *event)
+                     GnomeCanvasEvent *event)
 {
 	gboolean return_val = FALSE;
 
@@ -552,7 +552,7 @@ gboolean
 e_table_group_key_press (ETableGroup *e_table_group,
                          gint row,
                          gint col,
-                         GdkEvent *event)
+                         GnomeCanvasEvent *event)
 {
 	gboolean return_val = FALSE;
 
@@ -580,7 +580,7 @@ gboolean
 e_table_group_start_drag (ETableGroup *e_table_group,
                           gint row,
                           gint col,
-                          GdkEvent *event)
+                          GnomeCanvasEvent *event)
 {
 	gboolean return_val = FALSE;
 
@@ -613,14 +613,14 @@ e_table_group_get_header (ETableGroup *table_group)
 
 static gint
 etg_event (GnomeCanvasItem *item,
-           GdkEvent *event)
+           GnomeCanvasEvent *event)
 {
 	ETableGroup *table_group = E_TABLE_GROUP (item);
 	gboolean return_val = TRUE;
 
 	switch (event->type) {
 
-	case GDK_FOCUS_CHANGE:
+	case GNOME_CANVAS_FOCUS_CHANGE:
 		table_group->has_focus = event->focus_change.in;
 		return_val = FALSE;
 		break;
@@ -715,7 +715,7 @@ e_table_group_class_init (ETableGroupClass *class)
 		G_TYPE_NONE, 3,
 		G_TYPE_INT,
 		G_TYPE_INT,
-		GDK_TYPE_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
+		GNOME_TYPE_CANVAS_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
 
 	etg_signals[RIGHT_CLICK] = g_signal_new (
 		"right_click",
@@ -727,7 +727,7 @@ e_table_group_class_init (ETableGroupClass *class)
 		G_TYPE_BOOLEAN, 3,
 		G_TYPE_INT,
 		G_TYPE_INT,
-		GDK_TYPE_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
+		GNOME_TYPE_CANVAS_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
 
 	etg_signals[CLICK] = g_signal_new (
 		"click",
@@ -739,7 +739,7 @@ e_table_group_class_init (ETableGroupClass *class)
 		G_TYPE_BOOLEAN, 3,
 		G_TYPE_INT,
 		G_TYPE_INT,
-		GDK_TYPE_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
+		GNOME_TYPE_CANVAS_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
 
 	etg_signals[KEY_PRESS] = g_signal_new (
 		"key_press",
@@ -751,7 +751,7 @@ e_table_group_class_init (ETableGroupClass *class)
 		G_TYPE_BOOLEAN, 3,
 		G_TYPE_INT,
 		G_TYPE_INT,
-		GDK_TYPE_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
+		GNOME_TYPE_CANVAS_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
 
 	etg_signals[START_DRAG] = g_signal_new (
 		"start_drag",
@@ -763,7 +763,7 @@ e_table_group_class_init (ETableGroupClass *class)
 		G_TYPE_BOOLEAN, 3,
 		G_TYPE_INT,
 		G_TYPE_INT,
-		GDK_TYPE_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
+		GNOME_TYPE_CANVAS_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
 }
 
 static void

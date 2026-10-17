@@ -52,7 +52,6 @@
 #include "e-text-event-processor-emacs-like.h"
 #include "e-unicode.h"
 #include "e-misc-utils.h"
-#include "gal-a11y-e-text.h"
 
 #include "e-text.h"
 
@@ -120,7 +119,7 @@ static void calc_height (EText *text);
 static gboolean show_pango_rectangle (EText *text, PangoRectangle rect);
 
 static void	e_text_do_popup			(EText *text,
-						 GdkEvent *event_button,
+						 GnomeCanvasEvent *event_button,
 						 gint position);
 
 static void e_text_update_primary_selection (EText *text);
@@ -1077,8 +1076,8 @@ e_text_realize (GnomeCanvasItem *item)
 
 	create_layout (text);
 
-	text->i_cursor = gdk_cursor_new_from_name (gtk_widget_get_display (GTK_WIDGET (item->canvas)), "text");
-	text->default_cursor = gdk_cursor_new_from_name (gtk_widget_get_display (GTK_WIDGET (item->canvas)), "default");
+	text->i_cursor = gdk_cursor_new_from_name ("text", NULL);
+	text->default_cursor = gdk_cursor_new_from_name ("default", NULL);
 }
 
 /* Unrealize handler for the text item */
@@ -1468,7 +1467,7 @@ _blink_scroll_timeout (gpointer data)
 		if (old_xofs_edit != text->xofs_edit ||
 		    old_yofs_edit != text->yofs_edit) {
 			ETextEventProcessorEvent e_tep_event;
-			e_tep_event.type = GDK_MOTION_NOTIFY;
+			e_tep_event.type = GNOME_CANVAS_MOTION_NOTIFY;
 			e_tep_event.motion.state = text->last_state;
 			e_tep_event.motion.time = 0;
 			e_tep_event.motion.position =
@@ -1578,7 +1577,7 @@ _click (gpointer data)
 
 static gint
 e_text_event (GnomeCanvasItem *item,
-              GdkEvent *event)
+              GnomeCanvasEvent *event)
 {
 	EText *text = E_TEXT (item);
 	ETextEventProcessorEvent e_tep_event;
@@ -1592,10 +1591,10 @@ e_text_event (GnomeCanvasItem *item,
 
 	e_tep_event.type = event->type;
 	switch (event->type) {
-	case GDK_FOCUS_CHANGE:
+	case GNOME_CANVAS_FOCUS_CHANGE:
 		if (text->editable) {
-			GdkEvent *focus_event;
-			focus_event = (GdkEvent *) event;
+			GnomeCanvasEvent *focus_event;
+			focus_event = (GnomeCanvasEvent *) event;
 			if (focus_event->in) {
 				if (text->im_context) {
 					if (!text->im_context_signals_registered) {
@@ -1645,7 +1644,7 @@ e_text_event (GnomeCanvasItem *item,
 		}
 		return_val = 0;
 		break;
-	case GDK_KEY_PRESS:
+	case GNOME_CANVAS_KEY_PRESS:
 
 		/* Handle S-F10 key binding here. */
 
@@ -1653,12 +1652,12 @@ e_text_event (GnomeCanvasItem *item,
 		    && (event->key.state & GDK_SHIFT_MASK)
 		    && text->handle_popup) {
 
-			/* Simulate a GdkEvent here, so that we can
+			/* Simulate a GnomeCanvasEvent here, so that we can
 			 * call e_text_do_popup directly */
 
-			GdkEvent *button_event;
+			GnomeCanvasEvent *button_event;
 
-			button_event = gdk_event_new (GDK_BUTTON_PRESS);
+			button_event = gdk_event_new (GNOME_CANVAS_BUTTON_PRESS);
 			button_event->button.time = event->key.time;
 			button_event->button.button = 0;
 			e_text_do_popup (text, button_event, 0);
@@ -1667,16 +1666,16 @@ e_text_event (GnomeCanvasItem *item,
 
 		/* Fall Through */
 
-	case GDK_KEY_RELEASE:
+	case GNOME_CANVAS_KEY_RELEASE:
 
 		if (text->editing) {
-			GdkEvent key;
+			GnomeCanvasEvent key;
 			gint ret;
 
 			if (text->im_context &&
 				gtk_im_context_filter_keypress (
 					text->im_context,
-					(GdkEvent *) event)) {
+					(GnomeCanvasEvent *) event)) {
 				text->need_im_reset = TRUE;
 				return 1;
 			}
@@ -1700,7 +1699,7 @@ e_text_event (GnomeCanvasItem *item,
 			_get_tep (text);
 			ret = e_text_event_processor_handle_event (text->tep, &e_tep_event);
 
-			if (event->type == GDK_KEY_PRESS)
+			if (event->type == GNOME_CANVAS_KEY_PRESS)
 				g_signal_emit (
 					text, e_text_signals[E_TEXT_KEYPRESS], 0,
 					e_tep_event.key.keyval, e_tep_event.key.state);
@@ -1711,8 +1710,8 @@ e_text_event (GnomeCanvasItem *item,
 			return ret;
 		}
 		break;
-	case GDK_BUTTON_PRESS: /* Fall Through */
-	case GDK_BUTTON_RELEASE:
+	case GNOME_CANVAS_BUTTON_PRESS: /* Fall Through */
+	case GNOME_CANVAS_BUTTON_RELEASE:
 		if ((!text->editing)
 		    && text->editable
 		    && (event->button.button == 1 ||
@@ -1722,7 +1721,7 @@ e_text_event (GnomeCanvasItem *item,
 		}
 
 		/* We follow convention and emit popup events on right-clicks. */
-		if (event->type == GDK_BUTTON_PRESS && event->button.button == 3) {
+		if (event->type == GNOME_CANVAS_BUTTON_PRESS && event->button.button == 3) {
 			if (text->handle_popup) {
 				e_text_do_popup (
 					text, event,
@@ -1738,24 +1737,24 @@ e_text_event (GnomeCanvasItem *item,
 
 		/* Create our own double and triple click events,
 		 * as gnome-canvas doesn't forward them to us */
-		if (event->type == GDK_BUTTON_PRESS) {
+		if (event->type == GNOME_CANVAS_BUTTON_PRESS) {
 			if (text->dbl_timeout == 0 &&
 			    text->tpl_timeout == 0) {
 				text->dbl_timeout = e_named_timeout_add (
 					200, _click, &(text->dbl_timeout));
 			} else {
 				if (text->tpl_timeout == 0) {
-					e_tep_event.type = GDK_2BUTTON_PRESS;
+					e_tep_event.type = GNOME_CANVAS_2BUTTON_PRESS;
 					text->tpl_timeout = e_named_timeout_add (
 						200, _click, &(text->tpl_timeout));
 				} else {
-					e_tep_event.type = GDK_3BUTTON_PRESS;
+					e_tep_event.type = GNOME_CANVAS_3BUTTON_PRESS;
 				}
 			}
 		}
 
 		if (text->editing) {
-			GdkEvent button = event->button;
+			GnomeCanvasEvent button = event->button;
 			e_tep_event.button.time = button.time;
 			e_tep_event.button.state = button.state;
 			e_tep_event.button.button = button.button;
@@ -1763,12 +1762,12 @@ e_text_event (GnomeCanvasItem *item,
 				get_position_from_xy (
 				text, button.x, button.y);
 			e_tep_event.button.device =
-				gdk_event_get_device (event);
+				gnome_canvas_event_get_device (event);
 			_get_tep (text);
 			return_val = e_text_event_processor_handle_event (
 				text->tep, &e_tep_event);
 			if (event->button.button == 1) {
-				if (event->type == GDK_BUTTON_PRESS)
+				if (event->type == GNOME_CANVAS_BUTTON_PRESS)
 					text->button_down = TRUE;
 				else
 					text->button_down = FALSE;
@@ -1778,9 +1777,9 @@ e_text_event (GnomeCanvasItem *item,
 			text->last_state = button.state;
 		}
 		break;
-	case GDK_MOTION_NOTIFY:
+	case GNOME_CANVAS_MOTION_NOTIFY:
 		if (text->editing) {
-			GdkEvent motion = event->motion;
+			GnomeCanvasEvent motion = event->motion;
 			e_tep_event.motion.time = motion.time;
 			e_tep_event.motion.state = motion.state;
 			e_tep_event.motion.position =
@@ -1794,7 +1793,7 @@ e_text_event (GnomeCanvasItem *item,
 			text->last_state = motion.state;
 		}
 		break;
-	case GDK_ENTER_NOTIFY:
+	case GNOME_CANVAS_ENTER_NOTIFY:
 		text->pointer_in = TRUE;
 		if (text->editing) {
 			if (text->default_cursor_shown) {
@@ -1803,7 +1802,7 @@ e_text_event (GnomeCanvasItem *item,
 			}
 		}
 		break;
-	case GDK_LEAVE_NOTIFY:
+	case GNOME_CANVAS_LEAVE_NOTIFY:
 		text->pointer_in = FALSE;
 		if (text->editing) {
 			if (!text->default_cursor_shown) {
@@ -1840,9 +1839,7 @@ e_text_copy_clipboard (EText *text)
 		text->text, selection_end_pos) - text->text;
 
 	e_gtk_clipboard_set_text (
-		gtk_widget_get_clipboard (
-		GTK_WIDGET (GNOME_CANVAS_ITEM (text)->canvas),
-		E_GTK_SELECTION_CLIPBOARD),
+		gtk_widget_get_clipboard (GTK_WIDGET (GNOME_CANVAS_ITEM (text)->canvas)),
 		text->text + selection_start_pos,
 		selection_end_pos - selection_start_pos);
 }
@@ -1938,9 +1935,7 @@ e_text_update_primary_selection (EText *text)
 	};
 	GdkClipboard *clipboard;
 
-	clipboard = gtk_widget_get_clipboard (
-		GTK_WIDGET (GNOME_CANVAS_ITEM (text)->canvas),
-		E_GTK_SELECTION_PRIMARY);
+	clipboard = gtk_widget_get_primary_clipboard (GTK_WIDGET (GNOME_CANVAS_ITEM (text)->canvas));
 
 	if (text->selection_start != text->selection_end) {
 		if (!e_gtk_clipboard_set_with_owner (
@@ -1976,16 +1971,47 @@ e_text_paste (EText *text,
 {
 	g_object_ref (text);
 	e_gtk_clipboard_request_text (
-		gtk_widget_get_clipboard (
-		GTK_WIDGET (GNOME_CANVAS_ITEM (text)->canvas),
-		selection), paste_received, text);
+		gtk_widget_get_clipboard (GTK_WIDGET (GNOME_CANVAS_ITEM (text)->canvas)), paste_received, text);
 }
 
 typedef struct {
 	EText *text;
-	GdkEvent *event;
+	GnomeCanvasEvent *event;
 	gint position;
 } PopupClosure;
+
+static void
+text_popup_action_cb (GSimpleAction *action,
+		      GVariant *parameter,
+		      gpointer user_data)
+{
+	EText *text = user_data;
+	const gchar *name = g_action_get_name (G_ACTION (action));
+
+	if (g_str_equal (name, "cut"))
+		e_text_cut_clipboard (text);
+	else if (g_str_equal (name, "copy"))
+		e_text_copy_clipboard (text);
+	else if (g_str_equal (name, "paste"))
+		e_text_paste_clipboard (text);
+	else if (g_str_equal (name, "select-all"))
+		e_text_select_all (text);
+}
+
+static void
+popup_add_action (GActionMap *actions,
+		  EText *text,
+		  const gchar *name,
+		  gboolean enabled)
+{
+	GSimpleAction *action;
+
+	action = g_simple_action_new (name, NULL);
+	g_simple_action_set_enabled (action, enabled);
+	g_signal_connect_object (action, "activate", G_CALLBACK (text_popup_action_cb), text, 0);
+	g_action_map_add_action (actions, G_ACTION (action));
+	g_object_unref (action);
+}
 
 static void
 popup_targets_received (GdkClipboard *clipboard,
@@ -1994,87 +2020,39 @@ popup_targets_received (GdkClipboard *clipboard,
 {
 	PopupClosure *closure = user_data;
 	EText *text = closure->text;
-	GdkEvent *event = closure->event;
+	GnomeCanvasEvent *event = closure->event;
 	gint position = closure->position;
-	GtkWidget *popup_menu = gtk_menu_new ();
-	GtkWidget *menuitem, *submenu;
-	guint event_button = 0;
-	GdkRectangle rect;
-
-	e_gdk_event_get_button (event, &event_button);
+	GnomeCanvas *canvas = GNOME_CANVAS_ITEM (text)->canvas;
+	GSimpleActionGroup *actions;
+	GtkWidget *popover;
+	GMenu *menu, *section;
+	gdouble x = -1, y = -1;
 
 	g_slice_free (PopupClosure, closure);
 
-	gtk_menu_attach_to_widget (
-		GTK_MENU (popup_menu),
-		GTK_WIDGET (GNOME_CANVAS_ITEM (text)->canvas),
-		NULL);
-	g_signal_connect (popup_menu, "deactivate", G_CALLBACK (gtk_menu_detach), NULL);
+	if (!canvas)
+		goto exit;
 
-	/* cut menu item */
-	menuitem = gtk_image_menu_item_new_with_mnemonic (_("Cu_t"));
-	gtk_image_menu_item_set_image (
-		GTK_IMAGE_MENU_ITEM (menuitem),
-		gtk_image_new_from_icon_name ("edit-cut"));
-	gtk_widget_show (menuitem);
-	gtk_menu_shell_append (GTK_MENU_SHELL (popup_menu), menuitem);
-	g_signal_connect_swapped (
-		menuitem, "activate",
-		G_CALLBACK (e_text_cut_clipboard), text);
-	gtk_widget_set_sensitive (
-		menuitem, text->editable &&
-		(text->selection_start != text->selection_end));
+	actions = g_simple_action_group_new ();
+	popup_add_action (G_ACTION_MAP (actions), text, "cut",
+		text->editable && text->selection_start != text->selection_end);
+	popup_add_action (G_ACTION_MAP (actions), text, "copy",
+		text->selection_start != text->selection_end);
+	popup_add_action (G_ACTION_MAP (actions), text, "paste",
+		text->editable && e_gtk_selection_data_targets_include_text (data));
+	popup_add_action (G_ACTION_MAP (actions), text, "select-all",
+		strlen (text->text) > 0);
 
-	/* copy menu item */
-	menuitem = gtk_image_menu_item_new_with_mnemonic (_("_Copy"));
-	gtk_image_menu_item_set_image (
-		GTK_IMAGE_MENU_ITEM (menuitem),
-		gtk_image_new_from_icon_name ("edit-copy"));
-	gtk_widget_show (menuitem);
-	gtk_menu_shell_append (GTK_MENU_SHELL (popup_menu), menuitem);
-	g_signal_connect_swapped (
-		menuitem, "activate",
-		G_CALLBACK (e_text_copy_clipboard), text);
-	gtk_widget_set_sensitive (menuitem, text->selection_start != text->selection_end);
+	menu = g_menu_new ();
+	section = g_menu_new ();
+	g_menu_append (section, _("Cu_t"), "etext.cut");
+	g_menu_append (section, _("_Copy"), "etext.copy");
+	g_menu_append (section, _("_Paste"), "etext.paste");
+	g_menu_append (section, _("Select All"), "etext.select-all");
+	g_menu_append_section (menu, NULL, G_MENU_MODEL (section));
+	g_object_unref (section);
 
-	/* paste menu item */
-	menuitem = gtk_image_menu_item_new_with_mnemonic (_("_Paste"));
-	gtk_image_menu_item_set_image (
-		GTK_IMAGE_MENU_ITEM (menuitem),
-		gtk_image_new_from_icon_name ("edit-paste"));
-	gtk_widget_show (menuitem);
-	gtk_menu_shell_append (GTK_MENU_SHELL (popup_menu), menuitem);
-	g_signal_connect_swapped (
-		menuitem, "activate",
-		G_CALLBACK (e_text_paste_clipboard), text);
-	gtk_widget_set_sensitive (
-		menuitem, text->editable &&
-		e_gtk_selection_data_targets_include_text (data));
-
-	menuitem = gtk_menu_item_new_with_label (_("Select All"));
-	gtk_widget_show (menuitem);
-	gtk_menu_shell_append (GTK_MENU_SHELL (popup_menu), menuitem);
-	g_signal_connect_swapped (
-		menuitem, "activate",
-		G_CALLBACK (e_text_select_all), text);
-	gtk_widget_set_sensitive (menuitem, strlen (text->text) > 0);
-
-	menuitem = gtk_separator_menu_item_new ();
-	gtk_widget_show (menuitem);
-	gtk_menu_shell_append (GTK_MENU_SHELL (popup_menu), menuitem);
-
-	if (text->im_context && GTK_IS_IM_MULTICONTEXT (text->im_context)) {
-		menuitem = gtk_menu_item_new_with_label (_("Input Methods"));
-		gtk_widget_show (menuitem);
-		submenu = gtk_menu_new ();
-		gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem), submenu);
-
-		gtk_menu_shell_append (GTK_MENU_SHELL (popup_menu), menuitem);
-
-		gtk_im_multicontext_append_menuitems (
-			GTK_IM_MULTICONTEXT (text->im_context),
-			GTK_MENU_SHELL (submenu));
-	}
+	/* GTK 4 offers no input method menu */
 
 	g_signal_emit (
 		text,
@@ -2082,43 +2060,45 @@ popup_targets_received (GdkClipboard *clipboard,
 		0,
 		event,
 		position,
-		popup_menu);
+		menu);
 
-	/* If invoked by S-F10 key binding, button will be 0. */
-	if (event_button == 0 && text->item.canvas) {
-		rect.x = text->item.x1;
-		rect.y = text->item.y1;
-		rect.width = text->width;
-		rect.height = text->height;
+	popover = gtk_popover_menu_new_from_model (G_MENU_MODEL (menu));
+	gtk_widget_insert_action_group (popover, "etext", G_ACTION_GROUP (actions));
+	g_object_unref (actions);
+	g_object_unref (menu);
 
-		gtk_menu_popup_at_rect (GTK_MENU (popup_menu),
-		                        e_gtk_widget_get_surface (GTK_WIDGET (text->item.canvas)),
-		                        &rect,
-		                        GDK_GRAVITY_CENTER,
-		                        GDK_GRAVITY_NORTH_WEST,
-		                        event);
-	} else
-		gtk_menu_popup_at_pointer (GTK_MENU (popup_menu), event);
+	/* Shift+F10 has no position; point at the text then */
+	if (event->type == GNOME_CANVAS_KEY_PRESS || event->type == GNOME_CANVAS_KEY_RELEASE)
+		gnome_canvas_world_to_window (canvas,
+			text->item.x1 + text->width / 2, text->item.y1 + text->height / 2, &x, &y);
+	else
+		gnome_canvas_world_to_window (canvas, event->any.x, event->any.y, &x, &y);
 
+	/* window coordinates include the scroll offset */
+	x -= gtk_adjustment_get_value (gtk_scrollable_get_hadjustment (GTK_SCROLLABLE (canvas)));
+	y -= gtk_adjustment_get_value (gtk_scrollable_get_vadjustment (GTK_SCROLLABLE (canvas)));
+
+	e_util_popup_menu (popover, GTK_WIDGET (canvas), x, y);
+
+ exit:
 	g_object_unref (text);
-	gdk_event_unref (event);
+	gnome_canvas_event_free (event);
 }
 
 static void
 e_text_do_popup (EText *text,
-                 GdkEvent *button_event,
+                 GnomeCanvasEvent *button_event,
                  gint position)
 {
 	PopupClosure *closure = g_slice_new (PopupClosure);
 
 	closure->text = g_object_ref (text);
-	closure->event = gdk_event_ref (button_event);
+	closure->event = gnome_canvas_event_copy (button_event);
 	closure->position = position;
 
 	e_gtk_clipboard_request_contents (
 		gtk_widget_get_clipboard (
-			GTK_WIDGET (GNOME_CANVAS_ITEM (text)->canvas),
-			E_GTK_SELECTION_CLIPBOARD),
+			GTK_WIDGET (GNOME_CANVAS_ITEM (text)->canvas)),
 		e_gtk_atom_intern ("TARGETS", FALSE),
 		popup_targets_received,
 		closure);
@@ -2727,7 +2707,7 @@ e_text_command (ETextEventProcessor *tep,
 		e_canvas_item_grab (
 			E_CANVAS (GNOME_CANVAS_ITEM (text)->canvas),
 			GNOME_CANVAS_ITEM (text),
-			GDK_BUTTON_RELEASE_MASK | GDK_POINTER_MOTION_MASK,
+			GNOME_CANVAS_BUTTON_RELEASE_MASK | GNOME_CANVAS_POINTER_MOTION_MASK,
 			text->i_cursor,
 			command->device,
 			command->time,
@@ -2923,7 +2903,7 @@ e_text_class_init (ETextClass *class)
 		G_TYPE_NONE, 3,
 		G_TYPE_POINTER,
 		G_TYPE_INT,
-		GTK_TYPE_MENU);
+		G_TYPE_MENU);
 
 	g_object_class_install_property (
 		gobject_class,
@@ -3208,7 +3188,6 @@ e_text_class_init (ETextClass *class)
 	if (!clipboard_atom)
 		clipboard_atom = e_gtk_atom_intern ("CLIPBOARD", FALSE);
 
-	gal_a11y_e_text_init ();
 }
 
 /* Object initialization function for the text item */

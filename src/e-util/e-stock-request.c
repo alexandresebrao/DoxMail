@@ -79,7 +79,7 @@ process_stock_request_idle_cb (gpointer user_data)
 	GtkStyleContext *context;
 	GtkWidgetPath *path;
 	GtkIconSet *icon_set = NULL;
-	gssize size = GTK_ICON_SIZE_BUTTON;
+	gssize size = GTK_ICON_SIZE_NORMAL;
 	gboolean dark_color_scheme = FALSE;
 	const gchar *icon_name;
 	gchar *icon_name_symbolic = NULL;

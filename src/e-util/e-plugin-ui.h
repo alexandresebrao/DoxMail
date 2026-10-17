@@ -22,6 +22,7 @@
 #define E_PLUGIN_UI_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 
 #include <e-util/e-plugin.h>
 #include <e-util/e-ui-manager.h>

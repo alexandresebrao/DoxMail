@@ -216,7 +216,7 @@ static void
 etgl_double_click (GObject *object,
                    gint model_row,
                    gint model_col,
-                   GdkEvent *event,
+                   GnomeCanvasEvent *event,
                    ETableGroupLeaf *etgl)
 {
 	e_table_group_double_click (
@@ -227,7 +227,7 @@ static gboolean
 etgl_key_press (GObject *object,
                 gint row,
                 gint col,
-                GdkEvent *event,
+                GnomeCanvasEvent *event,
                 ETableGroupLeaf *etgl)
 {
 	ETableSubset *table_subset;
@@ -247,7 +247,7 @@ static gboolean
 etgl_start_drag (GObject *object,
                  gint model_row,
                  gint model_col,
-                 GdkEvent *event,
+                 GnomeCanvasEvent *event,
                  ETableGroupLeaf *etgl)
 {
 	return e_table_group_start_drag (
@@ -258,7 +258,7 @@ static gboolean
 etgl_right_click (GObject *object,
                   gint view_row,
                   gint model_col,
-                  GdkEvent *event,
+                  GnomeCanvasEvent *event,
                   ETableGroupLeaf *etgl)
 {
 	ETableSubset *table_subset;
@@ -278,7 +278,7 @@ static gboolean
 etgl_click (GObject *object,
             gint row,
             gint col,
-            GdkEvent *event,
+            GnomeCanvasEvent *event,
             ETableGroupLeaf *etgl)
 {
 	ETableSubset *table_subset;

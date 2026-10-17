@@ -92,7 +92,7 @@ set_image_from_data (EImageChooser *chooser,
 	if (chooser->priv->pixel_size == 0) {
 		gint width, height = 64;
 
-		gtk_icon_size_lookup (GTK_ICON_SIZE_DIALOG, &width, &height);
+		gtk_icon_size_lookup (GTK_ICON_SIZE_LARGE, &width, &height);
 
 		chooser->priv->pixel_size = height;
 	}
@@ -309,7 +309,7 @@ image_chooser_set_icon_name (EImageChooser *chooser,
 	icon_theme = e_gtk_icon_theme_get_default ();
 	if (chooser->priv->pixel_size == 0) {
 		gint width, height;
-		gtk_icon_size_lookup (GTK_ICON_SIZE_DIALOG, &width, &height);
+		gtk_icon_size_lookup (GTK_ICON_SIZE_LARGE, &width, &height);
 		chooser->priv->pixel_size = height;
 	}
 
@@ -436,7 +436,7 @@ e_image_chooser_init (EImageChooser *chooser)
 
 	chooser->priv = e_image_chooser_get_instance_private (chooser);
 
-	gtk_icon_size_lookup (GTK_ICON_SIZE_DIALOG, &width, &height);
+	gtk_icon_size_lookup (GTK_ICON_SIZE_LARGE, &width, &height);
 	chooser->priv->pixel_size = height;
 
 	gtk_orientable_set_orientation (GTK_ORIENTABLE (chooser), GTK_ORIENTATION_VERTICAL);

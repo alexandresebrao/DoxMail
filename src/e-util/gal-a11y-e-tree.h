@@ -27,6 +27,7 @@
 #define __GAL_A11Y_E_TREE_H__
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 #include <gtk/gtk-a11y.h>
 #include <atk/atkobject.h>
 #include <atk/atkcomponent.h>

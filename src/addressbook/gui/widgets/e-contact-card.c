@@ -31,7 +31,7 @@ e_contact_card_accessible_init (EContactCardAccessible *accessible)
 }
 
 static void
-e_contact_card_accessible_initialize (AtkObject *obj,
+e_contact_card_accessible_initialize (GtkWidget *obj,
 				      gpointer   data)
 {
 	ATK_OBJECT_CLASS (e_contact_card_accessible_parent_class)->initialize (obj, data);
@@ -39,7 +39,7 @@ e_contact_card_accessible_initialize (AtkObject *obj,
 }
 
 static AtkStateSet *
-e_contact_card_accessible_ref_state_set (AtkObject *obj)
+e_contact_card_accessible_ref_state_set (GtkWidget *obj)
 {
 	AtkStateSet *state_set;
 	GtkWidget *widget;

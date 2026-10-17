@@ -27,6 +27,7 @@
 #define __E_TABLE_FIELD_CHOOSER_DIALOG_H__
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 
 #include <e-util/e-table-field-chooser.h>
 #include <e-util/e-table-header.h>

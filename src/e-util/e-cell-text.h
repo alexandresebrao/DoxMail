@@ -42,6 +42,7 @@
 #define E_CELL_TEXT_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 #include <libgnomecanvas/libgnomecanvas.h>
 
 #include <e-util/e-cell.h>

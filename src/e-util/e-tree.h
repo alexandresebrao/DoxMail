@@ -84,30 +84,30 @@ struct _ETreeClass {
 						 gint row,
 						 ETreePath path,
 						 gint col,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 	gboolean	(*right_click)		(ETree *tree,
 						 gint row,
 						 ETreePath path,
 						 gint col,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 	gboolean	(*click)		(ETree *tree,
 						 gint row,
 						 ETreePath path,
 						 gint col,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 	gboolean	(*key_press)		(ETree *tree,
 						 gint row,
 						 ETreePath path,
 						 gint col,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 	gboolean	(*start_drag)		(ETree *tree,
 						 gint row,
 						 ETreePath path,
 						 gint col,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 	void		(*state_change)		(ETree *tree);
 	gboolean	(*white_space_event)	(ETree *tree,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 
 	/* Source side drag signals */
 	void		(*tree_drag_begin)	(ETree *tree,
@@ -237,7 +237,7 @@ EGtkDragContext *e_tree_drag_begin		(ETree *tree,
 						 EGtkTargetList *targets,
 						 GdkDragAction actions,
 						 gint button,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 
 gboolean	e_tree_is_dragging		(ETree *tree);
 

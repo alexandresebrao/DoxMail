@@ -25,6 +25,7 @@
 #include <libebackend/libebackend.h>
 
 #include "e-calendar-item.h"
+#include "e-canvas.h"
 
 #include <time.h>
 #include <stdlib.h>
@@ -98,9 +99,9 @@ static void	e_calendar_item_selection_add_days
 						 gint n_days,
 						 gboolean multi_selection);
 static gint	e_calendar_item_key_press_event	(ECalendarItem *item,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 static gint	e_calendar_item_event		(GnomeCanvasItem *item,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 static void	e_calendar_item_bounds		(GnomeCanvasItem *item,
 						 gdouble *x1,
 						 gdouble *y1,
@@ -108,11 +109,11 @@ static void	e_calendar_item_bounds		(GnomeCanvasItem *item,
 						 gdouble *y2);
 
 static gboolean	e_calendar_item_button_press	(ECalendarItem *calitem,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 static gboolean	e_calendar_item_button_release	(ECalendarItem *calitem,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 static gboolean	e_calendar_item_motion		(ECalendarItem *calitem,
-						 GdkEvent *event);
+						 GnomeCanvasEvent *event);
 
 static gboolean	e_calendar_item_convert_position_to_day
 						(ECalendarItem *calitem,
@@ -190,11 +191,8 @@ static gboolean	e_calendar_item_ensure_days_visible
 						 gint end_day,
 						 gboolean emission);
 static void	e_calendar_item_show_popup_menu	(ECalendarItem *calitem,
-						 GdkEvent *button_event,
+						 GnomeCanvasEvent *button_event,
 						 gint month_offset);
-static void	e_calendar_item_on_menu_item_activate
-						(GtkWidget *menuitem,
-						 ECalendarItem *calitem);
 static void	e_calendar_item_date_range_changed
 						(ECalendarItem *calitem);
 static void	e_calendar_item_queue_signal_emission
@@ -977,7 +975,7 @@ e_calendar_item_update (GnomeCanvasItem *item,
 
 	calitem = E_CALENDAR_ITEM (item);
 	style_context = gtk_widget_get_style_context (GTK_WIDGET (item->canvas));
-	gtk_style_context_get_padding (style_context, gtk_style_context_get_state (style_context), &padding);
+	gtk_style_context_get_padding (style_context, &padding);
 	xthickness = padding.left;
 	ythickness = padding.top;
 
@@ -1145,7 +1143,7 @@ e_calendar_item_draw (GnomeCanvasItem *canvas_item,
 
 	e_utils_get_theme_color (widget, "theme_bg_color", E_UTILS_DEFAULT_THEME_BG_COLOR, &bg_color);
 
-	gtk_style_context_get_border (style_context, gtk_style_context_get_state (style_context), &border);
+	gtk_style_context_get_border (style_context, &border);
 
 	/* Clear the entire background. */
 	cairo_save (cr);
@@ -1180,7 +1178,7 @@ e_calendar_item_draw (GnomeCanvasItem *canvas_item,
 
 		gtk_style_context_save (style_context);
 		gtk_style_context_add_class (
-			style_context, GTK_STYLE_CLASS_HEADER);
+			style_context, "header");
 		cairo_save (cr);
 		gtk_render_frame (
 			style_context, cr,
@@ -1204,7 +1202,7 @@ e_calendar_item_draw (GnomeCanvasItem *canvas_item,
 	/* Draw the shadow around the entire item. */
 	gtk_style_context_save (style_context);
 	gtk_style_context_add_class (
-		style_context, GTK_STYLE_CLASS_ENTRY);
+		style_context, "entry");
 	cairo_save (cr);
 	gtk_render_frame (
 		style_context, cr,
@@ -1282,7 +1280,7 @@ e_calendar_item_draw_month (ECalendarItem *calitem,
 		PANGO_PIXELS (pango_font_metrics_get_ascent (font_metrics)) +
 		PANGO_PIXELS (pango_font_metrics_get_descent (font_metrics));
 	style_context = gtk_widget_get_style_context (widget);
-	gtk_style_context_get_padding (style_context, gtk_style_context_get_state (style_context), &padding);
+	gtk_style_context_get_padding (style_context, &padding);
 	xthickness = padding.left;
 	ythickness = padding.top;
 	arrow_button_size =
@@ -2046,7 +2044,7 @@ e_calendar_item_selection_add_days (ECalendarItem *calitem,
 
 static gint
 e_calendar_item_key_press_event (ECalendarItem *calitem,
-                                 GdkEvent *event)
+                                 GnomeCanvasEvent *event)
 {
 	guint keyval = event->key.keyval;
 	gboolean is_rtl;
@@ -2093,23 +2091,23 @@ e_calendar_item_key_press_event (ECalendarItem *calitem,
 
 static gint
 e_calendar_item_event (GnomeCanvasItem *item,
-                       GdkEvent *event)
+                       GnomeCanvasEvent *event)
 {
 	ECalendarItem *calitem;
 
 	calitem = E_CALENDAR_ITEM (item);
 
 	switch (event->type) {
-	case GDK_BUTTON_PRESS:
+	case GNOME_CANVAS_BUTTON_PRESS:
 		return e_calendar_item_button_press (calitem, event);
-	case GDK_BUTTON_RELEASE:
+	case GNOME_CANVAS_BUTTON_RELEASE:
 		return e_calendar_item_button_release (calitem, event);
-	case GDK_MOTION_NOTIFY:
+	case GNOME_CANVAS_MOTION_NOTIFY:
 		return e_calendar_item_motion (calitem, event);
-	case GDK_FOCUS_CHANGE:
+	case GNOME_CANVAS_FOCUS_CHANGE:
 		gnome_canvas_item_request_update (item);
 		return FALSE;
-	case GDK_KEY_PRESS:
+	case GNOME_CANVAS_KEY_PRESS:
 		return e_calendar_item_key_press_event (calitem, event);
 	default:
 		break;
@@ -2160,7 +2158,7 @@ e_calendar_item_recalc_sizes (ECalendarItem *calitem)
 	canvas_item = GNOME_CANVAS_ITEM (calitem);
 	widget = GTK_WIDGET (canvas_item->canvas);
 	style_context = gtk_widget_get_style_context (widget);
-	gtk_style_context_get_padding (style_context, gtk_style_context_get_state (style_context), &padding);
+	gtk_style_context_get_padding (style_context, &padding);
 
 	/* Set up Pango prerequisites */
 	font_desc = calitem->font_desc;
@@ -2340,9 +2338,9 @@ e_calendar_item_get_day_style (ECalendarItem *calitem,
 
 static gboolean
 e_calendar_item_button_press (ECalendarItem *calitem,
-                              GdkEvent *button_event)
+                              GnomeCanvasEvent *button_event)
 {
-	GdkGrabStatus grab_status;
+	GnomeCanvasGrabStatus grab_status;
 	GdkDevice *event_device;
 	guint event_button = 0;
 	guint32 event_time;
@@ -2351,10 +2349,10 @@ e_calendar_item_button_press (ECalendarItem *calitem,
 	gint month_offset, day, add_days = 0;
 	gboolean all_week, round_up_end = FALSE, round_down_start = FALSE;
 
-	e_gdk_event_get_button (button_event, &event_button);
-	e_gdk_event_get_coords (button_event, &event_x_win, &event_y_win);
-	event_device = gdk_event_get_device (button_event);
-	event_time = gdk_event_get_time (button_event);
+	gnome_canvas_event_get_button (button_event, &event_button);
+	gnome_canvas_event_get_coords (button_event, &event_x_win, &event_y_win);
+	event_device = gnome_canvas_event_get_device (button_event);
+	event_time = gnome_canvas_event_get_time (button_event);
 
 	if (event_button == 4)
 		e_calendar_item_set_first_month_with_emit (
@@ -2388,13 +2386,13 @@ e_calendar_item_button_press (ECalendarItem *calitem,
 
 	grab_status = gnome_canvas_item_grab (
 		GNOME_CANVAS_ITEM (calitem),
-		GDK_POINTER_MOTION_MASK |
-		GDK_BUTTON_RELEASE_MASK,
+		GNOME_CANVAS_POINTER_MOTION_MASK |
+		GNOME_CANVAS_BUTTON_RELEASE_MASK,
 		NULL,
 		event_device,
 		event_time);
 
-	if (grab_status != GDK_GRAB_SUCCESS)
+	if (grab_status != GNOME_CANVAS_GRAB_SUCCESS)
 		return FALSE;
 
 	if (all_week && calitem->keep_wdays_on_weeknum_click) {
@@ -2469,11 +2467,11 @@ e_calendar_item_button_press (ECalendarItem *calitem,
 
 static gboolean
 e_calendar_item_button_release (ECalendarItem *calitem,
-                                GdkEvent *button_event)
+                                GnomeCanvasEvent *button_event)
 {
 	guint32 event_time;
 
-	event_time = gdk_event_get_time (button_event);
+	event_time = gnome_canvas_event_get_time (button_event);
 	e_calendar_item_stop_selecting (calitem, event_time);
 
 	return FALSE;
@@ -2481,7 +2479,7 @@ e_calendar_item_button_release (ECalendarItem *calitem,
 
 static gboolean
 e_calendar_item_motion (ECalendarItem *calitem,
-                        GdkEvent *event)
+                        GnomeCanvasEvent *event)
 {
 	gint start_month, start_day, end_month, end_day, month_offset, day;
 	gint tmp_month, tmp_day, days_in_selection;
@@ -2702,7 +2700,7 @@ e_calendar_item_convert_position_to_day (ECalendarItem *calitem,
 	item = GNOME_CANVAS_ITEM (calitem);
 	widget = GTK_WIDGET (item->canvas);
 	style_context = gtk_widget_get_style_context (widget);
-	gtk_style_context_get_padding (style_context, gtk_style_context_get_state (style_context), &padding);
+	gtk_style_context_get_padding (style_context, &padding);
 
 	pango_context = gtk_widget_create_pango_context (widget);
 	font_metrics = pango_context_get_metrics (
@@ -3689,88 +3687,67 @@ e_calendar_item_ensure_days_visible (ECalendarItem *calitem,
 }
 
 static void
-e_calendar_item_show_popup_menu (ECalendarItem *calitem,
-                                 GdkEvent *button_event,
-                                 gint month_offset)
+e_calendar_item_month_activated_cb (GSimpleAction *action,
+				    GVariant *parameter,
+				    gpointer user_data)
 {
-	GtkWidget *menu, *submenu, *menuitem, *label;
-	GtkWidget *canvas_widget;
-	gint year, month;
-	const gchar *name;
-	gchar buffer[64];
+	ECalendarItem *calitem = user_data;
+	gint year, month, month_offset;
 
-	menu = gtk_menu_new ();
-
-	for (year = calitem->year - 2; year <= calitem->year + 2; year++) {
-		g_snprintf (buffer, 64, "%i", year);
-		menuitem = gtk_menu_item_new_with_label (buffer);
-		gtk_widget_show (menuitem);
-		e_gtk_container_add (menu, menuitem);
-
-		submenu = gtk_menu_new ();
-		gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem), submenu);
-
-		g_object_set_data (
-			G_OBJECT (submenu), "year",
-			GINT_TO_POINTER (year));
-		g_object_set_data (
-			G_OBJECT (submenu), "month_offset",
-			GINT_TO_POINTER (month_offset));
-
-		for (month = 0; month < 12; month++) {
-			name = e_get_month_name (month + 1, FALSE);
-
-			menuitem = gtk_menu_item_new ();
-			gtk_widget_show (menuitem);
-			e_gtk_container_add (submenu, menuitem);
-
-			label = gtk_label_new (name);
-			gtk_label_set_xalign (GTK_LABEL (label), 0);
-			gtk_widget_show (label);
-			e_gtk_container_add (menuitem, label);
-
-			g_object_set_data (
-				G_OBJECT (menuitem), "month",
-				GINT_TO_POINTER (month));
-
-			g_signal_connect (
-				menuitem, "activate",
-				G_CALLBACK (e_calendar_item_on_menu_item_activate),
-				calitem);
-		}
-	}
-
-	g_signal_connect (
-		menu, "deactivate",
-		G_CALLBACK (gtk_menu_detach), NULL);
-
-	canvas_widget = GTK_WIDGET (calitem->canvas_item.canvas);
-	gtk_menu_attach_to_widget (GTK_MENU (menu), canvas_widget, NULL);
-	gtk_menu_popup_at_pointer (GTK_MENU (menu), button_event);
-}
-
-static void
-e_calendar_item_on_menu_item_activate (GtkWidget *menuitem,
-                                       ECalendarItem *calitem)
-{
-	GtkWidget *parent;
-	gint year, month_offset, month;
-	gpointer data;
-
-	parent = gtk_widget_get_parent (menuitem);
-	data = g_object_get_data (G_OBJECT (parent), "year");
-	year = GPOINTER_TO_INT (data);
-
-	parent = gtk_widget_get_parent (menuitem);
-	data = g_object_get_data (G_OBJECT (parent), "month_offset");
-	month_offset = GPOINTER_TO_INT (data);
-
-	data = g_object_get_data (G_OBJECT (menuitem), "month");
-	month = GPOINTER_TO_INT (data);
+	g_variant_get (parameter, "(iii)", &year, &month, &month_offset);
 
 	month -= month_offset;
 	e_calendar_item_normalize_date (calitem, &year, &month);
 	e_calendar_item_set_first_month_with_emit (calitem, year, month, TRUE);
+}
+
+static void
+e_calendar_item_show_popup_menu (ECalendarItem *calitem,
+                                 GnomeCanvasEvent *button_event,
+                                 gint month_offset)
+{
+	GSimpleActionGroup *actions;
+	GSimpleAction *action;
+	GtkWidget *popover;
+	GMenu *menu;
+	gint year, month;
+	gchar buffer[64];
+
+	actions = g_simple_action_group_new ();
+	action = g_simple_action_new ("month", G_VARIANT_TYPE ("(iii)"));
+	g_signal_connect_object (action, "activate",
+		G_CALLBACK (e_calendar_item_month_activated_cb), calitem, 0);
+	g_action_map_add_action (G_ACTION_MAP (actions), G_ACTION (action));
+	g_object_unref (action);
+
+	menu = g_menu_new ();
+
+	for (year = calitem->year - 2; year <= calitem->year + 2; year++) {
+		GMenu *submenu;
+
+		submenu = g_menu_new ();
+
+		for (month = 0; month < 12; month++) {
+			GMenuItem *item;
+
+			item = g_menu_item_new (e_get_month_name (month + 1, FALSE), NULL);
+			g_menu_item_set_action_and_target_value (item, "calitem.month",
+				g_variant_new ("(iii)", year, month, month_offset));
+			g_menu_append_item (submenu, item);
+			g_object_unref (item);
+		}
+
+		g_snprintf (buffer, 64, "%i", year);
+		g_menu_append_submenu (menu, buffer, G_MENU_MODEL (submenu));
+		g_object_unref (submenu);
+	}
+
+	popover = gtk_popover_menu_new_from_model (G_MENU_MODEL (menu));
+	gtk_widget_insert_action_group (popover, "calitem", G_ACTION_GROUP (actions));
+	g_object_unref (actions);
+	g_object_unref (menu);
+
+	e_canvas_popup_menu (popover, calitem->canvas_item.canvas, button_event);
 }
 
 /* Sets the function to call to get the colors to use for a particular day. */

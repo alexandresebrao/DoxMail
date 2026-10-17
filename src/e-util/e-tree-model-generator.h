@@ -25,6 +25,7 @@
 #define E_TREE_MODEL_GENERATOR_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 
 /* Standard GObject macros */
 #define E_TYPE_TREE_MODEL_GENERATOR \

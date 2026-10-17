@@ -108,7 +108,7 @@ task_table_emit_open_component (ETaskTable *task_table,
 
 static void
 task_table_emit_popup_event (ETaskTable *task_table,
-                             GdkEvent *event)
+                             GnomeCanvasEvent *event)
 {
 	g_signal_emit (task_table, signals[POPUP_EVENT], 0, event);
 }
@@ -334,7 +334,7 @@ task_table_constructed (GObject *object)
 	ETableExtras *extras;
 	ETableSpecification *specification;
 	GList *strings;
-	AtkObject *a11y;
+	GtkWidget *a11y;
 	gchar *etspecfile;
 	gint percent;
 	GError *local_error = NULL;
@@ -611,9 +611,9 @@ task_table_constructed (GObject *object)
 
 	g_object_unref (extras);
 
-	a11y = gtk_widget_get_accessible (GTK_WIDGET (task_table));
+	a11y = GTK_WIDGET (GTK_WIDGET (task_table));
 	if (a11y)
-		atk_object_set_name (a11y, _("Tasks"));
+		e_gtk_widget_set_accessible_name (a11y, _("Tasks"));
 
 	/* Chain up to parent's constructed() method. */
 	G_OBJECT_CLASS (e_task_table_parent_class)->constructed (object);
@@ -737,7 +737,7 @@ static void
 task_table_double_click (ETable *table,
                          gint row,
                          gint col,
-                         GdkEvent *event)
+                         GnomeCanvasEvent *event)
 {
 	task_table_open_at_row (table, row);
 }
@@ -746,7 +746,7 @@ static gint
 task_table_right_click (ETable *table,
                         gint row,
                         gint col,
-                        GdkEvent *event)
+                        GnomeCanvasEvent *event)
 {
 	ETaskTable *task_table;
 
@@ -760,9 +760,9 @@ static gboolean
 task_table_key_press (ETable *table,
 		      gint row,
 		      gint col,
-		      GdkEvent *event)
+		      GnomeCanvasEvent *event)
 {
-	if (event && event->type == GDK_KEY_PRESS &&
+	if (event && event->type == GNOME_CANVAS_KEY_PRESS &&
 	    (event->key.keyval == GDK_KEY_Return || event->key.keyval == GDK_KEY_KP_Enter) &&
 	    (event->key.state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_ALT_MASK)) == 0 &&
 	    !e_table_is_editing (table)) {
@@ -775,15 +775,15 @@ task_table_key_press (ETable *table,
 
 static gboolean
 task_table_white_space_event (ETable *table,
-			      GdkEvent *event)
+			      GnomeCanvasEvent *event)
 {
 	guint event_button = 0;
 
 	g_return_val_if_fail (E_IS_TASK_TABLE (table), FALSE);
 	g_return_val_if_fail (event != NULL, FALSE);
 
-	if (event->type == GDK_BUTTON_PRESS &&
-	    e_gdk_event_get_button (event, &event_button) &&
+	if (event->type == GNOME_CANVAS_BUTTON_PRESS &&
+	    gnome_canvas_event_get_button (event, &event_button) &&
 	    event_button == 3) {
 		GtkWidget *table_canvas;
 
@@ -1219,7 +1219,7 @@ e_task_table_class_init (ETaskTableClass *class)
 		NULL, NULL,
 		g_cclosure_marshal_VOID__BOXED,
 		G_TYPE_NONE, 1,
-		GDK_TYPE_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
+		GNOME_TYPE_CANVAS_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
 }
 
 static void

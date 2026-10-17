@@ -46,7 +46,6 @@
 #include "e-tree-table-adapter.h"
 #include "e-tree.h"
 #include "e-misc-utils.h"
-#include "gal-a11y-e-tree.h"
 
 #define COLUMN_HEADER_HEIGHT 16
 
@@ -914,7 +913,7 @@ static void
 item_double_click (ETableItem *eti,
                    gint row,
                    gint col,
-                   GdkEvent *event,
+                   GnomeCanvasEvent *event,
                    ETree *tree)
 {
 	ETreePath path = e_tree_table_adapter_node_at_row (tree->priv->etta, row);
@@ -926,7 +925,7 @@ static gboolean
 item_right_click (ETableItem *eti,
                   gint row,
                   gint col,
-                  GdkEvent *event,
+                  GnomeCanvasEvent *event,
                   ETree *tree)
 {
 	ETreePath path = e_tree_table_adapter_node_at_row (tree->priv->etta, row);
@@ -943,7 +942,7 @@ static gboolean
 item_click (ETableItem *eti,
             gint row,
             gint col,
-            GdkEvent *event,
+            GnomeCanvasEvent *event,
             ETree *tree)
 {
 	gboolean return_val = 0;
@@ -959,11 +958,11 @@ static gint
 item_key_press (ETableItem *eti,
                 gint row,
                 gint col,
-                GdkEvent *event,
+                GnomeCanvasEvent *event,
                 ETree *tree)
 {
 	gint return_val = 0;
-	GdkEvent *key = (GdkEvent *) event;
+	GnomeCanvasEvent *key = (GnomeCanvasEvent *) event;
 	ETreePath path;
 	gint y, row_local, col_local;
 	GtkAdjustment *adjustment;
@@ -1092,7 +1091,7 @@ static gint
 item_start_drag (ETableItem *eti,
                  gint row,
                  gint col,
-                 GdkEvent *event,
+                 GnomeCanvasEvent *event,
                  ETree *tree)
 {
 	ETreePath path;
@@ -1196,7 +1195,7 @@ et_canvas_style_updated (GtkWidget *widget)
 
 static gboolean
 white_item_event (GnomeCanvasItem *white_item,
-                  GdkEvent *event,
+                  GnomeCanvasEvent *event,
                   ETree *tree)
 {
 	gboolean return_val = 0;
@@ -1209,9 +1208,9 @@ white_item_event (GnomeCanvasItem *white_item,
 	if (!return_val && event && tree->priv->item) {
 		guint event_button = 0;
 
-		e_gdk_event_get_button (event, &event_button);
+		gnome_canvas_event_get_button (event, &event_button);
 
-		if (event->type == GDK_BUTTON_PRESS && (event_button == 1 || event_button == 2)) {
+		if (event->type == GNOME_CANVAS_BUTTON_PRESS && (event_button == 1 || event_button == 2)) {
 			gnome_canvas_item_grab_focus (GNOME_CANVAS_ITEM (tree->priv->item));
 			return_val = TRUE;
 		}
@@ -1222,13 +1221,13 @@ white_item_event (GnomeCanvasItem *white_item,
 
 static gint
 et_canvas_root_event (GnomeCanvasItem *root,
-                      GdkEvent *event,
+                      GnomeCanvasEvent *event,
                       ETree *tree)
 {
 	switch (event->type) {
-	case GDK_BUTTON_PRESS:
-	case GDK_2BUTTON_PRESS:
-	case GDK_BUTTON_RELEASE:
+	case GNOME_CANVAS_BUTTON_PRESS:
+	case GNOME_CANVAS_2BUTTON_PRESS:
+	case GNOME_CANVAS_BUTTON_RELEASE:
 		if (event->button.button != 4 && event->button.button != 5) {
 			if (gtk_widget_has_focus (GTK_WIDGET (root->canvas))) {
 				GnomeCanvasItem *item = GNOME_CANVAS (root->canvas)->focused_item;
@@ -1252,7 +1251,7 @@ et_canvas_root_event (GnomeCanvasItem *root,
  */
 static gboolean
 table_canvas_focus_event_cb (GtkWidget *widget,
-                             GdkEvent *event,
+                             GnomeCanvasEvent *event,
                              gpointer data)
 {
 	GnomeCanvas *canvas;
@@ -2120,7 +2119,7 @@ struct _GtkDragSourceInfo
   gint button;			  /* mouse button starting drag */
 
   GtkDragStatus      status;	  /* drag status */
-  GdkEvent          *last_event;  /* motion event waiting for response */
+  GnomeCanvasEvent          *last_event;  /* motion event waiting for response */
 
   gint               start_x, start_y; /* Initial position */
   gint               cur_x, cur_y;     /* Current Position */
@@ -2143,7 +2142,7 @@ et_real_start_drag (ETree *tree,
                     gint row,
                     ETreePath path,
                     gint col,
-                    GdkEvent *event)
+                    GnomeCanvasEvent *event)
 {
 	GtkDragSourceInfo *info;
 	EGtkDragContext *context;
@@ -2241,7 +2240,7 @@ e_tree_drag_begin (ETree *tree,
                    EGtkTargetList *targets,
                    GdkDragAction actions,
                    gint button,
-                   GdkEvent *event)
+                   GnomeCanvasEvent *event)
 {
 	ETreePath path;
 
@@ -2906,7 +2905,7 @@ e_tree_class_init (ETreeClass *class)
 		G_TYPE_INT,
 		G_TYPE_POINTER,
 		G_TYPE_INT,
-		GDK_TYPE_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
+		GNOME_TYPE_CANVAS_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
 
 	signals[RIGHT_CLICK] = g_signal_new (
 		"right_click",
@@ -2919,7 +2918,7 @@ e_tree_class_init (ETreeClass *class)
 		G_TYPE_INT,
 		G_TYPE_POINTER,
 		G_TYPE_INT,
-		GDK_TYPE_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
+		GNOME_TYPE_CANVAS_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
 
 	signals[CLICK] = g_signal_new (
 		"click",
@@ -2932,7 +2931,7 @@ e_tree_class_init (ETreeClass *class)
 		G_TYPE_INT,
 		G_TYPE_POINTER,
 		G_TYPE_INT,
-		GDK_TYPE_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
+		GNOME_TYPE_CANVAS_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
 
 	signals[KEY_PRESS] = g_signal_new (
 		"key_press",
@@ -2945,7 +2944,7 @@ e_tree_class_init (ETreeClass *class)
 		G_TYPE_INT,
 		G_TYPE_POINTER,
 		G_TYPE_INT,
-		GDK_TYPE_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
+		GNOME_TYPE_CANVAS_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
 
 	signals[START_DRAG] = g_signal_new (
 		"start_drag",
@@ -2958,7 +2957,7 @@ e_tree_class_init (ETreeClass *class)
 		G_TYPE_INT,
 		G_TYPE_POINTER,
 		G_TYPE_INT,
-		GDK_TYPE_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
+		GNOME_TYPE_CANVAS_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
 
 	signals[STATE_CHANGE] = g_signal_new (
 		"state_change",
@@ -2977,7 +2976,7 @@ e_tree_class_init (ETreeClass *class)
 		g_signal_accumulator_true_handled, NULL,
 		e_marshal_BOOLEAN__POINTER,
 		G_TYPE_BOOLEAN, 1,
-		GDK_TYPE_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
+		GNOME_TYPE_CANVAS_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
 
 	signals[TREE_DRAG_BEGIN] = g_signal_new (
 		"tree_drag_begin",
@@ -3237,8 +3236,6 @@ e_tree_class_init (ETreeClass *class)
 	g_object_class_override_property (
 		object_class, PROP_VSCROLL_POLICY, "vscroll-policy");
 
-	gtk_widget_class_set_accessible_type (widget_class,
-		GAL_A11Y_TYPE_E_TREE);
 }
 
 static gboolean

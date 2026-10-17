@@ -3419,8 +3419,7 @@ copy_or_cut_clipboard (ENameSelectorEntry *name_selector_entry,
 
 	g_hash_table_unref (hash);
 
-	clipboard = gtk_widget_get_clipboard (
-		GTK_WIDGET (name_selector_entry), E_GTK_SELECTION_CLIPBOARD);
+	clipboard = gtk_widget_get_clipboard (GTK_WIDGET (name_selector_entry));
 	e_gtk_clipboard_set_text (clipboard, addresses->str, -1);
 
 	g_string_free (addresses, TRUE);

@@ -415,7 +415,7 @@ subscription_editor_subscribe_many (EMSubscriptionEditor *editor,
 	gtk_widget_set_sensitive (editor->priv->refresh_button, FALSE);
 	gtk_widget_set_sensitive (editor->priv->stop_button, TRUE);
 
-	cursor = gdk_cursor_new_from_name (gtk_widget_get_display (GTK_WIDGET (editor)), "wait");
+	cursor = gdk_cursor_new_from_name ("wait", NULL);
 	if (cursor) {
 		GdkWindow *window;
 
@@ -547,7 +547,7 @@ subscription_editor_unsubscribe_many (EMSubscriptionEditor *editor,
 	gtk_widget_set_sensitive (editor->priv->refresh_button, FALSE);
 	gtk_widget_set_sensitive (editor->priv->stop_button, TRUE);
 
-	cursor = gdk_cursor_new_from_name (gtk_widget_get_display (GTK_WIDGET (editor)), "wait");
+	cursor = gdk_cursor_new_from_name ("wait", NULL);
 	if (cursor) {
 		GdkWindow *window;
 
@@ -1004,7 +1004,7 @@ subscription_editor_refresh (EMSubscriptionEditor *editor)
 	gtk_widget_set_sensitive (editor->priv->refresh_button, FALSE);
 	gtk_widget_set_sensitive (editor->priv->stop_button, TRUE);
 
-	cursor = gdk_cursor_new_from_name (gtk_widget_get_display (GTK_WIDGET (editor)), "wait");
+	cursor = gdk_cursor_new_from_name ("wait", NULL);
 	if (cursor) {
 		GdkWindow *window;
 

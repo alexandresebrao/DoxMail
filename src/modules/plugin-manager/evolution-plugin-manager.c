@@ -483,8 +483,8 @@ plugins_page_new (EPreferencesWindow *window)
 	gtk_tree_selection_select_path (selection, path);
 	gtk_tree_path_free (path);
 
-	atk_object_set_name (
-		gtk_widget_get_accessible (
+	e_gtk_widget_set_accessible_name (
+		GTK_WIDGET (
 		GTK_WIDGET (tree_view)), _("Plugin"));
 
 	g_object_unref (store);

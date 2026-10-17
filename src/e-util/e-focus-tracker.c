@@ -945,8 +945,7 @@ e_focus_tracker_cut_clipboard (EFocusTracker *focus_tracker)
 		GtkTextBuffer *buffer;
 		gboolean is_editable;
 
-		clipboard = gtk_widget_get_clipboard (
-			focus, E_GTK_SELECTION_CLIPBOARD);
+		clipboard = gtk_widget_get_clipboard (focus);
 
 		text_view = GTK_TEXT_VIEW (focus);
 		buffer = gtk_text_view_get_buffer (text_view);
@@ -979,8 +978,7 @@ e_focus_tracker_copy_clipboard (EFocusTracker *focus_tracker)
 		GtkTextView *text_view;
 		GtkTextBuffer *buffer;
 
-		clipboard = gtk_widget_get_clipboard (
-			focus, E_GTK_SELECTION_CLIPBOARD);
+		clipboard = gtk_widget_get_clipboard (focus);
 
 		text_view = GTK_TEXT_VIEW (focus);
 		buffer = gtk_text_view_get_buffer (text_view);
@@ -1013,8 +1011,7 @@ e_focus_tracker_paste_clipboard (EFocusTracker *focus_tracker)
 		GtkTextBuffer *buffer;
 		gboolean is_editable;
 
-		clipboard = gtk_widget_get_clipboard (
-			focus, E_GTK_SELECTION_CLIPBOARD);
+		clipboard = gtk_widget_get_clipboard (focus);
 
 		text_view = GTK_TEXT_VIEW (focus);
 		buffer = gtk_text_view_get_buffer (text_view);

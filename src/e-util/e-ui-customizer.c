@@ -671,7 +671,7 @@ e_ui_customizer_toolbar_context_menu_cb (GtkWidget *toolbar,
 
 	gtk_menu_popup_at_pointer (menu, event);
 
-	g_clear_pointer (&event, gdk_event_free);
+	g_clear_pointer (&event, gdk_event_unref);
 
 	return TRUE;
 }

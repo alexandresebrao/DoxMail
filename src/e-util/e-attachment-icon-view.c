@@ -29,8 +29,10 @@
 #include "e-attachment-store.h"
 #include "e-attachment-view.h"
 
+/* GtkIconView is final with GTK 4; the attachment view holds one */
 struct _EAttachmentIconViewPrivate {
 	EAttachmentViewPrivate view_priv;
+	GtkWidget *icon_view;
 };
 
 enum {
@@ -44,7 +46,7 @@ enum {
 static void	e_attachment_icon_view_interface_init
 					(EAttachmentViewInterface *iface);
 
-G_DEFINE_TYPE_WITH_CODE (EAttachmentIconView, e_attachment_icon_view, GTK_TYPE_ICON_VIEW,
+G_DEFINE_TYPE_WITH_CODE (EAttachmentIconView, e_attachment_icon_view, GTK_TYPE_WIDGET,
 	G_ADD_PRIVATE (EAttachmentIconView)
 	G_IMPLEMENT_INTERFACE (E_TYPE_ATTACHMENT_VIEW, e_attachment_icon_view_interface_init)
 	G_IMPLEMENT_INTERFACE (E_TYPE_EXTENSIBLE, NULL))
@@ -110,7 +112,11 @@ attachment_icon_view_get_property (GObject *object,
 static void
 attachment_icon_view_dispose (GObject *object)
 {
+	EAttachmentIconView *self = E_ATTACHMENT_ICON_VIEW (object);
+
 	e_attachment_view_dispose (E_ATTACHMENT_VIEW (object));
+
+	g_clear_pointer (&self->priv->icon_view, gtk_widget_unparent);
 
 	/* Chain up to parent's dispose() method. */
 	G_OBJECT_CLASS (e_attachment_icon_view_parent_class)->dispose (object);
@@ -131,20 +137,24 @@ attachment_icon_view_constructed (GObject *object)
 	GtkCellLayout *cell_layout;
 	GtkCellRenderer *renderer;
 
+	EAttachmentIconView *self = E_ATTACHMENT_ICON_VIEW (object);
+
 	/* Chain up to parent's method. */
 	G_OBJECT_CLASS (e_attachment_icon_view_parent_class)->constructed (object);
 
-	gtk_icon_view_set_selection_mode (GTK_ICON_VIEW (object), GTK_SELECTION_MULTIPLE);
-	gtk_icon_view_set_item_width (GTK_ICON_VIEW (object), 96);
+	G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 
-	cell_layout = GTK_CELL_LAYOUT (object);
+	gtk_icon_view_set_selection_mode (GTK_ICON_VIEW (self->priv->icon_view), GTK_SELECTION_MULTIPLE);
+	gtk_icon_view_set_item_width (GTK_ICON_VIEW (self->priv->icon_view), 96);
+
+	cell_layout = GTK_CELL_LAYOUT (self->priv->icon_view);
 
 	/* This needs to happen after constructor properties are set
 	 * so that GtkCellLayout.get_area() returns something valid. */
 
 	renderer = gtk_cell_renderer_pixbuf_new ();
 	g_object_set (renderer,
-		"stock-size", GTK_ICON_SIZE_DIALOG,
+		"icon-size", GTK_ICON_SIZE_LARGE,
 		"xalign", 0.5,
 		"yalign", 0.5,
 		NULL);
@@ -195,173 +205,18 @@ attachment_icon_view_constructed (GObject *object)
 		cell_layout, renderer, "visible",
 		E_ATTACHMENT_STORE_COLUMN_SAVING);
 
+	G_GNUC_END_IGNORE_DEPRECATIONS
+
+	e_attachment_view_setup_input (E_ATTACHMENT_VIEW (self), self->priv->icon_view);
+
 	e_extensible_load_extensions (E_EXTENSIBLE (object));
-}
-
-static gboolean
-attachment_icon_view_button_press_event (GtkWidget *widget,
-                                         GdkEvent *event)
-{
-	EAttachmentView *view = E_ATTACHMENT_VIEW (widget);
-
-	if (!e_attachment_view_button_press_event (view, event)) {
-		/* Chain up to parent's button_press_event() method. */
-		GTK_WIDGET_CLASS (e_attachment_icon_view_parent_class)->
-			button_press_event (widget, event);
-	}
-
-	/* Never propagate the event to the parent */
-	return TRUE;
-}
-
-static gboolean
-attachment_icon_view_button_release_event (GtkWidget *widget,
-                                           GdkEvent *event)
-{
-	EAttachmentView *view = E_ATTACHMENT_VIEW (widget);
-
-	if (!e_attachment_view_button_release_event (view, event)) {
-		/* Chain up to parent's button_release_event() method. */
-		GTK_WIDGET_CLASS (e_attachment_icon_view_parent_class)->
-			button_release_event (widget, event);
-	}
-
-	/* Never propagate the event to the parent */
-	return TRUE;
-}
-
-static gboolean
-attachment_icon_view_motion_notify_event (GtkWidget *widget,
-                                          GdkEvent *event)
-{
-	EAttachmentView *view = E_ATTACHMENT_VIEW (widget);
-
-	if (!e_attachment_view_motion_notify_event (view, event)) {
-		/* Chain up to parent's motion_notify_event() method. */
-		GTK_WIDGET_CLASS (e_attachment_icon_view_parent_class)->
-			motion_notify_event (widget, event);
-	}
-
-	/* Never propagate the event to the parent */
-	return TRUE;
-}
-
-static gboolean
-attachment_icon_view_key_press_event (GtkWidget *widget,
-                                      GdkEvent *event)
-{
-	EAttachmentView *view = E_ATTACHMENT_VIEW (widget);
-
-	if (e_attachment_view_key_press_event (view, event))
-		return TRUE;
-
-	/* Chain up to parent's key_press_event() method. */
-	return GTK_WIDGET_CLASS (e_attachment_icon_view_parent_class)->
-		key_press_event (widget, event);
-}
-
-static void
-attachment_icon_view_drag_begin (GtkWidget *widget,
-                                 EGtkDragContext *context)
-{
-	EAttachmentView *view = E_ATTACHMENT_VIEW (widget);
-
-	/* Chain up to parent's drag_begin() method. */
-	GTK_WIDGET_CLASS (e_attachment_icon_view_parent_class)->
-		drag_begin (widget, context);
-
-	e_attachment_view_drag_begin (view, context);
-}
-
-static void
-attachment_icon_view_drag_end (GtkWidget *widget,
-                               EGtkDragContext *context)
-{
-	EAttachmentView *view = E_ATTACHMENT_VIEW (widget);
-
-	/* Chain up to parent's drag_end() method. */
-	GTK_WIDGET_CLASS (e_attachment_icon_view_parent_class)->
-		drag_end (widget, context);
-
-	e_attachment_view_drag_end (view, context);
-}
-
-static void
-attachment_icon_view_drag_data_get (GtkWidget *widget,
-                                    EGtkDragContext *context,
-                                    EGtkSelectionData *selection,
-                                    guint info,
-                                    guint time)
-{
-	EAttachmentView *view = E_ATTACHMENT_VIEW (widget);
-
-	e_attachment_view_drag_data_get (
-		view, context, selection, info, time);
-}
-
-static gboolean
-attachment_icon_view_drag_motion (GtkWidget *widget,
-                                  EGtkDragContext *context,
-                                  gint x,
-                                  gint y,
-                                  guint time)
-{
-	EAttachmentView *view = E_ATTACHMENT_VIEW (widget);
-
-	return e_attachment_view_drag_motion (view, context, x, y, time);
-}
-
-static gboolean
-attachment_icon_view_drag_drop (GtkWidget *widget,
-                                EGtkDragContext *context,
-                                gint x,
-                                gint y,
-                                guint time)
-{
-	EAttachmentView *view = E_ATTACHMENT_VIEW (widget);
-
-	if (!e_attachment_view_drag_drop (view, context, x, y, time))
-		return FALSE;
-
-	/* Chain up to parent's drag_drop() method. */
-	return GTK_WIDGET_CLASS (e_attachment_icon_view_parent_class)->
-		drag_drop (widget, context, x, y, time);
-}
-
-static void
-attachment_icon_view_drag_data_received (GtkWidget *widget,
-                                         EGtkDragContext *context,
-                                         gint x,
-                                         gint y,
-                                         EGtkSelectionData *selection,
-                                         guint info,
-                                         guint time)
-{
-	EAttachmentView *view = E_ATTACHMENT_VIEW (widget);
-
-	e_attachment_view_drag_data_received (
-		view, context, x, y, selection, info, time);
-}
-
-static gboolean
-attachment_icon_view_popup_menu (GtkWidget *widget)
-{
-	EAttachmentView *view = E_ATTACHMENT_VIEW (widget);
-	GtkWidget *menu;
-
-	e_attachment_view_update_actions (view);
-	menu = e_attachment_view_get_popup_menu (view);
-	gtk_menu_popup_at_pointer (GTK_MENU (menu), NULL);
-
-	return TRUE;
 }
 
 static void
 attachment_icon_view_item_activated (GtkIconView *icon_view,
-                                     GtkTreePath *path)
+                                     GtkTreePath *path,
+                                     EAttachmentView *view)
 {
-	EAttachmentView *view = E_ATTACHMENT_VIEW (icon_view);
-
 	e_attachment_view_open_path (view, path, NULL);
 }
 
@@ -379,7 +234,7 @@ attachment_icon_view_get_store (EAttachmentView *view)
 	GtkIconView *icon_view;
 	GtkTreeModel *model;
 
-	icon_view = GTK_ICON_VIEW (view);
+	icon_view = GTK_ICON_VIEW (E_ATTACHMENT_ICON_VIEW (view)->priv->icon_view);
 	model = gtk_icon_view_get_model (icon_view);
 
 	return E_ATTACHMENT_STORE (model);
@@ -392,7 +247,7 @@ attachment_icon_view_get_path_at_pos (EAttachmentView *view,
 {
 	GtkIconView *icon_view;
 
-	icon_view = GTK_ICON_VIEW (view);
+	icon_view = GTK_ICON_VIEW (E_ATTACHMENT_ICON_VIEW (view)->priv->icon_view);
 
 	return gtk_icon_view_get_path_at_pos (icon_view, x, y);
 }
@@ -402,7 +257,7 @@ attachment_icon_view_get_selected_paths (EAttachmentView *view)
 {
 	GtkIconView *icon_view;
 
-	icon_view = GTK_ICON_VIEW (view);
+	icon_view = GTK_ICON_VIEW (E_ATTACHMENT_ICON_VIEW (view)->priv->icon_view);
 
 	return gtk_icon_view_get_selected_items (icon_view);
 }
@@ -413,7 +268,7 @@ attachment_icon_view_path_is_selected (EAttachmentView *view,
 {
 	GtkIconView *icon_view;
 
-	icon_view = GTK_ICON_VIEW (view);
+	icon_view = GTK_ICON_VIEW (E_ATTACHMENT_ICON_VIEW (view)->priv->icon_view);
 
 	return gtk_icon_view_path_is_selected (icon_view, path);
 }
@@ -424,7 +279,7 @@ attachment_icon_view_select_path (EAttachmentView *view,
 {
 	GtkIconView *icon_view;
 
-	icon_view = GTK_ICON_VIEW (view);
+	icon_view = GTK_ICON_VIEW (E_ATTACHMENT_ICON_VIEW (view)->priv->icon_view);
 
 	gtk_icon_view_select_path (icon_view, path);
 }
@@ -435,7 +290,7 @@ attachment_icon_view_unselect_path (EAttachmentView *view,
 {
 	GtkIconView *icon_view;
 
-	icon_view = GTK_ICON_VIEW (view);
+	icon_view = GTK_ICON_VIEW (E_ATTACHMENT_ICON_VIEW (view)->priv->icon_view);
 
 	gtk_icon_view_unselect_path (icon_view, path);
 }
@@ -445,7 +300,7 @@ attachment_icon_view_select_all (EAttachmentView *view)
 {
 	GtkIconView *icon_view;
 
-	icon_view = GTK_ICON_VIEW (view);
+	icon_view = GTK_ICON_VIEW (E_ATTACHMENT_ICON_VIEW (view)->priv->icon_view);
 
 	gtk_icon_view_select_all (icon_view);
 }
@@ -455,7 +310,7 @@ attachment_icon_view_unselect_all (EAttachmentView *view)
 {
 	GtkIconView *icon_view;
 
-	icon_view = GTK_ICON_VIEW (view);
+	icon_view = GTK_ICON_VIEW (E_ATTACHMENT_ICON_VIEW (view)->priv->icon_view);
 
 	gtk_icon_view_unselect_all (icon_view);
 }
@@ -469,10 +324,9 @@ attachment_icon_view_drag_source_set (EAttachmentView *view,
 {
 	GtkIconView *icon_view;
 
-	icon_view = GTK_ICON_VIEW (view);
+	icon_view = GTK_ICON_VIEW (E_ATTACHMENT_ICON_VIEW (view)->priv->icon_view);
 
-	gtk_icon_view_enable_model_drag_source (
-		icon_view, start_button_mask, targets, n_targets, actions);
+	e_gtk_drag_source_set (GTK_WIDGET (icon_view), start_button_mask, targets, n_targets, actions);
 }
 
 static void
@@ -483,10 +337,9 @@ attachment_icon_view_drag_dest_set (EAttachmentView *view,
 {
 	GtkIconView *icon_view;
 
-	icon_view = GTK_ICON_VIEW (view);
+	icon_view = GTK_ICON_VIEW (E_ATTACHMENT_ICON_VIEW (view)->priv->icon_view);
 
-	gtk_icon_view_enable_model_drag_dest (
-		icon_view, targets, n_targets, actions);
+	e_gtk_drag_dest_set (GTK_WIDGET (icon_view), 0, targets, n_targets, actions);
 }
 
 static void
@@ -494,9 +347,9 @@ attachment_icon_view_drag_source_unset (EAttachmentView *view)
 {
 	GtkIconView *icon_view;
 
-	icon_view = GTK_ICON_VIEW (view);
+	icon_view = GTK_ICON_VIEW (E_ATTACHMENT_ICON_VIEW (view)->priv->icon_view);
 
-	gtk_icon_view_unset_model_drag_source (icon_view);
+	e_gtk_drag_source_unset (GTK_WIDGET (icon_view));
 }
 
 static void
@@ -504,17 +357,15 @@ attachment_icon_view_drag_dest_unset (EAttachmentView *view)
 {
 	GtkIconView *icon_view;
 
-	icon_view = GTK_ICON_VIEW (view);
+	icon_view = GTK_ICON_VIEW (E_ATTACHMENT_ICON_VIEW (view)->priv->icon_view);
 
-	gtk_icon_view_unset_model_drag_dest (icon_view);
+	e_gtk_drag_dest_unset (GTK_WIDGET (icon_view));
 }
 
 static void
 e_attachment_icon_view_class_init (EAttachmentIconViewClass *class)
 {
 	GObjectClass *object_class;
-	GtkWidgetClass *widget_class;
-	GtkIconViewClass *icon_view_class;
 
 	object_class = G_OBJECT_CLASS (class);
 	object_class->set_property = attachment_icon_view_set_property;
@@ -523,21 +374,7 @@ e_attachment_icon_view_class_init (EAttachmentIconViewClass *class)
 	object_class->finalize = attachment_icon_view_finalize;
 	object_class->constructed = attachment_icon_view_constructed;
 
-	widget_class = GTK_WIDGET_CLASS (class);
-	widget_class->button_press_event = attachment_icon_view_button_press_event;
-	widget_class->button_release_event = attachment_icon_view_button_release_event;
-	widget_class->motion_notify_event = attachment_icon_view_motion_notify_event;
-	widget_class->key_press_event = attachment_icon_view_key_press_event;
-	widget_class->drag_begin = attachment_icon_view_drag_begin;
-	widget_class->drag_end = attachment_icon_view_drag_end;
-	widget_class->drag_data_get = attachment_icon_view_drag_data_get;
-	widget_class->drag_motion = attachment_icon_view_drag_motion;
-	widget_class->drag_drop = attachment_icon_view_drag_drop;
-	widget_class->drag_data_received = attachment_icon_view_drag_data_received;
-	widget_class->popup_menu = attachment_icon_view_popup_menu;
-
-	icon_view_class = GTK_ICON_VIEW_CLASS (class);
-	icon_view_class->item_activated = attachment_icon_view_item_activated;
+	gtk_widget_class_set_layout_manager_type (GTK_WIDGET_CLASS (class), GTK_TYPE_BIN_LAYOUT);
 
 	g_object_class_override_property (
 		object_class, PROP_DRAGGING, "dragging");
@@ -553,6 +390,14 @@ static void
 e_attachment_icon_view_init (EAttachmentIconView *icon_view)
 {
 	icon_view->priv = e_attachment_icon_view_get_instance_private (icon_view);
+
+	G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+	icon_view->priv->icon_view = gtk_icon_view_new ();
+	G_GNUC_END_IGNORE_DEPRECATIONS
+	gtk_widget_set_parent (icon_view->priv->icon_view, GTK_WIDGET (icon_view));
+
+	g_signal_connect (icon_view->priv->icon_view, "item-activated",
+		G_CALLBACK (attachment_icon_view_item_activated), icon_view);
 
 	e_attachment_view_init (E_ATTACHMENT_VIEW (icon_view));
 }
@@ -581,4 +426,38 @@ GtkWidget *
 e_attachment_icon_view_new (void)
 {
 	return g_object_new (E_TYPE_ATTACHMENT_ICON_VIEW, NULL);
+}
+
+/**
+ * e_attachment_icon_view_get_icon_view:
+ * @self: an #EAttachmentIconView
+ *
+ * Returns: (transfer none): the #GtkIconView showing the attachments
+ *
+ * Since: DoxMail
+ **/
+GtkIconView *
+e_attachment_icon_view_get_icon_view (EAttachmentIconView *self)
+{
+	g_return_val_if_fail (E_IS_ATTACHMENT_ICON_VIEW (self), NULL);
+
+	return GTK_ICON_VIEW (self->priv->icon_view);
+}
+
+/**
+ * e_attachment_icon_view_set_model:
+ * @self: an #EAttachmentIconView
+ * @model: (nullable): an #EAttachmentStore
+ *
+ * Since: DoxMail
+ **/
+void
+e_attachment_icon_view_set_model (EAttachmentIconView *self,
+				  GtkTreeModel *model)
+{
+	g_return_if_fail (E_IS_ATTACHMENT_ICON_VIEW (self));
+
+	G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+	gtk_icon_view_set_model (GTK_ICON_VIEW (self->priv->icon_view), model);
+	G_GNUC_END_IGNORE_DEPRECATIONS
 }

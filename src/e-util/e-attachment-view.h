@@ -113,7 +113,6 @@ struct _EAttachmentViewPrivate {
 	GHashTable *open_with_apps_hash; /* gint index ~> GAppInfo * */
 
 	/* Multi-DnD State */
-	GList *event_list;
 	GList *selected;
 	gint start_x;
 	gint start_y;
@@ -161,18 +160,17 @@ void		e_attachment_view_remove_selected
 						 gboolean select_next);
 
 /* Event Support */
-gboolean	e_attachment_view_button_press_event
-						(EAttachmentView *view,
-						 GdkEvent *event);
-gboolean	e_attachment_view_button_release_event
-						(EAttachmentView *view,
-						 GdkEvent *event);
-gboolean	e_attachment_view_motion_notify_event
-						(EAttachmentView *view,
-						 GdkEvent *event);
-gboolean	e_attachment_view_key_press_event
-						(EAttachmentView *view,
-						 GdkEvent *event);
+gboolean	e_attachment_view_button_press	(EAttachmentView *view,
+						 GtkWidget *relative_to,
+						 guint button,
+						 gdouble x,
+						 gdouble y);
+gboolean	e_attachment_view_key_press	(EAttachmentView *view,
+						 GtkWidget *relative_to,
+						 guint keyval,
+						 GdkModifierType state);
+void		e_attachment_view_setup_input	(EAttachmentView *view,
+						 GtkWidget *widget);
 
 /* Selection Management */
 GtkTreePath *	e_attachment_view_get_path_at_pos

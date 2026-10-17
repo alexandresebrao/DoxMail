@@ -100,7 +100,6 @@
 #include <e-util/e-dialog-utils.h>
 #include <e-util/e-dialog-widgets.h>
 #include <e-util/e-ellipsized-combo-box-text.h>
-#include <e-util/e-emoticon-chooser-menu.h>
 #include <e-util/e-emoticon-chooser.h>
 #include <e-util/e-emoticon.h>
 #include <e-util/e-event.h>

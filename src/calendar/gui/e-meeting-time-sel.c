@@ -342,7 +342,7 @@ e_meeting_time_selector_construct (EMeetingTimeSelector *mts,
 	guint accel_key;
 	time_t meeting_start_time;
 	struct tm *meeting_start_tm;
-	AtkObject *a11y_label, *a11y_date_edit;
+	GtkWidget *a11y_label, *a11y_date_edit;
 
 	/* The default meeting time is the nearest half-hour interval in the
 	 * future, in working hours. */
@@ -745,8 +745,8 @@ e_meeting_time_selector_construct (EMeetingTimeSelector *mts,
 
 	mts->start_date_edit = e_date_edit_new ();
 	gtk_label_set_mnemonic_widget (GTK_LABEL (label), mts->start_date_edit);
-	a11y_label = gtk_widget_get_accessible (label);
-	a11y_date_edit = gtk_widget_get_accessible (mts->start_date_edit);
+	a11y_label = GTK_WIDGET (label);
+	a11y_date_edit = GTK_WIDGET (mts->start_date_edit);
 	if (a11y_label != NULL && a11y_date_edit != NULL) {
 		atk_object_add_relationship (
 			a11y_date_edit,
@@ -770,8 +770,8 @@ e_meeting_time_selector_construct (EMeetingTimeSelector *mts,
 
 	mts->end_date_edit = e_date_edit_new ();
 	gtk_label_set_mnemonic_widget (GTK_LABEL (label), mts->end_date_edit);
-	a11y_label = gtk_widget_get_accessible (label);
-	a11y_date_edit = gtk_widget_get_accessible (mts->end_date_edit);
+	a11y_label = GTK_WIDGET (label);
+	a11y_date_edit = GTK_WIDGET (mts->end_date_edit);
 	if (a11y_label != NULL && a11y_date_edit != NULL) {
 		atk_object_add_relationship (
 			a11y_date_edit,
@@ -1413,7 +1413,7 @@ e_meeting_time_selector_refresh_cb (gpointer data)
 	if (e_meeting_store_get_num_queries (mts->model) == 0) {
 		GdkCursor *cursor;
 
-		cursor = gdk_cursor_new_from_name (gtk_widget_get_display (GTK_WIDGET (mts)), "default");
+		cursor = gdk_cursor_new_from_name ("default", NULL);
 		if (cursor) {
 			GdkWindow *window;
 
@@ -1467,7 +1467,7 @@ e_meeting_time_selector_refresh_free_busy (EMeetingTimeSelector *mts,
 
 		/* Set the cursor to Busy.  We need to reset it to
 		 * normal once the free busy queries are complete. */
-		cursor = gdk_cursor_new_from_name (gtk_widget_get_display (GTK_WIDGET (mts)), "wait");
+		cursor = gdk_cursor_new_from_name ("wait", NULL);
 		if (cursor) {
 			GdkWindow *window;
 

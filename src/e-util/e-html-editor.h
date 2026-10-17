@@ -26,6 +26,7 @@
 #define E_HTML_EDITOR_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 #include <e-util/e-action-combo-box.h>
 #include <e-util/e-activity.h>
 #include <e-util/e-activity-bar.h>

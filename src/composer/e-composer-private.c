@@ -351,9 +351,9 @@ e_composer_private_constructed (EMsgComposer *composer)
 
 	/* Construct the main menu and headerbar. */
 	ui_item = e_html_editor_get_ui_object (editor, E_HTML_EDITOR_UI_OBJECT_MAIN_MENU);
-	widget = gtk_menu_bar_new_from_model (G_MENU_MODEL (ui_item));
+	widget = gtk_popover_menu_bar_new_from_model (G_MENU_MODEL (ui_item));
 
-	priv->menu_bar = e_menu_bar_new (GTK_MENU_BAR (widget), window, &priv->menu_button);
+	priv->menu_bar = e_menu_bar_new (widget, window, &priv->menu_button);
 	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 
 	if (e_util_get_use_header_bar ()) {
@@ -643,7 +643,7 @@ e_composer_paste_image (EMsgComposer *composer,
 	gchar *uri;
 
 	g_return_val_if_fail (E_IS_MSG_COMPOSER (composer), FALSE);
-	g_return_val_if_fail (GTK_IS_CLIPBOARD (clipboard), FALSE);
+	g_return_val_if_fail (GDK_IS_CLIPBOARD (clipboard), FALSE);
 
 	view = e_msg_composer_get_attachment_view (composer);
 	store = e_attachment_view_get_store (view);
@@ -674,7 +674,7 @@ e_composer_paste_uris (EMsgComposer *composer,
 	gint ii;
 
 	g_return_val_if_fail (E_IS_MSG_COMPOSER (composer), FALSE);
-	g_return_val_if_fail (GTK_IS_CLIPBOARD (clipboard), FALSE);
+	g_return_val_if_fail (GDK_IS_CLIPBOARD (clipboard), FALSE);
 
 	view = e_msg_composer_get_attachment_view (composer);
 	store = e_attachment_view_get_store (view);

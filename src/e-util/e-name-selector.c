@@ -575,7 +575,7 @@ e_name_selector_peek_section_entry (ENameSelector *name_selector,
 		g_object_weak_ref (G_OBJECT (section->entry), reset_pointer_cb, name_selector);
 		if (pango_parse_markup (name, -1, '_', NULL,
 					&text, NULL, NULL))  {
-			atk_object_set_name (gtk_widget_get_accessible (GTK_WIDGET (section->entry)), text);
+			e_gtk_widget_set_accessible_name (GTK_WIDGET (GTK_WIDGET (section->entry)), text);
 			g_free (text);
 		}
 		e_name_selector_entry_set_destination_store (section->entry, destination_store);
@@ -647,7 +647,7 @@ e_name_selector_peek_section_list (ENameSelector *name_selector,
 		g_object_weak_ref (G_OBJECT (section->entry), reset_pointer_cb, name_selector);
 		if (pango_parse_markup (name, -1, '_', NULL,
 					&text, NULL, NULL))  {
-			atk_object_set_name (gtk_widget_get_accessible (GTK_WIDGET (section->entry)), text);
+			e_gtk_widget_set_accessible_name (GTK_WIDGET (GTK_WIDGET (section->entry)), text);
 			g_free (text);
 		}
 		e_name_selector_entry_set_destination_store (section->entry, destination_store);

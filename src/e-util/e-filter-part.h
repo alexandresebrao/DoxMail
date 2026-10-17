@@ -28,6 +28,7 @@
 #define E_FILTER_PART_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 #include <libxml/parser.h>
 #include <libxml/xmlmemory.h>
 

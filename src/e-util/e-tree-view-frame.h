@@ -23,6 +23,7 @@
 #define E_TREE_VIEW_FRAME_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 
 #include <e-util/e-ui-action.h>
 

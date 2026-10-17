@@ -186,7 +186,7 @@ e_html_editor_text_dialog_init (EHTMLEditorTextDialog *dialog)
 	main_layout = e_html_editor_dialog_get_container (E_HTML_EDITOR_DIALOG (dialog));
 
 	/* Bold */
-	widget = gtk_image_new_from_stock ("format-text-bold", GTK_ICON_SIZE_BUTTON);
+	widget = gtk_image_new_from_stock ("format-text-bold", GTK_ICON_SIZE_NORMAL);
 	gtk_grid_attach (main_layout, widget, 0, 0, 1, 1);
 
 	widget = gtk_check_button_new_with_mnemonic (_("_Bold"));
@@ -197,7 +197,7 @@ e_html_editor_text_dialog_init (EHTMLEditorTextDialog *dialog)
 	dialog->priv->bold_check = widget;
 
 	/* Italic */
-	widget = gtk_image_new_from_stock ("format-text-italic", GTK_ICON_SIZE_BUTTON);
+	widget = gtk_image_new_from_stock ("format-text-italic", GTK_ICON_SIZE_NORMAL);
 	gtk_grid_attach (main_layout, widget, 0, 1, 1, 1);
 
 	widget = gtk_check_button_new_with_mnemonic (_("_Italic"));
@@ -208,7 +208,7 @@ e_html_editor_text_dialog_init (EHTMLEditorTextDialog *dialog)
 	dialog->priv->italic_check = widget;
 
 	/* Underline */
-	widget = gtk_image_new_from_stock ("format-text-underline", GTK_ICON_SIZE_BUTTON);
+	widget = gtk_image_new_from_stock ("format-text-underline", GTK_ICON_SIZE_NORMAL);
 	gtk_grid_attach (main_layout, widget, 0, 2, 1, 1);
 
 	widget = gtk_check_button_new_with_mnemonic (_("_Underline"));
@@ -218,7 +218,7 @@ e_html_editor_text_dialog_init (EHTMLEditorTextDialog *dialog)
 		G_CALLBACK (html_editor_text_dialog_set_underline), dialog);
 	dialog->priv->underline_check = widget;
 
-	widget = gtk_image_new_from_stock ("format-text-strikethrough", GTK_ICON_SIZE_BUTTON);
+	widget = gtk_image_new_from_stock ("format-text-strikethrough", GTK_ICON_SIZE_NORMAL);
 	gtk_grid_attach (main_layout, widget, 0, 3, 1, 1);
 
 	widget = gtk_check_button_new_with_mnemonic (_("_Strikethrough"));

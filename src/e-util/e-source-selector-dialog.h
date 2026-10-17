@@ -26,6 +26,7 @@
 #define E_SOURCE_SELECTOR_DIALOG_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 #include <e-util/e-source-selector.h>
 
 /* Standard GObject macros */

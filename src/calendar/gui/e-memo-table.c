@@ -95,7 +95,7 @@ memo_table_emit_open_component (EMemoTable *memo_table,
 
 static void
 memo_table_emit_popup_event (EMemoTable *memo_table,
-                             GdkEvent *event)
+                             GnomeCanvasEvent *event)
 {
 	guint signal_id = signals[POPUP_EVENT];
 
@@ -298,7 +298,7 @@ memo_table_constructed (GObject *object)
 	ECell *cell, *popup_cell;
 	ETableExtras *extras;
 	ETableSpecification *specification;
-	AtkObject *a11y;
+	GtkWidget *a11y;
 	gchar *etspecfile;
 	GList *strings;
 	GError *local_error = NULL;
@@ -429,9 +429,9 @@ memo_table_constructed (GObject *object)
 
 	g_object_unref (extras);
 
-	a11y = gtk_widget_get_accessible (GTK_WIDGET (memo_table));
+	a11y = GTK_WIDGET (GTK_WIDGET (memo_table));
 	if (a11y)
-		atk_object_set_name (a11y, _("Memos"));
+		e_gtk_widget_set_accessible_name (a11y, _("Memos"));
 
 	/* Chain up to parent's constructed() method. */
 	G_OBJECT_CLASS (e_memo_table_parent_class)->constructed (object);
@@ -557,7 +557,7 @@ static void
 memo_table_double_click (ETable *table,
                          gint row,
                          gint col,
-                         GdkEvent *event)
+                         GnomeCanvasEvent *event)
 {
 	memo_table_open_at_row (table, row);
 }
@@ -566,7 +566,7 @@ static gint
 memo_table_right_click (ETable *table,
                         gint row,
                         gint col,
-                        GdkEvent *event)
+                        GnomeCanvasEvent *event)
 {
 	EMemoTable *memo_table;
 
@@ -580,9 +580,9 @@ static gboolean
 memo_table_key_press (ETable *table,
 		      gint row,
 		      gint col,
-		      GdkEvent *event)
+		      GnomeCanvasEvent *event)
 {
-	if (event && event->type == GDK_KEY_PRESS &&
+	if (event && event->type == GNOME_CANVAS_KEY_PRESS &&
 	    (event->key.keyval == GDK_KEY_Return || event->key.keyval == GDK_KEY_KP_Enter) &&
 	    (event->key.state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_ALT_MASK)) == 0 &&
 	    !e_table_is_editing (table)) {
@@ -595,15 +595,15 @@ memo_table_key_press (ETable *table,
 
 static gboolean
 memo_table_white_space_event (ETable *table,
-			      GdkEvent *event)
+			      GnomeCanvasEvent *event)
 {
 	guint event_button = 0;
 
 	g_return_val_if_fail (E_IS_MEMO_TABLE (table), FALSE);
 	g_return_val_if_fail (event != NULL, FALSE);
 
-	if (event->type == GDK_BUTTON_PRESS &&
-	    e_gdk_event_get_button (event, &event_button) &&
+	if (event->type == GNOME_CANVAS_BUTTON_PRESS &&
+	    gnome_canvas_event_get_button (event, &event_button) &&
 	    event_button == 3) {
 		GtkWidget *table_canvas;
 
@@ -956,7 +956,7 @@ e_memo_table_class_init (EMemoTableClass *class)
 		NULL, NULL,
 		g_cclosure_marshal_VOID__BOXED,
 		G_TYPE_NONE, 1,
-		GDK_TYPE_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
+		GNOME_TYPE_CANVAS_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
 }
 
 static void

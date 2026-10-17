@@ -28,6 +28,7 @@
 #define E_RULE_EDITOR_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 
 #include <e-util/e-rule-context.h>
 #include <e-util/e-filter-rule.h>

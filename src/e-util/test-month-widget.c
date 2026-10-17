@@ -340,7 +340,7 @@ on_idle_create_widget (ESourceRegistry *registry)
 		"selection-mode", GTK_SELECTION_NONE,
 		NULL);
 
-	gtk_widget_add_css_class (widget, GTK_STYLE_CLASS_VIEW);
+	gtk_widget_add_css_class (widget, "view");
 
 	e_gtk_container_add (container, widget);
 	container = widget;

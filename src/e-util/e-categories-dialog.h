@@ -22,6 +22,7 @@
 #define E_CATEGORIES_DIALOG_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 
 /* Standard GObject macros */
 #define E_TYPE_CATEGORIES_DIALOG \

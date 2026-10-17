@@ -9,7 +9,7 @@ build=${1:-_build-gtk4}
 shift || true
 cd "$(dirname "$0")/.."
 
-ninja -C "$build" >/dev/null
+ninja -C "$build" src/doxmail-tests/all >/dev/null
 
 runtime=$(mktemp -d)
 trap 'kill "$weston_pid" 2>/dev/null; rm -rf "$runtime"' EXIT

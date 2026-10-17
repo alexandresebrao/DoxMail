@@ -43,6 +43,7 @@
 #define E_TEXT_H
 
 #include <gtk/gtk.h>
+#include <libgnomecanvas/libgnomecanvas.h>
 #include <e-util/e-gtk4-compat.h>
 
 #include <e-util/e-canvas.h>
@@ -233,9 +234,9 @@ struct _ETextClass {
 						 guint keyval,
 						 guint state);
 	void		(*populate_popup)	(EText *text,
-						 GdkEvent *button_event,
+						 GnomeCanvasEvent *button_event,
 						 gint pos,
-						 GtkMenu *menu);
+						 GMenu *menu);
 	void		(*style_updated)	(EText *text);
 };
 

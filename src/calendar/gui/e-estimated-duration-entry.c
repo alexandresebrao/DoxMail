@@ -73,8 +73,8 @@ estimated_duration_entry_update_entry (EEstimatedDurationEntry *self)
 static void
 estimated_duration_entry_add_relation (EEstimatedDurationEntry *self)
 {
-	AtkObject *a11y_estimated_duration_entry;
-	AtkObject *a11y_widget;
+	GtkWidget *a11y_estimated_duration_entry;
+	GtkWidget *a11y_widget;
 	AtkRelationSet *set;
 	AtkRelation *relation;
 	GtkWidget *widget;
@@ -84,10 +84,10 @@ estimated_duration_entry_add_relation (EEstimatedDurationEntry *self)
 	/* add a labelled_by relation for widget for accessibility */
 
 	widget = GTK_WIDGET (self);
-	a11y_estimated_duration_entry = gtk_widget_get_accessible (widget);
+	a11y_estimated_duration_entry = GTK_WIDGET (widget);
 
 	widget = self->priv->entry;
-	a11y_widget = gtk_widget_get_accessible (widget);
+	a11y_widget = GTK_WIDGET (widget);
 
 	set = atk_object_ref_relation_set (a11y_widget);
 	if (set != NULL) {

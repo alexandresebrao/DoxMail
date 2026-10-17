@@ -150,7 +150,7 @@ pixbuf_draw (ECellView *ecell_view,
 
 static gint
 pixbuf_event (ECellView *ecell_view,
-              GdkEvent *event,
+              GnomeCanvasEvent *event,
               gint model_col,
               gint view_col,
               gint row,

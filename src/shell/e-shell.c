@@ -1570,11 +1570,10 @@ e_setup_theme_icons_theme_changed_cb (GtkSettings *gtk_settings)
 				GTK_STYLE_PROVIDER (symbolic_icons_css_provider),
 				GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 		}
-		gtk_css_provider_load_from_data (symbolic_icons_css_provider, "* { -gtk-icon-style:symbolic; }", -1, NULL);
+		gtk_css_provider_load_from_string (symbolic_icons_css_provider, "* { -gtk-icon-style:symbolic; }");
 		g_object_set_data (G_OBJECT (symbolic_icons_css_provider), KEY_NAME, GINT_TO_POINTER (1));
 	} else if (!use_symbolic_icons && (using_symbolic_icons || prefer_symbolic_icons == E_PREFER_SYMBOLIC_ICONS_NO)) {
-		gtk_css_provider_load_from_data (symbolic_icons_css_provider,
-			prefer_symbolic_icons == E_PREFER_SYMBOLIC_ICONS_NO ? "* { -gtk-icon-style:regular; }" : "", -1, NULL);
+		gtk_css_provider_load_from_string (symbolic_icons_css_provider, prefer_symbolic_icons == E_PREFER_SYMBOLIC_ICONS_NO ? "* { -gtk-icon-style:regular; }" : "");
 		g_object_set_data (G_OBJECT (symbolic_icons_css_provider), KEY_NAME, GINT_TO_POINTER (0));
 	}
 

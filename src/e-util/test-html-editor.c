@@ -658,7 +658,7 @@ create_new_editor_cb (GObject *source_object,
 	container = widget;
 
 	ui_object = e_html_editor_get_ui_object (editor, E_HTML_EDITOR_UI_OBJECT_MAIN_MENU);
-	widget = gtk_menu_bar_new_from_model (G_MENU_MODEL (ui_object));
+	widget = gtk_popover_menu_bar_new_from_model (G_MENU_MODEL (ui_object));
 	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 

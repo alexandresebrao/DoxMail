@@ -558,7 +558,7 @@ tree_view_frame_constructed (GObject *object)
 
 	style_context = gtk_widget_get_style_context (widget);
 	gtk_style_context_add_class (
-		style_context, GTK_STYLE_CLASS_INLINE_TOOLBAR);
+		style_context, "inline-toolbar");
 	gtk_style_context_set_junction_sides (
 		style_context, GTK_JUNCTION_TOP);
 

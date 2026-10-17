@@ -1303,7 +1303,7 @@ test_utils_dup_image_uri (const gchar *path)
 	} else {
 		gchar *filename;
 
-		filename = e_icon_factory_get_icon_filename (path, GTK_ICON_SIZE_MENU);
+		filename = e_icon_factory_get_icon_filename (path, GTK_ICON_SIZE_NORMAL);
 		if (filename) {
 			image_uri = g_filename_to_uri (filename, NULL, &error);
 			g_free (filename);

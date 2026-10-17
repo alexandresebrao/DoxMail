@@ -301,7 +301,7 @@ e_timezone_dialog_add_timezones (ETimezoneDialog *etd)
 
 	css_provider = gtk_css_provider_new ();
 	css = "GtkComboBox { -GtkComboBox-appears-as-list: 1; }";
-	gtk_css_provider_load_from_data (css_provider, css, -1, &error);
+	gtk_css_provider_load_from_string (css_provider, css);
 	style_context = gtk_widget_get_style_context (priv->timezone_combo);
 	if (error == NULL) {
 		gtk_style_context_add_provider (

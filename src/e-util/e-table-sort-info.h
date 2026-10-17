@@ -23,6 +23,7 @@
 #define E_TABLE_SORT_INFO_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 #include <libxml/tree.h>
 
 #include <e-util/e-table-column-specification.h>

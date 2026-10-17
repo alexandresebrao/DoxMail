@@ -29,6 +29,7 @@
 #define E_TIMEZONE_DIALOG_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 
 #define LIBICAL_GLIB_UNSTABLE_API 1
 #include <libical-glib/libical-glib.h>

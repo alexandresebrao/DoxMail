@@ -25,6 +25,7 @@
 #define E_DESTINATION_STORE_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 #include <libebook/libebook.h>
 
 /* Standard GObject macros */

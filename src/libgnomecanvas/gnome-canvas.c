@@ -124,6 +124,7 @@ enum {
 
 static gint  emit_event                       (GnomeCanvas *canvas, GnomeCanvasEvent *event);
 static void canvas_release_grab              (GnomeCanvas *canvas, guint32 etime);
+static gint gnome_canvas_emit_event_real     (GnomeCanvas *canvas, GnomeCanvasEvent *event);
 
 static guint item_signals[ITEM_LAST_SIGNAL];
 
@@ -2169,6 +2170,7 @@ gnome_canvas_class_init (GnomeCanvasClass *class)
 
 	class->draw_background = gnome_canvas_draw_background;
 	class->request_update = gnome_canvas_request_update_real;
+	class->emit_event = gnome_canvas_emit_event_real;
 
 	g_object_class_install_property (
 		object_class,
@@ -2795,13 +2797,39 @@ gnome_canvas_drag_end (GtkWidget *widget,
 
 #endif /* GTK 3 */
 
+/**
+ * gnome_canvas_emit_event:
+ * @canvas: A canvas.
+ * @event: the event, in canvas window coordinates
+ *
+ * Sends @event to the items, through the emit_event class method.
+ *
+ * Returns: whether an item handled the event
+ **/
+gint
+gnome_canvas_emit_event (GnomeCanvas *canvas,
+                         GnomeCanvasEvent *event)
+{
+	g_return_val_if_fail (GNOME_IS_CANVAS (canvas), FALSE);
+	g_return_val_if_fail (event != NULL, FALSE);
+
+	return GNOME_CANVAS_GET_CLASS (canvas)->emit_event (canvas, event);
+}
+
+static gint
+emit_event (GnomeCanvas *canvas,
+            GnomeCanvasEvent *event)
+{
+	return gnome_canvas_emit_event (canvas, event);
+}
+
 /* Emits an event for an item in the canvas, be it the current item, grabbed
  * item, or focused item, as appropriate.
  */
 
 static gint
-emit_event (GnomeCanvas *canvas,
-            GnomeCanvasEvent *event)
+gnome_canvas_emit_event_real (GnomeCanvas *canvas,
+                              GnomeCanvasEvent *event)
 {
 	GnomeCanvasEvent *ev;
 	gint finished;

@@ -684,7 +684,7 @@ cal_base_shell_sidebar_constructed (GObject *object)
 	const gchar *source_extension = NULL, *selector_name = NULL, *restore_state_signal = NULL;
 	ECalBaseShellSidebar *cal_base_shell_sidebar;
 	GtkWidget *container, *widget;
-	AtkObject *a11y;
+	GtkWidget *a11y;
 	gboolean add_navigator = FALSE;
 
 	/* Chain up to parent's constructed() method. */
@@ -742,8 +742,8 @@ cal_base_shell_sidebar_constructed (GObject *object)
 	container = widget;
 
 	widget = e_client_selector_new (client_cache, source_extension);
-	a11y = gtk_widget_get_accessible (widget);
-	atk_object_set_name (a11y, selector_name);
+	a11y = GTK_WIDGET (widget);
+	e_gtk_widget_set_accessible_name (a11y, selector_name);
 	cal_base_shell_sidebar->priv->selector = E_SOURCE_SELECTOR (widget);
 	e_gtk_container_add (container, widget);
 

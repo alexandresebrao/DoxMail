@@ -115,7 +115,7 @@ e_rss_preferences_create_icon_pixbuf (const gchar *icon_filename)
 	}
 
 	if (!pixbuf)
-		pixbuf = e_icon_factory_get_icon ("rss", GTK_ICON_SIZE_DIALOG);
+		pixbuf = e_icon_factory_get_icon ("rss", GTK_ICON_SIZE_LARGE);
 
 	return pixbuf;
 }

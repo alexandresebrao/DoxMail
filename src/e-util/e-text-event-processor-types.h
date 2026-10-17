@@ -28,6 +28,7 @@
 #define E_TEXT_EVENT_PROCESSOR_TYPES_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 
 G_BEGIN_DECLS
 

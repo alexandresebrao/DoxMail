@@ -26,6 +26,7 @@
 #define E_ATTACHMENT_STORE_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 #include <e-util/e-attachment.h>
 
 /* Standard GObject macros */

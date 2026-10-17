@@ -586,7 +586,7 @@ e_attachment_paned_init (EAttachmentPaned *paned)
 
 	widget = e_attachment_icon_view_new ();
 	gtk_widget_set_focusable (widget, TRUE);
-	gtk_icon_view_set_model (GTK_ICON_VIEW (widget), paned->priv->model);
+	e_attachment_icon_view_set_model (E_ATTACHMENT_ICON_VIEW (widget), paned->priv->model);
 	e_gtk_container_add (container, widget);
 	paned->priv->icon_view = g_object_ref (widget);
 	gtk_widget_show (widget);

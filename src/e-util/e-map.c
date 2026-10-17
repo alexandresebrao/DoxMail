@@ -867,13 +867,13 @@ EMap *
 e_map_new (void)
 {
 	GtkWidget *widget;
-	AtkObject *a11y;
+	GtkWidget *a11y;
 
 	widget = g_object_new (E_TYPE_MAP, NULL);
-	a11y = gtk_widget_get_accessible (widget);
-	atk_object_set_name (a11y, _("World Map"));
+	a11y = GTK_WIDGET (widget);
+	e_gtk_widget_set_accessible_name (a11y, _("World Map"));
 	atk_object_set_role (a11y, ATK_ROLE_IMAGE);
-	atk_object_set_description (
+	e_gtk_widget_set_accessible_description (
 		a11y, _("Mouse-based interactive map widget for selecting "
 		"timezone. Keyboard users should instead select the timezone "
 		"from the drop-down combination box below."));

@@ -98,7 +98,7 @@ struct _ECellPopupClass {
 
 	/* Virtual function for subclasses to override. */
 	gint		(*popup)		(ECellPopup *ecp,
-						 GdkEvent *event,
+						 GnomeCanvasEvent *event,
 						 gint row,
 						 gint view_col);
 };
@@ -110,6 +110,11 @@ void		e_cell_popup_set_child		(ECellPopup *ecp,
 						 ECell *child);
 void		e_cell_popup_set_shown		(ECellPopup *ecp,
 						 gboolean shown);
+gboolean	e_cell_popup_get_cell_rect	(ECellPopup *ecp,
+						 GtkWidget **out_canvas,
+						 GdkRectangle *out_rect);
+gboolean	e_cell_popup_show_popover	(ECellPopup *ecp,
+						 GtkWidget *popover);
 void		e_cell_popup_queue_cell_redraw	(ECellPopup *ecp);
 
 G_END_DECLS

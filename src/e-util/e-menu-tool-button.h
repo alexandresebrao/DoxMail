@@ -30,6 +30,7 @@
 #define E_MENU_TOOL_BUTTON_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 
 #include <e-util/e-ui-action.h>
 #include <e-util/e-ui-manager.h>
@@ -60,17 +61,20 @@ typedef struct _EMenuToolButtonPrivate EMenuToolButtonPrivate;
 typedef struct _EMenuToolButtonClass EMenuToolButtonClass;
 
 struct _EMenuToolButton {
-	GtkMenuToolButton parent;
+	GtkBox parent;
 	EMenuToolButtonPrivate *priv;
 };
 
 struct _EMenuToolButtonClass {
-	GtkMenuToolButtonClass parent_class;
+	GtkBoxClass parent_class;
 };
 
 GType		e_menu_tool_button_get_type	(void) G_GNUC_CONST;
-GtkToolItem *	e_menu_tool_button_new		(const gchar *label,
+GtkWidget *	e_menu_tool_button_new		(const gchar *label,
 						 EUIManager *ui_manager);
+void		e_menu_tool_button_set_menu_model
+						(EMenuToolButton *button,
+						 GMenuModel *menu_model);
 const gchar *	e_menu_tool_button_get_prefer_item
 						(EMenuToolButton *button);
 void		e_menu_tool_button_set_prefer_item

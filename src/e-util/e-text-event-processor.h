@@ -29,6 +29,7 @@
 #define E_TEXT_EVENT_PROCESSOR_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 #include <e-util/e-text-event-processor-types.h>
 
 /* Standard GObject macros */

@@ -143,7 +143,7 @@ mail_folder_create_dialog_create_folder (EMailFolderCreateDialog *dialog)
 		GdkCursor *gdk_cursor;
 
 		/* Make the cursor appear busy. */
-		gdk_cursor = gdk_cursor_new_from_name (gtk_widget_get_display (GTK_WIDGET (dialog)), "wait");
+		gdk_cursor = gdk_cursor_new_from_name ("wait", NULL);
 		if (gdk_cursor) {
 			GdkWindow *gdk_window;
 

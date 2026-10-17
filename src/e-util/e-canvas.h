@@ -27,6 +27,7 @@
 #define E_CANVAS_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 #include <libgnomecanvas/gnome-canvas.h>
 
 /* ECanvas - A class derived from canvas for the purpose of adding
@@ -112,6 +113,9 @@ struct _ECanvasClass {
 
 GType		e_canvas_get_type		(void) G_GNUC_CONST;
 GtkWidget *	e_canvas_new			(void);
+void		e_canvas_popup_menu		(GtkWidget *menu,
+						 GnomeCanvas *canvas,
+						 GnomeCanvasEvent *event);
 
 /* Used to send all of the keystroke events to a specific item as well as
  * GDK_FOCUS_CHANGE events. */

@@ -27,6 +27,7 @@
 #define _E_CALENDAR_H_
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 #include <e-util/e-canvas.h>
 #include <e-util/e-calendar-item.h>
 

@@ -142,7 +142,7 @@ struct _ETableHeaderItemClass {
 
 	/* Signals */
 	void		(*button_pressed)	(ETableHeaderItem *ethi,
-						 GdkEvent *button_event);
+						 GnomeCanvasEvent *button_event);
 };
 
 GType		e_table_header_item_get_type	(void) G_GNUC_CONST;

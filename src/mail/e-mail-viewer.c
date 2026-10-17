@@ -2093,12 +2093,12 @@ mail_viewer_constructed (GObject *object)
 	self->priv->statusbar = widget;
 
 	ui_item = e_ui_manager_create_item (self->priv->ui_manager, "main-menu");
-	widget = gtk_menu_bar_new_from_model (G_MENU_MODEL (ui_item));
+	widget = gtk_popover_menu_bar_new_from_model (G_MENU_MODEL (ui_item));
 	self->priv->main_menu = E_UI_MENU (ui_item);
 
 	e_gtk_box_pack_start (GTK_BOX (content_box), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
-	self->priv->e_menu_bar = e_menu_bar_new (GTK_MENU_BAR (widget), GTK_WINDOW (self), &self->priv->menu_button);
+	self->priv->e_menu_bar = e_menu_bar_new (widget, GTK_WINDOW (self), &self->priv->menu_button);
 
 	widget = e_alert_bar_new ();
 	gtk_widget_set_margin_bottom (widget, 6);

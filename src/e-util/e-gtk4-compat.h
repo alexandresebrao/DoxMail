@@ -99,6 +99,8 @@ void		e_gtk_widget_get_preferred_height_for_width
 						 gint *minimum,
 						 gint *natural);
 GdkSurface *	e_gtk_widget_get_surface	(GtkWidget *widget);
+void		e_gtk_widget_get_monitor_area	(GtkWidget *widget,
+						 GdkRectangle *out_area);
 void		e_gtk_button_set_image		(GtkButton *button,
 						 GtkWidget *image);
 void		e_gtk_button_set_label_and_icon	(GtkButton *button,
@@ -144,6 +146,14 @@ gboolean	e_gdk_event_get_coords		(GdkEvent *event,
 gboolean	e_gdk_event_get_root_coords	(GdkEvent *event,
 						 gdouble *x,
 						 gdouble *y);
+
+/* atk_object_set_name/description on a widget's accessible */
+void		e_gtk_widget_set_accessible_name
+						(GtkWidget *widget,
+						 const gchar *name);
+void		e_gtk_widget_set_accessible_description
+						(GtkWidget *widget,
+						 const gchar *description);
 
 gboolean	e_gtk_show_uri_on_window	(GtkWindow *parent,
 						 const gchar *uri,

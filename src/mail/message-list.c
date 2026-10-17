@@ -280,7 +280,7 @@ static gint	on_click			(ETree *tree,
 						 gint row,
 						 GNode *node,
 						 gint col,
-						 GdkEvent *event,
+						 GnomeCanvasEvent *event,
 						 MessageList *message_list);
 
 static void	mail_regen_list			(MessageList *message_list,
@@ -4363,7 +4363,7 @@ message_list_construct (MessageList *message_list)
 	ETreeTableAdapter *adapter;
 	ETableSpecification *specification;
 	ETableItem *item;
-	AtkObject *a11y;
+	GtkWidget *a11y;
 	gboolean constructed;
 	gchar *etspecfile;
 	GError *local_error = NULL;
@@ -4397,8 +4397,8 @@ message_list_construct (MessageList *message_list)
 		e_tree_table_adapter_root_node_set_visible (adapter, FALSE);
 
 	if (atk_get_root () != NULL) {
-		a11y = gtk_widget_get_accessible (GTK_WIDGET (message_list));
-		atk_object_set_name (a11y, _("Messages"));
+		a11y = GTK_WIDGET (GTK_WIDGET (message_list));
+		e_gtk_widget_set_accessible_name (a11y, _("Messages"));
 	}
 
 	g_signal_connect (
@@ -5748,7 +5748,7 @@ on_click (ETree *tree,
           gint row,
           GNode *node,
           gint col,
-          GdkEvent *event,
+          GnomeCanvasEvent *event,
           MessageList *list)
 {
 	CamelFolder *folder;

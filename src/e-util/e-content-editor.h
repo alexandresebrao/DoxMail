@@ -23,6 +23,7 @@
 
 #include <glib-object.h>
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 
 #include <camel/camel.h>
 #include <libedataserver/libedataserver.h>

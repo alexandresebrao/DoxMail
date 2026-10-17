@@ -1891,7 +1891,7 @@ em_folder_tree_init (EMFolderTree *folder_tree)
 {
 	GHashTable *select_uris_table;
 	GSettings *settings;
-	AtkObject *a11y;
+	GtkWidget *a11y;
 
 	select_uris_table = g_hash_table_new (g_str_hash, g_str_equal);
 
@@ -1916,8 +1916,8 @@ em_folder_tree_init (EMFolderTree *folder_tree)
 	/* FIXME Gross hack. */
 	gtk_widget_set_focusable (GTK_WIDGET (folder_tree), TRUE);
 
-	a11y = gtk_widget_get_accessible (GTK_WIDGET (folder_tree));
-	atk_object_set_name (a11y, _("Mail Folder Tree"));
+	a11y = GTK_WIDGET (GTK_WIDGET (folder_tree));
+	e_gtk_widget_set_accessible_name (a11y, _("Mail Folder Tree"));
 }
 
 /* Sets a selectable widget, which will be used for update-actions and

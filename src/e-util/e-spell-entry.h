@@ -23,6 +23,7 @@
 #define E_SPELL_ENTRY_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 
 #include <e-util/e-spell-checker.h>
 

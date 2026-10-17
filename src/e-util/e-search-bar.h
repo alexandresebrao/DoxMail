@@ -26,6 +26,7 @@
 #define E_SEARCH_BAR_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 
 #include <e-util/e-web-view.h>
 

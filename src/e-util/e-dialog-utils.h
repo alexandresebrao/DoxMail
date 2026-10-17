@@ -27,6 +27,7 @@
 #define E_DIALOG_UTILS_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 
 void		e_notice			(gpointer parent,
 						 GtkMessageType type,

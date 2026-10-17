@@ -24,6 +24,7 @@
 #define E_SPINNER_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 
 #define E_TYPE_SPINNER		(e_spinner_get_type ())
 #define E_SPINNER(o)		(G_TYPE_CHECK_INSTANCE_CAST ((o), E_TYPE_SPINNER, ESpinner))
