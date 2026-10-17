@@ -1,0 +1,359 @@
+/*
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either the version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
+ * License for more details.
+ */
+
+/* e-util on GTK 4: the compat layers and some of the ported widgets.
+ *
+ *   test-eutil                  runs the checks (needs a display)
+ *   test-eutil --interactive    shows the widgets in a window
+ */
+
+#include "evolution-config.h"
+
+#include <gtk/gtk.h>
+#include <glib/gstdio.h>
+#include <e-util/e-util.h>
+
+/* lets the widgets map and lay out */
+static void
+spin (guint ms)
+{
+	gint64 until = g_get_monotonic_time () + ms * 1000;
+
+	while (g_get_monotonic_time () < until)
+		g_main_context_iteration (NULL, FALSE);
+}
+
+static GtkWidget *
+show_in_window (GtkWidget *child)
+{
+	GtkWidget *window = gtk_window_new ();
+
+	gtk_window_set_default_size (GTK_WINDOW (window), 400, 300);
+	gtk_window_set_child (GTK_WINDOW (window), child);
+	gtk_window_present (GTK_WINDOW (window));
+	spin (300);
+
+	return window;
+}
+
+static void
+test_toggle_radio (void)
+{
+	GtkWidget *a, *b, *c, *toggle;
+	GSList *group;
+
+	a = e_gtk_radio_button_new_with_label (NULL, "a");
+	group = e_gtk_radio_button_get_group (a);
+	b = e_gtk_radio_button_new_with_label (group, "b");
+	c = e_gtk_radio_button_new_with_mnemonic_from_widget (a, "_c");
+	g_object_ref_sink (a);
+	g_object_ref_sink (b);
+	g_object_ref_sink (c);
+
+	/* the first of a GTK 3 group starts active, the group is exclusive */
+	g_assert_true (e_gtk_toggle_button_get_active (a));
+	e_gtk_toggle_button_set_active (c, TRUE);
+	g_assert_false (e_gtk_toggle_button_get_active (a));
+	g_assert_false (e_gtk_toggle_button_get_active (b));
+	g_assert_true (e_gtk_toggle_button_get_active (c));
+
+	toggle = g_object_ref_sink (gtk_toggle_button_new_with_label ("t"));
+	e_gtk_toggle_button_set_active (toggle, TRUE);
+	g_assert_true (e_gtk_toggle_button_get_active (toggle));
+	e_gtk_toggle_button_set_inconsistent (toggle, TRUE);
+	g_assert_true (e_gtk_toggle_button_get_inconsistent (toggle));
+
+	g_object_unref (a);
+	g_object_unref (b);
+	g_object_unref (c);
+	g_object_unref (toggle);
+}
+
+static void
+test_container_child (void)
+{
+	GtkWidget *grid, *label, *notebook, *page;
+	gint top = -1, left = -1;
+	gboolean tab_fill = FALSE;
+
+	grid = g_object_ref_sink (gtk_grid_new ());
+	label = gtk_label_new ("x");
+	gtk_grid_attach (GTK_GRID (grid), label, 1, 2, 1, 1);
+
+	e_gtk_container_child_get (grid, label, "left-attach", &left, "top-attach", &top, NULL);
+	g_assert_cmpint (left, ==, 1);
+	g_assert_cmpint (top, ==, 2);
+
+	/* GTK 3 box packing is gone; the vararg is still skipped */
+	e_gtk_container_child_set (grid, label, "expand", TRUE, "top-attach", 5, NULL);
+	e_gtk_container_child_get (grid, label, "top-attach", &top, NULL);
+	g_assert_cmpint (top, ==, 5);
+
+	notebook = g_object_ref_sink (gtk_notebook_new ());
+	page = gtk_label_new ("page");
+	gtk_notebook_append_page (GTK_NOTEBOOK (notebook), page, NULL);
+	e_gtk_container_child_set (notebook, page, "tab-fill", TRUE, NULL);
+	e_gtk_container_child_get (notebook, page, "tab-fill", &tab_fill, NULL);
+	g_assert_true (tab_fill);
+
+	g_object_unref (grid);
+	g_object_unref (notebook);
+}
+
+static void
+test_calendar_compat (void)
+{
+	GtkWidget *calendar;
+	guint year = 0, month = 0, day = 0;
+
+	calendar = g_object_ref_sink (gtk_calendar_new ());
+
+	e_gtk_calendar_select_month (GTK_CALENDAR (calendar), 1, 2024);
+	e_gtk_calendar_select_day (GTK_CALENDAR (calendar), 29);
+	e_gtk_calendar_get_date (GTK_CALENDAR (calendar), &year, &month, &day);
+
+	/* GTK 3 months count from 0 */
+	g_assert_cmpuint (year, ==, 2024);
+	g_assert_cmpuint (month, ==, 1);
+	g_assert_cmpuint (day, ==, 29);
+
+	g_object_unref (calendar);
+}
+
+typedef struct {
+	gint prepared;
+	gint applied;
+	gint closed;
+} AssistantCounts;
+
+static void
+assistant_prepare_cb (EAssistant *assistant,
+		      GtkWidget *page,
+		      AssistantCounts *counts)
+{
+	counts->prepared++;
+}
+
+static void
+assistant_apply_cb (EAssistant *assistant,
+		    AssistantCounts *counts)
+{
+	counts->applied++;
+}
+
+static void
+assistant_close_cb (EAssistant *assistant,
+		    AssistantCounts *counts)
+{
+	counts->closed++;
+}
+
+static void
+test_assistant (void)
+{
+	AssistantCounts counts = { 0, };
+	EAssistant *assistant;
+	GtkWidget *intro, *content, *hidden, *confirm, *summary;
+
+	assistant = E_ASSISTANT (e_assistant_new ());
+	g_signal_connect (assistant, "prepare", G_CALLBACK (assistant_prepare_cb), &counts);
+	g_signal_connect (assistant, "apply", G_CALLBACK (assistant_apply_cb), &counts);
+	g_signal_connect (assistant, "close", G_CALLBACK (assistant_close_cb), &counts);
+
+	intro = gtk_label_new ("intro");
+	content = gtk_label_new ("content");
+	hidden = gtk_label_new ("hidden");
+	confirm = gtk_label_new ("confirm");
+	summary = gtk_label_new ("summary");
+
+	g_assert_cmpint (e_assistant_append_page (assistant, intro), ==, 0);
+	g_assert_cmpint (e_assistant_append_page (assistant, content), ==, 1);
+	g_assert_cmpint (e_assistant_append_page (assistant, hidden), ==, 2);
+	g_assert_cmpint (e_assistant_append_page (assistant, confirm), ==, 3);
+	g_assert_cmpint (e_assistant_append_page (assistant, summary), ==, 4);
+	g_assert_cmpint (e_assistant_get_n_pages (assistant), ==, 5);
+
+	e_assistant_set_page_type (assistant, intro, GTK_ASSISTANT_PAGE_INTRO);
+	e_assistant_set_page_type (assistant, confirm, GTK_ASSISTANT_PAGE_CONFIRM);
+	e_assistant_set_page_type (assistant, summary, GTK_ASSISTANT_PAGE_SUMMARY);
+	e_assistant_set_page_title (assistant, content, "Content");
+	gtk_widget_set_visible (hidden, FALSE);
+
+	gtk_window_present (GTK_WINDOW (assistant));
+	spin (300);
+
+	/* mapping shows the first page */
+	g_assert_cmpint (e_assistant_get_current_page (assistant), ==, 0);
+	g_assert_cmpint (counts.prepared, ==, 1);
+
+	e_assistant_next_page (assistant);
+	g_assert_cmpint (e_assistant_get_current_page (assistant), ==, 1);
+	g_assert_cmpstr (e_assistant_get_page_title (assistant, content), ==, "Content");
+
+	/* the hidden page is skipped */
+	e_assistant_next_page (assistant);
+	g_assert_cmpint (e_assistant_get_current_page (assistant), ==, 3);
+
+	/* back goes where it came from */
+	e_assistant_previous_page (assistant);
+	g_assert_cmpint (e_assistant_get_current_page (assistant), ==, 1);
+
+	e_assistant_set_current_page (assistant, 3);
+	g_assert_cmpint (counts.applied, ==, 0);
+
+	e_assistant_commit (assistant);
+	e_assistant_set_current_page (assistant, -1);
+	g_assert_cmpint (e_assistant_get_current_page (assistant), ==, 4);
+	g_assert_true (e_assistant_get_nth_page (assistant, -1) == summary);
+
+	gtk_window_destroy (GTK_WINDOW (assistant));
+	spin (50);
+}
+
+static void
+test_widgets (void)
+{
+	GtkWidget *box, *window, *widget;
+	GdkRGBA color = { 0.5, 0.25, 0.75, 1.0 }, got;
+
+	box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
+
+	widget = e_color_combo_new ();
+	e_color_combo_set_current_color (E_COLOR_COMBO (widget), &color);
+	e_color_combo_get_current_color (E_COLOR_COMBO (widget), &got);
+	g_assert_true (gdk_rgba_equal (&color, &got));
+	gtk_box_append (GTK_BOX (box), widget);
+
+	widget = e_month_widget_new ();
+	e_month_widget_set_month (E_MONTH_WIDGET (widget), G_DATE_FEBRUARY, 2024);
+	gtk_box_append (GTK_BOX (box), widget);
+
+	widget = e_date_edit_new ();
+	gtk_box_append (GTK_BOX (box), widget);
+
+	widget = e_ellipsized_combo_box_text_new (FALSE);
+	gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (widget), "a very long text that should be ellipsized");
+	g_assert_cmpint (e_ellipsized_combo_box_text_get_max_natural_width (E_ELLIPSIZED_COMBO_BOX_TEXT (widget)), ==, 225);
+	gtk_box_append (GTK_BOX (box), widget);
+
+	window = show_in_window (box);
+
+	g_assert_true (gtk_widget_get_mapped (box));
+
+	gtk_window_destroy (GTK_WINDOW (window));
+	spin (50);
+}
+
+static void
+test_picture_gallery (void)
+{
+	GtkWidget *scrolled, *gallery, *window;
+	gchar *dir;
+
+	dir = g_dir_make_tmp ("test-eutil-XXXXXX", NULL);
+	g_assert_nonnull (dir);
+
+	gallery = e_picture_gallery_new (dir);
+	g_assert_cmpstr (e_picture_gallery_get_path (E_PICTURE_GALLERY (gallery)), ==, dir);
+
+	/* the wrapper scrolls like the GTK 3 icon view */
+	scrolled = gtk_scrolled_window_new ();
+	gtk_scrolled_window_set_child (GTK_SCROLLED_WINDOW (scrolled), gallery);
+	g_assert_true (GTK_IS_ICON_VIEW (e_picture_gallery_get_icon_view (E_PICTURE_GALLERY (gallery))));
+
+	window = show_in_window (scrolled);
+	gtk_window_destroy (GTK_WINDOW (window));
+	spin (50);
+
+	g_rmdir (dir);
+	g_free (dir);
+}
+
+static gboolean
+style_updated_cb (GtkWidget *widget,
+		  gint *count)
+{
+	(*count)++;
+
+	return FALSE;
+}
+
+static void
+test_legacy_signals (void)
+{
+	GtkWidget *widget;
+	gint count = 0;
+
+	widget = g_object_ref_sink (gtk_label_new ("x"));
+
+	/* the GTK 3 names exist on every widget */
+	g_assert_cmpuint (g_signal_lookup ("key-press-event", GTK_TYPE_WIDGET), !=, 0);
+	g_assert_cmpuint (g_signal_lookup ("button-press-event", GTK_TYPE_WIDGET), !=, 0);
+	g_assert_cmpuint (g_signal_lookup ("popup-menu", GTK_TYPE_WIDGET), !=, 0);
+	g_assert_cmpuint (g_signal_lookup ("drag-data-received", GTK_TYPE_WIDGET), !=, 0);
+
+	g_assert_true (e_gtk_widget_legacy_events (widget) == widget);
+	g_assert_true (e_gtk_widget_style_updates (widget) == widget);
+
+	g_signal_connect (widget, "style-updated", G_CALLBACK (style_updated_cb), &count);
+	g_object_set (gtk_settings_get_default (), "gtk-application-prefer-dark-theme", TRUE, NULL);
+	g_object_set (gtk_settings_get_default (), "gtk-application-prefer-dark-theme", FALSE, NULL);
+	g_assert_cmpint (count, ==, 2);
+
+	g_object_unref (widget);
+}
+
+static void
+quit_cb (GtkWidget *widget,
+	 gpointer user_data)
+{
+	*(gboolean *) user_data = TRUE;
+}
+
+gint
+main (gint argc,
+      gchar **argv)
+{
+	if (argc > 1 && g_str_equal (argv[1], "--interactive")) {
+		GtkWidget *box, *window;
+		gboolean done = FALSE;
+
+		gtk_init ();
+
+		box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
+		gtk_box_append (GTK_BOX (box), e_color_combo_new ());
+		gtk_box_append (GTK_BOX (box), e_month_widget_new ());
+		gtk_box_append (GTK_BOX (box), e_date_edit_new ());
+
+		window = gtk_window_new ();
+		gtk_window_set_child (GTK_WINDOW (window), box);
+		g_signal_connect (window, "destroy", G_CALLBACK (quit_cb), &done);
+		gtk_window_present (GTK_WINDOW (window));
+
+		while (!done)
+			g_main_context_iteration (NULL, TRUE);
+
+		return 0;
+	}
+
+	gtk_test_init (&argc, &argv, NULL);
+
+	g_test_add_func ("/eutil/toggle-radio", test_toggle_radio);
+	g_test_add_func ("/eutil/container-child", test_container_child);
+	g_test_add_func ("/eutil/calendar-compat", test_calendar_compat);
+	g_test_add_func ("/eutil/legacy-signals", test_legacy_signals);
+	g_test_add_func ("/eutil/assistant", test_assistant);
+	g_test_add_func ("/eutil/widgets", test_widgets);
+	g_test_add_func ("/eutil/picture-gallery", test_picture_gallery);
+
+	return g_test_run ();
+}

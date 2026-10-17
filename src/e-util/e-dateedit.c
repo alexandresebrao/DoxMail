@@ -642,20 +642,7 @@ create_children (EDateEdit *dedit)
 	gtk_combo_box_set_entry_text_column (GTK_COMBO_BOX (priv->time_combo), 0);
 	g_object_unref (time_store);
 
-	css_provider = gtk_css_provider_new ();
-	css = "GtkComboBox { -GtkComboBox-appears-as-list: 1; }";
-	gtk_css_provider_load_from_string (css_provider, css);
-	style_context = gtk_widget_get_style_context (priv->time_combo);
-	if (error == NULL) {
-		gtk_style_context_add_provider (
-			style_context,
-			GTK_STYLE_PROVIDER (css_provider),
-			GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-	} else {
-		g_warning ("%s: %s", G_STRFUNC, error->message);
-		g_clear_error (&error);
-	}
-	g_object_unref (css_provider);
+	/* GTK 4 combo boxes always pop up as a list */
 
 	child = e_gtk_bin_get_child (priv->time_combo);
 

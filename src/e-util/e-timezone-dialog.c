@@ -298,20 +298,7 @@ e_timezone_dialog_add_timezones (ETimezoneDialog *etd)
 
 	gtk_combo_box_set_model (combo, GTK_TREE_MODEL (tree_store));
 
-	css_provider = gtk_css_provider_new ();
-	css = "GtkComboBox { -GtkComboBox-appears-as-list: 1; }";
-	gtk_css_provider_load_from_string (css_provider, css);
-	style_context = gtk_widget_get_style_context (priv->timezone_combo);
-	if (error == NULL) {
-		gtk_style_context_add_provider (
-			style_context,
-			GTK_STYLE_PROVIDER (css_provider),
-			GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-	} else {
-		g_warning ("%s: %s", G_STRFUNC, error->message);
-		g_clear_error (&error);
-	}
-	g_object_unref (css_provider);
+	/* GTK 4 combo boxes always pop up as a list */
 
 	g_list_free_full (list_items, g_free);
 }

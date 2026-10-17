@@ -55,6 +55,8 @@ bin_child (GtkWidget *bin,
 	BIN (GTK_IS_LIST_BOX_ROW, GtkListBoxRow, gtk_list_box_row_get_child, gtk_list_box_row_set_child)
 	BIN (GTK_IS_FLOW_BOX_CHILD, GtkFlowBoxChild, gtk_flow_box_child_get_child, gtk_flow_box_child_set_child)
 	BIN (GTK_IS_WINDOW_HANDLE, GtkWindowHandle, gtk_window_handle_get_child, gtk_window_handle_set_child)
+	/* the entry of a combo box with one, as with GTK 3 */
+	BIN (GTK_IS_COMBO_BOX, GtkComboBox, gtk_combo_box_get_child, gtk_combo_box_set_child)
 
 	#undef BIN
 
