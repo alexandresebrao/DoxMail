@@ -21,6 +21,7 @@
 #include <libebackend/libebackend.h>
 
 #include <shell/e-shell.h>
+#include <shell/e-shell-window.h>
 
 /* Standard GObject macros */
 #define E_TYPE_MAILTO_HANDLER \
@@ -108,7 +109,7 @@ mailto_handler_prompt (EMailtoHandler *extension)
 	gint response;
 
 	dialog = gtk_dialog_new_with_buttons (
-		"", NULL, 0,
+		"", e_shell_get_active_window (mailto_handler_get_shell (extension)), GTK_DIALOG_MODAL,
 		_("Do _not change settings"), GTK_RESPONSE_NO,
 		_("_Set as default email client"), GTK_RESPONSE_YES,
 		NULL);
@@ -169,6 +170,47 @@ mailto_handler_prompt (EMailtoHandler *extension)
 	e_gtk_widget_destroy (dialog);
 
 	return (response == GTK_RESPONSE_YES);
+}
+
+static void mailto_handler_check (EMailtoHandler *extension);
+
+static gboolean
+mailto_handler_check_idle_cb (gpointer user_data)
+{
+	mailto_handler_check (user_data);
+
+	return G_SOURCE_REMOVE;
+}
+
+static void
+mailto_handler_window_added_cb (GtkApplication *application,
+				GtkWindow *window,
+				EMailtoHandler *extension)
+{
+	if (!E_IS_SHELL_WINDOW (window))
+		return;
+
+	g_signal_handlers_disconnect_by_func (application, mailto_handler_window_added_cb, extension);
+
+	/* after the window shows */
+	g_idle_add_full (G_PRIORITY_LOW, mailto_handler_check_idle_cb,
+		g_object_ref (extension), g_object_unref);
+}
+
+/* DoxMail: the prompt runs its own main loop; when it ran from
+ * ready-to-start, which is emitted in GApplication::activate, the shell
+ * window could be created only after it was answered */
+static void
+mailto_handler_ready_to_start_cb (EMailtoHandler *extension)
+{
+	EShell *shell = mailto_handler_get_shell (extension);
+
+	if (e_shell_get_active_window (shell))
+		g_idle_add_full (G_PRIORITY_LOW, mailto_handler_check_idle_cb,
+			g_object_ref (extension), g_object_unref);
+	else
+		g_signal_connect (shell, "window-added",
+			G_CALLBACK (mailto_handler_window_added_cb), extension);
 }
 
 static void
@@ -241,7 +283,7 @@ mailto_handler_constructed (GObject *object)
 
 	g_signal_connect_swapped (
 		shell, "event::ready-to-start",
-		G_CALLBACK (mailto_handler_check), extension);
+		G_CALLBACK (mailto_handler_ready_to_start_cb), extension);
 
 	/* Chain up to parent's constructed() method. */
 	G_OBJECT_CLASS (e_mailto_handler_parent_class)->constructed (object);

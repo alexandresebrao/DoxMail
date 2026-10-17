@@ -228,6 +228,14 @@ reach the layout manager. Also: `style-updated` is emitted on realize, as
 GTK 3 did; GtkScrollbar is no GtkRange. The calendar day view renders
 (`doxmail/screenshot-gtk4-calendar.png`).
 
+Buttons: GTK 3 buttons kept a label and an image together and showed only
+the label when they had one (gtk-button-images was off); the
+`e_gtk_button_set_image()` compat keeps the image and rebuilds the child
+on label changes, the same way. The mailto handler prompt waits for the
+shell window (it ran a nested loop inside GApplication::activate, which
+kept the window from being created). Open: Adwaita for GTK 4 has no
+full-color `dialog-*` icons (`image-missing` shows instead).
+
 ### 7. GtkBuilder files
 
 All 13 `.ui` files are GTK 4 files: `gtk4-builder-tool simplify --3to4

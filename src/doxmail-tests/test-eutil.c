@@ -254,6 +254,24 @@ test_widgets (void)
 		e_gtk_button_set_image (GTK_BUTTON (widget), image);
 		g_assert_true (e_gtk_button_get_image (GTK_BUTTON (widget)) == image);
 		gtk_box_append (GTK_BOX (box), widget);
+
+		/* like GTK 3, a label hides the image, which shows again
+		 * once the label is gone; label changes keep it */
+		g_assert_false (gtk_widget_is_ancestor (image, widget));
+		gtk_button_set_label (GTK_BUTTON (widget), "_Other");
+		g_assert_true (e_gtk_button_get_image (GTK_BUTTON (widget)) == image);
+		gtk_button_set_label (GTK_BUTTON (widget), NULL);
+		g_assert_true (gtk_button_get_child (GTK_BUTTON (widget)) == image);
+
+		/* a binding to the label does not loop through the rebuilds */
+		{
+			GtkWidget *source = gtk_label_new ("_Bound");
+
+			g_object_bind_property (source, "label", widget, "label", G_BINDING_SYNC_CREATE);
+			gtk_label_set_label (GTK_LABEL (source), "_Bound again");
+			g_assert_cmpstr (gtk_button_get_label (GTK_BUTTON (widget)), ==, "_Bound again");
+			g_object_unref (g_object_ref_sink (source));
+		}
 	}
 
 	widget = e_ellipsized_combo_box_text_new (FALSE);

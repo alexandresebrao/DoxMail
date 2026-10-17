@@ -4565,7 +4565,7 @@ e_vcard_editor_constructed (GObject *object)
 		G_CALLBACK (eve_delete_event_cb), NULL);
 
 	self->add_menu_button = gtk_menu_button_new ();
-	e_gtk_button_set_image (GTK_BUTTON (self->add_menu_button), gtk_image_new_from_icon_name ("list-add"));
+	gtk_menu_button_set_icon_name (GTK_MENU_BUTTON (self->add_menu_button), "list-add");
 	g_object_set (self->add_menu_button,
 		"visible", TRUE,
 		"tooltip-text", _("Add"),

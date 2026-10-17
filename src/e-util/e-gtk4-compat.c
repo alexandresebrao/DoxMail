@@ -689,31 +689,107 @@ e_gtk_widget_get_monitor_area (GtkWidget *widget,
 	}
 }
 
-void
-e_gtk_button_set_image (GtkButton *button,
-                        GtkWidget *image)
+#define BUTTON_IMAGE_KEY "e-gtk-button-image"
+#define BUTTON_LABEL_KEY "e-gtk-button-label"
+#define BUTTON_REBUILDING_KEY "e-gtk-button-rebuilding"
+
+/* GTK 3 buttons had a label and an image together; with GTK 4 the label
+ * replaces the child, thus the child is rebuilt from both.  Like GTK 3
+ * (gtk-button-images was off), a button with a label shows only the label */
+static void
+button_rebuild_child (GtkButton *button)
 {
-	const gchar *label;
+	GtkWidget *image = g_object_get_data (G_OBJECT (button), BUTTON_IMAGE_KEY);
+	const gchar *label = g_object_get_data (G_OBJECT (button), BUTTON_LABEL_KEY);
 
-	g_return_if_fail (GTK_IS_BUTTON (button));
+	g_object_set_data (G_OBJECT (button), BUTTON_REBUILDING_KEY, GINT_TO_POINTER (1));
 
-	label = gtk_button_get_label (button);
+	if (image && gtk_widget_get_parent (image)) {
+		g_object_ref (image);
+		gtk_button_set_child (button, NULL);
+		if (gtk_widget_get_parent (image))
+			gtk_widget_unparent (image);
+	} else if (image) {
+		g_object_ref (image);
+	}
 
-	if (image && label && *label) {
+	if (image && label && *label && !g_object_get_data (G_OBJECT (button), "e-gtk-button-always-show-image")) {
+		g_clear_object (&image);
+		gtk_button_set_label (button, label);
+	} else if (image && label && *label) {
 		GtkWidget *box, *widget;
 
 		box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
 		gtk_widget_set_halign (box, GTK_ALIGN_CENTER);
 		gtk_box_append (GTK_BOX (box), image);
 
-		widget = gtk_label_new_with_mnemonic (label);
+		widget = gtk_label_new (label);
+		gtk_label_set_use_underline (GTK_LABEL (widget), gtk_button_get_use_underline (button));
 		gtk_label_set_mnemonic_widget (GTK_LABEL (widget), GTK_WIDGET (button));
 		gtk_box_append (GTK_BOX (box), widget);
 
 		gtk_button_set_child (button, box);
-	} else {
+	} else if (image) {
 		gtk_button_set_child (button, image);
+	} else {
+		gtk_button_set_label (button, label);
 	}
+
+	g_clear_object (&image);
+
+	/* what gtk_button_get_label() says now; notifications of the changes
+	 * above can come later, queued, and are recognized by it */
+	g_object_set_data_full (G_OBJECT (button), "e-gtk-button-built-label",
+		g_strdup (gtk_button_get_label (button)), g_free);
+
+	g_object_set_data (G_OBJECT (button), BUTTON_REBUILDING_KEY, NULL);
+}
+
+static void
+button_label_notify_cb (GtkButton *button,
+			GParamSpec *param,
+			gpointer user_data)
+{
+	if (g_object_get_data (G_OBJECT (button), BUTTON_REBUILDING_KEY))
+		return;
+
+	if (g_strcmp0 (gtk_button_get_label (button), g_object_get_data (G_OBJECT (button), "e-gtk-button-built-label")) == 0)
+		return;
+
+	g_object_set_data_full (G_OBJECT (button), BUTTON_LABEL_KEY,
+		g_strdup (gtk_button_get_label (button)), g_free);
+
+	if (g_object_get_data (G_OBJECT (button), BUTTON_IMAGE_KEY))
+		button_rebuild_child (button);
+}
+
+void
+e_gtk_button_set_image (GtkButton *button,
+                        GtkWidget *image)
+{
+	g_return_if_fail (GTK_IS_BUTTON (button));
+
+	if (!g_object_get_data (G_OBJECT (button), "e-gtk-button-tracks-label")) {
+		g_object_set_data (G_OBJECT (button), "e-gtk-button-tracks-label", GINT_TO_POINTER (1));
+		g_object_set_data_full (G_OBJECT (button), BUTTON_LABEL_KEY,
+			g_strdup (gtk_button_get_label (button)), g_free);
+		g_signal_connect (button, "notify::label", G_CALLBACK (button_label_notify_cb), NULL);
+	}
+
+	if (image)
+		g_object_ref_sink (image);
+
+	/* the previous image, if any, goes with the old child */
+	if (g_object_get_data (G_OBJECT (button), BUTTON_IMAGE_KEY) &&
+	    g_object_get_data (G_OBJECT (button), BUTTON_IMAGE_KEY) != image) {
+		g_object_set_data (G_OBJECT (button), BUTTON_REBUILDING_KEY, GINT_TO_POINTER (1));
+		gtk_button_set_child (button, NULL);
+		g_object_set_data (G_OBJECT (button), BUTTON_REBUILDING_KEY, NULL);
+	}
+
+	g_object_set_data_full (G_OBJECT (button), BUTTON_IMAGE_KEY, image, image ? g_object_unref : NULL);
+
+	button_rebuild_child (button);
 }
 
 /* the image set by e_gtk_button_set_image(), or NULL */
@@ -723,6 +799,9 @@ e_gtk_button_get_image (GtkButton *button)
 	GtkWidget *child;
 
 	g_return_val_if_fail (GTK_IS_BUTTON (button), NULL);
+
+	if (g_object_get_data (G_OBJECT (button), BUTTON_IMAGE_KEY))
+		return g_object_get_data (G_OBJECT (button), BUTTON_IMAGE_KEY);
 
 	child = gtk_button_get_child (button);
 
