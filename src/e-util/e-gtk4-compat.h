@@ -64,6 +64,11 @@ void		e_gtk_box_reorder_child		(GtkBox *box,
 						 GtkWidget *child,
 						 gint position);
 GtkWidget *	e_gtk_button_box_new		(GtkOrientation orientation);
+/* a secondary child goes first in the box */
+void		e_gtk_button_box_set_child_secondary
+						(gpointer box,
+						 GtkWidget *child,
+						 gboolean is_secondary);
 
 /* GtkPaned; these also take widgets made of a paned, like EPaned */
 GtkPaned *	e_gtk_paned_get_inner		(gpointer paned);

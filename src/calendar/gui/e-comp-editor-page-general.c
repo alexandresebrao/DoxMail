@@ -1500,7 +1500,7 @@ ecep_general_constructed (GObject *object)
 	g_signal_connect_object (page_general->priv->attendees_list_view, "event",
 		G_CALLBACK (ecep_general_list_view_event_cb), page_general, 0);
 
-	g_signal_connect_object (page_general->priv->attendees_list_view, "key_press_event",
+	g_signal_connect_object (e_gtk_widget_legacy_events (page_general->priv->attendees_list_view), "key_press_event",
 		G_CALLBACK (ecep_general_list_view_key_press_cb), page_general, 0);
 
 	widget = e_gtk_button_box_new (GTK_ORIENTATION_VERTICAL);

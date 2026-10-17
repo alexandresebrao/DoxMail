@@ -2694,7 +2694,6 @@ e_ui_customize_dialog_constructed (GObject *object)
 	g_object_set (widget,
 		"halign", GTK_ALIGN_FILL,
 		"valign", GTK_ALIGN_FILL,
-		"layout-style", GTK_BUTTONBOX_START,
 		"homogeneous", TRUE,
 		NULL);
 	e_gtk_box_pack_start (box1, widget, FALSE, FALSE, 0);

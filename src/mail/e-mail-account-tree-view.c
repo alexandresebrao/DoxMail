@@ -186,7 +186,7 @@ e_mail_account_tree_view_class_init (EMailAccountTreeViewClass *class)
 	object_class->constructed = mail_account_tree_view_constructed;
 
 	widget_class = GTK_WIDGET_CLASS (class);
-	widget_class->drag_end = mail_account_tree_view_drag_end;
+	g_signal_override_class_handler ("drag-end", G_TYPE_FROM_CLASS (widget_class), G_CALLBACK (mail_account_tree_view_drag_end));
 
 	signals[ENABLE] = g_signal_new (
 		"enable",

@@ -1790,7 +1790,6 @@ e_rss_preferences_new (EPreferencesWindow *window)
 
 	button_box = e_gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
 	g_object_set (G_OBJECT (button_box),
-		"layout-style", GTK_BUTTONBOX_START,
 		"margin-start", 6,
 		"spacing", 4,
 		NULL);

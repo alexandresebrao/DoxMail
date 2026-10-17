@@ -581,7 +581,7 @@ e_plugin_ui_init (EUIManager *manager,
 		entries, G_N_ELEMENTS (entries), composer, eui);
 
 	g_signal_connect (
-		cnt_editor, "key_press_event",
+		e_gtk_widget_legacy_events (cnt_editor), "key_press_event",
 		G_CALLBACK (key_press_cb), composer);
 
 	g_signal_connect (

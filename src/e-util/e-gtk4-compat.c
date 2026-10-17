@@ -453,6 +453,18 @@ e_gtk_button_box_new (GtkOrientation orientation)
 }
 
 void
+e_gtk_button_box_set_child_secondary (gpointer box,
+				      GtkWidget *child,
+				      gboolean is_secondary)
+{
+	g_return_if_fail (GTK_IS_BOX (box));
+	g_return_if_fail (GTK_IS_WIDGET (child));
+
+	if (is_secondary)
+		gtk_box_reorder_child_after (box, child, NULL);
+}
+
+void
 e_gtk_paned_pack1 (gpointer paned,
                    GtkWidget *child,
                    gboolean resize,

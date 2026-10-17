@@ -418,7 +418,7 @@ add_emoji (GtkWidget    *box,
   if (modifier != 0)
     g_object_set_data (G_OBJECT (child), "modifier", GUINT_TO_POINTER (modifier));
 
-  ebox = gtk_event_box_new ();
+  ebox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
   g_signal_connect (e_gtk_widget_legacy_events (ebox), "enter-notify-event", G_CALLBACK (update_hover), FALSE);
   g_signal_connect (e_gtk_widget_legacy_events (ebox), "leave-notify-event", G_CALLBACK (update_hover), FALSE);
   e_gtk_container_add (child, ebox);

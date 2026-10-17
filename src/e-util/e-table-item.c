@@ -1807,7 +1807,7 @@ eti_realize (GnomeCanvasItem *item)
 	eti->rows = e_table_model_row_count (eti->table_model);
 
 	g_signal_connect (
-		item->canvas, "scroll_event",
+		e_gtk_widget_legacy_events (item->canvas), "scroll_event",
 		G_CALLBACK (eti_tree_unfreeze), eti);
 
 	if (eti->cell_views == NULL)

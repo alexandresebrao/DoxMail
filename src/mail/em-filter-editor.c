@@ -418,7 +418,7 @@ em_filter_editor_construct (EMFilterEditor *fe,
 	e_gtk_box_reorder_child (GTK_BOX (action_area), button, 0);
 
 	if (GTK_IS_BUTTON_BOX (action_area))
-		gtk_button_box_set_child_secondary (GTK_BUTTON_BOX (action_area), button, TRUE);
+		e_gtk_button_box_set_child_secondary (action_area, button, TRUE);
 
 	g_signal_connect (button, "clicked", G_CALLBACK (emfe_describe_filters_cb), fe);
 

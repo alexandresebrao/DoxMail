@@ -433,7 +433,7 @@ e_shell_sidebar_init (EShellSidebar *shell_sidebar)
 	shell_sidebar->priv = e_shell_sidebar_get_instance_private (shell_sidebar);
 
 
-	widget = gtk_event_box_new ();
+	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_widget_set_parent (widget, GTK_WIDGET (shell_sidebar));
 	shell_sidebar->priv->event_box = g_object_ref (widget);
 	gtk_widget_show (widget);

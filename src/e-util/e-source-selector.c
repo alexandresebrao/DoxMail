@@ -111,16 +111,13 @@ G_DEFINE_TYPE_WITH_PRIVATE (ESourceSelector, e_source_selector, GTK_TYPE_TREE_VI
 /* ESafeToggleRenderer does not emit 'toggled' signal
  * on 'activate' when mouse is not over the toggle. */
 
-typedef GtkCellRendererToggle ECellRendererSafeToggle;
-typedef GtkCellRendererToggleClass ECellRendererSafeToggleClass;
-
 /* Forward Declarations */
-GType		e_cell_renderer_safe_toggle_get_type
+static GType	e_cell_renderer_safe_toggle_get_type
 						(void) G_GNUC_CONST;
 static void	selection_changed_callback	(GtkTreeSelection *selection,
 						 ESourceSelector *selector);
 
-G_DEFINE_TYPE (ECellRendererSafeToggle, e_cell_renderer_safe_toggle, GTK_TYPE_CELL_RENDERER_TOGGLE)
+static gpointer e_cell_renderer_safe_toggle_parent_class;
 
 static gboolean
 safe_toggle_activate (GtkCellRenderer *cell,
@@ -135,10 +132,12 @@ safe_toggle_activate (GtkCellRenderer *cell,
 
 	if (event && e_gdk_event_type (event) == GDK_BUTTON_PRESS && cell_area != NULL) {
 		cairo_region_t *region;
+		gdouble x = 0, y = 0;
+
+		e_gdk_event_get_widget_coords (event, widget, &x, &y);
 
 		region = cairo_region_create_rectangle (cell_area);
-		point_in_cell_area = cairo_region_contains_point (
-			region, e_gdk_event_x (event), e_gdk_event_y (event));
+		point_in_cell_area = cairo_region_contains_point (region, x, y);
 		cairo_region_destroy (region);
 	}
 
@@ -151,17 +150,39 @@ safe_toggle_activate (GtkCellRenderer *cell,
 }
 
 static void
-e_cell_renderer_safe_toggle_class_init (ECellRendererSafeToggleClass *class)
+e_cell_renderer_safe_toggle_class_init (gpointer klass,
+					gpointer class_data)
 {
 	GtkCellRendererClass *cell_renderer_class;
 
-	cell_renderer_class = GTK_CELL_RENDERER_CLASS (class);
+	e_cell_renderer_safe_toggle_parent_class = g_type_class_peek_parent (klass);
+
+	cell_renderer_class = GTK_CELL_RENDERER_CLASS (klass);
 	cell_renderer_class->activate = safe_toggle_activate;
 }
 
-static void
-e_cell_renderer_safe_toggle_init (ECellRendererSafeToggle *obj)
+/* GTK 4 keeps the GtkCellRendererToggle structs private; derive from it
+ * with the sizes the type system knows */
+static GType
+e_cell_renderer_safe_toggle_get_type (void)
 {
+	static gsize type = 0;
+
+	if (g_once_init_enter (&type)) {
+		GTypeQuery query;
+		GType new_type;
+
+		g_type_query (GTK_TYPE_CELL_RENDERER_TOGGLE, &query);
+		new_type = g_type_register_static_simple (
+			GTK_TYPE_CELL_RENDERER_TOGGLE,
+			g_intern_static_string ("ECellRendererSafeToggle"),
+			query.class_size, e_cell_renderer_safe_toggle_class_init,
+			query.instance_size, NULL, 0);
+
+		g_once_init_leave (&type, new_type);
+	}
+
+	return type;
 }
 
 static GtkCellRenderer *
@@ -1878,10 +1899,10 @@ e_source_selector_class_init (ESourceSelectorClass *class)
 
 	widget_class = GTK_WIDGET_CLASS (class);
 	e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (widget_class), "button-press-event", G_CALLBACK (source_selector_button_press_event));
-	widget_class->drag_leave = source_selector_drag_leave;
-	widget_class->drag_motion = source_selector_drag_motion;
-	widget_class->drag_drop = source_selector_drag_drop;
-	widget_class->drag_data_received = source_selector_drag_data_received;
+	g_signal_override_class_handler ("drag-leave", G_TYPE_FROM_CLASS (widget_class), G_CALLBACK (source_selector_drag_leave));
+	g_signal_override_class_handler ("drag-motion", G_TYPE_FROM_CLASS (widget_class), G_CALLBACK (source_selector_drag_motion));
+	g_signal_override_class_handler ("drag-drop", G_TYPE_FROM_CLASS (widget_class), G_CALLBACK (source_selector_drag_drop));
+	g_signal_override_class_handler ("drag-data-received", G_TYPE_FROM_CLASS (widget_class), G_CALLBACK (source_selector_drag_data_received));
 	e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (widget_class), "popup-menu", G_CALLBACK (source_selector_popup_menu));
 
 	tree_view_class = GTK_TREE_VIEW_CLASS (class);

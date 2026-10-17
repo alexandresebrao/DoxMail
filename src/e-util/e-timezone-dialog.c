@@ -92,8 +92,7 @@ static gboolean on_map_motion			(GtkWidget	*widget,
 static gboolean on_map_leave			(GtkWidget	*widget,
 						 GdkEvent *event,
 						 gpointer	 data);
-static gboolean on_map_visibility_changed	(GtkWidget	*w,
-						 GdkEventVisibility *event,
+static void on_map_visibility_changed		(GtkWidget	*w,
 						 gpointer	 data);
 static gboolean on_map_button_pressed		(GtkWidget	*w,
 						 GdkEvent	*button_event,
@@ -367,8 +366,12 @@ e_timezone_dialog_construct (ETimezoneDialog *etd)
 	g_signal_connect (
 		e_gtk_widget_legacy_events (map), "leave-notify-event",
 		G_CALLBACK (on_map_leave), etd);
+	/* GTK 4 has no visibility events; mapped is as close as it gets */
 	g_signal_connect (
-		map, "visibility-notify-event",
+		map, "map",
+		G_CALLBACK (on_map_visibility_changed), etd);
+	g_signal_connect (
+		map, "unmap",
 		G_CALLBACK (on_map_visibility_changed), etd);
 	g_signal_connect (
 		e_gtk_widget_legacy_events (map), "button-press-event",
@@ -622,12 +625,6 @@ on_map_leave (GtkWidget *widget,
 	etd = E_TIMEZONE_DIALOG (data);
 	priv = etd->priv;
 
-	/* We only want to reset the hover point if this is a normal leave
-	 * event. For some reason we are getting leave events when the
-	 * button is pressed in the map, which causes problems. */
-	if (event->mode != GDK_CROSSING_NORMAL)
-		return FALSE;
-
 	if (priv->point_hover && priv->point_hover != priv->point_selected)
 		e_map_point_set_color_rgba (
 			priv->map, priv->point_hover,
@@ -641,9 +638,8 @@ on_map_leave (GtkWidget *widget,
 	return FALSE;
 }
 
-static gboolean
+static void
 on_map_visibility_changed (GtkWidget *w,
-                           GdkEventVisibility *event,
                            gpointer data)
 {
 	ETimezoneDialog *etd;
@@ -652,7 +648,7 @@ on_map_visibility_changed (GtkWidget *w,
 	etd = E_TIMEZONE_DIALOG (data);
 	priv = etd->priv;
 
-	if (e_gdk_event_state (event) != GDK_VISIBILITY_FULLY_OBSCURED) {
+	if (gtk_widget_get_mapped (w)) {
 		/* Map is visible, at least partly, so make sure we flash the
 		 * selected point. */
 		if (priv->timeout_id == 0) {
@@ -666,8 +662,6 @@ on_map_visibility_changed (GtkWidget *w,
 			priv->timeout_id = 0;
 		}
 	}
-
-	return FALSE;
 }
 
 static gboolean

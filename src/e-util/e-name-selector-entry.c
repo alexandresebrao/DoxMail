@@ -301,7 +301,7 @@ e_name_selector_entry_class_init (ENameSelectorEntryClass *class)
 
 	widget_class = GTK_WIDGET_CLASS (class);
 	widget_class->realize = name_selector_entry_realize;
-	widget_class->drag_data_received = name_selector_entry_drag_data_received;
+	g_signal_override_class_handler ("drag-data-received", G_TYPE_FROM_CLASS (widget_class), G_CALLBACK (name_selector_entry_drag_data_received));
 
 	/**
 	 * ENameSelectorEntry:client-cache:

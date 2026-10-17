@@ -307,7 +307,6 @@ e_preferences_window_init (EPreferencesWindow *window)
 
 		bbox = e_gtk_button_box_new (GTK_ORIENTATION_HORIZONTAL);
 		g_object_set (bbox,
-			"layout-style", GTK_BUTTONBOX_END,
 			"visible", TRUE,
 			"margin-start", 6,
 			"margin-end", 6,
@@ -317,7 +316,7 @@ e_preferences_window_init (EPreferencesWindow *window)
 		e_gtk_container_add (vbox, bbox);
 
 		e_gtk_box_pack_start (GTK_BOX (bbox), widget, FALSE, FALSE, 0);
-		gtk_button_box_set_child_secondary (GTK_BUTTON_BOX (bbox), widget, TRUE);
+		e_gtk_button_box_set_child_secondary (bbox, widget, TRUE);
 
 		widget = e_dialog_button_new_with_icon ("window-close", _("_Close"));
 		g_signal_connect_swapped (

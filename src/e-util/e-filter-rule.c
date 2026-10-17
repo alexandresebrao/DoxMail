@@ -202,7 +202,7 @@ event_box_drag_begin (GtkWidget *widget,
 
 	/* Just 1x1 dot as an image. No need to have there real icon,
 	   because the move is done immediately */
-	surface = gdk_window_create_similar_surface ( e_gtk_widget_get_surface (widget), CAIRO_CONTENT_COLOR, 1, 1);
+	surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, 1, 1);
 	style_context = gtk_widget_get_style_context (widget);
 	cr = cairo_create (surface);
 	gtk_render_background (style_context, cr, 0, 0, 1, 1);
@@ -379,7 +379,7 @@ attach_rule (GtkWidget *rule,
 	GtkWidget *remove;
 	GtkWidget *event_box, *label;
 
-	event_box = gtk_event_box_new ();
+	event_box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
 	label = gtk_label_new ("⇕");
 	e_gtk_container_add (event_box, label);
 	gtk_widget_set_sensitive (label, FALSE);

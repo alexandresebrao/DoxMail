@@ -1022,7 +1022,7 @@ em_folder_tree_query_tooltip_cb (GtkTreeView *tree_view,
 	if (keyboard_mode)
 		return FALSE;
 
-	if (!gtk_tree_view_get_tooltip_context (tree_view, &xx, &yy, keyboard_mode, &model, &path, &iter))
+	if (!gtk_tree_view_get_tooltip_context (tree_view, xx, yy, keyboard_mode, &model, &path, &iter))
 		return FALSE;
 
 	gtk_tree_model_get (model, &iter,

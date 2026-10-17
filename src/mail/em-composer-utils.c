@@ -5515,7 +5515,7 @@ em_utils_add_installed_languages (GtkComboBoxText *combo)
 	g_list_free (langs);
 
 	if (n_langs > 10)
-		gtk_combo_box_set_wrap_width (GTK_COMBO_BOX (combo), 5);
+		;
 }
 
 void

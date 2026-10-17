@@ -32,8 +32,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <gdk/gdkkeysyms.h>
-#include <atk/atkrelation.h>
-#include <atk/atkrelationset.h>
 #include <glib/gi18n.h>
 
 #include <libebackend/libebackend.h>
@@ -56,8 +54,6 @@ struct _EDateEditPrivate {
 	GtkWidget *none_button;		/* This will only be visible if a
 					 * 'None' date/time is permitted. */
 
-	GdkDevice *grabbed_keyboard;
-	GdkDevice *grabbed_pointer;
 
 	gchar *date_format;
 
@@ -142,7 +138,7 @@ enum {
 static void create_children			(EDateEdit	*dedit);
 static gboolean e_date_edit_mnemonic_activate	(GtkWidget	*widget,
 						 gboolean	 group_cycling);
-static void e_date_edit_grab_focus		(GtkWidget	*widget);
+static gboolean e_date_edit_grab_focus		(GtkWidget	*widget);
 
 static gint on_date_entry_key_press		(GtkWidget	*widget,
 						 GdkEvent	*key_event,
@@ -154,21 +150,12 @@ static void on_date_button_clicked		(GtkWidget	*widget,
 						 EDateEdit	*dedit);
 static void e_date_edit_show_date_popup		(EDateEdit	*dedit,
 						 GdkEvent	*event);
-static void position_date_popup			(EDateEdit	*dedit);
 static void on_date_popup_none_button_clicked	(GtkWidget	*button,
 						 EDateEdit	*dedit);
 static void on_date_popup_today_button_clicked	(GtkWidget	*button,
 						 EDateEdit	*dedit);
 static void on_date_popup_now_button_clicked	(GtkWidget	*button,
 						 EDateEdit	*dedit);
-static gint on_date_popup_delete_event		(GtkWidget	*widget,
-						 EDateEdit	*dedit);
-static gint on_date_popup_key_press		(GtkWidget	*widget,
-						 GdkEvent	*event,
-						 EDateEdit	*dedit);
-static gint on_date_popup_button_press		(GtkWidget	*widget,
-						 GdkEvent	*button_event,
-						 gpointer	 data);
 static void on_date_popup_date_selected		(ECalendarItem	*calitem,
 						 EDateEdit	*dedit);
 static void hide_date_popup			(EDateEdit	*dedit);
@@ -366,24 +353,8 @@ date_edit_dispose (GObject *object)
 
 	e_date_edit_set_get_time_callback (dedit, NULL, NULL, NULL);
 
-	g_clear_pointer (&dedit->priv->cal_popup, e_gtk_widget_destroy);
+	g_clear_pointer (&dedit->priv->cal_popup, gtk_widget_unparent);
 	g_clear_pointer (&dedit->priv->date_format, g_free);
-
-	if (dedit->priv->grabbed_keyboard != NULL) {
-		gdk_device_ungrab (
-			dedit->priv->grabbed_keyboard,
-			GDK_CURRENT_TIME);
-		g_object_unref (dedit->priv->grabbed_keyboard);
-		dedit->priv->grabbed_keyboard = NULL;
-	}
-
-	if (dedit->priv->grabbed_pointer != NULL) {
-		gdk_device_ungrab (
-			dedit->priv->grabbed_pointer,
-			GDK_CURRENT_TIME);
-		g_object_unref (dedit->priv->grabbed_pointer);
-		dedit->priv->grabbed_pointer = NULL;
-	}
 
 	/* Chain up to parent's dispose() method. */
 	G_OBJECT_CLASS (e_date_edit_parent_class)->dispose (object);
@@ -617,7 +588,6 @@ create_children (EDateEdit *dedit)
 {
 	EDateEditPrivate *priv;
 	ECalendar *calendar;
-	GtkWidget *frame;
 	GtkWidget *vbox, *bbox;
 	GtkWidget *child;
 	GtkWidget *a11y;
@@ -639,13 +609,13 @@ create_children (EDateEdit *dedit)
 	e_gtk_box_pack_start (GTK_BOX (dedit), priv->date_entry, FALSE, TRUE, 0);
 
 	g_signal_connect (
-		priv->date_entry, "key_press_event",
+		e_gtk_widget_legacy_events (priv->date_entry), "key_press_event",
 		G_CALLBACK (on_date_entry_key_press), dedit);
 	g_signal_connect (
-		priv->date_entry, "key_release_event",
+		e_gtk_widget_legacy_events (priv->date_entry), "key_release_event",
 		G_CALLBACK (on_date_entry_key_release), dedit);
 	g_signal_connect_after (
-		priv->date_entry, "focus_out_event",
+		e_gtk_widget_legacy_events (priv->date_entry), "focus_out_event",
 		G_CALLBACK (on_date_entry_focus_out), dedit);
 
 	priv->date_button = gtk_button_new_from_icon_name ("pan-down-symbolic");
@@ -670,7 +640,6 @@ create_children (EDateEdit *dedit)
 	priv->time_combo = gtk_combo_box_new_with_model_and_entry (
 		GTK_TREE_MODEL (time_store));
 	gtk_combo_box_set_entry_text_column (GTK_COMBO_BOX (priv->time_combo), 0);
-	gtk_combo_box_set_wrap_width (GTK_COMBO_BOX (priv->time_combo), 6);
 	g_object_unref (time_store);
 
 	css_provider = gtk_css_provider_new ();
@@ -713,13 +682,13 @@ create_children (EDateEdit *dedit)
 	e_gtk_widget_set_accessible_name (a11y, _("Time"));
 
 	g_signal_connect (
-		child, "key_press_event",
+		e_gtk_widget_legacy_events (child), "key_press_event",
 		G_CALLBACK (on_time_entry_key_press), dedit);
 	g_signal_connect (
-		child, "key_release_event",
+		e_gtk_widget_legacy_events (child), "key_release_event",
 		G_CALLBACK (on_time_entry_key_release), dedit);
 	g_signal_connect_after (
-		child, "focus_out_event",
+		e_gtk_widget_legacy_events (child), "focus_out_event",
 		G_CALLBACK (on_time_entry_focus_out), dedit);
 	g_signal_connect (
 		child, "changed",
@@ -738,26 +707,13 @@ create_children (EDateEdit *dedit)
 	    && (priv->show_time || priv->make_time_insensitive))
 		gtk_widget_show (priv->space);
 
-	priv->cal_popup = gtk_window_new ();
-	g_signal_connect (
-		priv->cal_popup, "delete_event",
-		G_CALLBACK (on_date_popup_delete_event), dedit);
-	g_signal_connect (
-		priv->cal_popup, "key_press_event",
-		G_CALLBACK (on_date_popup_key_press), dedit);
-	g_signal_connect (
-		priv->cal_popup, "button_press_event",
-		G_CALLBACK (on_date_popup_button_press), dedit);
-	gtk_window_set_resizable (GTK_WINDOW (priv->cal_popup), TRUE);
-
-	frame = gtk_frame_new (NULL);
-	e_gtk_container_add (priv->cal_popup, frame);
-	gtk_widget_show (frame);
+	/* a popover hides on Escape and on clicks outside by itself */
+	priv->cal_popup = gtk_popover_new ();
+	gtk_popover_set_position (GTK_POPOVER (priv->cal_popup), GTK_POS_BOTTOM);
+	gtk_widget_set_parent (priv->cal_popup, priv->date_button);
 
 	vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
-	e_gtk_widget_set_border_width (vbox, 6);
-	e_gtk_container_add (frame, vbox);
-	gtk_widget_show (vbox);
+	gtk_popover_set_child (GTK_POPOVER (priv->cal_popup), vbox);
 
 	priv->calendar = e_calendar_new ();
 	calendar = E_CALENDAR (priv->calendar);
@@ -817,21 +773,21 @@ e_date_edit_mnemonic_activate (GtkWidget *widget,
 
 /* Grab_focus handler for the EDateEdit. If the date field is being shown, we
  * grab the focus to that, otherwise we grab it to the time field. */
-static void
+static gboolean
 e_date_edit_grab_focus (GtkWidget *widget)
 {
 	EDateEdit *dedit;
 	GtkWidget *child;
 
-	g_return_if_fail (E_IS_DATE_EDIT (widget));
+	g_return_val_if_fail (E_IS_DATE_EDIT (widget), FALSE);
 
 	dedit = E_DATE_EDIT (widget);
 	child = e_gtk_bin_get_child (dedit->priv->time_combo);
 
 	if (dedit->priv->show_date)
-		gtk_widget_grab_focus (dedit->priv->date_entry);
-	else
-		gtk_widget_grab_focus (child);
+		return gtk_widget_grab_focus (dedit->priv->date_entry);
+
+	return child && gtk_widget_grab_focus (child);
 }
 
 /**
@@ -1481,18 +1437,10 @@ e_date_edit_show_date_popup (EDateEdit *dedit,
 {
 	EDateEditPrivate *priv;
 	ECalendar *calendar;
-	GdkDevice *event_device;
-	GdkDevice *assoc_device;
-	GdkDevice *keyboard_device;
-	GdkDevice *pointer_device;
-	GdkSurface *window;
-	GdkGrabStatus grab_status;
-	GtkWidget *toplevel;
 	struct tm mtm;
 	const gchar *date_text;
 	GDate selected_day;
 	gboolean clear_selection = FALSE;
-	guint event_time;
 
 	priv = dedit->priv;
 	calendar = E_CALENDAR (priv->calendar);
@@ -1518,115 +1466,8 @@ e_date_edit_show_date_popup (EDateEdit *dedit,
 	 * emissions. */
 	e_calendar_get_item (calendar)->selection_changed = FALSE;
 
-	toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (dedit));
-	if (!GTK_IS_WINDOW (toplevel))
-		toplevel = NULL;
-
-	gtk_window_set_transient_for (GTK_WINDOW (priv->cal_popup), toplevel ? GTK_WINDOW (toplevel) : NULL);
-
-	position_date_popup (dedit);
-	gtk_widget_show (priv->cal_popup);
-	gtk_widget_grab_focus (priv->cal_popup);
-
-	window = e_gtk_widget_get_surface (priv->cal_popup);
-
-	g_return_if_fail (priv->grabbed_keyboard == NULL);
-	g_return_if_fail (priv->grabbed_pointer == NULL);
-
-	event_device = gdk_event_get_device (event);
-	assoc_device = gdk_device_get_associated_device (event_device);
-
-	event_time = gdk_event_get_time (event);
-
-	if (gdk_device_get_source (event_device) == GDK_SOURCE_KEYBOARD) {
-		keyboard_device = event_device;
-		pointer_device = assoc_device;
-	} else {
-		keyboard_device = assoc_device;
-		pointer_device = event_device;
-	}
-
-	if (keyboard_device != NULL) {
-		grab_status = gdk_device_grab (
-			keyboard_device,
-			window,
-			GDK_OWNERSHIP_WINDOW,
-			TRUE,
-			GDK_KEY_PRESS_MASK |
-			GDK_KEY_RELEASE_MASK,
-			NULL,
-			event_time);
-		if (grab_status == GDK_GRAB_SUCCESS) {
-			priv->grabbed_keyboard =
-				g_object_ref (keyboard_device);
-		}
-	}
-
-	if (pointer_device != NULL) {
-		grab_status = gdk_device_grab (
-			pointer_device,
-			window,
-			GDK_OWNERSHIP_WINDOW,
-			TRUE,
-			GDK_BUTTON_PRESS_MASK |
-			GDK_BUTTON_RELEASE_MASK |
-			GDK_POINTER_MOTION_MASK,
-			NULL,
-			event_time);
-		if (grab_status == GDK_GRAB_SUCCESS) {
-			priv->grabbed_pointer =
-				g_object_ref (pointer_device);
-		} else if (priv->grabbed_keyboard != NULL) {
-			gdk_device_ungrab (
-				priv->grabbed_keyboard,
-				event_time);
-			g_object_unref (priv->grabbed_keyboard);
-			priv->grabbed_keyboard = NULL;
-		}
-	}
-
-	gdk_window_focus (window, event_time);
-}
-
-/* This positions the date popup below and to the left of the arrow button,
- * just before it is shown. */
-static void
-position_date_popup (EDateEdit *dedit)
-{
-	gint x, y;
-	gint win_x, win_y;
-	gint bwidth, bheight;
-	GtkWidget *toplevel;
-	GdkSurface *window;
-	GtkRequisition cal_req, button_req;
-	gint screen_width, screen_height;
-
-	gtk_widget_get_preferred_size (dedit->priv->cal_popup, &cal_req, NULL);
-
-	gtk_widget_get_preferred_size (dedit->priv->date_button, &button_req, NULL);
-	bwidth = button_req.width;
-	gtk_widget_get_preferred_size (
-		gtk_widget_get_parent (dedit->priv->date_button), &button_req, NULL);
-	bheight = button_req.height;
-
-	gtk_widget_translate_coordinates (
-		dedit->priv->date_button,
-		e_gtk_widget_get_toplevel (dedit->priv->date_button),
-		bwidth - cal_req.width, bheight, &x, &y);
-
-	toplevel = e_gtk_widget_get_toplevel (dedit->priv->date_button);
-	window = e_gtk_widget_get_surface (toplevel);
-	gdk_window_get_origin (window, &win_x, &win_y);
-
-	x += win_x;
-	y += win_y;
-
-	screen_width = gdk_screen_width ();
-	screen_height = gdk_screen_height ();
-
-	x = CLAMP (x, 0, MAX (0, screen_width - cal_req.width));
-	y = CLAMP (y, 0, MAX (0, screen_height - cal_req.height));
-
+	gtk_popover_popup (GTK_POPOVER (priv->cal_popup));
+	gtk_widget_grab_focus (priv->calendar);
 }
 
 /* A date has been selected in the date popup, so we set the date field
@@ -1688,89 +1529,11 @@ on_date_popup_none_button_clicked (GtkWidget *button,
 	e_date_edit_set_time (dedit, -1);
 }
 
-/* A key has been pressed while the date popup is showing. If it is the Escape
- * key we hide the popup. */
-static gint
-on_date_popup_key_press (GtkWidget *widget,
-                         GdkEvent *event,
-                         EDateEdit *dedit)
-{
-	if (e_gdk_event_keyval (event) == GDK_KEY_Escape) {
-		g_signal_stop_emission_by_name (widget, "key_press_event");
-		hide_date_popup (dedit);
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
-/* A mouse button has been pressed while the date popup is showing.
- * Any button press events used to select days etc. in the popup will have
- * have been handled elsewhere, so here we just hide the popup.
- * (This function is yanked from gtkcombo.c) */
-static gint
-on_date_popup_button_press (GtkWidget *widget,
-                            GdkEvent *button_event,
-                            gpointer data)
-{
-	EDateEdit *dedit;
-	GtkWidget *child;
-
-	dedit = data;
-
-	child = gtk_get_event_widget (button_event);
-
-	/* We don't ask for button press events on the grab widget, so
-	 *  if an event is reported directly to the grab widget, it must
-	 *  be on a window outside the application (and thus we remove
-	 *  the popup window). Otherwise, we check if the widget is a child
-	 *  of the grab widget, and only remove the popup window if it
-	 *  is not.
-	 */
-	if (child != widget) {
-		while (child) {
-			if (child == widget)
-				return FALSE;
-			child = gtk_widget_get_parent (child);
-		}
-	}
-
-	hide_date_popup (dedit);
-
-	return TRUE;
-}
-
-/* A delete event has been received for the date popup, so we hide it and
- * return TRUE so it doesn't get destroyed. */
-static gint
-on_date_popup_delete_event (GtkWidget *widget,
-                            EDateEdit *dedit)
-{
-	hide_date_popup (dedit);
-	return TRUE;
-}
-
 /* Hides the date popup, removing any grabs. */
 static void
 hide_date_popup (EDateEdit *dedit)
 {
-	gtk_widget_hide (dedit->priv->cal_popup);
-
-	if (dedit->priv->grabbed_keyboard != NULL) {
-		gdk_device_ungrab (
-			dedit->priv->grabbed_keyboard,
-			GDK_CURRENT_TIME);
-		g_object_unref (dedit->priv->grabbed_keyboard);
-		dedit->priv->grabbed_keyboard = NULL;
-	}
-
-	if (dedit->priv->grabbed_pointer != NULL) {
-		gdk_device_ungrab (
-			dedit->priv->grabbed_pointer,
-			GDK_CURRENT_TIME);
-		g_object_unref (dedit->priv->grabbed_pointer);
-		dedit->priv->grabbed_pointer = NULL;
-	}
+	gtk_popover_popdown (GTK_POPOVER (dedit->priv->cal_popup));
 }
 
 /* some locales may not define am/pm equivalents for '%p',
@@ -1893,16 +1656,15 @@ rebuild_time_popup (EDateEdit *dedit)
 
 	for (step = 6; step > 1; step--) {
 		if ((values->len % step) == 0 && values->len / step >= step - 1) {
-			gtk_combo_box_set_wrap_width (time_combo, step);
 			step = values->len / step;
 			break;
 		}
 	}
 
 	if (step == 1)
-		gtk_combo_box_set_wrap_width (time_combo, step);
+		;
 
-	wrap_width = gtk_combo_box_get_wrap_width (time_combo);
+	wrap_width = 0;
 	index = 0;
 	offset = 0;
 	max_len = 0;
@@ -2192,48 +1954,9 @@ static void
 add_relation (EDateEdit *dedit,
               GtkWidget *widget)
 {
-	GtkWidget *a11yEdit, *a11yWidget;
-	AtkRelationSet *set;
-	AtkRelation *relation;
-	GPtrArray *target;
-	gpointer target_object;
-
-	/* add a labelled_by relation for widget for accessibility */
-
-	a11yEdit = GTK_WIDGET (GTK_WIDGET (dedit));
-	a11yWidget = GTK_WIDGET (widget);
-
-	set = atk_object_ref_relation_set (a11yWidget);
-	if (set != NULL) {
-		relation = atk_relation_set_get_relation_by_type (
-			set, ATK_RELATION_LABELLED_BY);
-		/* check whether has a labelled_by relation already */
-		if (relation != NULL) {
-			g_object_unref (set);
-			return;
-		}
-	}
-
-	g_clear_object (&set);
-
-	set = atk_object_ref_relation_set (a11yEdit);
-	if (!set)
-		return;
-
-	relation = atk_relation_set_get_relation_by_type (
-		set, ATK_RELATION_LABELLED_BY);
-	if (relation != NULL) {
-		target = atk_relation_get_target (relation);
-		target_object = g_ptr_array_index (target, 0);
-		if (ATK_IS_OBJECT (target_object)) {
-			atk_object_add_relationship (
-				a11yWidget,
-					ATK_RELATION_LABELLED_BY,
-					ATK_OBJECT (target_object));
-		}
-	}
-
-	g_clear_object (&set);
+	/* GTK 3 copied the labelled-by relation of the date edit to its
+	 * parts; GTK 4 cannot read relations back, and the parts carry
+	 * accessible names of their own */
 }
 
 /* This sets the text in the date entry according to the current settings. */
@@ -2279,7 +2002,7 @@ e_date_edit_update_date_entry (EDateEdit *dedit)
 		gtk_editable_set_text (GTK_EDITABLE (entry), buffer);
 
 		char_len = g_utf8_strlen (buffer, -1) + 1;
-		if (gtk_entry_get_width_chars (entry) < char_len)
+		if (gtk_editable_get_width_chars (GTK_EDITABLE (entry)) < char_len)
 			gtk_editable_set_width_chars (GTK_EDITABLE (entry), char_len);
 	}
 

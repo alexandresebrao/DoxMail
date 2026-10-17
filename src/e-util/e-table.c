@@ -1452,10 +1452,10 @@ e_table_setup_table (ETable *e_table,
 		e_table->table_canvas, "size_allocate",
 		G_CALLBACK (table_canvas_size_allocate), e_table);
 	g_signal_connect (
-		e_table->table_canvas, "focus_in_event",
+		e_gtk_widget_legacy_events (e_table->table_canvas), "focus_in_event",
 		G_CALLBACK (table_canvas_focus_event_cb), e_table);
 	g_signal_connect (
-		e_table->table_canvas, "focus_out_event",
+		e_gtk_widget_legacy_events (e_table->table_canvas), "focus_out_event",
 		G_CALLBACK (table_canvas_focus_event_cb), e_table);
 
 	g_signal_connect (

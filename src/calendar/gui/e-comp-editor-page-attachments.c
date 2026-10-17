@@ -1048,8 +1048,8 @@ e_comp_editor_page_attachments_class_init (ECompEditorPageAttachmentsClass *klas
 	page_class->fill_component = ecep_attachments_fill_component;
 
 	widget_class = GTK_WIDGET_CLASS (klass);
-	widget_class->drag_motion = ecep_attachments_drag_motion;
-	widget_class->drag_data_received = ecep_attachments_drag_data_received;
+	g_signal_override_class_handler ("drag-motion", G_TYPE_FROM_CLASS (widget_class), G_CALLBACK (ecep_attachments_drag_motion));
+	g_signal_override_class_handler ("drag-data-received", G_TYPE_FROM_CLASS (widget_class), G_CALLBACK (ecep_attachments_drag_data_received));
 
 	object_class = G_OBJECT_CLASS (klass);
 	object_class->set_property = ecep_attachments_set_property;

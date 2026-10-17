@@ -984,9 +984,7 @@ e_meeting_time_selector_create_no_info_pattern (EMeetingTimeSelector *mts)
 	GdkRGBA color = { .red = 1.0, .green = 1.0, .blue = 1.0, .alpha = 1.0 };
 	cairo_t *cr;
 
-	surface = gdk_window_create_similar_surface (
-		e_gtk_widget_get_surface (GTK_WIDGET (mts)),
-		CAIRO_CONTENT_COLOR, 8, 8);
+	surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, 8, 8);
 	cr = cairo_create (surface);
 
 	gdk_cairo_set_source_rgba (cr, &color);

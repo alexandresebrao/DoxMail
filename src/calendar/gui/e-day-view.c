@@ -2413,22 +2413,22 @@ e_day_view_init (EDayView *day_view)
 	gtk_widget_show (widget);
 
 	handler_id = g_signal_connect_after (
-		day_view->top_canvas, "button_press_event",
+		e_gtk_widget_legacy_events (day_view->top_canvas), "button_press_event",
 		G_CALLBACK (e_day_view_on_top_canvas_button_press), day_view);
 	day_view->priv->top_canvas_button_press_event_handler_id = handler_id;
 
 	handler_id = g_signal_connect (
-		day_view->top_canvas, "button_release_event",
+		e_gtk_widget_legacy_events (day_view->top_canvas), "button_release_event",
 		G_CALLBACK (e_day_view_on_top_canvas_button_release), day_view);
 	day_view->priv->top_canvas_button_release_event_handler_id = handler_id;
 
 	handler_id = g_signal_connect (
-		day_view->top_canvas, "scroll_event",
+		e_gtk_widget_legacy_events (day_view->top_canvas), "scroll_event",
 		G_CALLBACK (e_day_view_on_top_canvas_scroll), day_view);
 	day_view->priv->top_canvas_scroll_event_handler_id = handler_id;
 
 	handler_id = g_signal_connect (
-		day_view->top_canvas, "motion_notify_event",
+		e_gtk_widget_legacy_events (day_view->top_canvas), "motion_notify_event",
 		G_CALLBACK (e_day_view_on_top_canvas_motion), day_view);
 	day_view->priv->top_canvas_motion_notify_event_handler_id = handler_id;
 
@@ -2530,23 +2530,23 @@ e_day_view_init (EDayView *day_view)
 	day_view->priv->main_canvas_realize_handler_id = handler_id;
 
 	handler_id = g_signal_connect (
-		day_view->main_canvas, "button_press_event",
+		e_gtk_widget_legacy_events (day_view->main_canvas), "button_press_event",
 		G_CALLBACK (e_day_view_on_main_canvas_button_press), day_view);
 	day_view->priv->main_canvas_button_press_event_handler_id = handler_id;
 
 	handler_id = g_signal_connect (
-		day_view->main_canvas, "button_release_event",
+		e_gtk_widget_legacy_events (day_view->main_canvas), "button_release_event",
 		G_CALLBACK (e_day_view_on_main_canvas_button_release),
 		day_view);
 	day_view->priv->main_canvas_button_release_event_handler_id = handler_id;
 
 	handler_id = g_signal_connect (
-		day_view->main_canvas, "scroll_event",
+		e_gtk_widget_legacy_events (day_view->main_canvas), "scroll_event",
 		G_CALLBACK (e_day_view_on_main_canvas_scroll), day_view);
 	day_view->priv->main_canvas_scroll_event_handler_id = handler_id;
 
 	handler_id = g_signal_connect (
-		day_view->main_canvas, "motion_notify_event",
+		e_gtk_widget_legacy_events (day_view->main_canvas), "motion_notify_event",
 		G_CALLBACK (e_day_view_on_main_canvas_motion), day_view);
 	day_view->priv->main_canvas_motion_notify_event_handler_id = handler_id;
 
@@ -2641,7 +2641,7 @@ e_day_view_init (EDayView *day_view)
 	gtk_widget_show (widget);
 
 	handler_id = g_signal_connect_after (
-		day_view->time_canvas, "scroll_event",
+		e_gtk_widget_legacy_events (day_view->time_canvas), "scroll_event",
 		G_CALLBACK (e_day_view_on_time_canvas_scroll), day_view);
 	day_view->priv->time_canvas_scroll_event_handler_id = handler_id;
 

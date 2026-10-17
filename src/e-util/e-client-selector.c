@@ -163,7 +163,7 @@ client_selector_query_tooltip_cb (GtkTreeView *tree_view,
 	g_return_val_if_fail (E_IS_CLIENT_SELECTOR (tree_view), FALSE);
 	g_return_val_if_fail (GTK_IS_CELL_RENDERER (renderer), FALSE);
 
-	if (!gtk_tree_view_get_tooltip_context (tree_view, &xx, &yy, keyboard_mode, &model, &path, NULL))
+	if (!gtk_tree_view_get_tooltip_context (tree_view, xx, yy, keyboard_mode, &model, &path, NULL))
 		return FALSE;
 
 	selector = E_SOURCE_SELECTOR (tree_view);
@@ -311,9 +311,11 @@ client_selector_drag_motion (GtkWidget *widget,
 			     guint time_)
 {
 	GtkTreePath *path;
+	gboolean handled = FALSE;
 
 	/* Chain up to parent's method, which sets the action too. */
-	if (!GTK_WIDGET_CLASS (e_client_selector_parent_class)->drag_motion (widget, context, x, y, time_))
+	g_signal_chain_from_overridden_handler (widget, context, x, y, time_, &handled);
+	if (!handled)
 		return FALSE;
 
 	if (!e_gtk_drag_context_get_selected_action (context))
@@ -573,7 +575,7 @@ e_client_selector_class_init (EClientSelectorClass *class)
 	object_class->constructed = client_selector_constructed;
 
 	widget_class = GTK_WIDGET_CLASS (class);
-	widget_class->drag_motion = client_selector_drag_motion;
+	g_signal_override_class_handler ("drag-motion", G_TYPE_FROM_CLASS (widget_class), G_CALLBACK (client_selector_drag_motion));
 
 	/**
 	 * EClientSelector:client-cache:

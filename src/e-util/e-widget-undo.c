@@ -612,80 +612,54 @@ undo_reset (GObject *object)
 }
 
 static void
-widget_undo_popup_activate_cb (GObject *menu_item,
-                               GtkWidget *widget)
+widget_undo_action_activate_cb (GSimpleAction *action,
+				GVariant *parameter,
+				gpointer user_data)
 {
-	EUndoDoType undo_type = GPOINTER_TO_INT (g_object_get_data (menu_item, UNDO_DATA_KEY));
+	GtkWidget *widget = user_data;
 
-	if (undo_type == E_UNDO_DO_UNDO)
+	if (g_str_equal (g_action_get_name (G_ACTION (action)), "undo"))
 		e_widget_undo_do_undo (widget);
 	else
 		e_widget_undo_do_redo (widget);
 }
 
-static gboolean
-widget_undo_prepend_popup (GtkWidget *widget,
-                           GtkMenuShell *menu,
-                           EUndoDoType undo_type,
-                           gboolean already_added)
-{
-	gchar *description = NULL;
-	const gchar *icon_name = NULL;
-
-	if (undo_type == E_UNDO_DO_UNDO && e_widget_undo_has_undo (widget)) {
-		description = e_widget_undo_describe_undo (widget);
-		icon_name = "edit-undo";
-	} else if (undo_type == E_UNDO_DO_REDO && e_widget_undo_has_redo (widget)) {
-		description = e_widget_undo_describe_redo (widget);
-		icon_name = "edit-redo";
-	}
-
-	if (description) {
-		GtkWidget *item, *image;
-
-		if (!already_added) {
-			item = gtk_separator_menu_item_new ();
-			gtk_widget_show (item);
-			gtk_menu_shell_prepend (menu, item);
-
-			already_added = TRUE;
-		}
-
-		image = gtk_image_new_from_icon_name (icon_name);
-		item = gtk_image_menu_item_new_with_label (description);
-		gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (item), image);
-		gtk_widget_show (item);
-
-		g_object_set_data (G_OBJECT (item), UNDO_DATA_KEY, GINT_TO_POINTER (undo_type));
-		g_signal_connect (item, "activate", G_CALLBACK (widget_undo_popup_activate_cb), widget);
-
-		gtk_menu_shell_prepend (menu, item);
-
-		g_free (description);
-	}
-
-	return already_added;
-}
-
+/* GTK 4 text widgets take extra context menu items as a menu model */
 static void
-widget_undo_populate_popup_cb (GtkWidget *widget,
-                               GtkWidget *popup,
-                               gpointer user_data)
+widget_undo_add_menu (GtkWidget *widget)
 {
-	GtkMenuShell *menu;
-	gboolean added = FALSE;
+	GSimpleActionGroup *actions;
+	GSimpleAction *action;
+	GMenu *menu, *section;
 
-	if (!GTK_IS_MENU (popup))
-		return;
+	actions = g_simple_action_group_new ();
 
-	menu = GTK_MENU_SHELL (popup);
+	action = g_simple_action_new ("undo", NULL);
+	g_signal_connect_object (action, "activate", G_CALLBACK (widget_undo_action_activate_cb), widget, 0);
+	g_action_map_add_action (G_ACTION_MAP (actions), G_ACTION (action));
+	g_object_unref (action);
 
-	/* first redo, because prependend, thus undo gets before it */
-	if (e_widget_undo_has_redo (widget))
-		added = widget_undo_prepend_popup (widget, menu, E_UNDO_DO_REDO, added);
+	action = g_simple_action_new ("redo", NULL);
+	g_signal_connect_object (action, "activate", G_CALLBACK (widget_undo_action_activate_cb), widget, 0);
+	g_action_map_add_action (G_ACTION_MAP (actions), G_ACTION (action));
+	g_object_unref (action);
 
-	if (e_widget_undo_has_undo (widget))
-		widget_undo_prepend_popup (widget, menu, E_UNDO_DO_UNDO, added);
+	gtk_widget_insert_action_group (widget, "eundo", G_ACTION_GROUP (actions));
+	g_object_unref (actions);
+
+	menu = g_menu_new ();
+	section = g_menu_new ();
+	g_menu_append (section, _("_Undo"), "eundo.undo");
+	g_menu_append (section, _("_Redo"), "eundo.redo");
+	g_menu_append_section (menu, NULL, G_MENU_MODEL (section));
+	g_object_unref (section);
+
+	if (GTK_IS_ENTRY (widget))
+		gtk_entry_set_extra_menu (GTK_ENTRY (widget), G_MENU_MODEL (menu));
+	else if (GTK_IS_TEXT_VIEW (widget))
+		gtk_text_view_set_extra_menu (GTK_TEXT_VIEW (widget), G_MENU_MODEL (menu));
+
+	g_object_unref (menu);
 }
 
 /**
@@ -712,6 +686,9 @@ e_widget_undo_attach (GtkWidget *widget,
 		return;
 
 	if (GTK_IS_EDITABLE (widget)) {
+		/* this undo replaces the one of GTK 4 */
+		gtk_editable_set_enable_undo (GTK_EDITABLE (widget), FALSE);
+
 		data = g_new0 (EUndoData, 1);
 		data->undo_len = DEFAULT_MAX_UNDO_LEVEL;
 		data->undo_stack = g_new0 (EUndoInfo *, data->undo_len);
@@ -731,13 +708,12 @@ e_widget_undo_attach (GtkWidget *widget,
 				G_CALLBACK (e_focus_tracker_update_actions), focus_tracker);
 
 		if (GTK_IS_ENTRY (widget))
-			g_signal_connect (
-				widget, "populate-popup",
-				G_CALLBACK (widget_undo_populate_popup_cb), NULL);
+			widget_undo_add_menu (widget);
 	} else if (GTK_IS_TEXT_VIEW (widget)) {
 		GtkTextBuffer *text_buffer;
 
 		text_buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (widget));
+		gtk_text_buffer_set_enable_undo (text_buffer, FALSE);
 
 		data = g_new0 (EUndoData, 1);
 		data->undo_len = DEFAULT_MAX_UNDO_LEVEL;
@@ -761,9 +737,7 @@ e_widget_undo_attach (GtkWidget *widget,
 				text_buffer, "changed",
 				G_CALLBACK (e_focus_tracker_update_actions), focus_tracker);
 
-		g_signal_connect (
-			widget, "populate-popup",
-			G_CALLBACK (widget_undo_populate_popup_cb), NULL);
+		widget_undo_add_menu (widget);
 	}
 }
 

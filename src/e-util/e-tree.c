@@ -1323,10 +1323,10 @@ e_tree_setup_table (ETree *tree)
 		tree->priv->table_canvas, "size_allocate",
 		G_CALLBACK (tree_canvas_size_allocate), tree);
 	g_signal_connect (
-		tree->priv->table_canvas, "focus_in_event",
+		e_gtk_widget_legacy_events (tree->priv->table_canvas), "focus_in_event",
 		G_CALLBACK (table_canvas_focus_event_cb), tree);
 	g_signal_connect (
-		tree->priv->table_canvas, "focus_out_event",
+		e_gtk_widget_legacy_events (tree->priv->table_canvas), "focus_out_event",
 		G_CALLBACK (table_canvas_focus_event_cb), tree);
 
 	g_signal_connect (

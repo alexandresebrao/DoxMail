@@ -234,6 +234,9 @@ RENAMES = {
 
 # GTK 3 calls with nothing to do in GTK 4, dropped when they are a statement
 DROPPED = [
+    'gtk_combo_box_set_wrap_width',
+    'gtk_event_box_set_visible_window',
+    'gtk_event_box_set_above_child',
     'gtk_window_set_position',
     'webkit_web_context_set_sandbox_enabled',
     'gtk_grab_add',
@@ -453,9 +456,9 @@ def wrap_legacy_connects(text):
                 break
             i += 1
         first = text[m.end():i]
-        sig = re.match(r',\s*("[a-z-]+")', text[i:])
+        sig = re.match(r',\s*("[a-z_-]+")', text[i:])
         out.append(text[pos:m.end()])
-        if (sig and sig.group(1) in LEGACY_EVENT_SIGNALS and
+        if (sig and sig.group(1).replace('_', '-') in LEGACY_EVENT_SIGNALS and
                 not first.startswith('e_gtk_widget_legacy_events')):
             out.append('e_gtk_widget_legacy_events (%s)' % first.strip())
             counts['legacy event connect'] += 1
@@ -466,7 +469,23 @@ def wrap_legacy_connects(text):
     return ''.join(out)
 
 
+def r_tooltip_context(args, *_):
+    """GTK 4 takes the coordinates by value"""
+    if len(args) == 7 and args[1].startswith('&') and args[2].startswith('&'):
+        return call('gtk_tree_view_get_tooltip_context', [args[0], args[1][1:].strip(), args[2][1:].strip()] + args[3:])
+    return None
+
+
+def r_similar_surface(args, *_):
+    if len(args) == 4:
+        return call('cairo_image_surface_create', ['CAIRO_FORMAT_ARGB32', args[2], args[3]])
+    return None
+
+
 CALLS = {
+    'gdk_window_create_similar_surface': r_similar_surface,
+    'gdk_surface_create_similar_surface': r_similar_surface,
+    'gtk_tree_view_get_tooltip_context': r_tooltip_context,
     'gtk_binding_entry_add_signal': r_binding_signal,
     'gtk_icon_theme_lookup_icon': r_icon_lookup('e_gtk_icon_theme_lookup_icon'),
     'gtk_icon_theme_lookup_by_gicon': r_icon_lookup('e_gtk_icon_theme_lookup_by_gicon'),
@@ -574,6 +593,13 @@ REGEX_RENAMES = [
     (r'\bGtkRadioButton\b', 'GtkCheckButton'),
     (r'\bGtkAccelGroup\b', 'EGtkAccelGroup'),
     (r'\bGtkBindingSet \*', 'GtkWidgetClass *'),
+    (r'\bgtk_button_box_set_child_secondary \(\s*GTK_BUTTON_BOX \(([^()]*)\)', r'e_gtk_button_box_set_child_secondary (\1'),
+    (r'\n[ \t]*"layout-style", GTK_BUTTONBOX_[A-Z]+,', ''),
+    # GTK 4 combo boxes have no grid popup
+    (r'\bgtk_combo_box_get_wrap_width \([^()]*\)', '0'),
+    (r'\bgtk_entry_get_width_chars \(\s*GTK_ENTRY \(([^()]*)\)\s*\)', r'gtk_editable_get_width_chars (GTK_EDITABLE (\1))'),
+    # an event box only held a child
+    (r'\bgtk_event_box_new \(\)', 'gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0)'),
     (r'\n[ \t]*"type", GTK_WINDOW_TOPLEVEL,', ''),
     # GTK 4 does not place windows
     (r'\n[ \t]*"window-position", GTK_WIN_POS_[A-Z_]+,', ''),
@@ -599,6 +625,9 @@ REGEX_RENAMES = [
     (r'\bGTK_RADIO_BUTTON\s*\(', 'GTK_CHECK_BUTTON ('),
     (r'\bGTK_IS_RADIO_BUTTON\s*\(', 'GTK_IS_CHECK_BUTTON ('),
     (r'\bGTK_TYPE_RADIO_BUTTON\b', 'GTK_TYPE_CHECK_BUTTON'),
+    # GTK 3 drag vfuncs -> overrides of the drag-* signals of e-gtk-dnd-compat
+    (r'(\w+)->(drag_(?:begin|end|data_get|data_delete|failed|leave|motion|drop|data_received))\s*=\s*(\w+);',
+     lambda m: 'g_signal_override_class_handler ("%s", G_TYPE_FROM_CLASS (%s), G_CALLBACK (%s));' % (m.group(2).replace('_', '-'), m.group(1), m.group(3))),
     # GTK 3 event vfuncs -> overrides of the emulated signals
     (r'(\w+)->(key_press_event|key_release_event|button_press_event|button_release_event|motion_notify_event|scroll_event|enter_notify_event|leave_notify_event|focus_in_event|focus_out_event|popup_menu)\s*=\s*(\w+);',
      lambda m: 'e_gtk_widget_class_override_legacy_event (GTK_WIDGET_CLASS (%s), "%s", G_CALLBACK (%s));' % (m.group(1), m.group(2).replace('_', '-'), m.group(3))),
