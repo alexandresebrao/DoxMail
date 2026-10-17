@@ -725,7 +725,7 @@ webkit_editor_set_can_redo (EWebKitEditor *wk_editor,
 
 static void
 content_changed_cb (WebKitUserContentManager *manager,
-		    WebKitJavascriptResult *js_result,
+		    JSCValue *js_result,
 		    gpointer user_data)
 {
 	EWebKitEditor *wk_editor = user_data;
@@ -737,7 +737,7 @@ content_changed_cb (WebKitUserContentManager *manager,
 
 static void
 context_menu_requested_cb (WebKitUserContentManager *manager,
-			   WebKitJavascriptResult *js_result,
+			   JSCValue *js_result,
 			   gpointer user_data)
 {
 	EWebKitEditor *wk_editor = user_data;
@@ -746,7 +746,7 @@ context_menu_requested_cb (WebKitUserContentManager *manager,
 	g_return_if_fail (E_IS_WEBKIT_EDITOR (wk_editor));
 	g_return_if_fail (js_result != NULL);
 
-	jsc_params = webkit_javascript_result_get_js_value (js_result);
+	jsc_params = (js_result);
 	g_return_if_fail (jsc_value_is_object (jsc_params));
 
 	g_clear_pointer (&wk_editor->priv->context_menu_caret_word, g_free);
@@ -805,7 +805,7 @@ static void webkit_editor_style_updated (EWebKitEditor *wk_editor, gboolean forc
 
 static void
 formatting_changed_cb (WebKitUserContentManager *manager,
-		       WebKitJavascriptResult *js_result,
+		       JSCValue *js_result,
 		       gpointer user_data)
 {
 	EWebKitEditor *wk_editor = user_data;
@@ -815,7 +815,7 @@ formatting_changed_cb (WebKitUserContentManager *manager,
 
 	g_return_if_fail (E_IS_WEBKIT_EDITOR (wk_editor));
 
-	jsc_params = webkit_javascript_result_get_js_value (js_result);
+	jsc_params = (js_result);
 	g_return_if_fail (jsc_value_is_object (jsc_params));
 
 	object = G_OBJECT (wk_editor);
@@ -1030,7 +1030,7 @@ formatting_changed_cb (WebKitUserContentManager *manager,
 
 static void
 selection_changed_cb (WebKitUserContentManager *manager,
-		      WebKitJavascriptResult *js_result,
+		      JSCValue *js_result,
 		      gpointer user_data)
 {
 	EWebKitEditor *wk_editor = user_data;
@@ -1040,7 +1040,7 @@ selection_changed_cb (WebKitUserContentManager *manager,
 
 	g_return_if_fail (E_IS_WEBKIT_EDITOR (wk_editor));
 
-	jsc_value = webkit_javascript_result_get_js_value (js_result);
+	jsc_value = (js_result);
 	g_return_if_fail (jsc_value_is_object (jsc_value));
 	is_collapsed = e_web_view_jsc_get_object_property_boolean (jsc_value, "isCollapsed", FALSE);
 	wk_editor->priv->caret_client_rect.x = e_web_view_jsc_get_object_property_int32 (jsc_value, "x", 0);
@@ -1075,7 +1075,7 @@ selection_changed_cb (WebKitUserContentManager *manager,
 
 static void
 undu_redo_state_changed_cb (WebKitUserContentManager *manager,
-			    WebKitJavascriptResult *js_result,
+			    JSCValue *js_result,
 			    gpointer user_data)
 {
 	EWebKitEditor *wk_editor = user_data;
@@ -1086,7 +1086,7 @@ undu_redo_state_changed_cb (WebKitUserContentManager *manager,
 	g_return_if_fail (E_IS_WEBKIT_EDITOR (wk_editor));
 	g_return_if_fail (js_result != NULL);
 
-	jsc_params = webkit_javascript_result_get_js_value (js_result);
+	jsc_params = (js_result);
 	g_return_if_fail (jsc_value_is_object (jsc_params));
 
 	jsc_value = jsc_value_object_get_property (jsc_params, "state");
@@ -4218,7 +4218,7 @@ e_webkit_editor_initialize_web_extensions_cb (WebKitWebContext *web_context,
 
 	g_return_if_fail (E_IS_WEBKIT_EDITOR (wk_editor));
 
-	webkit_web_context_set_web_extensions_directory (web_context, EVOLUTION_WEB_EXTENSIONS_WEBKIT_EDITOR_DIR);
+	webkit_web_context_set_web_process_extensions_directory (web_context, EVOLUTION_WEB_EXTENSIONS_WEBKIT_EDITOR_DIR);
 }
 
 static void
@@ -4258,11 +4258,11 @@ webkit_editor_constructed (GObject *object)
 	g_signal_connect_object (manager, "script-message-received::undoRedoStateChanged",
 		G_CALLBACK (undu_redo_state_changed_cb), wk_editor, 0);
 
-	webkit_user_content_manager_register_script_message_handler (manager, "contentChanged");
-	webkit_user_content_manager_register_script_message_handler (manager, "contextMenuRequested");
-	webkit_user_content_manager_register_script_message_handler (manager, "formattingChanged");
-	webkit_user_content_manager_register_script_message_handler (manager, "selectionChanged");
-	webkit_user_content_manager_register_script_message_handler (manager, "undoRedoStateChanged");
+	webkit_user_content_manager_register_script_message_handler (manager, "contentChanged", NULL);
+	webkit_user_content_manager_register_script_message_handler (manager, "contextMenuRequested", NULL);
+	webkit_user_content_manager_register_script_message_handler (manager, "formattingChanged", NULL);
+	webkit_user_content_manager_register_script_message_handler (manager, "selectionChanged", NULL);
+	webkit_user_content_manager_register_script_message_handler (manager, "undoRedoStateChanged", NULL);
 
 	/* Give spell check languages to WebKit */
 	languages = e_spell_checker_list_active_languages (wk_editor->priv->spell_checker, NULL);
@@ -4394,8 +4394,7 @@ webkit_editor_constructor (GType type,
 				web_context = webkit_web_context_new ();
 
 				webkit_web_context_set_cache_model (web_context, WEBKIT_CACHE_MODEL_DOCUMENT_VIEWER);
-				webkit_web_context_set_web_extensions_directory (web_context, EVOLUTION_WEB_EXTENSIONS_WEBKIT_EDITOR_DIR);
-				webkit_web_context_set_sandbox_enabled (web_context, TRUE);
+				webkit_web_context_set_web_process_extensions_directory (web_context, EVOLUTION_WEB_EXTENSIONS_WEBKIT_EDITOR_DIR);
 				webkit_web_context_add_path_to_sandbox (web_context, EVOLUTION_WEBKITDATADIR, TRUE);
 
 				plugins_path = g_build_filename (e_get_user_data_dir (), "webkit-editor-plugins", NULL);
@@ -5160,10 +5159,10 @@ webkit_editor_paste_clipboard_targets_cb (GdkClipboard *clipboard,
 		if (e_targets_include_html (targets, n_targets)) {
 			content = e_clipboard_wait_for_html (clipboard);
 			is_html = TRUE;
-		} else if (gtk_targets_include_text (targets, n_targets))
+		} else if (e_gtk_targets_include_text (targets, n_targets))
 			content = e_gtk_clipboard_wait_for_text (clipboard);
 	} else {
-		if (gtk_targets_include_text (targets, n_targets))
+		if (e_gtk_targets_include_text (targets, n_targets))
 			content = e_gtk_clipboard_wait_for_text (clipboard);
 		else if (e_targets_include_html (targets, n_targets)) {
 			content = e_clipboard_wait_for_html (clipboard);

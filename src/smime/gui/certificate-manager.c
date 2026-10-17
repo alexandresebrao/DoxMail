@@ -1552,7 +1552,7 @@ cm_add_mail_certificate_page (ECertManagerConfig *ecmc,
 		"name", "mail-certs",
 		NULL);
 
-	scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+	scrolled_window = gtk_scrolled_window_new ();
 	g_object_set (G_OBJECT (scrolled_window),
 		"hexpand", TRUE,
 		"vexpand", TRUE,

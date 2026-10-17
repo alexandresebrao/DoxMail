@@ -414,7 +414,7 @@ e_meeting_time_selector_construct (EMeetingTimeSelector *mts,
 
 	gtk_widget_show (GTK_WIDGET (mts->list_view));
 
-	sw = gtk_scrolled_window_new (NULL, NULL);
+	sw = gtk_scrolled_window_new ();
 	gtk_widget_set_margin_top (sw, 4);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (sw), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (sw), TRUE);
@@ -1415,7 +1415,7 @@ e_meeting_time_selector_refresh_cb (gpointer data)
 
 		cursor = gdk_cursor_new_from_name ("default", NULL);
 		if (cursor) {
-			GdkWindow *window;
+			GdkSurface *window;
 
 			window = e_gtk_widget_get_surface (GTK_WIDGET (mts));
 			if (window)
@@ -1461,7 +1461,7 @@ e_meeting_time_selector_refresh_free_busy (EMeetingTimeSelector *mts,
 
 	/* XXX This function is called during schedule page initialization
 	 *     before the meeting time selector is realized, meaning it has
-	 *     no GdkWindow yet.  This avoids a runtime warning. */
+	 *     no GdkSurface yet.  This avoids a runtime warning. */
 	if (gtk_widget_get_realized (GTK_WIDGET (mts))) {
 		GdkCursor *cursor;
 
@@ -1469,10 +1469,10 @@ e_meeting_time_selector_refresh_free_busy (EMeetingTimeSelector *mts,
 		 * normal once the free busy queries are complete. */
 		cursor = gdk_cursor_new_from_name ("wait", NULL);
 		if (cursor) {
-			GdkWindow *window;
+			GdkSurface *window;
 
-			window = e_gtk_widget_get_surface (GTK_WIDGET (mts));
-			gdk_window_set_cursor (window, cursor);
+			window = NULL; /* GTK 4 sets cursors on widgets */
+			gtk_widget_set_cursor (GTK_WIDGET (mts), cursor);
 			g_object_unref (cursor);
 		}
 
@@ -2298,7 +2298,7 @@ static void
 e_meeting_time_selector_on_canvas_realized (GtkWidget *widget,
                                             EMeetingTimeSelector *mts)
 {
-	GdkWindow *window;
+	GdkSurface *window;
 
 	window = gtk_layout_get_bin_window (GTK_LAYOUT (widget));
 	gdk_window_set_background_pattern (window, NULL);

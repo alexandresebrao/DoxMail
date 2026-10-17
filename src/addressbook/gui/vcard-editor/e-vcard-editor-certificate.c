@@ -534,7 +534,7 @@ e_vcard_editor_certificate_constructed (GObject *object)
 
 	self->text_view = GTK_TEXT_VIEW (widget);
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	g_object_set (widget,
 		"halign", GTK_ALIGN_FILL,
 		"hexpand", TRUE,

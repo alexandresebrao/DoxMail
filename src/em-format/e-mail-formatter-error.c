@@ -54,7 +54,7 @@ emfe_error_format (EMailFormatterExtension *extension,
 	gchar *html;
 	gint icon_width, icon_height;
 
-	if (!gtk_icon_size_lookup (GTK_ICON_SIZE_LARGE, &icon_width, &icon_height)) {
+	if (!e_gtk_icon_size_lookup (GTK_ICON_SIZE_LARGE, &icon_width, &icon_height)) {
 		icon_width = 48;
 		icon_height = 48;
 	}

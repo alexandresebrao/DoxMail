@@ -113,6 +113,8 @@ struct _ECanvasClass {
 
 GType		e_canvas_get_type		(void) G_GNUC_CONST;
 GtkWidget *	e_canvas_new			(void);
+gboolean	e_canvas_im_filter_keypress	(GtkIMContext *im_context,
+						 GnomeCanvasEvent *event);
 void		e_canvas_popup_menu		(GtkWidget *menu,
 						 GnomeCanvas *canvas,
 						 GnomeCanvasEvent *event);

@@ -199,9 +199,7 @@ e_html_editor_dialog_init (EHTMLEditorDialog *dialog)
 		NULL);
 
 	/* Don't destroy the dialog when closed! */
-	g_signal_connect (
-		dialog, "delete-event",
-		G_CALLBACK (gtk_widget_hide_on_delete), NULL);
+	gtk_window_set_hide_on_close (GTK_WINDOW (dialog), TRUE);
 
 	g_signal_connect (
 		dialog, "key-press-event",

@@ -312,6 +312,32 @@ e_canvas_new (void)
 }
 
 /**
+ * e_canvas_im_filter_keypress:
+ * @im_context: a #GtkIMContext
+ * @event: a key event received by a canvas item
+ *
+ * Passes the key event to the input method. Events the canvas made up
+ * have no #GdkEvent and are not filtered.
+ *
+ * Returns: whether the input method handled the event
+ *
+ * Since: DoxMail
+ **/
+gboolean
+e_canvas_im_filter_keypress (GtkIMContext *im_context,
+			     GnomeCanvasEvent *event)
+{
+	GdkEvent *gdk_event;
+
+	g_return_val_if_fail (GTK_IS_IM_CONTEXT (im_context), FALSE);
+	g_return_val_if_fail (event != NULL, FALSE);
+
+	gdk_event = gnome_canvas_event_get_gdk_event (event);
+
+	return gdk_event && gtk_im_context_filter_keypress (im_context, gdk_event);
+}
+
+/**
  * e_canvas_popup_menu:
  * @menu: a #GtkPopover, usually a #GtkPopoverMenu, without a parent
  * @canvas: the #GnomeCanvas to show the @menu for

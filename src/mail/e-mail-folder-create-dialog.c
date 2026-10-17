@@ -67,7 +67,7 @@ mail_folder_create_dialog_create_folder_cb (GObject *source_object,
 	EMailFolderCreateDialog *dialog;
 	EActivity *activity;
 	EAlertSink *alert_sink;
-	GdkWindow *gdk_window;
+	GdkSurface *gdk_window;
 	AsyncContext *async_context;
 	GError *local_error = NULL;
 
@@ -78,8 +78,8 @@ mail_folder_create_dialog_create_folder_cb (GObject *source_object,
 	alert_sink = e_activity_get_alert_sink (activity);
 
 	/* Set the cursor back to normal. */
-	gdk_window = e_gtk_widget_get_surface (GTK_WIDGET (dialog));
-	gdk_window_set_cursor (gdk_window, NULL);
+	gdk_window = NULL; /* GTK 4 sets cursors on widgets */
+	gtk_widget_set_cursor (GTK_WIDGET (dialog), NULL);
 
 	e_mail_store_create_folder_finish (
 		CAMEL_STORE (source_object), result, &local_error);
@@ -145,10 +145,10 @@ mail_folder_create_dialog_create_folder (EMailFolderCreateDialog *dialog)
 		/* Make the cursor appear busy. */
 		gdk_cursor = gdk_cursor_new_from_name ("wait", NULL);
 		if (gdk_cursor) {
-			GdkWindow *gdk_window;
+			GdkSurface *gdk_window;
 
-			gdk_window = e_gtk_widget_get_surface (GTK_WIDGET (dialog));
-			gdk_window_set_cursor (gdk_window, gdk_cursor);
+			gdk_window = NULL; /* GTK 4 sets cursors on widgets */
+			gtk_widget_set_cursor (GTK_WIDGET (dialog), gdk_cursor);
 			g_object_unref (gdk_cursor);
 		}
 

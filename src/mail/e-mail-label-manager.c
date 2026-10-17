@@ -320,7 +320,7 @@ e_mail_label_manager_init (EMailLabelManager *manager)
 
 	container = GTK_WIDGET (manager);
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	gtk_widget_set_hexpand (widget, TRUE);
 	gtk_widget_set_vexpand (widget, TRUE);
 	gtk_scrolled_window_set_policy (

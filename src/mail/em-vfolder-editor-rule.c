@@ -887,7 +887,7 @@ get_widget (EFilterRule *fr,
 	gtk_grid_set_column_spacing (GTK_GRID (hgrid), 6);
 	e_gtk_container_add (vgrid, hgrid);
 
-	scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+	scrolled_window = gtk_scrolled_window_new ();
 	g_object_set (
 		G_OBJECT (scrolled_window),
 		"hscrollbar-policy", GTK_POLICY_AUTOMATIC,

@@ -3529,7 +3529,7 @@ e_comp_editor_select_page (ECompEditor *comp_editor,
 			GtkWidget *nth_page = gtk_notebook_get_nth_page (comp_editor->priv->content, ii);
 			GList *children, *link;
 
-			if (!nth_page || E_IS_COMP_EDITOR_PAGE (nth_page) || !GTK_IS_CONTAINER (nth_page))
+			if (!nth_page || E_IS_COMP_EDITOR_PAGE (nth_page) || !GTK_IS_WIDGET (nth_page))
 				continue;
 
 			children = e_gtk_widget_get_children (nth_page);

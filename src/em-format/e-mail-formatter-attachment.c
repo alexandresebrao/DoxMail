@@ -243,7 +243,7 @@ emfe_attachment_format (EMailFormatterExtension *extension,
 
 	button_id = g_strconcat (attachment_part_id, ".attachment_button", NULL);
 
-	if (!gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &icon_width, &icon_height)) {
+	if (!e_gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &icon_width, &icon_height)) {
 		icon_width = 16;
 		icon_height = 16;
 	}

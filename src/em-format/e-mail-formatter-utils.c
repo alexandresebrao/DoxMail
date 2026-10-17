@@ -216,7 +216,7 @@ e_mail_formatter_format_address (EMailFormatter *formatter,
 			    strcmp (field, _("Bcc")) == 0) {
 				gint icon_width, icon_height;
 
-				if (!gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &icon_width, &icon_height)) {
+				if (!e_gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &icon_width, &icon_height)) {
 					icon_width = 16;
 					icon_height = 16;
 				}
@@ -707,7 +707,7 @@ e_mail_formatter_format_security_header (EMailFormatter *formatter,
 				gint icon_width, icon_height;
 				gchar *escaped;
 
-				if (!gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &icon_width, &icon_height)) {
+				if (!e_gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &icon_width, &icon_height)) {
 					icon_width = 16;
 					icon_height = 16;
 				}

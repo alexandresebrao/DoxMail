@@ -1973,7 +1973,7 @@ e_html_editor_get_content_editor_for_mode (EHTMLEditor *editor,
 		if (GTK_IS_SCROLLABLE (cnt_editor)) {
 			GtkWidget *scrolled_window;
 
-			scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+			scrolled_window = gtk_scrolled_window_new ();
 			gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled_window),
 				GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 

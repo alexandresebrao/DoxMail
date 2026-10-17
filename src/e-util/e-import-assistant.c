@@ -344,7 +344,7 @@ import_assistant_file_page_init (EImportAssistant *import_assistant)
 
 	label = widget;
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	gtk_widget_set_hexpand (widget, TRUE);
 	gtk_widget_set_vexpand (widget, TRUE);
 	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (widget), TRUE);

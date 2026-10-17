@@ -145,6 +145,8 @@ gboolean	e_gtk_selection_data_get_targets
 						 gint *n_atoms);
 gboolean	e_gtk_selection_data_targets_include_text
 						(const EGtkSelectionData *data);
+gboolean	e_gtk_targets_include_text	(EGtkAtom *targets,
+						 gint n_targets);
 
 /* Drag contexts */
 

@@ -363,7 +363,7 @@ shell_taskbar_size_allocate (GtkWidget *widget,
 	gboolean height_changed;
 
 	if (GTK_WIDGET_CLASS (e_shell_taskbar_parent_class)->get_preferred_height)
-		GTK_WIDGET_CLASS (e_shell_taskbar_parent_class)->get_preferred_height (widget, &minimum_height, &natural_height);
+		GTK_WIDGET_CLASS (e_shell_taskbar_parent_class)->measure (widget, GTK_ORIENTATION_VERTICAL, -1, &minimum_height, &natural_height, NULL, NULL);
 
 	shell_taskbar = E_SHELL_TASKBAR (widget);
 
@@ -412,6 +412,29 @@ shell_taskbar_get_preferred_width (GtkWidget *widget,
 }
 
 static void
+e_shell_taskbar_measure (GtkWidget *widget,
+		GtkOrientation orientation,
+		gint for_size,
+		gint *minimum,
+		gint *natural,
+		gint *minimum_baseline,
+		gint *natural_baseline)
+{
+	if (orientation == GTK_ORIENTATION_HORIZONTAL) {
+		shell_taskbar_get_preferred_width (widget, minimum, natural);
+		return;
+	}
+
+	if (orientation == GTK_ORIENTATION_VERTICAL) {
+		shell_taskbar_get_preferred_height (widget, minimum, natural);
+		return;
+	}
+
+	GTK_WIDGET_CLASS (e_shell_taskbar_parent_class)->measure (widget, orientation, for_size,
+		minimum, natural, minimum_baseline, natural_baseline);
+}
+
+static void
 e_shell_taskbar_class_init (EShellTaskbarClass *class)
 {
 	GObjectClass *object_class;
@@ -425,9 +448,8 @@ e_shell_taskbar_class_init (EShellTaskbarClass *class)
 	object_class->constructed = shell_taskbar_constructed;
 
 	widget_class = GTK_WIDGET_CLASS (class);
+	widget_class->measure = e_shell_taskbar_measure;
 	widget_class->size_allocate = shell_taskbar_size_allocate;
-	widget_class->get_preferred_height = shell_taskbar_get_preferred_height;
-	widget_class->get_preferred_width = shell_taskbar_get_preferred_width;
 
 	/**
 	 * EShellTaskbar:message

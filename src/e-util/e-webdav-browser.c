@@ -1888,8 +1888,7 @@ webdav_browser_save_clicked (EWebDAVBrowser *webdav_browser,
 		gtk_widget_hide (webdav_browser->priv->create_edit_hint_popover);
 
 		gtk_label_set_text (GTK_LABEL (webdav_browser->priv->create_edit_hint_label), _("Name cannot be empty"));
-		gtk_popover_set_relative_to (GTK_POPOVER (webdav_browser->priv->create_edit_hint_popover),
-			webdav_browser->priv->create_edit_name_entry);
+		e_gtk_popover_set_relative_to (GTK_POPOVER (webdav_browser->priv->create_edit_hint_popover), webdav_browser->priv->create_edit_name_entry);
 
 		gtk_widget_set_sensitive (webdav_browser->priv->create_edit_hint_popover, TRUE);
 		gtk_widget_show (webdav_browser->priv->create_edit_hint_popover);
@@ -1904,8 +1903,7 @@ webdav_browser_save_clicked (EWebDAVBrowser *webdav_browser,
 		gtk_widget_hide (webdav_browser->priv->create_edit_hint_popover);
 
 		gtk_label_set_text (GTK_LABEL (webdav_browser->priv->create_edit_hint_label), _("At least one component type should be set"));
-		gtk_popover_set_relative_to (GTK_POPOVER (webdav_browser->priv->create_edit_hint_popover),
-			webdav_browser->priv->create_edit_task_check);
+		e_gtk_popover_set_relative_to (GTK_POPOVER (webdav_browser->priv->create_edit_hint_popover), webdav_browser->priv->create_edit_task_check);
 
 		gtk_widget_set_sensitive (webdav_browser->priv->create_edit_hint_popover, TRUE);
 		gtk_widget_show (webdav_browser->priv->create_edit_hint_popover);
@@ -2123,7 +2121,7 @@ webdav_browser_create_clicked_cb (GtkWidget *button,
 		gtk_widget_hide (webdav_browser->priv->create_edit_hint_popover);
 
 		gtk_label_set_text (GTK_LABEL (webdav_browser->priv->create_edit_hint_label), msg);
-		gtk_popover_set_relative_to (GTK_POPOVER (webdav_browser->priv->create_edit_hint_popover), button);
+		e_gtk_popover_set_relative_to (GTK_POPOVER (webdav_browser->priv->create_edit_hint_popover), button);
 
 		gtk_widget_set_sensitive (webdav_browser->priv->create_edit_hint_popover, TRUE);
 		gtk_widget_show (webdav_browser->priv->create_edit_hint_popover);
@@ -2135,7 +2133,7 @@ webdav_browser_create_clicked_cb (GtkWidget *button,
 		(button == webdav_browser->priv->create_book_button ? E_EDITING_FLAG_IS_BOOK : 0) |
 		(button == webdav_browser->priv->create_calendar_button ? E_EDITING_FLAG_IS_CALENDAR | E_EDITING_FLAG_HAS_CALENDAR_COMPONENTS: 0));
 
-	gtk_popover_set_relative_to (GTK_POPOVER (webdav_browser->priv->create_edit_popover), button);
+	e_gtk_popover_set_relative_to (GTK_POPOVER (webdav_browser->priv->create_edit_popover), button);
 
 	g_signal_handlers_disconnect_by_data (webdav_browser->priv->create_edit_save_button, webdav_browser);
 
@@ -2216,7 +2214,7 @@ webdav_browser_edit_clicked_cb (GtkWidget *button,
 			description, -1);
 	}
 
-	gtk_popover_set_relative_to (GTK_POPOVER (webdav_browser->priv->create_edit_popover), button);
+	e_gtk_popover_set_relative_to (GTK_POPOVER (webdav_browser->priv->create_edit_popover), button);
 
 	g_signal_handlers_disconnect_by_data (webdav_browser->priv->create_edit_save_button, webdav_browser);
 
@@ -2653,7 +2651,7 @@ webdav_browser_create_popover (EWebDAVBrowser *webdav_browser)
 	webdav_browser->priv->create_edit_description_label = widget;
 	label = widget;
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (widget), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (widget), TRUE);
 	gtk_grid_attach (grid, widget, 1, 6, 1, 1);
@@ -2673,7 +2671,7 @@ webdav_browser_create_popover (EWebDAVBrowser *webdav_browser)
 
 	gtk_widget_set_visible (GTK_WIDGET (grid), TRUE);
 
-	widget = gtk_popover_new (GTK_WIDGET (webdav_browser));
+	widget = e_gtk_popover_new (GTK_WIDGET (webdav_browser));
 	gtk_popover_set_position (GTK_POPOVER (widget), GTK_POS_BOTTOM);
 	e_gtk_container_add (widget, GTK_WIDGET (grid));
 	e_gtk_widget_set_border_width (widget, 6);
@@ -2683,7 +2681,7 @@ webdav_browser_create_popover (EWebDAVBrowser *webdav_browser)
 	gtk_widget_show (label);
 	webdav_browser->priv->create_edit_hint_label = label;
 
-	widget = gtk_popover_new (webdav_browser->priv->create_edit_popover);
+	widget = e_gtk_popover_new (webdav_browser->priv->create_edit_popover);
 	gtk_popover_set_position (GTK_POPOVER (widget), GTK_POS_BOTTOM);
 	gtk_popover_set_autohide (GTK_POPOVER (widget), FALSE);
 	e_gtk_container_add (widget, label);
@@ -2834,7 +2832,7 @@ webdav_browser_constructed (GObject *object)
 	webdav_browser->priv->url_label = GTK_LABEL (widget);
 	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (widget), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (widget), TRUE);
 	gtk_widget_set_hexpand (widget, TRUE);

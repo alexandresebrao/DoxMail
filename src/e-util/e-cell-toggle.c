@@ -99,7 +99,7 @@ cell_toggle_ensure_icons (ECellToggle *cell_toggle,
 	g_ptr_array_set_size (cell_toggle->priv->surfaces, 0);
 
 	icon_theme = e_gtk_icon_theme_get_default ();
-	gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &width, &height);
+	e_gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &width, &height);
 
 	for (ii = 0; ii < cell_toggle->priv->n_icon_names; ii++) {
 		const gchar *icon_name = cell_toggle->priv->icon_names[ii];
@@ -124,7 +124,7 @@ cell_toggle_ensure_icons (ECellToggle *cell_toggle,
 		}
 
 		sd = g_new0 (SurfaceData, 1);
-		sd->surface = gdk_cairo_surface_create_from_pixbuf (pixbuf, scale, NULL);
+		sd->surface = e_gdk_cairo_surface_create_from_pixbuf (pixbuf, scale, NULL);
 		sd->width = width;
 		sd->height = unscaled_height;
 

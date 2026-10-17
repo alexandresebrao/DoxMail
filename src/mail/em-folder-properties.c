@@ -1312,7 +1312,7 @@ emfp_get_labels_item (EConfig *ec,
 	grid = GTK_GRID (gtk_grid_new ());
 	e_gtk_box_pack_start (GTK_BOX (parent), GTK_WIDGET (grid), TRUE, TRUE, 0);
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (widget), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	g_object_set (G_OBJECT (widget),
 		"hexpand", TRUE,

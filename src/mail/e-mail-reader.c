@@ -5278,7 +5278,7 @@ action_mail_label_change_more_cb (EUIAction *action,
 	mld->checkboxes = checkboxes;
 	mld->folder = e_mail_reader_ref_folder (reader);
 
-	popover = gtk_popover_new (GTK_WIDGET (e_mail_reader_get_message_list (reader)));
+	popover = e_gtk_popover_new (GTK_WIDGET (e_mail_reader_get_message_list (reader)));
 	gtk_popover_set_position (GTK_POPOVER (popover), GTK_POS_BOTTOM);
 	e_gtk_container_add (popover, GTK_WIDGET (grid));
 
@@ -5316,7 +5316,7 @@ action_mail_label_change_more_cb (EUIAction *action,
 	g_signal_connect (popover, "closed",
 		G_CALLBACK (gtk_widget_destroy), NULL);
 
-	widget = gtk_popover_get_relative_to (GTK_POPOVER (popover));
+	widget = gtk_widget_get_parent (GTK_POPOVER (popover));
 	if (widget) {
 		GtkAllocation allocation;
 		GdkRectangle rect;

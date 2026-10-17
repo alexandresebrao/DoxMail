@@ -54,15 +54,15 @@ source_config_dialog_commit_cb (GObject *object,
 {
 	ESourceConfig *config;
 	ESourceConfigDialog *dialog;
-	GdkWindow *gdk_window;
+	GdkSurface *gdk_window;
 	GError *error = NULL;
 
 	config = E_SOURCE_CONFIG (object);
 	dialog = E_SOURCE_CONFIG_DIALOG (user_data);
 
 	/* Set the cursor back to normal. */
-	gdk_window = e_gtk_widget_get_surface (GTK_WIDGET (dialog));
-	gdk_window_set_cursor (gdk_window, NULL);
+	gdk_window = NULL; /* GTK 4 sets cursors on widgets */
+	gtk_widget_set_cursor (GTK_WIDGET (dialog), NULL);
 
 	/* Allow user interaction with window content. */
 	gtk_widget_set_sensitive (GTK_WIDGET (dialog), TRUE);
@@ -101,10 +101,10 @@ source_config_dialog_commit (ESourceConfigDialog *dialog)
 	/* Make the cursor appear busy. */
 	gdk_cursor = gdk_cursor_new_from_name ("wait", NULL);
 	if (gdk_cursor) {
-		GdkWindow *gdk_window;
+		GdkSurface *gdk_window;
 
-		gdk_window = e_gtk_widget_get_surface (GTK_WIDGET (dialog));
-		gdk_window_set_cursor (gdk_window, gdk_cursor);
+		gdk_window = NULL; /* GTK 4 sets cursors on widgets */
+		gtk_widget_set_cursor (GTK_WIDGET (dialog), gdk_cursor);
 		g_object_unref (gdk_cursor);
 	}
 

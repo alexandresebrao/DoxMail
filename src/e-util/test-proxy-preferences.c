@@ -61,7 +61,7 @@ main (gint argc,
 		g_return_val_if_reached (-1);
 	}
 
-	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	window = gtk_window_new ();
 	e_gtk_widget_set_border_width (window, 12);
 	gtk_window_set_default_size (GTK_WINDOW (window), 400, 300);
 	gtk_window_set_title (GTK_WINDOW (window), "Proxy Preferences");

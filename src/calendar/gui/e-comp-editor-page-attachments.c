@@ -70,7 +70,7 @@ ecep_before_properties_popup_cb (EAttachmentView *view,
 		rect.x = 0;
 		rect.y = 0;
 
-		gtk_popover_set_relative_to (popover, self->priv->add_uri_button);
+		e_gtk_popover_set_relative_to (popover, self->priv->add_uri_button);
 		gtk_popover_set_pointing_to (popover, &rect);
 	} else {
 		EAttachmentView *active_view;
@@ -862,7 +862,7 @@ ecep_attachments_constructed (GObject *object)
 
 	container = page_attachments->priv->notebook;
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (widget), TRUE);
@@ -891,7 +891,7 @@ ecep_attachments_constructed (GObject *object)
 
 	container = page_attachments->priv->notebook;
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (widget), TRUE);

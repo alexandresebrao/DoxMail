@@ -125,7 +125,7 @@ static guint et_signals[LAST_SIGNAL] = { 0 };
 static void e_table_fill_table (ETable *e_table, ETableModel *model);
 static gboolean changed_idle (gpointer data);
 
-static void et_grab_focus (GtkWidget *widget);
+static gboolean et_grab_focus (GtkWidget *widget);
 
 static void et_drag_begin (GtkWidget *widget,
 			   EGtkDragContext *context,
@@ -244,36 +244,13 @@ current_search_col (ETable *et)
 }
 
 static void
-et_get_preferred_width (GtkWidget *widget,
-                        gint *minimum,
-                        gint *natural)
-{
-	ETable *et = E_TABLE (widget);
-
-	GTK_WIDGET_CLASS (e_table_parent_class)->
-		get_preferred_width (widget, minimum, natural);
-
-	if (et->horizontal_resize) {
-		*minimum = MAX (*minimum, et->header_width);
-		*natural = MAX (*natural, et->header_width);
-	}
-}
-
-static void
-et_get_preferred_height (GtkWidget *widget,
-                         gint *minimum,
-                         gint *natural)
-{
-	GTK_WIDGET_CLASS (e_table_parent_class)->
-		get_preferred_height (widget, minimum, natural);
-}
-
-static void
 set_header_width (ETable *et)
 {
 	if (et->horizontal_resize) {
 		et->header_width = e_table_header_min_width (et->header);
-		gtk_widget_queue_resize (GTK_WIDGET (et));
+
+		/* the GtkGrid layout manager measures the table with GTK 4 */
+		gtk_widget_set_size_request (GTK_WIDGET (et), et->header_width, -1);
 	}
 }
 
@@ -611,14 +588,14 @@ e_table_init (ETable *e_table)
 }
 
 /* Grab_focus handler for the ETable */
-static void
+static gboolean
 et_grab_focus (GtkWidget *widget)
 {
 	ETable *e_table;
 
 	e_table = E_TABLE (widget);
 
-	gtk_widget_grab_focus (GTK_WIDGET (e_table->table_canvas));
+	return gtk_widget_grab_focus (GTK_WIDGET (e_table->table_canvas));
 }
 
 /* Focus handler for the ETable */
@@ -630,8 +607,8 @@ et_focus (GtkWidget *container,
 
 	e_table = E_TABLE (container);
 
-	if (gtk_container_get_focus_child (GTK_CONTAINER (container))) {
-		gtk_container_set_focus_child (GTK_CONTAINER (container), NULL);
+	if (gtk_widget_get_focus_child (GTK_WIDGET (container))) {
+		gtk_widget_set_focus_child (GTK_WIDGET (container), NULL);
 		return FALSE;
 	}
 
@@ -915,7 +892,7 @@ group_key_press (ETableGroup *etg,
 	scrollable = GTK_SCROLLABLE (et->table_canvas);
 	adjustment = gtk_scrollable_get_vadjustment (scrollable);
 
-	switch (key->keyval) {
+	switch (key->key.keyval) {
 	case GDK_KEY_Page_Down:
 	case GDK_KEY_KP_Page_Down:
 		page_size = gtk_adjustment_get_page_size (adjustment);
@@ -933,7 +910,7 @@ group_key_press (ETableGroup *etg,
 		col_local = e_selection_model_cursor_col (E_SELECTION_MODEL (et->selection));
 		e_selection_model_select_as_key_press (
 			E_SELECTION_MODEL (et->selection),
-			row_local, col_local, key->state);
+			row_local, col_local, key->any.state);
 		return_val = 1;
 		break;
 	case GDK_KEY_Page_Up:
@@ -953,7 +930,7 @@ group_key_press (ETableGroup *etg,
 		col_local = e_selection_model_cursor_col (E_SELECTION_MODEL (et->selection));
 		e_selection_model_select_as_key_press (
 			E_SELECTION_MODEL (et->selection),
-			row_local, col_local, key->state);
+			row_local, col_local, key->any.state);
 		return_val = 1;
 		break;
 	case GDK_KEY_BackSpace:
@@ -963,13 +940,13 @@ group_key_press (ETableGroup *etg,
 		/* Fall through */
 	default:
 		init_search (et);
-		if ((key->state & ~(GDK_SHIFT_MASK | GDK_LOCK_MASK |
-			GDK_ALT_MASK | GDK_MOD2_MASK | GDK_MOD3_MASK |
-			GDK_MOD4_MASK | GDK_MOD5_MASK)) == 0
-		    && ((key->keyval >= GDK_KEY_a && key->keyval <= GDK_KEY_z) ||
-			(key->keyval >= GDK_KEY_A && key->keyval <= GDK_KEY_Z) ||
-			(key->keyval >= GDK_KEY_0 && key->keyval <= GDK_KEY_9)))
-			e_table_search_input_character (et->search, key->keyval);
+		if ((key->any.state & ~(GDK_SHIFT_MASK | GDK_LOCK_MASK |
+			GDK_ALT_MASK | 0 | 0 |
+			0 | 0)) == 0
+		    && ((key->key.keyval >= GDK_KEY_a && key->key.keyval <= GDK_KEY_z) ||
+			(key->key.keyval >= GDK_KEY_A && key->key.keyval <= GDK_KEY_Z) ||
+			(key->key.keyval >= GDK_KEY_0 && key->key.keyval <= GDK_KEY_9)))
+			e_table_search_input_character (et->search, key->key.keyval);
 		g_signal_emit (
 			et, et_signals[KEY_PRESS], 0,
 			row, col, event, &return_val);
@@ -1102,7 +1079,7 @@ et_build_groups (ETable *et)
 		gboolean bvalue = TRUE;
 
 		/* user can only disable this option, if it's enabled by the specification */
-		gtk_widget_style_get (GTK_WIDGET (et), "alternating-row-colors", &bvalue, NULL);
+		e_gtk_widget_style_get (GTK_WIDGET (et), "alternating-row-colors", &bvalue, NULL);
 
 		alternating_row_colors = bvalue ? 1 : 0;
 	}
@@ -1209,11 +1186,12 @@ changed_idle (gpointer data)
 }
 
 static void
-et_canvas_style_updated (GtkWidget *widget)
+et_canvas_css_changed (GtkWidget *widget,
+		       GtkCssStyleChange *change)
 {
 	GdkRGBA color;
 
-	GTK_WIDGET_CLASS (e_table_parent_class)->style_updated (widget);
+	GTK_WIDGET_CLASS (e_table_parent_class)->css_changed (widget, change);
 
 	e_utils_get_theme_color (widget, "theme_base_color", E_UTILS_DEFAULT_THEME_BASE_COLOR, &color);
 
@@ -1359,7 +1337,7 @@ table_canvas_focus_event_cb (GtkWidget *widget,
 	canvas = GNOME_CANVAS (widget);
 	ecanvas = E_CANVAS (widget);
 
-	if (!event->in) {
+	if (!event->focus_change.in) {
 		gtk_im_context_focus_out (ecanvas->im_context);
 		return FALSE;
 	} else {
@@ -1401,11 +1379,11 @@ canvas_vbox_event (ECanvasVbox *vbox,
 		key->type != GNOME_CANVAS_KEY_RELEASE) {
 		return FALSE;
 	}
-	switch (key->keyval) {
+	switch (key->key.keyval) {
 		case GDK_KEY_Tab:
 		case GDK_KEY_KP_Tab:
 		case GDK_KEY_ISO_Left_Tab:
-			if ((key->state & GDK_CONTROL_MASK) && etable->click_to_add) {
+			if ((key->any.state & GDK_CONTROL_MASK) && etable->click_to_add) {
 				gnome_canvas_item_grab_focus (etable->click_to_add);
 				return TRUE;
 			}
@@ -1436,11 +1414,11 @@ click_to_add_event (ETableClickToAdd *etcta,
 		key->type != GNOME_CANVAS_KEY_RELEASE) {
 		return FALSE;
 	}
-	switch (key->keyval) {
+	switch (key->key.keyval) {
 		case GDK_KEY_Tab:
 		case GDK_KEY_KP_Tab:
 		case GDK_KEY_ISO_Left_Tab:
-			if (key->state & GDK_CONTROL_MASK) {
+			if (key->any.state & GDK_CONTROL_MASK) {
 				if (etable->group) {
 					if (e_table_model_row_count (etable->model) > 0)
 						focus_first_etable_item (etable->group);
@@ -2865,7 +2843,8 @@ e_table_drag_begin (ETable *table,
 	table->drag_col = col;
 
 	return e_gtk_drag_begin (
-		GTK_WIDGET (table), targets, actions, button, event);
+		GTK_WIDGET (table), targets, actions, button,
+		event ? gnome_canvas_event_get_gdk_event (event) : NULL);
 }
 
 static void
@@ -3172,9 +3151,7 @@ e_table_class_init (ETableClass *class)
 
 	widget_class->grab_focus = et_grab_focus;
 	widget_class->unrealize = et_unrealize;
-	widget_class->get_preferred_width = et_get_preferred_width;
-	widget_class->get_preferred_height = et_get_preferred_height;
-	widget_class->style_updated = et_canvas_style_updated;
+	widget_class->css_changed = et_canvas_css_changed;
 	widget_class->focus = et_focus;
 
 	gtk_widget_class_set_css_name (widget_class, "ETable");
@@ -3477,9 +3454,7 @@ e_table_class_init (ETableClass *class)
 			FALSE,
 			G_PARAM_READABLE));
 
-	gtk_widget_class_install_style_property (
-		widget_class,
-		g_param_spec_int (
+	e_gtk_widget_class_install_style_property (widget_class, g_param_spec_int (
 			"vertical-spacing",
 			"Vertical Row Spacing",
 			"Vertical space between rows. "
@@ -3488,9 +3463,7 @@ e_table_class_init (ETableClass *class)
 			G_PARAM_READABLE |
 			G_PARAM_STATIC_STRINGS));
 
-	gtk_widget_class_install_style_property (
-		widget_class,
-		g_param_spec_boolean (
+	e_gtk_widget_class_install_style_property (widget_class, g_param_spec_boolean (
 			"alternating-row-colors",
 			"Alternating Row Colors",
 			"Whether to use alternating row colors",

@@ -33,7 +33,7 @@ ellipsized_combo_box_text_get_preferred_width (GtkWidget *widget,
 {
 	EEllipsizedComboBoxText *combo_box = E_ELLIPSIZED_COMBO_BOX_TEXT (widget);
 
-	GTK_WIDGET_CLASS (e_ellipsized_combo_box_text_parent_class)->get_preferred_width (widget, minimum_width, natural_width);
+	GTK_WIDGET_CLASS (e_ellipsized_combo_box_text_parent_class)->measure (widget, GTK_ORIENTATION_HORIZONTAL, -1, minimum_width, natural_width, NULL, NULL);
 
 	if (*natural_width > combo_box->priv->max_natural_width + (25 * gtk_widget_get_scale_factor (widget)))
 		*natural_width = combo_box->priv->max_natural_width;
@@ -59,13 +59,30 @@ ellipsized_combo_box_text_constructed (GObject *object)
 }
 
 static void
+e_ellipsized_combo_box_text_measure (GtkWidget *widget,
+		GtkOrientation orientation,
+		gint for_size,
+		gint *minimum,
+		gint *natural,
+		gint *minimum_baseline,
+		gint *natural_baseline)
+{
+	if (orientation == GTK_ORIENTATION_HORIZONTAL) {
+		ellipsized_combo_box_text_get_preferred_width (widget, minimum, natural);
+		return;
+	}
+
+	GTK_WIDGET_CLASS (e_ellipsized_combo_box_text_parent_class)->measure (widget, orientation, for_size,
+		minimum, natural, minimum_baseline, natural_baseline);
+}
+
+static void
 e_ellipsized_combo_box_text_class_init (EEllipsizedComboBoxTextClass *klass)
 {
 	GtkWidgetClass *widget_class;
 	GObjectClass *object_class;
 
 	widget_class = GTK_WIDGET_CLASS (klass);
-	widget_class->get_preferred_width = ellipsized_combo_box_text_get_preferred_width;
 
 	object_class = G_OBJECT_CLASS (klass);
 	object_class->constructed = ellipsized_combo_box_text_constructed;

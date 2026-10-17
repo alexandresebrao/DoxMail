@@ -668,7 +668,7 @@ e_plugin_lib_get_configure_widget (EPlugin *plugin)
 	gtk_widget_show (container);
 	e_gtk_box_pack_start (GTK_BOX (vbox), container, TRUE, TRUE, 0);
 
-	scrolledwindow = gtk_scrolled_window_new (NULL, NULL);
+	scrolledwindow = gtk_scrolled_window_new ();
 	gtk_widget_show (scrolledwindow);
 	e_gtk_box_pack_start (GTK_BOX (container), scrolledwindow, TRUE, TRUE, 0);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
@@ -776,7 +776,7 @@ e_plugin_lib_get_configure_widget (EPlugin *plugin)
 	gtk_widget_show (container);
 	e_gtk_box_pack_start (GTK_BOX (vbox), container, TRUE, TRUE, 0);
 
-	scrolledwindow = gtk_scrolled_window_new (NULL, NULL);
+	scrolledwindow = gtk_scrolled_window_new ();
 	gtk_widget_show (scrolledwindow);
 	e_gtk_box_pack_start (GTK_BOX (container), scrolledwindow, TRUE, TRUE, 0);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);

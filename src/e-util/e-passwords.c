@@ -433,7 +433,7 @@ update_capslock_state (GtkDialog *dialog,
                        GtkWidget *label)
 {
 	GdkModifierType mask = 0;
-	GdkWindow *window;
+	GdkSurface *window;
 	gchar *markup = NULL;
 	GdkDeviceManager *device_manager;
 	GdkDevice *device;
@@ -624,7 +624,6 @@ ep_ask_password (EPassMsg *msg)
 	} else {
 		gtk_window_present (GTK_WINDOW (password_dialog));
 		/* workaround GTK+ bug (see Gnome's bugzilla bug #624229) */
-		gtk_grab_add (GTK_WIDGET (password_dialog));
 	}
 }
 

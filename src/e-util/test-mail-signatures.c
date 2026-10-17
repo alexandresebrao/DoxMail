@@ -120,7 +120,7 @@ main (gint argc,
 
 	/* Construct the widgets. */
 
-	widget = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	widget = gtk_window_new ();
 	gtk_window_set_title (GTK_WINDOW (widget), "Mail Signatures");
 	gtk_window_set_default_size (GTK_WINDOW (widget), 400, 400);
 	e_gtk_widget_set_border_width (widget, 12);
@@ -161,7 +161,7 @@ main (gint argc,
 	identity_combo = widget;
 	gtk_widget_show (widget);
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);

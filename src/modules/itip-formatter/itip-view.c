@@ -1419,7 +1419,7 @@ buttons_table_write_button (GString *buffer,
 	if (icon) {
 		gint icon_width, icon_height;
 
-		if (!gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &icon_width, &icon_height)) {
+		if (!e_gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &icon_width, &icon_height)) {
 			icon_width = 16;
 			icon_height = 16;
 		}
@@ -2248,7 +2248,7 @@ itip_view_write (gpointer itip_part_ptr,
 
 	itip_part->alternative_html = itip_view_dup_alternative_html (itip_part_ptr, &itip_part->alternative_html_is_from_plain_text);
 
-	if (!gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &icon_width, &icon_height)) {
+	if (!e_gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &icon_width, &icon_height)) {
 		icon_width = 16;
 		icon_height = 16;
 	}
@@ -2340,7 +2340,7 @@ itip_view_write (gpointer itip_part_ptr,
 			#undef SWAP
 		}
 
-		if (!gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &icon_width, &icon_height)) {
+		if (!e_gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &icon_width, &icon_height)) {
 			icon_width = 16;
 			icon_height = 16;
 		}
@@ -8163,7 +8163,7 @@ itip_view_init_view (ItipView *view)
 
 static void
 itip_source_changed_cb (WebKitUserContentManager *manager,
-			WebKitJavascriptResult *js_result,
+			JSCValue *js_result,
 			gpointer user_data)
 {
 	ItipView *view = user_data;
@@ -8173,7 +8173,7 @@ itip_source_changed_cb (WebKitUserContentManager *manager,
 	g_return_if_fail (view != NULL);
 	g_return_if_fail (js_result != NULL);
 
-	jsc_value = webkit_javascript_result_get_js_value (js_result);
+	jsc_value = (js_result);
 	g_return_if_fail (jsc_value_is_object (jsc_value));
 
 	iframe_id = e_web_view_jsc_get_object_property_string (jsc_value, "iframe-id", NULL);
@@ -8189,7 +8189,7 @@ itip_source_changed_cb (WebKitUserContentManager *manager,
 
 static void
 itip_recur_toggled_cb (WebKitUserContentManager *manager,
-		       WebKitJavascriptResult *js_result,
+		       JSCValue *js_result,
 		       gpointer user_data)
 {
 	ItipView *view = user_data;
@@ -8199,7 +8199,7 @@ itip_recur_toggled_cb (WebKitUserContentManager *manager,
 	g_return_if_fail (view != NULL);
 	g_return_if_fail (js_result != NULL);
 
-	jsc_value = webkit_javascript_result_get_js_value (js_result);
+	jsc_value = (js_result);
 	g_return_if_fail (jsc_value_is_string (jsc_value));
 
 	iframe_id = jsc_value_to_string (jsc_value);
@@ -8267,8 +8267,8 @@ itip_view_set_web_view (ItipView *view,
 		g_signal_connect_object (manager, "script-message-received::itipRecurToggled",
 			G_CALLBACK (itip_recur_toggled_cb), view, 0);
 
-		webkit_user_content_manager_register_script_message_handler (manager, "itipSourceChanged");
-		webkit_user_content_manager_register_script_message_handler (manager, "itipRecurToggled");
+		webkit_user_content_manager_register_script_message_handler (manager, "itipSourceChanged", NULL);
+		webkit_user_content_manager_register_script_message_handler (manager, "itipRecurToggled", NULL);
 
 		e_web_view_jsc_run_script (WEBKIT_WEB_VIEW (web_view), e_web_view_get_cancellable (web_view),
 			"EvoItip.Initialize(%s);",

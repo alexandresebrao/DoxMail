@@ -241,7 +241,7 @@ subscription_editor_get_folder_info_done (CamelStore *store,
 	GtkTreeModel *model;
 	GtkTreeSelection *selection;
 	CamelFolderInfo *folder_info;
-	GdkWindow *window;
+	GdkSurface *window;
 	GList *expand_paths = NULL;
 	GError *error = NULL;
 
@@ -259,8 +259,8 @@ subscription_editor_get_folder_info_done (CamelStore *store,
 	gtk_widget_set_sensitive (editor->priv->refresh_button, TRUE);
 	gtk_widget_set_sensitive (editor->priv->stop_button, FALSE);
 
-	window = e_gtk_widget_get_surface (GTK_WIDGET (editor));
-	gdk_window_set_cursor (window, NULL);
+	window = NULL; /* GTK 4 sets cursors on widgets */
+	gtk_widget_set_cursor (GTK_WIDGET (editor), NULL);
 
 	/* XXX Do something smarter with errors. */
 	if (error != NULL) {
@@ -313,7 +313,7 @@ subscription_editor_subscribe_folder_done (CamelSubscribable *subscribable,
 	GtkTreeSelection *selection;
 	GtkTreePath *path;
 	GtkTreeIter iter;
-	GdkWindow *window;
+	GdkSurface *window;
 	GError *error = NULL;
 	TreeRowData *tree_row_data;
 
@@ -370,8 +370,8 @@ exit:
 	gtk_widget_set_sensitive (context->editor->priv->refresh_button, TRUE);
 	gtk_widget_set_sensitive (context->editor->priv->stop_button, FALSE);
 
-	window = e_gtk_widget_get_surface (GTK_WIDGET (context->editor));
-	gdk_window_set_cursor (window, NULL);
+	window = NULL; /* GTK 4 sets cursors on widgets */
+	gtk_widget_set_cursor (GTK_WIDGET (context->editor), NULL);
 
 	/* Update the Subscription/Unsubscription buttons. */
 	tree_view = context->editor->priv->active->tree_view;
@@ -417,10 +417,10 @@ subscription_editor_subscribe_many (EMSubscriptionEditor *editor,
 
 	cursor = gdk_cursor_new_from_name ("wait", NULL);
 	if (cursor) {
-		GdkWindow *window;
+		GdkSurface *window;
 
-		window = e_gtk_widget_get_surface (GTK_WIDGET (editor));
-		gdk_window_set_cursor (window, cursor);
+		window = NULL; /* GTK 4 sets cursors on widgets */
+		gtk_widget_set_cursor (GTK_WIDGET (editor), cursor);
 		g_object_unref (cursor);
 	}
 
@@ -446,7 +446,7 @@ subscription_editor_unsubscribe_folder_done (CamelSubscribable *subscribable,
 	GtkTreeSelection *selection;
 	GtkTreePath *path;
 	GtkTreeIter iter;
-	GdkWindow *window;
+	GdkSurface *window;
 	GError *error = NULL;
 	TreeRowData *tree_row_data;
 
@@ -503,8 +503,8 @@ exit:
 	gtk_widget_set_sensitive (context->editor->priv->refresh_button, TRUE);
 	gtk_widget_set_sensitive (context->editor->priv->stop_button, FALSE);
 
-	window = e_gtk_widget_get_surface (GTK_WIDGET (context->editor));
-	gdk_window_set_cursor (window, NULL);
+	window = NULL; /* GTK 4 sets cursors on widgets */
+	gtk_widget_set_cursor (GTK_WIDGET (context->editor), NULL);
 
 	/* Update the Subscription/Unsubscription buttons. */
 	tree_view = context->editor->priv->active->tree_view;
@@ -549,10 +549,10 @@ subscription_editor_unsubscribe_many (EMSubscriptionEditor *editor,
 
 	cursor = gdk_cursor_new_from_name ("wait", NULL);
 	if (cursor) {
-		GdkWindow *window;
+		GdkSurface *window;
 
-		window = e_gtk_widget_get_surface (GTK_WIDGET (editor));
-		gdk_window_set_cursor (window, cursor);
+		window = NULL; /* GTK 4 sets cursors on widgets */
+		gtk_widget_set_cursor (GTK_WIDGET (editor), cursor);
 		g_object_unref (cursor);
 	}
 
@@ -1006,10 +1006,10 @@ subscription_editor_refresh (EMSubscriptionEditor *editor)
 
 	cursor = gdk_cursor_new_from_name ("wait", NULL);
 	if (cursor) {
-		GdkWindow *window;
+		GdkSurface *window;
 
-		window = e_gtk_widget_get_surface (GTK_WIDGET (editor));
-		gdk_window_set_cursor (window, cursor);
+		window = NULL; /* GTK 4 sets cursors on widgets */
+		gtk_widget_set_cursor (GTK_WIDGET (editor), cursor);
 		g_object_unref (cursor);
 	}
 
@@ -1026,7 +1026,7 @@ subscription_editor_refresh (EMSubscriptionEditor *editor)
 static void
 subscription_editor_stop (EMSubscriptionEditor *editor)
 {
-	GdkWindow *window;
+	GdkSurface *window;
 
 	if (editor->priv->active->cancellable != NULL) {
 		g_cancellable_cancel (editor->priv->active->cancellable);
@@ -1043,8 +1043,8 @@ subscription_editor_stop (EMSubscriptionEditor *editor)
 	gtk_widget_set_sensitive (editor->priv->stop_button, FALSE);
 	gtk_widget_grab_focus (GTK_WIDGET (editor->priv->active->tree_view));
 
-	window = e_gtk_widget_get_surface (GTK_WIDGET (editor));
-	gdk_window_set_cursor (window, NULL);
+	window = NULL; /* GTK 4 sets cursors on widgets */
+	gtk_widget_set_cursor (GTK_WIDGET (editor), NULL);
 }
 
 static gboolean
@@ -1369,7 +1369,7 @@ subscription_editor_add_store (EMSubscriptionEditor *editor,
 
 	container = editor->priv->notebook;
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);

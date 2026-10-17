@@ -133,7 +133,7 @@ e_hsv_tweak (GdkRGBA *rgba,
              gdouble delta_s,
              gdouble delta_v)
 {
-	gdouble h, s, v, r, g, b;
+	gfloat h, s, v, r, g, b;
 
 	r = rgba->red;
 	g = rgba->green;
@@ -254,9 +254,9 @@ eti_grab (ETableItem *eti,
 		grab_status = e_canvas_item_grab (
 			E_CANVAS (item->canvas),
 			item,
-			GDK_BUTTON1_MOTION_MASK |
-			GDK_BUTTON2_MOTION_MASK |
-			GDK_BUTTON3_MOTION_MASK |
+			GNOME_CANVAS_BUTTON_MOTION_MASK |
+			GNOME_CANVAS_BUTTON_MOTION_MASK |
+			GNOME_CANVAS_BUTTON_MOTION_MASK |
 			GNOME_CANVAS_POINTER_MOTION_MASK |
 			GNOME_CANVAS_BUTTON_PRESS_MASK |
 			GNOME_CANVAS_BUTTON_RELEASE_MASK,
@@ -267,7 +267,6 @@ eti_grab (ETableItem *eti,
 
 		if (grab_status != GNOME_CANVAS_GRAB_SUCCESS) {
 			d (g_print ("%s: gtk_grab_add\n", G_STRFUNC));
-			gtk_grab_add (GTK_WIDGET (item->canvas));
 			eti->gtk_grabbed = TRUE;
 		}
 	}
@@ -293,7 +292,6 @@ eti_ungrab (ETableItem *eti,
 		} else {
 			if (eti->gtk_grabbed) {
 				d (g_print ("%s: gtk_grab_remove\n", G_STRFUNC));
-				gtk_grab_remove (GTK_WIDGET (item->canvas));
 				eti->gtk_grabbed = FALSE;
 			}
 			if (was_grabbed)
@@ -2764,11 +2762,13 @@ eti_event (GnomeCanvasItem *item,
 
 		if (eti->motion_row != -1 && eti->motion_col != -1 &&
 		    (row != eti->motion_row || col != eti->motion_col)) {
-			GnomeCanvasEvent *cross = gdk_event_new (GNOME_CANVAS_LEAVE_NOTIFY);
-			cross->crossing.time = event_time;
+			GnomeCanvasEvent cross;
+
+			gnome_canvas_event_set_from_gdk (&cross, GNOME_CANVAS_LEAVE_NOTIFY, NULL, 0, 0);
+			cross.crossing.time = event_time;
 			return_val = eti_e_cell_event (
 				eti, eti->cell_views[eti->motion_col],
-				cross,
+				&cross,
 				view_to_model_col (eti, eti->motion_col),
 				eti->motion_col, eti->motion_row, 0);
 		}

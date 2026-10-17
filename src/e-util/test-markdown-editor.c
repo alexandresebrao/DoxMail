@@ -185,7 +185,7 @@ on_idle_create_widget (gpointer user_data)
 	GtkTextView *plain_text_view;
 	GtkTextView *html_text_view;
 
-	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	window = gtk_window_new ();
 	gtk_window_set_default_size (GTK_WINDOW (window), 640, 480);
 
 	g_signal_connect (
@@ -257,7 +257,7 @@ on_idle_create_widget (gpointer user_data)
 		"wrap-mode", GTK_WRAP_WORD_CHAR,
 		NULL);
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 
 	g_object_set (G_OBJECT (widget),
 		"halign", GTK_ALIGN_FILL,
@@ -286,7 +286,7 @@ on_idle_create_widget (gpointer user_data)
 		"wrap-mode", GTK_WRAP_WORD_CHAR,
 		NULL);
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 
 	g_object_set (G_OBJECT (widget),
 		"halign", GTK_ALIGN_FILL,

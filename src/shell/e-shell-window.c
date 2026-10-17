@@ -350,7 +350,7 @@ shell_window_create_shell_view (EShellWindow *shell_window,
 						shell_window, "title",
 						G_BINDING_DEFAULT);
 
-					gtk_header_bar_set_title (GTK_HEADER_BAR (widget), _("Evolution"));
+					e_gtk_header_bar_set_title (GTK_HEADER_BAR (widget), _("Evolution"));
 				}
 
 				widget = gtk_label_new ("Failed to load any view. Is installation broken?");

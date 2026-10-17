@@ -61,7 +61,7 @@ e_vcard_editor_address_focus (GtkWidget *widget,
 	if (!self->type_combo || (direction != GTK_DIR_TAB_FORWARD && direction != GTK_DIR_TAB_BACKWARD))
 		return GTK_WIDGET_CLASS (e_vcard_editor_address_parent_class)->focus (widget, direction);
 
-	focused = gtk_container_get_focus_child (GTK_CONTAINER (self));
+	focused = gtk_widget_get_focus_child (GTK_WIDGET (self));
 
 	order[0] = self->type_combo;
 	order[1] = self->address_text_view;
@@ -123,7 +123,7 @@ e_vcard_editor_address_constructed (GObject *object)
 
 	gtk_combo_box_set_active_id (self->type_combo, "work");
 
-	scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+	scrolled_window = gtk_scrolled_window_new ();
 	g_object_set (scrolled_window,
 		"halign", GTK_ALIGN_FILL,
 		"hexpand", TRUE,

@@ -598,7 +598,7 @@ shell_view_construct_taskbar (EShellView *self)
 		G_BINDING_SYNC_CREATE);
 
 	/* Make the status area as large as the task bar. */
-	gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, NULL, &height);
+	e_gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, NULL, &height);
 	gtk_widget_set_size_request (status_area, -1, (height * 2) + 6);
 
 	online_button = e_online_button_new ();

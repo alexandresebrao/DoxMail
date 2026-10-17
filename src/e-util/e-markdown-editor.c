@@ -1811,7 +1811,7 @@ e_markdown_editor_toggle_preview (EMarkdownEditor *self,
 
 	self->priv->is_preview_beside_text = active;
 
-	text_scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+	text_scrolled_window = gtk_scrolled_window_new ();
 	g_object_set (G_OBJECT (text_scrolled_window),
 		"halign", GTK_ALIGN_FILL,
 		"hexpand", TRUE,
@@ -1822,7 +1822,7 @@ e_markdown_editor_toggle_preview (EMarkdownEditor *self,
 		"vscrollbar-policy", GTK_POLICY_AUTOMATIC,
 		NULL);
 
-	preview_scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+	preview_scrolled_window = gtk_scrolled_window_new ();
 	g_object_set (G_OBJECT (preview_scrolled_window),
 		"halign", GTK_ALIGN_FILL,
 		"hexpand", TRUE,
@@ -2434,7 +2434,7 @@ e_markdown_editor_constructed (GObject *object)
 
 	self->priv->notebook = GTK_NOTEBOOK (widget);
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	g_object_set (G_OBJECT (widget),
 		"halign", GTK_ALIGN_FILL,
 		"hexpand", TRUE,
@@ -2476,7 +2476,7 @@ e_markdown_editor_constructed (GObject *object)
 		e_markdown_editor_serialize_x_evolution_markdown_cb, self, NULL);
 
 	#ifdef HAVE_MARKDOWN
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	g_object_set (G_OBJECT (widget),
 		"halign", GTK_ALIGN_FILL,
 		"hexpand", TRUE,

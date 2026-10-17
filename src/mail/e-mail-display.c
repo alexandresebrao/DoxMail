@@ -1771,7 +1771,7 @@ mail_display_set_fonts (EWebView *web_view,
 
 static void
 mail_display_headers_collapsed_cb (WebKitUserContentManager *manager,
-				   WebKitJavascriptResult *js_result,
+				   JSCValue *js_result,
 				   gpointer user_data)
 {
 	EMailDisplay *mail_display = user_data;
@@ -1780,7 +1780,7 @@ mail_display_headers_collapsed_cb (WebKitUserContentManager *manager,
 	g_return_if_fail (mail_display != NULL);
 	g_return_if_fail (js_result != NULL);
 
-	jsc_value = webkit_javascript_result_get_js_value (js_result);
+	jsc_value = (js_result);
 	g_return_if_fail (jsc_value_is_boolean (jsc_value));
 
 	e_mail_display_set_headers_collapsed (mail_display, jsc_value_to_boolean (jsc_value));
@@ -1788,7 +1788,7 @@ mail_display_headers_collapsed_cb (WebKitUserContentManager *manager,
 
 static void
 mail_display_magic_spacebar_state_changed_cb (WebKitUserContentManager *manager,
-					      WebKitJavascriptResult *js_result,
+					      JSCValue *js_result,
 					      gpointer user_data)
 {
 	EMailDisplay *mail_display = user_data;
@@ -1797,7 +1797,7 @@ mail_display_magic_spacebar_state_changed_cb (WebKitUserContentManager *manager,
 	g_return_if_fail (mail_display != NULL);
 	g_return_if_fail (js_result != NULL);
 
-	jsc_value = webkit_javascript_result_get_js_value (js_result);
+	jsc_value = (js_result);
 	g_return_if_fail (jsc_value_is_number (jsc_value));
 
 	mail_display->priv->magic_spacebar_state = jsc_value_to_int32 (jsc_value);
@@ -1805,7 +1805,7 @@ mail_display_magic_spacebar_state_changed_cb (WebKitUserContentManager *manager,
 
 static void
 mail_display_schedule_iframes_height_update_cb (WebKitUserContentManager *manager,
-						WebKitJavascriptResult *js_result,
+						JSCValue *js_result,
 						gpointer user_data)
 {
 	EMailDisplay *mail_display = user_data;
@@ -2150,9 +2150,9 @@ mail_display_constructed (GObject *object)
 	g_signal_connect_object (manager, "script-message-received::scheduleIFramesHeightUpdate",
 		G_CALLBACK (mail_display_schedule_iframes_height_update_cb), display, 0);
 
-	webkit_user_content_manager_register_script_message_handler (manager, "mailDisplayHeadersCollapsed");
-	webkit_user_content_manager_register_script_message_handler (manager, "mailDisplayMagicSpacebarStateChanged");
-	webkit_user_content_manager_register_script_message_handler (manager, "scheduleIFramesHeightUpdate");
+	webkit_user_content_manager_register_script_message_handler (manager, "mailDisplayHeadersCollapsed", NULL);
+	webkit_user_content_manager_register_script_message_handler (manager, "mailDisplayMagicSpacebarStateChanged", NULL);
+	webkit_user_content_manager_register_script_message_handler (manager, "scheduleIFramesHeightUpdate", NULL);
 
 	e_extensible_load_extensions (E_EXTENSIBLE (object));
 }

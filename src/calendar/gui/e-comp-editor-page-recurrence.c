@@ -2376,7 +2376,7 @@ ecep_recurrence_constructed (GObject *object)
 	gtk_widget_show (widget);
 	gtk_grid_attach (grid, widget, 0, 4, 2, 1);
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	g_object_set (G_OBJECT (widget),
 		"hexpand", TRUE,
 		"halign", GTK_ALIGN_FILL,

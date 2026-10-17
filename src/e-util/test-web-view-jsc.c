@@ -131,7 +131,7 @@ test_utils_fixture_set_up (TestFixture *fixture,
 {
 	WebKitSettings *settings;
 
-	fixture->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	fixture->window = gtk_window_new ();
 
 	gtk_window_set_default_size (GTK_WINDOW (fixture->window), 320, 240);
 

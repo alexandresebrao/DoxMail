@@ -647,7 +647,7 @@ contact_list_editor_drag_data_received_cb (GtkWidget *widget,
 
 	/* Sanity check the selection target. */
 
-	if (gtk_targets_include_text (&target, 1))
+	if (e_gtk_targets_include_text (&target, 1))
 		goto handle_text;
 
 	if (!e_targets_include_directory (&target, 1))
@@ -1514,10 +1514,10 @@ contact_list_editor_close (EABEditor *editor)
 static void
 contact_list_editor_raise (EABEditor *editor)
 {
-	GdkWindow *window;
+	GdkSurface *window;
 
 	window = e_gtk_widget_get_surface (WIDGET (DIALOG));
-	gdk_window_raise (window);
+	gtk_window_present (window);
 }
 
 static void

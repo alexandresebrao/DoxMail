@@ -394,7 +394,7 @@ e_html_editor_spell_check_dialog_init (EHTMLEditorSpellCheckDialog *dialog)
 		GTK_TREE_VIEW (widget), GTK_TREE_MODEL (store));
 
 	/* Scrolled Window */
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	gtk_widget_set_size_request (widget, 150, -1);
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (widget),

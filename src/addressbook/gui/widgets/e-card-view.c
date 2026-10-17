@@ -521,7 +521,7 @@ e_card_view_constructed (GObject *object)
 		"margin-start", 4,
 		NULL);
 
-	scrolled = gtk_scrolled_window_new (NULL, NULL);
+	scrolled = gtk_scrolled_window_new ();
 	g_object_set (scrolled,
 		"visible", TRUE,
 		"hscrollbar-policy", GTK_POLICY_NEVER,

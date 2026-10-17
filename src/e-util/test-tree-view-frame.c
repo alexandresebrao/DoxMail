@@ -189,7 +189,7 @@ build_test_window (void)
 
 	selection = gtk_tree_view_get_selection (glob_tree_view);
 
-	widget = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	widget = gtk_window_new ();
 	gtk_window_set_default_size (GTK_WINDOW (widget), 500, 300);
 	gtk_window_set_title (GTK_WINDOW (widget), "ETreeViewFrame");
 	gtk_widget_show (widget);

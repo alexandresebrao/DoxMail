@@ -166,7 +166,7 @@ create_content (GnomeCanvas **canvas)
 	e_gtk_box_pack_start (GTK_BOX (vbox_top), label1, FALSE, FALSE, 0);
 	gtk_label_set_justify (GTK_LABEL (label1), GTK_JUSTIFY_CENTER);
 
-	scrolledwindow1 = gtk_scrolled_window_new (NULL, NULL);
+	scrolledwindow1 = gtk_scrolled_window_new ();
 	gtk_widget_show (scrolledwindow1);
 	e_gtk_box_pack_start (GTK_BOX (vbox_top), scrolledwindow1, TRUE, TRUE, 0);
 	gtk_widget_set_focusable (scrolledwindow1, FALSE);

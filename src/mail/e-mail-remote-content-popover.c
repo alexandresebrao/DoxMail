@@ -349,7 +349,7 @@ e_mail_remote_content_popover_run (EMailReader *reader,
 	g_return_if_fail (GTK_IS_WIDGET (relative_to));
 	g_return_if_fail (position != NULL);
 
-	popover = GTK_POPOVER (gtk_popover_new (relative_to));
+	popover = GTK_POPOVER (e_gtk_popover_new (relative_to));
 
 	gtk_popover_set_position (popover, GTK_POS_BOTTOM);
 	gtk_popover_set_pointing_to (popover, position);

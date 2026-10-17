@@ -43,7 +43,7 @@ e_table_col_ensure_surface (ETableCol *etc,
 	g_return_if_fail (GTK_IS_WIDGET (widget));
 
 	icon_theme = e_gtk_icon_theme_get_default ();
-	gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &width, &height);
+	e_gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &width, &height);
 
 	style_context = gtk_widget_get_style_context (widget);
 	if (etc->surface && etc->surface_scale == gtk_style_context_get_scale (style_context))
@@ -60,7 +60,7 @@ e_table_col_ensure_surface (ETableCol *etc,
 		g_warning ("%s", error->message);
 		g_error_free (error);
 	} else {
-		etc->surface = gdk_cairo_surface_create_from_pixbuf (pixbuf, etc->surface_scale, NULL);
+		etc->surface = e_gdk_cairo_surface_create_from_pixbuf (pixbuf, etc->surface_scale, NULL);
 		etc->surface_width = gdk_pixbuf_get_width (pixbuf) / (etc->surface_scale > 1 ? etc->surface_scale : 1);
 		etc->surface_height = gdk_pixbuf_get_height (pixbuf) / (etc->surface_scale > 1 ? etc->surface_scale : 1);
 	}

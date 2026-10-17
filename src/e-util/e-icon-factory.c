@@ -77,7 +77,7 @@ e_icon_factory_get_icon_filename (const gchar *icon_name,
 
 	icon_theme = e_gtk_icon_theme_get_default ();
 
-	if (!gtk_icon_size_lookup (icon_size, &width, &height))
+	if (!e_gtk_icon_size_lookup (icon_size, &width, &height))
 		return NULL;
 
 	icon_info = gtk_icon_theme_lookup_icon (
@@ -116,14 +116,13 @@ e_icon_factory_get_icon (const gchar *icon_name,
 
 	icon_theme = e_gtk_icon_theme_get_default ();
 
-	if (!gtk_icon_size_lookup (icon_size, &width, &height))
+	if (!e_gtk_icon_size_lookup (icon_size, &width, &height))
 		width = height = 16;
 
-	pixbuf = gtk_icon_theme_load_icon (
-		icon_theme, icon_name, height, GTK_ICON_LOOKUP_FORCE_SIZE |
+	pixbuf = e_gtk_icon_theme_load_icon (icon_theme, icon_name, height, GTK_ICON_LOOKUP_FORCE_SIZE |
 		(prefer_symbolic_icons ? GTK_ICON_LOOKUP_FORCE_SYMBOLIC : GTK_ICON_LOOKUP_FORCE_REGULAR), &error);
 	if (!pixbuf) {
-		pixbuf = gtk_icon_theme_load_icon (icon_theme, icon_name, height, GTK_ICON_LOOKUP_FORCE_SIZE, NULL);
+		pixbuf = e_gtk_icon_theme_load_icon (icon_theme, icon_name, height, GTK_ICON_LOOKUP_FORCE_SIZE, NULL);
 		if (pixbuf)
 			g_clear_error (&error);
 	}
@@ -133,9 +132,7 @@ e_icon_factory_get_icon (const gchar *icon_name,
 		g_clear_error (&error);
 
 		/* Fallback to missing image */
-		pixbuf = gtk_icon_theme_load_icon (
-			icon_theme, "image-missing",
-			height, GTK_ICON_LOOKUP_FORCE_SIZE, &error);
+		pixbuf = e_gtk_icon_theme_load_icon (icon_theme, "image-missing", height, GTK_ICON_LOOKUP_FORCE_SIZE, &error);
 
 		if (error != NULL) {
 			g_error ("%s", error->message);

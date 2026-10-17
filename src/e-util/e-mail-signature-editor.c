@@ -599,7 +599,7 @@ mail_signature_editor_constructed (GObject *object)
 	if (e_util_get_use_header_bar ()) {
 		ui_item = e_ui_manager_create_item (ui_manager, "main-headerbar");
 		widget = GTK_WIDGET (ui_item);
-		gtk_header_bar_set_title (GTK_HEADER_BAR (widget), _("Edit Signature"));
+		e_gtk_header_bar_set_title (GTK_HEADER_BAR (widget), _("Edit Signature"));
 
 		ui_item = e_ui_manager_create_item (ui_manager, "main-toolbar-with-headerbar");
 	} else {

@@ -601,7 +601,7 @@ merge_dialog_data_create (EContactMergingLookup *lookup,
 
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (mdd->dialog));
 
-	scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+	scrolled_window = gtk_scrolled_window_new ();
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (scrolled_window),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
@@ -969,7 +969,7 @@ create_duplicate_contact_detected_dialog (EContact *old_contact,
 		NULL);
 	e_gtk_container_add (container, widget);
 
-	scrolled = gtk_scrolled_window_new (NULL, NULL);
+	scrolled = gtk_scrolled_window_new ();
 	g_object_set (
 		G_OBJECT (scrolled),
 		"hexpand", TRUE,
@@ -1010,7 +1010,7 @@ create_duplicate_contact_detected_dialog (EContact *old_contact,
 		NULL);
 	e_gtk_container_add (container, widget);
 
-	scrolled = gtk_scrolled_window_new (NULL, NULL);
+	scrolled = gtk_scrolled_window_new ();
 	g_object_set (
 		G_OBJECT (scrolled),
 		"hexpand", TRUE,

@@ -2042,7 +2042,7 @@ ecep_reminders_add_custom_time_clicked (ECompEditorPageReminders *page_reminders
 
 		gtk_widget_set_visible (GTK_WIDGET (vbox), TRUE);
 
-		page_reminders->priv->add_custom_time_popover = gtk_popover_new (GTK_WIDGET (page_reminders));
+		page_reminders->priv->add_custom_time_popover = e_gtk_popover_new (GTK_WIDGET (page_reminders));
 		gtk_popover_set_position (GTK_POPOVER (page_reminders->priv->add_custom_time_popover), GTK_POS_BOTTOM);
 		e_gtk_container_add (page_reminders->priv->add_custom_time_popover, GTK_WIDGET (vbox));
 		e_gtk_widget_set_border_width (page_reminders->priv->add_custom_time_popover, 6);
@@ -2055,7 +2055,7 @@ ecep_reminders_add_custom_time_clicked (ECompEditorPageReminders *page_reminders
 	gtk_spin_button_set_value (GTK_SPIN_BUTTON (page_reminders->priv->add_custom_time_days_spin), 0.0);
 	gtk_spin_button_set_value (GTK_SPIN_BUTTON (page_reminders->priv->add_custom_time_hours_spin), 0.0);
 	gtk_spin_button_set_value (GTK_SPIN_BUTTON (page_reminders->priv->add_custom_time_minutes_spin), 0.0);
-	gtk_popover_set_relative_to (GTK_POPOVER (page_reminders->priv->add_custom_time_popover), page_reminders->priv->alarms_combo);
+	e_gtk_popover_set_relative_to (GTK_POPOVER (page_reminders->priv->add_custom_time_popover), page_reminders->priv->alarms_combo);
 	gtk_widget_show (page_reminders->priv->add_custom_time_popover);
 
 	gtk_widget_grab_focus (page_reminders->priv->add_custom_time_days_spin);
@@ -2215,7 +2215,7 @@ ecep_reminders_constructed (GObject *object)
 	g_signal_connect (page_reminders->priv->alarms_combo, "changed",
 		G_CALLBACK (ecep_reminders_alarms_combo_changed_cb), page_reminders);
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	g_object_set (G_OBJECT (widget),
 		"hexpand", TRUE,
 		"halign", GTK_ALIGN_FILL,
@@ -2526,7 +2526,7 @@ ecep_reminders_constructed (GObject *object)
 	gtk_grid_attach (GTK_GRID (option_grid), widget, 0, 0, 1, 1);
 	page_reminders->priv->custom_message_check = widget;
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	g_object_set (G_OBJECT (widget),
 		"hexpand", TRUE,
 		"halign", GTK_ALIGN_FILL,
@@ -2684,7 +2684,7 @@ ecep_reminders_constructed (GObject *object)
 	gtk_grid_attach (GTK_GRID (option_grid), widget, 0, 1, 2, 1);
 	page_reminders->priv->custom_email_message_check = widget;
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	g_object_set (G_OBJECT (widget),
 		"hexpand", TRUE,
 		"halign", GTK_ALIGN_FILL,

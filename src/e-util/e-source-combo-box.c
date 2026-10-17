@@ -262,7 +262,7 @@ source_combo_box_get_preferred_width (GtkWidget *widget,
 {
 	ESourceComboBox *combo_box = E_SOURCE_COMBO_BOX (widget);
 
-	GTK_WIDGET_CLASS (e_source_combo_box_parent_class)->get_preferred_width (widget, minimum_width, natural_width);
+	GTK_WIDGET_CLASS (e_source_combo_box_parent_class)->measure (widget, GTK_ORIENTATION_HORIZONTAL, -1, minimum_width, natural_width, NULL, NULL);
 
 	/* 50 = 25 for color + 25 for dropdown */
 	if (combo_box->priv->max_natural_width > 0 &&
@@ -443,12 +443,29 @@ source_combo_box_constructed (GObject *object)
 }
 
 static void
+e_source_combo_box_measure (GtkWidget *widget,
+		GtkOrientation orientation,
+		gint for_size,
+		gint *minimum,
+		gint *natural,
+		gint *minimum_baseline,
+		gint *natural_baseline)
+{
+	if (orientation == GTK_ORIENTATION_HORIZONTAL) {
+		source_combo_box_get_preferred_width (widget, minimum, natural);
+		return;
+	}
+
+	GTK_WIDGET_CLASS (e_source_combo_box_parent_class)->measure (widget, orientation, for_size,
+		minimum, natural, minimum_baseline, natural_baseline);
+}
+
+static void
 e_source_combo_box_class_init (ESourceComboBoxClass *class)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (class);
 	GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (class);
 
-	widget_class->get_preferred_width = source_combo_box_get_preferred_width;
 
 	object_class->set_property = source_combo_box_set_property;
 	object_class->get_property = source_combo_box_get_property;

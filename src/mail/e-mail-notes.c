@@ -1221,7 +1221,7 @@ e_mail_notes_editor_new_with_editor (EHTMLEditor *html_editor,
 	if (e_util_get_use_header_bar ()) {
 		ui_item = e_ui_manager_create_item (ui_manager, "main-headerbar");
 		widget = GTK_WIDGET (ui_item);
-		gtk_header_bar_set_title (GTK_HEADER_BAR (widget), _("Edit Message Note"));
+		e_gtk_header_bar_set_title (GTK_HEADER_BAR (widget), _("Edit Message Note"));
 		gtk_window_set_titlebar (GTK_WINDOW (notes_editor), widget);
 
 		ui_item = e_ui_manager_create_item (ui_manager, "main-toolbar-with-headerbar");

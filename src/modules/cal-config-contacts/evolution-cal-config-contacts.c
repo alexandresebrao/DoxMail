@@ -67,7 +67,7 @@ cal_config_contacts_insert_widgets (ESourceConfigBackend *backend,
 	e_source_config_insert_widget (config, scratch_source, NULL, widget);
 	gtk_widget_show (widget);
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);

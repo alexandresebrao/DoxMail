@@ -3384,6 +3384,13 @@ canvas_legacy_event_cb (GtkEventControllerLegacy *controller,
 		event.key.group = gdk_key_event_get_layout (gdk_event);
 		event.key.is_modifier = gdk_key_event_is_modifier (gdk_event);
 
+		if (!(event.key.state & (GDK_CONTROL_MASK | GDK_ALT_MASK))) {
+			gunichar uc = gdk_keyval_to_unicode (event.key.keyval);
+
+			if (uc && g_unichar_isprint (uc))
+				event.key.length = g_unichar_to_utf8 (uc, event.key.string);
+		}
+
 		retval = emit_event (canvas, &event);
 		break;
 

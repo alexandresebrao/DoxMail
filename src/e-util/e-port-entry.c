@@ -253,8 +253,7 @@ port_entry_get_preferred_width (GtkWidget *widget,
 	e_gtk_widget_get_preferred_width (entry, NULL, &parent_entry_width_min);
 
 	/* Preferred width of a standard combobox */
-	GTK_WIDGET_CLASS (e_port_entry_parent_class)->
-		get_preferred_width (widget, &parent_width_min, NULL);
+	GTK_WIDGET_CLASS (e_port_entry_parent_class)->measure (widget, GTK_ORIENTATION_HORIZONTAL, -1, &parent_width_min, NULL, NULL, NULL);
 
 	/* 6 * digit_width - port number has max 5
 	 * digits + extra free space for better look */
@@ -273,6 +272,24 @@ port_entry_get_preferred_width (GtkWidget *widget,
 }
 
 static void
+e_port_entry_measure (GtkWidget *widget,
+		GtkOrientation orientation,
+		gint for_size,
+		gint *minimum,
+		gint *natural,
+		gint *minimum_baseline,
+		gint *natural_baseline)
+{
+	if (orientation == GTK_ORIENTATION_HORIZONTAL) {
+		port_entry_get_preferred_width (widget, minimum, natural);
+		return;
+	}
+
+	GTK_WIDGET_CLASS (e_port_entry_parent_class)->measure (widget, orientation, for_size,
+		minimum, natural, minimum_baseline, natural_baseline);
+}
+
+static void
 e_port_entry_class_init (EPortEntryClass *class)
 {
 	GObjectClass *object_class;
@@ -284,7 +301,6 @@ e_port_entry_class_init (EPortEntryClass *class)
 	object_class->constructed = port_entry_constructed;
 
 	widget_class = GTK_WIDGET_CLASS (class);
-	widget_class->get_preferred_width = port_entry_get_preferred_width;
 
 	g_object_class_install_property (
 		object_class,

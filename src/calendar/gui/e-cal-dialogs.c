@@ -187,7 +187,7 @@ e_cal_dialogs_delete_with_comment (GtkWindow *parent,
 		gtk_widget_show (label);
 		e_gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
 
-		scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+		scrolled_window = gtk_scrolled_window_new ();
 		gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 		gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (scrolled_window), TRUE);
 		e_gtk_box_pack_start (GTK_BOX (vbox), scrolled_window, TRUE, TRUE, 0);
@@ -323,7 +323,7 @@ e_cal_dialogs_cancel_component (GtkWindow *parent,
 		gtk_widget_show (label);
 		e_gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
 
-		scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+		scrolled_window = gtk_scrolled_window_new ();
 		gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 		gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (scrolled_window), TRUE);
 		e_gtk_box_pack_start (GTK_BOX (vbox), scrolled_window, TRUE, TRUE, 0);
@@ -785,7 +785,7 @@ e_cal_dialogs_prompt_retract (GtkWidget *parent,
 	gtk_frame_set_label_align ((GtkFrame *) frame, 0, 0);
 	e_gtk_container_add (vbox, frame);
 
-	sw = gtk_scrolled_window_new (NULL, NULL);
+	sw = gtk_scrolled_window_new ();
 	gtk_scrolled_window_set_policy ((GtkScrolledWindow *) sw, GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
 	entry = gtk_text_view_new ();

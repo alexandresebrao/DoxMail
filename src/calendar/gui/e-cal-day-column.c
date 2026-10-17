@@ -726,7 +726,7 @@ e_cal_day_column_get_preferred_width (GtkWidget *widget,
 	ECalDayColumn *self = E_CAL_DAY_COLUMN (widget);
 	gint min_width;
 
-	GTK_WIDGET_CLASS (e_cal_day_column_parent_class)->get_preferred_width (widget, out_minimum, out_natural);
+	GTK_WIDGET_CLASS (e_cal_day_column_parent_class)->measure (widget, GTK_ORIENTATION_HORIZONTAL, -1, out_minimum, out_natural, NULL, NULL);
 
 	min_width = e_cal_day_column_get_required_width (self, NULL);
 
@@ -855,6 +855,24 @@ e_cal_day_column_finalize (GObject *object)
 }
 
 static void
+e_cal_day_column_measure (GtkWidget *widget,
+		GtkOrientation orientation,
+		gint for_size,
+		gint *minimum,
+		gint *natural,
+		gint *minimum_baseline,
+		gint *natural_baseline)
+{
+	if (orientation == GTK_ORIENTATION_HORIZONTAL) {
+		e_cal_day_column_get_preferred_width (widget, minimum, natural);
+		return;
+	}
+
+	GTK_WIDGET_CLASS (e_cal_day_column_parent_class)->measure (widget, orientation, for_size,
+		minimum, natural, minimum_baseline, natural_baseline);
+}
+
+static void
 e_cal_day_column_class_init (ECalDayColumnClass *klass)
 {
 	GObjectClass *object_class;
@@ -867,9 +885,9 @@ e_cal_day_column_class_init (ECalDayColumnClass *klass)
 	object_class->finalize = e_cal_day_column_finalize;
 
 	widget_class = GTK_WIDGET_CLASS (klass);
+	widget_class->measure = e_cal_day_column_measure;
 	widget_class->style_updated = e_cal_day_column_style_updated;
 	widget_class->draw = e_cal_day_column_draw;
-	widget_class->get_preferred_width = e_cal_day_column_get_preferred_width;
 
 	/**
 	 * ECalDayColumn:show-time:

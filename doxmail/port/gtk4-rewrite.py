@@ -187,6 +187,15 @@ RENAMES = {
     'gtk_header_bar_set_show_close_button': ('gtk_header_bar_set_show_title_buttons', []),
     'gtk_popover_set_modal': ('gtk_popover_set_autohide', []),
     'gtk_window_resize': ('gtk_window_set_default_size', []),
+    'gtk_popover_set_relative_to': ('e_gtk_popover_set_relative_to', []),
+    'gtk_icon_theme_load_icon': ('e_gtk_icon_theme_load_icon', []),
+    'gdk_cairo_surface_create_from_pixbuf': ('e_gdk_cairo_surface_create_from_pixbuf', []),
+    'gtk_icon_size_lookup': ('e_gtk_icon_size_lookup', []),
+    'gtk_header_bar_set_title': ('e_gtk_header_bar_set_title', []),
+    'gtk_targets_include_text': ('e_gtk_targets_include_text', []),
+    'gdk_window_raise': ('gtk_window_present', []),
+    'gtk_widget_class_install_style_property': ('e_gtk_widget_class_install_style_property', []),
+    'gtk_widget_style_get': ('e_gtk_widget_style_get', []),
     'gtk_menu_bar_new_from_model': ('gtk_popover_menu_bar_new_from_model', []),
     'gtk_menu_new_from_model': ('gtk_popover_menu_new_from_model', []),
     'e_menu_bar_new': ('e_menu_bar_new', ['GTK_MENU_BAR']),
@@ -213,6 +222,9 @@ RENAMES = {
 
 # GTK 3 calls with nothing to do in GTK 4, dropped when they are a statement
 DROPPED = [
+    'webkit_web_context_set_sandbox_enabled',
+    'gtk_grab_add',
+    'gtk_grab_remove',
     'gtk_window_set_position',
     'gtk_window_move',
     'gtk_window_set_type_hint',
@@ -329,7 +341,39 @@ def r_css_load_data(args, *_):
     return None
 
 
+def r_focus_child(name):
+    def f(args, *_):
+        args = [strip_cast(args[0], ['GTK_CONTAINER'])] + args[1:]
+        return call(name, ['GTK_WIDGET (%s)' % args[0]] + args[1:])
+    return f
+
+
+def r_no_args(name):
+    def f(args, *_):
+        return '%s ()' % name
+    return f
+
+
+def r_popover_new(args, *_):
+    if len(args) == 1 and args[0] not in ('', 'void'):
+        return call('e_gtk_popover_new', args)
+    return None
+
+
+def r_editable_clipboard(action):
+    def f(args, *_):
+        return 'gtk_widget_activate_action (GTK_WIDGET (%s), "clipboard.%s", NULL)' % (strip_cast(args[0], ['GTK_EDITABLE']), action)
+    return f
+
+
 CALLS = {
+    'gtk_scrolled_window_new': r_no_args('gtk_scrolled_window_new'),
+    'gtk_popover_new': r_popover_new,
+    'gtk_editable_cut_clipboard': r_editable_clipboard('cut'),
+    'gtk_editable_copy_clipboard': r_editable_clipboard('copy'),
+    'gtk_editable_paste_clipboard': r_editable_clipboard('paste'),
+    'gtk_container_get_focus_child': r_focus_child('gtk_widget_get_focus_child'),
+    'gtk_container_set_focus_child': r_focus_child('gtk_widget_set_focus_child'),
     'gtk_css_provider_load_from_data': r_css_load_data,
     'gdk_cursor_new_from_name': r_cursor_from_name,
     'gtk_style_context_get_padding': r_style_get_with_state('gtk_style_context_get_padding'),
@@ -397,6 +441,22 @@ REGEX_RENAMES = [
     (r'\bGTK_IS_CLIPBOARD\b', 'GDK_IS_CLIPBOARD'),
     (r'"stock-size"', '"icon-size"'),
     (r'\bgdk_event_free\b', 'gdk_event_unref'),
+    (r'\bgtk_popover_get_relative_to\s*\(', 'gtk_widget_get_parent ('),
+    (r'\bgtk_window_new \(GTK_WINDOW_TOPLEVEL\)', 'gtk_window_new ()'),
+    (r'g_signal_connect \(\s*([^,]+),\s*"delete[-_]event",\s*G_CALLBACK \(gtk_widget_hide_on_delete\),\s*NULL\);', r'gtk_window_set_hide_on_close (GTK_WINDOW (\1), TRUE);'),
+    (r'G_CALLBACK \(gtk_widget_destroyed\)', 'G_CALLBACK (e_gtk_widget_destroyed)'),
+    (r'\bGTK_IS_CONTAINER\b', 'GTK_IS_WIDGET'),
+    # WebKitGTK 6.0
+    (r'\bWebKitJavascriptResult \*', 'JSCValue *'),
+    (r'\bwebkit_javascript_result_get_js_value \((\w+)\)', r'(\1)'),
+    (r'\bwebkit_javascript_result_unref\b', 'g_object_unref'),
+    (r'\bwebkit_web_context_set_web_extensions_directory\b', 'webkit_web_context_set_web_process_extensions_directory'),
+    (r'\bwebkit_web_context_set_web_extensions_initialization_user_data\b', 'webkit_web_context_set_web_process_extensions_initialization_user_data'),
+    (r'(webkit_user_content_manager_(?:un)?register_script_message_handler \(\s*[^,()]+,\s*"[^"]*")\)', r'\1, NULL)'),
+    (r'\bGDK_MOD[2-5]_MASK\b', '0'),
+    (r'\bGDK_POINTER_MOTION_HINT_MASK\b', '0'),
+    (r'(\w+) = e_gtk_widget_get_surface \(([^;]+)\);\n(\s*)gdk_window_set_cursor \(\1, ', r'\1 = NULL; /* GTK 4 sets cursors on widgets */\n\3gtk_widget_set_cursor (\2, '),
+    (r'\bGdkWindow\b', 'GdkSurface'),
     (r'\bAtkObject\b', 'GtkWidget'),
     (r'\bgtk_widget_get_accessible\s*\(', 'GTK_WIDGET ('),
     (r'\batk_object_set_name\s*\(', 'e_gtk_widget_set_accessible_name ('),

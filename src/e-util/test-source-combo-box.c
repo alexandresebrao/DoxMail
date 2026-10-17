@@ -49,7 +49,7 @@ on_idle_create_widget (ESourceRegistry *registry)
 	GtkWidget *combo_box;
 	GtkWidget *button;
 
-	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	window = gtk_window_new ();
 
 	box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
 	e_gtk_container_add (window, box);

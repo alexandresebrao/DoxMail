@@ -277,7 +277,7 @@ e_categories_editor_init (ECategoriesEditor *editor)
 	gtk_label_set_justify (GTK_LABEL (label2), GTK_JUSTIFY_CENTER);
 	gtk_label_set_xalign (GTK_LABEL (label2), 0);
 
-	scrolledwindow1 = gtk_scrolled_window_new (NULL, NULL);
+	scrolledwindow1 = gtk_scrolled_window_new ();
 	g_object_set (
 		G_OBJECT (scrolledwindow1),
 		"hexpand", TRUE,

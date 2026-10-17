@@ -3033,10 +3033,7 @@ ml_style_updated_cb (MessageList *message_list)
 	g_clear_pointer (&message_list->priv->new_mail_bg_color, gdk_rgba_free);
 	g_clear_pointer (&message_list->priv->new_mail_fg_color, g_free);
 
-	gtk_widget_style_get (GTK_WIDGET (message_list),
-		"new-mail-bg-color", &message_list->priv->new_mail_bg_color,
-		"new-mail-fg-color", &new_mail_fg_color,
-		NULL);
+	e_gtk_widget_style_get (GTK_WIDGET (message_list), "new-mail-bg-color", &message_list->priv->new_mail_bg_color, "new-mail-fg-color", &new_mail_fg_color, NULL);
 
 	if (new_mail_fg_color) {
 		message_list->priv->new_mail_fg_color = gdk_rgba_to_string (new_mail_fg_color);
@@ -3051,7 +3048,7 @@ message_list_get_preferred_width (GtkWidget *widget,
 				  gint *out_natural_width)
 {
 	/* Chain up to parent's method. */
-	GTK_WIDGET_CLASS (message_list_parent_class)->get_preferred_width (widget, out_minimum_width, out_natural_width);
+	GTK_WIDGET_CLASS (message_list_parent_class)->measure (widget, GTK_ORIENTATION_HORIZONTAL, -1, out_minimum_width, out_natural_width, NULL, NULL);
 
 	if (out_minimum_width && *out_minimum_width < 50)
 		*out_minimum_width = 50;
@@ -4046,6 +4043,24 @@ message_list_value_to_string (ETreeModel *tree_model,
 }
 
 static void
+message_list_measure (GtkWidget *widget,
+		GtkOrientation orientation,
+		gint for_size,
+		gint *minimum,
+		gint *natural,
+		gint *minimum_baseline,
+		gint *natural_baseline)
+{
+	if (orientation == GTK_ORIENTATION_HORIZONTAL) {
+		message_list_get_preferred_width (widget, minimum, natural);
+		return;
+	}
+
+	GTK_WIDGET_CLASS (message_list_parent_class)->measure (widget, orientation, for_size,
+		minimum, natural, minimum_baseline, natural_baseline);
+}
+
+static void
 message_list_class_init (MessageListClass *class)
 {
 	GObjectClass *object_class;
@@ -4068,7 +4083,6 @@ message_list_class_init (MessageListClass *class)
 	}
 
 	widget_class = GTK_WIDGET_CLASS (class);
-	widget_class->get_preferred_width = message_list_get_preferred_width;
 
 	gtk_widget_class_set_css_name (widget_class, "MessageList");
 
@@ -4200,18 +4214,14 @@ message_list_class_init (MessageListClass *class)
 			G_PARAM_CONSTRUCT |
 			G_PARAM_STATIC_STRINGS));
 
-	gtk_widget_class_install_style_property (
-		GTK_WIDGET_CLASS (class),
-		g_param_spec_boxed (
+	e_gtk_widget_class_install_style_property (GTK_WIDGET_CLASS (class), g_param_spec_boxed (
 			"new-mail-bg-color",
 			"New Mail Background Color",
 			"Background color to use for new mails",
 			GDK_TYPE_RGBA,
 			G_PARAM_READABLE));
 
-	gtk_widget_class_install_style_property (
-		GTK_WIDGET_CLASS (class),
-		g_param_spec_boxed (
+	e_gtk_widget_class_install_style_property (GTK_WIDGET_CLASS (class), g_param_spec_boxed (
 			"new-mail-fg-color",
 			"New Mail Foreground Color",
 			"Foreground color to use for new mails",

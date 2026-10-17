@@ -62,7 +62,7 @@ e_month_widget_day_label_get_preferred_height (GtkWidget *widget,
 	EMonthWidgetDayLabel *self = E_MONTH_WIDGET_DAY_LABEL (widget);
 
 	if (self->month_widget->priv->calculating_min_day_size) {
-		GTK_WIDGET_CLASS (e_month_widget_day_label_parent_class)->get_preferred_height (widget, minimum_height, natural_height);
+		GTK_WIDGET_CLASS (e_month_widget_day_label_parent_class)->measure (widget, GTK_ORIENTATION_VERTICAL, -1, minimum_height, natural_height, NULL, NULL);
 		return;
 	}
 
@@ -81,7 +81,7 @@ e_month_widget_day_label_get_preferred_width (GtkWidget *widget,
 	EMonthWidgetDayLabel *self = E_MONTH_WIDGET_DAY_LABEL (widget);
 
 	if (self->month_widget->priv->calculating_min_day_size) {
-		GTK_WIDGET_CLASS (e_month_widget_day_label_parent_class)->get_preferred_width (widget, minimum_width, natural_width);
+		GTK_WIDGET_CLASS (e_month_widget_day_label_parent_class)->measure (widget, GTK_ORIENTATION_HORIZONTAL, -1, minimum_width, natural_width, NULL, NULL);
 		return;
 	}
 
@@ -93,14 +93,36 @@ e_month_widget_day_label_get_preferred_width (GtkWidget *widget,
 }
 
 static void
+e_month_widget_day_label_measure (GtkWidget *widget,
+		GtkOrientation orientation,
+		gint for_size,
+		gint *minimum,
+		gint *natural,
+		gint *minimum_baseline,
+		gint *natural_baseline)
+{
+	if (orientation == GTK_ORIENTATION_HORIZONTAL) {
+		e_month_widget_day_label_get_preferred_width (widget, minimum, natural);
+		return;
+	}
+
+	if (orientation == GTK_ORIENTATION_VERTICAL) {
+		e_month_widget_day_label_get_preferred_height (widget, minimum, natural);
+		return;
+	}
+
+	GTK_WIDGET_CLASS (e_month_widget_day_label_parent_class)->measure (widget, orientation, for_size,
+		minimum, natural, minimum_baseline, natural_baseline);
+}
+
+static void
 e_month_widget_day_label_class_init (EMonthWidgetDayLabelClass *klass)
 {
 	GtkWidgetClass *widget_class;
 
 	widget_class = GTK_WIDGET_CLASS (klass);
+	widget_class->measure = e_month_widget_day_label_measure;
 	widget_class->get_request_mode = e_month_widget_day_label_get_request_mode;
-	widget_class->get_preferred_height = e_month_widget_day_label_get_preferred_height;
-	widget_class->get_preferred_width = e_month_widget_day_label_get_preferred_width;
 }
 
 static void

@@ -14,6 +14,8 @@
 
 #include "evolution-config.h"
 
+#include <gobject/gvaluecollector.h>
+
 #include "e-gtk4-compat.h"
 
 #define BORDER_WIDTH_KEY "e-gtk-border-width"
@@ -1008,4 +1010,283 @@ e_gtk_widget_set_accessible_description (GtkWidget *widget,
 
 	gtk_accessible_update_property (GTK_ACCESSIBLE (widget),
 		GTK_ACCESSIBLE_PROPERTY_DESCRIPTION, description, -1);
+}
+
+static GHashTable *style_properties = NULL; /* "TypeName:prop-name" ~> GParamSpec */
+
+void
+e_gtk_widget_class_install_style_property (gpointer widget_class,
+                                           GParamSpec *pspec)
+{
+	g_return_if_fail (GTK_IS_WIDGET_CLASS (widget_class));
+	g_return_if_fail (G_IS_PARAM_SPEC (pspec));
+
+	if (!style_properties)
+		style_properties = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, (GDestroyNotify) g_param_spec_unref);
+
+	g_hash_table_insert (style_properties,
+		g_strconcat (G_OBJECT_CLASS_NAME (widget_class), ":", g_param_spec_get_name (pspec), NULL),
+		g_param_spec_ref_sink (pspec));
+}
+
+static GParamSpec *
+style_property_lookup (GType type,
+                       const gchar *name)
+{
+	gchar *canonical;
+	GParamSpec *pspec = NULL;
+
+	if (!style_properties)
+		return NULL;
+
+	canonical = g_strdelimit (g_strdup (name), "_", '-');
+
+	for (; type && !pspec; type = g_type_parent (type)) {
+		gchar *key = g_strconcat (g_type_name (type), ":", canonical, NULL);
+
+		pspec = g_hash_table_lookup (style_properties, key);
+		g_free (key);
+	}
+
+	g_free (canonical);
+
+	return pspec;
+}
+
+void
+e_gtk_widget_style_get (gpointer widget,
+                        const gchar *first_property_name,
+                        ...)
+{
+	const gchar *name;
+	va_list va;
+
+	g_return_if_fail (GTK_IS_WIDGET (widget));
+
+	va_start (va, first_property_name);
+
+	for (name = first_property_name; name; name = va_arg (va, const gchar *)) {
+		GParamSpec *pspec = style_property_lookup (G_OBJECT_TYPE (widget), name);
+		GValue value = G_VALUE_INIT;
+		gchar *error = NULL;
+
+		if (!pspec) {
+			g_warning ("%s: %s has no style property '%s'", G_STRFUNC, G_OBJECT_TYPE_NAME (widget), name);
+			break;
+		}
+
+		g_value_init (&value, G_PARAM_SPEC_VALUE_TYPE (pspec));
+		g_param_value_set_default (pspec, &value);
+
+		G_VALUE_LCOPY (&value, va, 0, &error);
+		g_value_unset (&value);
+
+		if (error) {
+			g_warning ("%s: %s", G_STRFUNC, error);
+			g_free (error);
+			break;
+		}
+	}
+
+	va_end (va);
+}
+
+GtkWidget *
+e_gtk_popover_new (GtkWidget *relative_to)
+{
+	GtkWidget *popover;
+
+	popover = gtk_popover_new ();
+
+	if (relative_to)
+		gtk_widget_set_parent (popover, relative_to);
+
+	return popover;
+}
+
+void
+e_gtk_popover_set_relative_to (GtkPopover *popover,
+                               GtkWidget *relative_to)
+{
+	GtkWidget *widget = GTK_WIDGET (popover);
+
+	g_return_if_fail (GTK_IS_POPOVER (popover));
+
+	if (gtk_widget_get_parent (widget) == relative_to)
+		return;
+
+	if (gtk_widget_get_parent (widget))
+		gtk_widget_unparent (widget);
+
+	if (relative_to)
+		gtk_widget_set_parent (widget, relative_to);
+}
+
+void
+e_gtk_widget_destroyed (GtkWidget *widget,
+                        GtkWidget **widget_pointer)
+{
+	if (widget_pointer)
+		*widget_pointer = NULL;
+}
+
+static GdkPixbuf *
+pixbuf_from_paintable (GtkIconPaintable *paintable,
+                       gint size)
+{
+	GdkPixbuf *pixbuf = NULL;
+	GFile *file;
+
+	if (!paintable)
+		return NULL;
+
+	file = gtk_icon_paintable_get_file (paintable);
+	if (file) {
+		GInputStream *stream;
+
+		/* resource:// icons come as GResource files */
+		stream = G_INPUT_STREAM (g_file_read (file, NULL, NULL));
+		if (stream) {
+			pixbuf = gdk_pixbuf_new_from_stream_at_scale (stream, size, size, TRUE, NULL, NULL);
+			g_object_unref (stream);
+		}
+		g_object_unref (file);
+	}
+
+	if (!pixbuf) {
+		/* render it, e.g. a symbolic or a builtin icon */
+		GtkSnapshot *snapshot = gtk_snapshot_new ();
+		GskRenderNode *node;
+
+		gdk_paintable_snapshot (GDK_PAINTABLE (paintable), snapshot, size, size);
+		node = gtk_snapshot_free_to_node (snapshot);
+		if (node) {
+			cairo_surface_t *surface;
+			cairo_t *cr;
+
+			surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, size, size);
+			cr = cairo_create (surface);
+			gsk_render_node_draw (node, cr);
+			cairo_destroy (cr);
+
+			pixbuf = gdk_pixbuf_get_from_surface (surface, 0, 0, size, size);
+			cairo_surface_destroy (surface);
+			gsk_render_node_unref (node);
+		}
+	}
+
+	return pixbuf;
+}
+
+/* gtk_icon_theme_load_icon() of GTK 3; flags are ignored */
+GdkPixbuf *
+e_gtk_icon_theme_load_icon (GtkIconTheme *icon_theme,
+                            const gchar *icon_name,
+                            gint size,
+                            gint flags,
+                            GError **error)
+{
+	GtkIconPaintable *paintable;
+	GdkPixbuf *pixbuf;
+
+	g_return_val_if_fail (icon_name != NULL, NULL);
+
+	if (!icon_theme)
+		icon_theme = e_gtk_icon_theme_get_default ();
+
+	if (!gtk_icon_theme_has_icon (icon_theme, icon_name)) {
+		g_set_error (error, G_IO_ERROR, G_IO_ERROR_NOT_FOUND, "Icon '%s' not present in theme", icon_name);
+		return NULL;
+	}
+
+	paintable = gtk_icon_theme_lookup_icon (icon_theme, icon_name, NULL, size, 1, GTK_TEXT_DIR_NONE, 0);
+	pixbuf = pixbuf_from_paintable (paintable, size);
+	g_clear_object (&paintable);
+
+	if (!pixbuf)
+		g_set_error (error, G_IO_ERROR, G_IO_ERROR_FAILED, "Failed to load icon '%s'", icon_name);
+
+	return pixbuf;
+}
+
+GdkPixbuf *
+e_gtk_icon_theme_load_gicon (GtkIconTheme *icon_theme,
+                             GIcon *icon,
+                             gint size)
+{
+	GtkIconPaintable *paintable;
+	GdkPixbuf *pixbuf;
+
+	g_return_val_if_fail (G_IS_ICON (icon), NULL);
+
+	if (!icon_theme)
+		icon_theme = e_gtk_icon_theme_get_default ();
+
+	paintable = gtk_icon_theme_lookup_by_gicon (icon_theme, icon, size, 1, GTK_TEXT_DIR_NONE, 0);
+	pixbuf = pixbuf_from_paintable (paintable, size);
+	g_clear_object (&paintable);
+
+	return pixbuf;
+}
+
+/* gdk_cairo_surface_create_from_pixbuf() of GTK 3 */
+cairo_surface_t *
+e_gdk_cairo_surface_create_from_pixbuf (const GdkPixbuf *pixbuf,
+                                        gint scale,
+                                        gpointer for_window)
+{
+	cairo_surface_t *surface;
+	cairo_t *cr;
+
+	g_return_val_if_fail (GDK_IS_PIXBUF (pixbuf), NULL);
+
+	surface = cairo_image_surface_create (
+		gdk_pixbuf_get_has_alpha (pixbuf) ? CAIRO_FORMAT_ARGB32 : CAIRO_FORMAT_RGB24,
+		gdk_pixbuf_get_width (pixbuf), gdk_pixbuf_get_height (pixbuf));
+
+	cr = cairo_create (surface);
+	G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+	gdk_cairo_set_source_pixbuf (cr, pixbuf, 0, 0);
+	G_GNUC_END_IGNORE_DEPRECATIONS
+	cairo_paint (cr);
+	cairo_destroy (cr);
+
+	if (scale > 1)
+		cairo_surface_set_device_scale (surface, scale, scale);
+
+	return surface;
+}
+
+gboolean
+e_gtk_icon_size_lookup (gint size,
+                        gint *width,
+                        gint *height)
+{
+	gint pixels = size == GTK_ICON_SIZE_LARGE ? 32 : 16;
+
+	if (width)
+		*width = pixels;
+	if (height)
+		*height = pixels;
+
+	return TRUE;
+}
+
+void
+e_gtk_header_bar_set_title (GtkHeaderBar *header_bar,
+                            const gchar *title)
+{
+	GtkWidget *label;
+
+	g_return_if_fail (GTK_IS_HEADER_BAR (header_bar));
+
+	label = gtk_header_bar_get_title_widget (header_bar);
+	if (!GTK_IS_LABEL (label)) {
+		label = gtk_label_new (NULL);
+		gtk_widget_add_css_class (label, "title");
+		gtk_label_set_ellipsize (GTK_LABEL (label), PANGO_ELLIPSIZE_END);
+		gtk_header_bar_set_title_widget (header_bar, label);
+	}
+
+	gtk_label_set_text (GTK_LABEL (label), title);
 }

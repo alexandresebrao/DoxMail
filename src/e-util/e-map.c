@@ -566,35 +566,11 @@ e_map_finalize (GObject *object)
 static void
 e_map_realize (GtkWidget *widget)
 {
-	GtkAllocation allocation;
-	GdkWindowAttr attr;
-	GdkWindow *window;
-	gint attr_mask;
-
 	g_return_if_fail (widget != NULL);
 	g_return_if_fail (E_IS_MAP (widget));
 
-	gtk_widget_set_realized (widget, TRUE);
-
-	gtk_widget_get_allocation (widget, &allocation);
-
-	attr.window_type = GDK_WINDOW_CHILD;
-	attr.x = allocation.x;
-	attr.y = allocation.y;
-	attr.width = allocation.width;
-	attr.height = allocation.height;
-	attr.wclass = GDK_INPUT_OUTPUT;
-	attr.visual = gtk_widget_get_visual (widget);
-	attr.event_mask = gtk_widget_get_events (widget) |
-	  GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_KEY_PRESS_MASK |
-	  GDK_POINTER_MOTION_MASK;
-
-	attr_mask = GDK_WA_X | GDK_WA_Y | GDK_WA_VISUAL;
-
-	window = gdk_window_new (
-		gtk_widget_get_parent_window (widget), &attr, attr_mask);
-	gtk_widget_set_window (widget, window);
-	gdk_window_set_user_data (window, widget);
+	/* Chain up to parent's method. */
+	GTK_WIDGET_CLASS (e_map_parent_class)->realize (widget);
 
 	update_render_surface (E_MAP (widget), TRUE);
 }
@@ -648,49 +624,51 @@ e_map_get_preferred_height (GtkWidget *widget,
 }
 
 static void
+e_map_measure (GtkWidget *widget,
+	       GtkOrientation orientation,
+	       gint for_size,
+	       gint *minimum,
+	       gint *natural,
+	       gint *minimum_baseline,
+	       gint *natural_baseline)
+{
+	if (orientation == GTK_ORIENTATION_HORIZONTAL)
+		e_map_get_preferred_width (widget, minimum, natural);
+	else
+		e_map_get_preferred_height (widget, minimum, natural);
+}
+
+static void
 e_map_size_allocate (GtkWidget *widget,
-                     GtkAllocation *allocation)
+                     gint width,
+                     gint height,
+                     gint baseline)
 {
 	EMap *map;
 
 	g_return_if_fail (widget != NULL);
 	g_return_if_fail (E_IS_MAP (widget));
-	g_return_if_fail (allocation != NULL);
 
 	map = E_MAP (widget);
-
-	/* Resize the window */
-
-	gtk_widget_set_allocation (widget, allocation);
-
-	if (gtk_widget_get_realized (widget)) {
-		GdkWindow *window;
-
-		window = e_gtk_widget_get_surface (widget);
-
-		gdk_window_move_resize (
-			window, allocation->x, allocation->y,
-			allocation->width, allocation->height);
-
-		gtk_widget_queue_draw (widget);
-	}
 
 	update_render_surface (map, TRUE);
 }
 
-static gboolean
-e_map_draw (GtkWidget *widget,
-            cairo_t *cr)
+static void
+e_map_snapshot (GtkWidget *widget,
+		GtkSnapshot *snapshot)
 {
 	EMap *map;
 	cairo_matrix_t matrix;
-
-	if (!gtk_widget_is_drawable (widget))
-		return FALSE;
+	cairo_t *cr;
 
 	map = E_MAP (widget);
 
-	cairo_save (cr);
+	if (!map->priv->map_render_surface)
+		return;
+
+	cr = gtk_snapshot_append_cairo (snapshot, &GRAPHENE_RECT_INIT (0, 0,
+		gtk_widget_get_width (widget), gtk_widget_get_height (widget)));
 
 	e_map_tweens_compute_matrix (map, &matrix);
 	cairo_transform (cr, &matrix);
@@ -698,42 +676,26 @@ e_map_draw (GtkWidget *widget,
 	cairo_set_source_surface (cr, map->priv->map_render_surface, 0, 0);
 	cairo_paint (cr);
 
-	cairo_restore (cr);
-
-	return FALSE;
+	cairo_destroy (cr);
 }
 
-static gint
-e_map_button_press (GtkWidget *widget,
-                    GdkEvent *event)
+static void
+e_map_pressed_cb (GtkGestureClick *gesture,
+		  gint n_press,
+		  gdouble x,
+		  gdouble y,
+		  GtkWidget *widget)
 {
 	if (!gtk_widget_has_focus (widget))
 		gtk_widget_grab_focus (widget);
-
-	return TRUE;
 }
 
-static gint
-e_map_button_release (GtkWidget *widget,
-                      GdkEvent *event)
-{
-	if (event->button != 1)
-		return FALSE;
-
-	gdk_device_ungrab (event->device, event->time);
-	return TRUE;
-}
-
-static gint
-e_map_motion (GtkWidget *widget,
-              GdkEvent *event)
-{
-	return FALSE;
-}
-
-static gint
-e_map_key_press (GtkWidget *widget,
-                 GdkEvent *event)
+static gboolean
+e_map_key_pressed_cb (GtkEventControllerKey *controller,
+		      guint keyval,
+		      guint keycode,
+		      GdkModifierType state,
+		      GtkWidget *widget)
 {
 	EMap *map;
 	gboolean do_scroll;
@@ -741,7 +703,7 @@ e_map_key_press (GtkWidget *widget,
 
 	map = E_MAP (widget);
 
-	switch (event->keyval)
+	switch (keyval)
 	{
 		case GDK_KEY_Up:
 			do_scroll = TRUE;
@@ -817,20 +779,16 @@ e_map_class_init (EMapClass *class)
 	widget_class = GTK_WIDGET_CLASS (class);
 	widget_class->realize = e_map_realize;
 	widget_class->unrealize = e_map_unrealize;
-	widget_class->get_preferred_height = e_map_get_preferred_height;
-	widget_class->get_preferred_width = e_map_get_preferred_width;
+	widget_class->measure = e_map_measure;
 	widget_class->size_allocate = e_map_size_allocate;
-	widget_class->draw = e_map_draw;
-	widget_class->button_press_event = e_map_button_press;
-	widget_class->button_release_event = e_map_button_release;
-	widget_class->motion_notify_event = e_map_motion;
-	widget_class->key_press_event = e_map_key_press;
+	widget_class->snapshot = e_map_snapshot;
 }
 
 static void
 e_map_init (EMap *map)
 {
 	GtkWidget *widget;
+	GtkEventController *controller;
 	gchar *map_file_name;
 
 	map_file_name = g_build_filename (
@@ -848,6 +806,14 @@ e_map_init (EMap *map)
 	map->priv->points = g_ptr_array_new ();
 
 	gtk_widget_set_focusable (widget, TRUE);
+
+	controller = GTK_EVENT_CONTROLLER (gtk_gesture_click_new ());
+	g_signal_connect (controller, "pressed", G_CALLBACK (e_map_pressed_cb), widget);
+	gtk_widget_add_controller (widget, controller);
+
+	controller = gtk_event_controller_key_new ();
+	g_signal_connect (controller, "key-pressed", G_CALLBACK (e_map_key_pressed_cb), widget);
+	gtk_widget_add_controller (widget, controller);
 }
 
 /* ---------------- *
@@ -872,7 +838,6 @@ e_map_new (void)
 	widget = g_object_new (E_TYPE_MAP, NULL);
 	a11y = GTK_WIDGET (widget);
 	e_gtk_widget_set_accessible_name (a11y, _("World Map"));
-	atk_object_set_role (a11y, ATK_ROLE_IMAGE);
 	e_gtk_widget_set_accessible_description (
 		a11y, _("Mouse-based interactive map widget for selecting "
 		"timezone. Keyboard users should instead select the timezone "
@@ -1229,9 +1194,8 @@ update_render_surface (EMap *map,
 
 	if (map->priv->map_render_surface)
 		cairo_surface_destroy (map->priv->map_render_surface);
-	map->priv->map_render_surface = gdk_window_create_similar_surface (
-		e_gtk_widget_get_surface (GTK_WIDGET (map)),
-		CAIRO_CONTENT_COLOR, width, height);
+	map->priv->map_render_surface = cairo_image_surface_create (
+		CAIRO_FORMAT_RGB24, width, height);
 
 	/* Scale the original map into the rendering pixbuf */
 
@@ -1319,10 +1283,8 @@ repaint_point (EMap *map,
 
 	e_map_world_to_window (map, point->longitude, point->latitude, &px, &py);
 
-	gtk_widget_queue_draw_area (
-		GTK_WIDGET (map),
-		(gint) px - 2, (gint) py - 2,
-		5, 5);
+	/* GTK 4 redraws the whole widget */
+	gtk_widget_queue_draw (GTK_WIDGET (map));
 }
 
 static void

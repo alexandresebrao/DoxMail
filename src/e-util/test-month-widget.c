@@ -175,7 +175,7 @@ on_idle_create_widget (ESourceRegistry *registry)
 	guint year = 0;
 	gint ii;
 
-	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	window = gtk_window_new ();
 	gtk_window_set_default_size (GTK_WINDOW (window), 300, 400);
 
 	g_signal_connect (
@@ -311,7 +311,7 @@ on_idle_create_widget (ESourceRegistry *registry)
 
 	gtk_notebook_append_page (GTK_NOTEBOOK (notebook), container, gtk_label_new ("Year"));
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 
 	g_object_set (G_OBJECT (widget),
 		"hexpand", TRUE,

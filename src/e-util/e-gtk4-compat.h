@@ -147,6 +147,43 @@ gboolean	e_gdk_event_get_root_coords	(GdkEvent *event,
 						 gdouble *x,
 						 gdouble *y);
 
+/* Popovers: GTK 4 parents them instead of "relative-to" */
+GtkWidget *	e_gtk_popover_new		(GtkWidget *relative_to);
+void		e_gtk_popover_set_relative_to	(GtkPopover *popover,
+						 GtkWidget *relative_to);
+
+/* the "destroy" handler that clears a widget pointer */
+void		e_gtk_widget_destroyed		(GtkWidget *widget,
+						 GtkWidget **widget_pointer);
+
+/* Icons as pixbufs and cairo surfaces, which GTK 4 replaced with paintables */
+GdkPixbuf *	e_gtk_icon_theme_load_icon	(GtkIconTheme *icon_theme,
+						 const gchar *icon_name,
+						 gint size,
+						 gint flags,
+						 GError **error);
+GdkPixbuf *	e_gtk_icon_theme_load_gicon	(GtkIconTheme *icon_theme,
+						 GIcon *icon,
+						 gint size);
+cairo_surface_t *
+		e_gdk_cairo_surface_create_from_pixbuf
+						(const GdkPixbuf *pixbuf,
+						 gint scale,
+						 gpointer for_window);
+gboolean	e_gtk_icon_size_lookup		(gint size,
+						 gint *width,
+						 gint *height);
+void		e_gtk_header_bar_set_title	(GtkHeaderBar *header_bar,
+						 const gchar *title);
+
+/* GTK 4 has no widget style properties; these keep the declared defaults */
+void		e_gtk_widget_class_install_style_property
+						(gpointer widget_class,
+						 GParamSpec *pspec);
+void		e_gtk_widget_style_get		(gpointer widget,
+						 const gchar *first_property_name,
+						 ...) G_GNUC_NULL_TERMINATED;
+
 /* atk_object_set_name/description on a widget's accessible */
 void		e_gtk_widget_set_accessible_name
 						(GtkWidget *widget,

@@ -944,7 +944,7 @@ customize_shortcuts_run_popover (EUICustomizeDialog *self,
 	sd->save_func_user_data = save_func_user_data;
 	sd->existing = existing ? g_ptr_array_ref (existing) : NULL;
 
-	widget = gtk_popover_new (for_widget);
+	widget = e_gtk_popover_new (for_widget);
 	popover = GTK_POPOVER (widget);
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 4);
@@ -2053,7 +2053,7 @@ customize_layout_tree_autoscroll (gpointer user_data)
 	GtkTreeView *tree_view;
 	GtkScrollable *scrollable;
 	GdkRectangle rect;
-	GdkWindow *window;
+	GdkSurface *window;
 	GdkDisplay *display;
 	GdkDeviceManager *device_manager;
 	GdkDevice *device;
@@ -2554,7 +2554,7 @@ e_ui_customize_dialog_constructed (GObject *object)
 	e_gtk_box_pack_start (box1, widget, FALSE, FALSE, 0);
 	label = GTK_LABEL (widget);
 
-	scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+	scrolled_window = gtk_scrolled_window_new ();
 	g_object_set (scrolled_window,
 		"hexpand", TRUE,
 		"vexpand", TRUE,
@@ -2623,7 +2623,7 @@ e_ui_customize_dialog_constructed (GObject *object)
 
 	box1 = GTK_BOX (widget);
 
-	scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+	scrolled_window = gtk_scrolled_window_new ();
 	g_object_set (scrolled_window,
 		"halign", GTK_ALIGN_FILL,
 		"hexpand", TRUE,
@@ -2810,7 +2810,7 @@ e_ui_customize_dialog_constructed (GObject *object)
 
 	g_clear_pointer (&attrs, pango_attr_list_unref);
 
-	scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+	scrolled_window = gtk_scrolled_window_new ();
 	g_object_set (scrolled_window,
 		"halign", GTK_ALIGN_FILL,
 		"hexpand", TRUE,

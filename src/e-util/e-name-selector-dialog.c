@@ -354,7 +354,7 @@ name_selector_dialog_constructed (GObject *object)
 	gtk_label_set_xalign (GTK_LABEL (label_contacts), 0);
 	g_free (tmp_str);
 
-	scrolledwindow0 = gtk_scrolled_window_new (NULL, NULL);
+	scrolledwindow0 = gtk_scrolled_window_new ();
 	self->priv->contact_window = scrolledwindow0;
 	gtk_widget_show (scrolledwindow0);
 	gtk_widget_set_vexpand (scrolledwindow0, TRUE);
@@ -377,7 +377,7 @@ name_selector_dialog_constructed (GObject *object)
 	gtk_widget_show (label);
 	e_gtk_container_add (hgrid, label);
 
-	scrolledwindow1 = gtk_scrolled_window_new (NULL, NULL);
+	scrolledwindow1 = gtk_scrolled_window_new ();
 	gtk_widget_show (scrolledwindow1);
 	e_gtk_container_add (hgrid, scrolledwindow1);
 	gtk_widget_set_hexpand (scrolledwindow1, TRUE);
@@ -1020,7 +1020,7 @@ add_section (ENameSelectorDialog *name_selector_dialog,
 	e_gtk_container_add (hgrid, GTK_WIDGET (section.label));
 
 	/* Treeview in a scrolled window */
-	scrollwin = gtk_scrolled_window_new (NULL, NULL);
+	scrollwin = gtk_scrolled_window_new ();
 	e_gtk_container_add (hgrid, scrollwin);
 	gtk_widget_set_hexpand (scrollwin, TRUE);
 	gtk_widget_set_halign (scrollwin, GTK_ALIGN_FILL);

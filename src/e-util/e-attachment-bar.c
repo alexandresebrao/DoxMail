@@ -185,7 +185,7 @@ attachment_bar_notify_vadjustment_upper_cb (GObject *object,
 	adjustment = gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW (bar->priv->tree_scrolled_window));
 	max_upper = MAX (max_upper, gtk_adjustment_get_upper (adjustment));
 
-	gtk_widget_style_get (GTK_WIDGET (bar), "max-content-height", &max_content_height, NULL);
+	e_gtk_widget_style_get (GTK_WIDGET (bar), "max-content-height", &max_content_height, NULL);
 
 	if ((max_content_height >= 0 && max_content_height < 50) || max_content_height <= -2)
 		max_content_height = 50;
@@ -687,9 +687,7 @@ e_attachment_bar_class_init (EAttachmentBarClass *class)
 	g_object_class_override_property (
 		object_class, PROP_ALLOW_URI, "allow-uri");
 
-	gtk_widget_class_install_style_property (
-		widget_class,
-		g_param_spec_int (
+	e_gtk_widget_class_install_style_property (widget_class, g_param_spec_int (
 			"max-content-height",
 			"Max Content Height",
 			NULL,
@@ -776,7 +774,7 @@ e_attachment_bar_init (EAttachmentBar *bar)
 
 	container = widget;
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (widget), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	e_gtk_container_add (container, widget);
 	bar->priv->icon_scrolled_window = widget;
@@ -798,7 +796,7 @@ e_attachment_bar_init (EAttachmentBar *bar)
 
 	container = widget;
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (widget), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	e_gtk_container_add (container, widget);
 	bar->priv->tree_scrolled_window = widget;

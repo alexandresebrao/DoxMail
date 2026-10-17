@@ -138,7 +138,7 @@ format_short_headers (EMailFormatter *formatter,
 		g_string_append_printf (buffer, " (%s)", from->str);
 	g_string_append (buffer, "</td>");
 
-	if (!gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &icon_width, &icon_height)) {
+	if (!e_gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &icon_width, &icon_height)) {
 		icon_width = 16;
 		icon_height = 16;
 	}
@@ -508,7 +508,7 @@ format_full_headers (EMailFormatter *formatter,
 		g_object_unref (image_part);
 	}
 
-	if (!gtk_icon_size_lookup (GTK_ICON_SIZE_LARGE, &icon_width, &icon_height)) {
+	if (!e_gtk_icon_size_lookup (GTK_ICON_SIZE_LARGE, &icon_width, &icon_height)) {
 		icon_width = 24;
 		icon_height = 24;
 	}
@@ -609,7 +609,7 @@ emfe_headers_format (EMailFormatterExtension *extension,
 	if (is_collapsable) {
 		gint icon_width, icon_height;
 
-		if (!gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &icon_width, &icon_height)) {
+		if (!e_gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &icon_width, &icon_height)) {
 			icon_width = 16;
 			icon_height = 16;
 		}

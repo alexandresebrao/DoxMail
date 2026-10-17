@@ -172,7 +172,7 @@ preview_pane_constructed (GObject *object)
 	self->priv->alert_bar = g_object_ref (widget);
 	/* EAlertBar controls its own visibility. */
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	e_gtk_box_pack_start (GTK_BOX (object), widget, TRUE, TRUE, 0);
 	e_gtk_container_add (widget, self->priv->web_view);
 	gtk_widget_show (widget);

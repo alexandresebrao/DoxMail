@@ -57,6 +57,28 @@ e_contact_card_accessible_ref_state_set (GtkWidget *obj)
 }
 
 static void
+e_contact_card_accessible_measure (GtkWidget *widget,
+		GtkOrientation orientation,
+		gint for_size,
+		gint *minimum,
+		gint *natural,
+		gint *minimum_baseline,
+		gint *natural_baseline)
+{
+	if (orientation == GTK_ORIENTATION_HORIZONTAL) {
+		if (for_size >= 0) {
+			e_contact_card_get_preferred_width_for_height (widget, for_size, minimum, natural);
+			return;
+		}
+		e_contact_card_get_preferred_width (widget, minimum, natural);
+		return;
+	}
+
+	GTK_WIDGET_CLASS (e_contact_card_accessible_parent_class)->measure (widget, orientation, for_size,
+		minimum, natural, minimum_baseline, natural_baseline);
+}
+
+static void
 e_contact_card_accessible_class_init (EContactCardAccessibleClass *klass)
 {
 	AtkObjectClass *object_class = ATK_OBJECT_CLASS (klass);
@@ -101,7 +123,7 @@ e_contact_card_get_preferred_width (GtkWidget *widget,
 				    gint *natural_width)
 {
 	/* Chain up to parent's method. */
-	GTK_WIDGET_CLASS (e_contact_card_parent_class)->get_preferred_width (widget, minimum_width, natural_width);
+	GTK_WIDGET_CLASS (e_contact_card_parent_class)->measure (widget, GTK_ORIENTATION_HORIZONTAL, -1, minimum_width, natural_width, NULL, NULL);
 
 	if ((*minimum_width) > 321)
 		*minimum_width = 321;
@@ -116,7 +138,7 @@ e_contact_card_get_preferred_width_for_height (GtkWidget *widget,
 					       gint *natural_width)
 {
 	/* Chain up to parent's method. */
-	GTK_WIDGET_CLASS (e_contact_card_parent_class)->get_preferred_width_for_height (widget, height, minimum_width, natural_width);
+	GTK_WIDGET_CLASS (e_contact_card_parent_class)->measure (widget, GTK_ORIENTATION_HORIZONTAL, height, minimum_width, natural_width, NULL, NULL);
 
 	if ((*minimum_width) > 321)
 		*minimum_width = 321;
@@ -339,8 +361,7 @@ e_contact_card_class_init (EContactCardClass *klass)
 	GtkWidgetClass *widget_class;
 
 	widget_class = GTK_WIDGET_CLASS (klass);
-	widget_class->get_preferred_width = e_contact_card_get_preferred_width;
-	widget_class->get_preferred_width_for_height = e_contact_card_get_preferred_width_for_height;
+	widget_class->measure = e_contact_card_accessible_measure;
 	widget_class->show_all = e_contact_card_show_all;
 
 	gtk_widget_class_set_accessible_role (widget_class, ATK_ROLE_LIST_ITEM);

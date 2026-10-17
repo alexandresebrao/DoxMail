@@ -4761,7 +4761,7 @@ e_vcard_editor_constructed (GObject *object)
 	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	self->top_separator = widget;
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	g_object_set (widget,
 		"halign", GTK_ALIGN_FILL,
 		"hexpand", TRUE,

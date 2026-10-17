@@ -99,6 +99,9 @@ typedef struct {
 	guint16 hardware_keycode;
 	guint8 group;
 	guint is_modifier : 1;
+	/* the text of the key, as GTK 3 gave it (deprecated there) */
+	gint length;
+	gchar string[8];
 } GnomeCanvasEventKey;
 
 typedef struct {

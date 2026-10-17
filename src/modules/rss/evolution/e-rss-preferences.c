@@ -833,7 +833,7 @@ e_rss_preferences_get_popover (GtkWidget *parent,
 
 	if (popover) {
 		pd = g_object_get_data (G_OBJECT (popover), "e-rss-popover-data");
-		gtk_popover_set_relative_to (popover, parent);
+		e_gtk_popover_set_relative_to (popover, parent);
 		g_clear_pointer (&pd->id, g_free);
 		g_clear_pointer (&pd->icon_filename, g_free);
 		pd->id = g_strdup (id);
@@ -846,7 +846,7 @@ e_rss_preferences_get_popover (GtkWidget *parent,
 	pd = g_new0 (PopoverData, 1);
 	pd->id = g_strdup (id);
 
-	popover = GTK_POPOVER (gtk_popover_new (parent));
+	popover = GTK_POPOVER (e_gtk_popover_new (parent));
 
 	grid = GTK_GRID (gtk_grid_new ());
 	gtk_grid_set_column_spacing (grid, 6);
@@ -1705,7 +1705,7 @@ e_rss_preferences_new (EPreferencesWindow *window)
 	gtk_grid_attach (grid, widget, 0, row, 2, 1);
 	row++;
 
-	scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+	scrolled_window = gtk_scrolled_window_new ();
 	g_object_set (G_OBJECT (scrolled_window),
 		"halign", GTK_ALIGN_FILL,
 		"hexpand", TRUE,

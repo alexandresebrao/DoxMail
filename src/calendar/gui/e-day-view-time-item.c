@@ -917,7 +917,7 @@ static void
 e_day_view_time_item_on_button_press (EDayViewTimeItem *time_item,
                                       GnomeCanvasEvent *event)
 {
-	GdkWindow *window;
+	GdkSurface *window;
 	EDayView *day_view;
 	GnomeCanvas *canvas;
 	GnomeCanvasGrabStatus grab_status;

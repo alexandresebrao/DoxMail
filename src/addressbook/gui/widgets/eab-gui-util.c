@@ -316,7 +316,7 @@ eab_select_source (ESourceRegistry *registry,
 
 	source_selection_changed_cb (E_SOURCE_SELECTOR (selector), ok_button);
 
-	scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+	scrolled_window = gtk_scrolled_window_new ();
 	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (scrolled_window), TRUE);
 	e_gtk_container_add (scrolled_window, selector);
 

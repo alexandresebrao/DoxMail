@@ -736,7 +736,7 @@ calendar_preferences_add_itip_formatter_page (EShell *shell,
 	gtk_label_set_xalign (GTK_LABEL (label), 0);
 	e_gtk_box_pack_start (GTK_BOX (inner_vbox), label, FALSE, FALSE, 0);
 
-	scrolledwin = gtk_scrolled_window_new (NULL, NULL);
+	scrolledwin = gtk_scrolled_window_new ();
 
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (scrolledwin),

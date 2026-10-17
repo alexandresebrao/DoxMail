@@ -173,7 +173,7 @@ add_photo_cb (gpointer data,
 	if (!photo_filename || !g_file_test (photo_filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR))
 		return;
 
-	if (!gtk_icon_size_lookup (GTK_ICON_SIZE_LARGE, &width, &height)) {
+	if (!e_gtk_icon_size_lookup (GTK_ICON_SIZE_LARGE, &width, &height)) {
 		width = 32;
 		height = 32;
 	}
@@ -305,7 +305,7 @@ add_details_part (GString *html,
 	if (!part || !validity || !details || !*details || !ident)
 		return;
 
-	if (!gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &icon_width, &icon_height)) {
+	if (!e_gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &icon_width, &icon_height)) {
 		icon_width = 16;
 		icon_height = 16;
 	}
@@ -381,7 +381,7 @@ secure_button_format_validity (EMailPart *part,
 	else
 		icon_name = smime_encrypt_table[validity->encrypt.status].icon;
 
-	if (!gtk_icon_size_lookup (GTK_ICON_SIZE_LARGE, &icon_width, &icon_height)) {
+	if (!e_gtk_icon_size_lookup (GTK_ICON_SIZE_LARGE, &icon_width, &icon_height)) {
 		icon_width = 24;
 		icon_height = 24;
 	}

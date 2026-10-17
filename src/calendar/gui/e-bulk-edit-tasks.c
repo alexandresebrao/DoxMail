@@ -686,7 +686,7 @@ e_bulk_edit_tasks_fill_content (EBulkEditTasks *self)
 	part = e_comp_editor_property_part_timezone_new ();
 	e_bulk_edit_tasks_set_edit_item (self, EDIT_ITEM_TIMEZONE, part, grid, 0, 4, TRUE);
 
-	scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+	scrolled_window = gtk_scrolled_window_new ();
 	g_object_set (scrolled_window,
 		"visible", TRUE,
 		"halign", GTK_ALIGN_FILL,

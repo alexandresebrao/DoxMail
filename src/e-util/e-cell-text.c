@@ -261,15 +261,12 @@ static void
 ect_stop_editing (ECellTextView *text_view,
                   gboolean commit)
 {
-	GdkWindow *window;
 	CellEdit *edit = text_view->edit;
 	gint row, view_col, model_col;
 	gchar *old_text, *text;
 
 	if (!edit)
 		return;
-
-	window = e_gtk_widget_get_surface (GTK_WIDGET (text_view->canvas));
 
 	row = edit->row;
 	view_col = edit->view_col;
@@ -280,7 +277,7 @@ ect_stop_editing (ECellTextView *text_view,
 	if (edit->tep)
 		g_object_unref (edit->tep);
 	if (!edit->default_cursor_shown) {
-		gdk_window_set_cursor (window, NULL);
+		gtk_widget_set_cursor (GTK_WIDGET (text_view->canvas), NULL);
 		edit->default_cursor_shown = TRUE;
 	}
 	if (edit->timeout_id) {
@@ -778,7 +775,7 @@ get_vertical_spacing (GtkWidget *canvas)
 	/* The parent should be either an ETable or ETree. */
 	widget = gtk_widget_get_parent (canvas);
 
-	gtk_widget_style_get (widget, "vertical-spacing", &vspacing, NULL);
+	e_gtk_widget_style_get (widget, "vertical-spacing", &vspacing, NULL);
 
 	return vspacing;
 }
@@ -978,7 +975,7 @@ ect_edit_select_all (ECellTextView *text_view)
 static gboolean
 key_begins_editing (GnomeCanvasEvent *event)
 {
-	if (event->length == 0)
+	if (event->key.length == 0)
 		return FALSE;
 
 	return TRUE;
@@ -1030,9 +1027,7 @@ ect_event (ECellView *ecell_view,
 	case GNOME_CANVAS_KEY_RELEASE:
 		preedit_len = edit_display ? edit->preedit_length : 0;
 		if (edit_display && edit->im_context &&
-				gtk_im_context_filter_keypress (\
-					edit->im_context,
-					(GnomeCanvasEvent *) event)) {
+				e_canvas_im_filter_keypress (edit->im_context, event)) {
 
 			edit->need_im_reset = TRUE;
 			if (preedit_len && flags & E_CELL_PREEDIT)
@@ -1050,14 +1045,14 @@ ect_event (ECellView *ecell_view,
 
 		if ((!edit_display) &&
 		    e_table_model_is_cell_editable (ecell_view->e_table_model, model_col, row) &&
-		    key_begins_editing (&event->key)) {
+		    key_begins_editing (event)) {
 			  e_table_item_enter_edit (text_view->cell_view.e_table_item_view, view_col, row);
 			  ect_edit_select_all (text_view);
 			  edit = text_view->edit;
 			  edit_display = TRUE;
 		}
 		if (edit_display) {
-			GnomeCanvasEvent key = event->key;
+			GnomeCanvasEventKey key = event->key;
 			if (key.type == GNOME_CANVAS_KEY_PRESS &&
 			    (key.keyval == GDK_KEY_KP_Enter || key.keyval == GDK_KEY_Return)) {
 				/* stop editing when it's only GNOME_CANVAS_KEY_PRESS event */
@@ -1098,7 +1093,7 @@ ect_event (ECellView *ecell_view,
 		    && e_table_model_is_cell_editable (ecell_view->e_table_model, model_col, row)
 		    && event->type == GNOME_CANVAS_BUTTON_RELEASE
 		    && event->button.button == 1) {
-			GnomeCanvasEvent button = event->button;
+			GnomeCanvasEventButton button = event->button;
 
 			e_table_item_enter_edit (text_view->cell_view.e_table_item_view, view_col, row);
 			edit = text_view->edit;
@@ -1129,7 +1124,7 @@ ect_event (ECellView *ecell_view,
 			e_tep_event.button.type = GNOME_CANVAS_BUTTON_RELEASE;
 		}
 		if (edit_display) {
-			GnomeCanvasEvent button = event->button;
+			GnomeCanvasEventButton button = event->button;
 			e_tep_event.button.time = button.time;
 			e_tep_event.button.state = button.state;
 			e_tep_event.button.button = button.button;
@@ -1156,7 +1151,7 @@ ect_event (ECellView *ecell_view,
 		event->motion.x -= 4;
 		event->motion.y -= 1;
 		if (edit_display) {
-			GnomeCanvasEvent motion = event->motion;
+			GnomeCanvasEventMotion motion = event->motion;
 			e_tep_event.motion.time = motion.time;
 			e_tep_event.motion.state = motion.state;
 			e_tep_event.motion.position = get_position_from_xy (edit, event->motion.x, event->motion.y);
@@ -1176,10 +1171,10 @@ ect_event (ECellView *ecell_view,
 #endif
 		if (edit_display) {
 			if (edit->default_cursor_shown) {
-				GdkWindow *window;
+				GdkSurface *window;
 
-				window = e_gtk_widget_get_surface (canvas);
-				gdk_window_set_cursor (window, text_view->i_cursor);
+				window = NULL; /* GTK 4 sets cursors on widgets */
+				gtk_widget_set_cursor (canvas, text_view->i_cursor);
 				edit->default_cursor_shown = FALSE;
 			}
 		}
@@ -1190,10 +1185,10 @@ ect_event (ECellView *ecell_view,
 #endif
 		if (edit_display) {
 			if (!edit->default_cursor_shown) {
-				GdkWindow *window;
+				GdkSurface *window;
 
-				window = e_gtk_widget_get_surface (canvas);
-				gdk_window_set_cursor (window, NULL);
+				window = NULL; /* GTK 4 sets cursors on widgets */
+				gtk_widget_set_cursor (canvas, NULL);
 				edit->default_cursor_shown = TRUE;
 			}
 		}

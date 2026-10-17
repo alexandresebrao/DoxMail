@@ -881,7 +881,7 @@ e_mail_config_provider_page_get_placeholder (EMailConfigProviderPage *page,
 	if (GTK_IS_VIEWPORT (widget))
 		widget = e_gtk_bin_get_child (widget);
 
-	if (!GTK_IS_CONTAINER (widget))
+	if (!GTK_IS_WIDGET (widget))
 		return NULL;
 
 	e_gtk_container_foreach (widget, mail_config_provider_page_find_placeholder, &fpd);

@@ -1485,7 +1485,7 @@ e_date_edit_show_date_popup (EDateEdit *dedit,
 	GdkDevice *assoc_device;
 	GdkDevice *keyboard_device;
 	GdkDevice *pointer_device;
-	GdkWindow *window;
+	GdkSurface *window;
 	GdkGrabStatus grab_status;
 	GtkWidget *toplevel;
 	struct tm mtm;
@@ -1527,7 +1527,6 @@ e_date_edit_show_date_popup (EDateEdit *dedit,
 	position_date_popup (dedit);
 	gtk_widget_show (priv->cal_popup);
 	gtk_widget_grab_focus (priv->cal_popup);
-	gtk_grab_add (priv->cal_popup);
 
 	window = e_gtk_widget_get_surface (priv->cal_popup);
 
@@ -1598,7 +1597,7 @@ position_date_popup (EDateEdit *dedit)
 	gint win_x, win_y;
 	gint bwidth, bheight;
 	GtkWidget *toplevel;
-	GdkWindow *window;
+	GdkSurface *window;
 	GtkRequisition cal_req, button_req;
 	gint screen_width, screen_height;
 
@@ -1756,7 +1755,6 @@ static void
 hide_date_popup (EDateEdit *dedit)
 {
 	gtk_widget_hide (dedit->priv->cal_popup);
-	gtk_grab_remove (dedit->priv->cal_popup);
 
 	if (dedit->priv->grabbed_keyboard != NULL) {
 		gdk_device_ungrab (

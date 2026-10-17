@@ -1717,7 +1717,7 @@ accounts_window_constructed (GObject *object)
 	grid = GTK_GRID (widget);
 	gtk_grid_set_column_spacing (grid, 6);
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (widget), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (widget), TRUE);
 	gtk_widget_set_hexpand (widget, TRUE);

@@ -1274,7 +1274,7 @@ e_comp_editor_event_constructed (GObject *object)
 	e_signal_connect_notify_swapped (event_editor->priv->all_day_check, "notify::active",
 		G_CALLBACK (ece_event_all_day_toggled_cb), event_editor);
 
-	scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+	scrolled_window = gtk_scrolled_window_new ();
 	g_object_set (scrolled_window,
 		"visible", TRUE,
 		"halign", GTK_ALIGN_FILL,

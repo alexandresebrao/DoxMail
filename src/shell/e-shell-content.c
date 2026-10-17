@@ -371,6 +371,29 @@ shell_content_submit_alert (EAlertSink *alert_sink,
 }
 
 static void
+e_shell_content_measure (GtkWidget *widget,
+		GtkOrientation orientation,
+		gint for_size,
+		gint *minimum,
+		gint *natural,
+		gint *minimum_baseline,
+		gint *natural_baseline)
+{
+	if (orientation == GTK_ORIENTATION_HORIZONTAL) {
+		shell_content_get_preferred_width (widget, minimum, natural);
+		return;
+	}
+
+	if (orientation == GTK_ORIENTATION_VERTICAL) {
+		shell_content_get_preferred_height (widget, minimum, natural);
+		return;
+	}
+
+	GTK_WIDGET_CLASS (e_shell_content_parent_class)->measure (widget, orientation, for_size,
+		minimum, natural, minimum_baseline, natural_baseline);
+}
+
+static void
 e_shell_content_class_init (EShellContentClass *class)
 {
 	GObjectClass *object_class;
@@ -385,8 +408,7 @@ e_shell_content_class_init (EShellContentClass *class)
 	object_class->constructed = shell_content_constructed;
 
 	widget_class = GTK_WIDGET_CLASS (class);
-	widget_class->get_preferred_width = shell_content_get_preferred_width;
-	widget_class->get_preferred_height = shell_content_get_preferred_height;
+	widget_class->measure = e_shell_content_measure;
 	widget_class->size_allocate = shell_content_size_allocate;
 
 	container_class = GTK_CONTAINER_CLASS (class);

@@ -992,14 +992,14 @@ e_meeting_time_selector_item_motion_notify (EMeetingTimeSelectorItem *mts_item,
 
 	/* Only set the cursor if it is different to the last one we set. */
 	if (mts_item->last_cursor_set != cursor) {
-		GdkWindow *window;
+		GdkSurface *window;
 		GnomeCanvas *canvas;
 
 		mts_item->last_cursor_set = cursor;
 
 		canvas = GNOME_CANVAS_ITEM (mts_item)->canvas;
-		window = e_gtk_widget_get_surface (GTK_WIDGET (canvas));
-		gdk_window_set_cursor (window, cursor);
+		window = NULL; /* GTK 4 sets cursors on widgets */
+		gtk_widget_set_cursor (GTK_WIDGET (canvas), cursor);
 	}
 
 	return FALSE;
@@ -1067,7 +1067,7 @@ void
 e_meeting_time_selector_item_set_normal_cursor (EMeetingTimeSelectorItem *mts_item)
 {
 	GnomeCanvas *canvas;
-	GdkWindow *window;
+	GdkSurface *window;
 
 	g_return_if_fail (IS_E_MEETING_TIME_SELECTOR_ITEM (mts_item));
 

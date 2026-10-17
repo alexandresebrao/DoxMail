@@ -532,7 +532,7 @@ tree_view_frame_constructed (GObject *object)
 		GTK_ORIENTABLE (tree_view_frame),
 		GTK_ORIENTATION_VERTICAL);
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (widget), TRUE);
 	e_gtk_box_pack_start (GTK_BOX (tree_view_frame), widget, TRUE, TRUE, 0);
 	tree_view_frame->priv->scrolled_window = g_object_ref (widget);

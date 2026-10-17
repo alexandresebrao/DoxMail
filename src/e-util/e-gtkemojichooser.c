@@ -286,7 +286,7 @@ show_variations (EGtkEmojiChooser *chooser,
     return;
 
   parent_popover = gtk_widget_get_ancestor (child, GTK_TYPE_POPOVER);
-  popover = gtk_popover_new (child);
+  popover = e_gtk_popover_new (child);
   view = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_add_css_class (view, "view");
   box = gtk_flow_box_new ();
@@ -715,7 +715,7 @@ e_gtk_emoji_chooser_construct_without_template (EGtkEmojiChooser *chooser)
 	gtk_widget_set_name (GTK_WIDGET (box), "list");
 	gtk_stack_add_named (GTK_STACK (chooser->stack), GTK_WIDGET (box), "list");
 
-	chooser->scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+	chooser->scrolled_window = gtk_scrolled_window_new ();
 	g_object_set (G_OBJECT (chooser->scrolled_window),
 		"vexpand", TRUE,
 		"hscrollbar-policy", GTK_POLICY_NEVER,

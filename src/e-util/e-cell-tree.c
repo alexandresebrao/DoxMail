@@ -213,62 +213,69 @@ ect_unrealize (ECellView *ecv)
 		(* E_CELL_CLASS (e_cell_tree_parent_class)->unrealize) (ecv);
 }
 
+/* GTK 4 has no expander styles nor GtkStateType */
+typedef enum {
+	E_EXPANDER_COLLAPSED,
+	E_EXPANDER_SEMI_COLLAPSED,
+	E_EXPANDER_SEMI_EXPANDED,
+	E_EXPANDER_EXPANDED
+} EExpanderStyle;
+
+/* An arrow, like GtkTreeView draws, pointing to the side when collapsed
+ * and down when expanded; the "semi" styles are half-way. */
 static void
 draw_expander (ECellTreeView *ectv,
                cairo_t *cr,
-               GtkExpanderStyle expander_style,
-               GtkStateType state,
+               EExpanderStyle expander_style,
+               gboolean selected,
                GdkRectangle *rect)
 {
-	GtkStyleContext *style_context;
 	GtkWidget *tree;
-	GtkStateFlags flags = 0;
-	gint exp_size;
+	GdkRGBA rgba;
+	gdouble angle, cx, cy, size;
+	gint exp_size = 12;
 
 	if (!E_CELL_TREE (ectv->cell_view.ecell)->show_expander)
 		return;
 
 	tree = gtk_widget_get_parent (GTK_WIDGET (ectv->canvas));
-	style_context = gtk_widget_get_style_context (tree);
 
-	gtk_style_context_save (style_context);
+	e_gtk_widget_style_get (tree, "expander_size", &exp_size, NULL);
 
-	gtk_style_context_add_class (style_context, "expander");
-
-	switch (state) {
-		case GTK_STATE_PRELIGHT:
-			flags |= GTK_STATE_FLAG_PRELIGHT;
+	switch (expander_style) {
+		case E_EXPANDER_COLLAPSED:
+			angle = 0;
 			break;
-		case GTK_STATE_SELECTED:
-			flags |= GTK_STATE_FLAG_SELECTED;
-			break;
-		case GTK_STATE_INSENSITIVE:
-			flags |= GTK_STATE_FLAG_INSENSITIVE;
+		case E_EXPANDER_SEMI_COLLAPSED:
+		case E_EXPANDER_SEMI_EXPANDED:
+			angle = G_PI / 4;
 			break;
 		default:
+			angle = G_PI / 2;
 			break;
 	}
 
-	if (expander_style != GTK_EXPANDER_EXPANDED) {
-		flags |= GTK_STATE_FLAG_CHECKED;
-	}
+	if (gtk_widget_get_direction (tree) == GTK_TEXT_DIR_RTL && expander_style != E_EXPANDER_EXPANDED)
+		angle = G_PI - angle;
 
-	gtk_style_context_set_state (style_context, flags);
+	size = exp_size / 2.0;
+	cx = rect->x + rect->width - exp_size / 2.0;
+	cy = rect->y + rect->height / 2.0;
 
-	gtk_widget_style_get (tree, "expander_size", &exp_size, NULL);
+	gtk_widget_get_color (tree, &rgba);
+	if (!selected)
+		rgba.alpha *= 0.7;
 
 	cairo_save (cr);
-
-	gtk_render_expander (
-		style_context, cr,
-		(gdouble) rect->x + rect->width - exp_size,
-		(gdouble) (rect->y + rect->height / 2) - (exp_size / 2),
-		(gdouble) exp_size,
-		(gdouble) exp_size);
-
+	cairo_translate (cr, cx, cy);
+	cairo_rotate (cr, angle);
+	cairo_move_to (cr, -size / 2, -size / 2);
+	cairo_line_to (cr, size / 2, 0);
+	cairo_line_to (cr, -size / 2, size / 2);
+	cairo_close_path (cr);
+	gdk_cairo_set_source_rgba (cr, &rgba);
+	cairo_fill (cr);
 	cairo_restore (cr);
-
-	gtk_style_context_restore (style_context);
 }
 
 /*
@@ -321,8 +328,8 @@ ect_draw (ECellView *ecell_view,
 			r = rect;
 			r.width -= 2;
 			draw_expander (tree_view, cr,
-				expanded ? GTK_EXPANDER_EXPANDED : GTK_EXPANDER_COLLAPSED,
-				(flags & E_CELL_SELECTED) != 0 ? GTK_STATE_SELECTED : GTK_STATE_NORMAL, &r);
+				expanded ? E_EXPANDER_EXPANDED : E_EXPANDER_COLLAPSED,
+				(flags & E_CELL_SELECTED) != 0, &r);
 		}
 	}
 
@@ -400,33 +407,17 @@ typedef struct {
 static gboolean
 animate_expander (gpointer data)
 {
-	GtkLayout *layout;
-	GdkWindow *window;
 	animate_closure_t *closure = (animate_closure_t *) data;
-	cairo_t *cr;
 
 	if (g_source_is_destroyed (g_main_current_source ()))
 		return FALSE;
 
-	if (closure->finish) {
-		e_tree_table_adapter_node_set_expanded (closure->etta, closure->node, !closure->expanded);
-		closure->ectv->animate_timeout = 0;
-		return FALSE;
-	}
+	/* GTK 3 painted a half-way expander first; GTK 4 cannot paint outside
+	 * of a frame, thus it just changes the state */
+	e_tree_table_adapter_node_set_expanded (closure->etta, closure->node, !closure->expanded);
+	closure->ectv->animate_timeout = 0;
 
-	layout = GTK_LAYOUT (closure->ectv->canvas);
-	window = gtk_layout_get_bin_window (layout);
-
-	cr = gdk_cairo_create (window);
-
-	draw_expander (closure->ectv, cr,
-		closure->expanded ? GTK_EXPANDER_SEMI_COLLAPSED : GTK_EXPANDER_SEMI_EXPANDED,
-		closure->selected ? GTK_STATE_SELECTED : GTK_STATE_NORMAL, &closure->area);
-	closure->finish = TRUE;
-
-	cairo_destroy (cr);
-
-	return TRUE;
+	return FALSE;
 }
 
 /*
@@ -441,8 +432,6 @@ ect_event (ECellView *ecell_view,
            ECellFlags flags,
            ECellActions *actions)
 {
-	GtkLayout *layout;
-	GdkWindow *window;
 	ECellTreeView *tree_view = (ECellTreeView *) ecell_view;
 	ETreeModel *tree_model = e_cell_tree_get_tree_model (ecell_view->e_table_model, row);
 	ETreeTableAdapter *etta = e_cell_tree_get_tree_table_adapter (ecell_view->e_table_model, row);
@@ -450,9 +439,6 @@ ect_event (ECellView *ecell_view,
 	gint offset = offset_of_node (tree_view, ecell_view->e_table_model, row, view_col);
 	gboolean selected = e_table_item_get_row_selected (tree_view->cell_view.e_table_item_view, row);
 	gint result;
-
-	layout = GTK_LAYOUT (tree_view->canvas);
-	window = gtk_layout_get_bin_window (layout);
 
 	switch (event->type) {
 	case GNOME_CANVAS_BUTTON_PRESS:
@@ -476,11 +462,6 @@ ect_event (ECellView *ecell_view,
 				if (hgt != area.height) /* Composite cells */
 					area.height += hgt;
 
-				cr = gdk_cairo_create (window);
-				draw_expander (tree_view, cr,
-					expanded ? GTK_EXPANDER_SEMI_EXPANDED : GTK_EXPANDER_SEMI_COLLAPSED,
-					selected ? GTK_STATE_SELECTED : GTK_STATE_NORMAL, &area);
-				cairo_destroy (cr);
 
 				closure->ectv = tree_view;
 				closure->etta = etta;
@@ -515,13 +496,8 @@ ect_event (ECellView *ecell_view,
 					&tmp_row, &view_col, &area.x, &area.y, NULL, &area.height);
 				area.width = offset - 2;
 
-				cr = gdk_cairo_create (window);
-				draw_expander (
-					tree_view, cr,
-					e_tree_table_adapter_node_is_expanded (etta, node) ?
-					GTK_EXPANDER_EXPANDED : GTK_EXPANDER_COLLAPSED,
-					selected ? GTK_STATE_SELECTED : in_expander ? GTK_STATE_PRELIGHT : GTK_STATE_NORMAL, &area);
-				cairo_destroy (cr);
+				/* FIXME-GTK4: no prelight of the expander */
+				gtk_widget_queue_draw (GTK_WIDGET (tree_view->canvas));
 
 				tree_view->prelit = in_expander;
 				return TRUE;
@@ -542,13 +518,7 @@ ect_event (ECellView *ecell_view,
 				&tmp_row, &view_col, &area.x, &area.y, NULL, &area.height);
 			area.width = offset - 2;
 
-			cr = gdk_cairo_create (window);
-			draw_expander (
-				tree_view, cr,
-				e_tree_table_adapter_node_is_expanded (etta, node) ?
-				GTK_EXPANDER_EXPANDED : GTK_EXPANDER_COLLAPSED,
-				selected ? GTK_STATE_SELECTED : GTK_STATE_NORMAL, &area);
-			cairo_destroy (cr);
+			gtk_widget_queue_draw (GTK_WIDGET (tree_view->canvas));
 
 			tree_view->prelit = FALSE;
 		}
@@ -746,7 +716,7 @@ ect_print (ECellView *ecell_view,
 			GdkRectangle r;
 			gint exp_size = 0;
 
-			gtk_widget_style_get (GTK_WIDGET (gtk_widget_get_parent (GTK_WIDGET (tree_view->canvas))), "expander_size", &exp_size, NULL);
+			e_gtk_widget_style_get (GTK_WIDGET (gtk_widget_get_parent (GTK_WIDGET (tree_view->canvas))), "expander_size", &exp_size, NULL);
 
 			node = e_cell_tree_get_node (ecell_view->e_table_model, row);
 			expanded = e_tree_table_adapter_node_is_expanded (tree_table_adapter, node);
@@ -756,7 +726,7 @@ ect_print (ECellView *ecell_view,
 			r.width = MIN (width, exp_size);
 			r.height = height;
 
-			draw_expander (tree_view, cr, expanded ? GTK_EXPANDER_EXPANDED : GTK_EXPANDER_COLLAPSED, GTK_STATE_NORMAL, &r);
+			draw_expander (tree_view, cr, expanded ? E_EXPANDER_EXPANDED : E_EXPANDER_COLLAPSED, FALSE, &r);
 		}
 
 		cairo_stroke (cr);

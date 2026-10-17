@@ -403,7 +403,7 @@ shell_migrate_mail_folders_show_dialog_cb (gpointer user_data)
 
 	mfd->show_dialog_id = 0;
 
-	mfd->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	mfd->window = gtk_window_new ();
 	g_object_set (mfd->window,
 		"window-position", GTK_WIN_POS_CENTER,
 		"deletable", FALSE,

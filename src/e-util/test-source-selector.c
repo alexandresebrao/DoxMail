@@ -636,7 +636,7 @@ create_page (ESourceRegistry *registry,
 
 	grid = GTK_GRID (gtk_grid_new ());
 
-	subwindow = gtk_scrolled_window_new (NULL, NULL);
+	subwindow = gtk_scrolled_window_new ();
 	g_object_set (
 		G_OBJECT (subwindow),
 		"halign", GTK_ALIGN_FILL,
@@ -848,7 +848,7 @@ on_idle_create_widget (ESourceRegistry *registry)
 {
 	GtkWidget *window, *notebook;
 
-	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	window = gtk_window_new ();
 	gtk_window_set_default_size (GTK_WINDOW (window), 300, 400);
 
 	g_signal_connect (

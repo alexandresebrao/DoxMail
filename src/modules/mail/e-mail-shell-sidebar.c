@@ -222,7 +222,7 @@ mail_shell_sidebar_constructed (GObject *object)
 
 	container = GTK_WIDGET (object);
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
@@ -297,8 +297,7 @@ mail_shell_sidebar_get_preferred_height (GtkWidget *widget,
                                          gint *minimum_height,
                                          gint *natural_height)
 {
-	GTK_WIDGET_CLASS (e_mail_shell_sidebar_parent_class)->
-		get_preferred_height (widget, minimum_height, natural_height);
+	GTK_WIDGET_CLASS (e_mail_shell_sidebar_parent_class)->measure (widget, GTK_ORIENTATION_VERTICAL, -1, minimum_height, natural_height, NULL, NULL);
 }
 
 static void
@@ -331,8 +330,7 @@ mail_shell_sidebar_get_preferred_width (GtkWidget *widget,
 
 	sidebar = E_MAIL_SHELL_SIDEBAR (widget);
 
-	GTK_WIDGET_CLASS (e_mail_shell_sidebar_parent_class)->
-		get_preferred_width (widget, minimum_width, natural_width);
+	GTK_WIDGET_CLASS (e_mail_shell_sidebar_parent_class)->measure (widget, GTK_ORIENTATION_HORIZONTAL, -1, minimum_width, natural_width, NULL, NULL);
 
 	/* This string is a mockup only; it doesn't need to be translated */
 	layout = gtk_widget_create_pango_layout (
@@ -365,6 +363,29 @@ mail_shell_sidebar_check_state (EShellSidebar *shell_sidebar)
 }
 
 static void
+e_mail_shell_sidebar_measure (GtkWidget *widget,
+		GtkOrientation orientation,
+		gint for_size,
+		gint *minimum,
+		gint *natural,
+		gint *minimum_baseline,
+		gint *natural_baseline)
+{
+	if (orientation == GTK_ORIENTATION_HORIZONTAL) {
+		mail_shell_sidebar_get_preferred_width (widget, minimum, natural);
+		return;
+	}
+
+	if (orientation == GTK_ORIENTATION_VERTICAL) {
+		mail_shell_sidebar_get_preferred_height (widget, minimum, natural);
+		return;
+	}
+
+	GTK_WIDGET_CLASS (e_mail_shell_sidebar_parent_class)->measure (widget, orientation, for_size,
+		minimum, natural, minimum_baseline, natural_baseline);
+}
+
+static void
 e_mail_shell_sidebar_class_init (EMailShellSidebarClass *class)
 {
 	GObjectClass *object_class;
@@ -377,8 +398,6 @@ e_mail_shell_sidebar_class_init (EMailShellSidebarClass *class)
 	object_class->constructed = mail_shell_sidebar_constructed;
 
 	widget_class = GTK_WIDGET_CLASS (class);
-	widget_class->get_preferred_width = mail_shell_sidebar_get_preferred_width;
-	widget_class->get_preferred_height = mail_shell_sidebar_get_preferred_height;
 
 	shell_sidebar_class = E_SHELL_SIDEBAR_CLASS (class);
 	shell_sidebar_class->check_state = mail_shell_sidebar_check_state;

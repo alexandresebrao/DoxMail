@@ -3224,7 +3224,7 @@ e_week_view_on_button_press (GtkWidget *widget,
 
 	if (event_button == 1) {
 		GnomeCanvasGrabStatus grab_status;
-		GdkWindow *window;
+		GdkSurface *window;
 		GdkDevice *event_device;
 		guint32 event_time;
 
@@ -3325,7 +3325,7 @@ e_week_view_on_scroll (GtkWidget *widget,
 	upper = gtk_adjustment_get_upper (adjustment);
 	value = gtk_adjustment_get_value (adjustment);
 
-	switch (scroll->direction) {
+	switch (scroll->scroll.direction) {
 		case GDK_SCROLL_UP:
 			new_value = value - page_increment;
 			break;
@@ -3359,8 +3359,8 @@ e_week_view_on_motion (GtkWidget *widget,
 	gint x, y, day;
 
 	/* Convert the mouse position to a week & day. */
-	x = mevent->x;
-	y = mevent->y;
+	x = mevent->any.x;
+	y = mevent->any.y;
 	day = e_week_view_convert_position_to_day (week_view, x, y);
 	if (day == -1)
 		return FALSE;
@@ -5199,13 +5199,13 @@ e_week_view_do_key_press (GtkWidget *widget,
 	g_return_val_if_fail (event != NULL, FALSE);
 
 	week_view = E_WEEK_VIEW (widget);
-	keyval = event->keyval;
+	keyval = event->key.keyval;
 
 	/* The Escape key aborts a resize operation. */
 #if 0
 	if (week_view->resize_drag_pos != E_CALENDAR_VIEW_POS_NONE) {
-		if (event->keyval == GDK_KEY_Escape) {
-			e_week_view_abort_resize (week_view, event->time);
+		if (event->key.keyval == GDK_KEY_Escape) {
+			e_week_view_abort_resize (week_view, event->any.time);
 		}
 		return FALSE;
 	}
@@ -5213,8 +5213,8 @@ e_week_view_do_key_press (GtkWidget *widget,
 
 	/* Handle the cursor keys for moving the selection */
 	stop_emission = FALSE;
-	if (!(event->state & GDK_SHIFT_MASK)
-		&& !(event->state & GDK_ALT_MASK)) {
+	if (!(event->any.state & GDK_SHIFT_MASK)
+		&& !(event->any.state & GDK_ALT_MASK)) {
 		stop_emission = TRUE;
 		switch (keyval) {
 		case GDK_KEY_Page_Up:
@@ -5250,9 +5250,9 @@ e_week_view_do_key_press (GtkWidget *widget,
 		return TRUE;
 
 	/*Navigation through days with arrow keys*/
-	if (((event->state & GDK_SHIFT_MASK) != GDK_SHIFT_MASK)
-		&&((event->state & GDK_CONTROL_MASK) != GDK_CONTROL_MASK)
-		&&((event->state & GDK_ALT_MASK) == GDK_ALT_MASK)) {
+	if (((event->any.state & GDK_SHIFT_MASK) != GDK_SHIFT_MASK)
+		&&((event->any.state & GDK_CONTROL_MASK) != GDK_CONTROL_MASK)
+		&&((event->any.state & GDK_ALT_MASK) == GDK_ALT_MASK)) {
 		if (keyval == GDK_KEY_Up || keyval == GDK_KEY_KP_Up)
 			return e_week_view_event_move ((ECalendarView *) week_view, E_CAL_VIEW_MOVE_UP);
 		else if (keyval == GDK_KEY_Down || keyval == GDK_KEY_KP_Down)
@@ -5268,18 +5268,18 @@ e_week_view_do_key_press (GtkWidget *widget,
 
 	/* We only want to start an edit with a return key or a simple
 	 * character. */
-	if (event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter) {
+	if (event->key.keyval == GDK_KEY_Return || event->key.keyval == GDK_KEY_KP_Enter) {
 		initial_text = NULL;
-	} else if (((event->keyval >= 0x20) && (event->keyval <= 0xFF)
-		    && (event->state & (GDK_CONTROL_MASK | GDK_ALT_MASK)))
-		   || (event->length == 0)
-		   || (event->keyval == GDK_KEY_Tab)
-		   || (event->keyval == GDK_KEY_Escape)
-		   || (event->keyval == GDK_KEY_Delete)
-		   || (event->keyval == GDK_KEY_KP_Delete)) {
+	} else if (((event->key.keyval >= 0x20) && (event->key.keyval <= 0xFF)
+		    && (event->any.state & (GDK_CONTROL_MASK | GDK_ALT_MASK)))
+		   || (event->key.length == 0)
+		   || (event->key.keyval == GDK_KEY_Tab)
+		   || (event->key.keyval == GDK_KEY_Escape)
+		   || (event->key.keyval == GDK_KEY_Delete)
+		   || (event->key.keyval == GDK_KEY_KP_Delete)) {
 		return FALSE;
 	} else
-		initial_text = e_utf8_from_gtk_event_key (widget, event->keyval, event->string);
+		initial_text = e_utf8_from_gtk_event_key (widget, event->key.keyval, event->key.string);
 
 	e_week_view_add_new_event_in_selected_range (week_view, initial_text, FALSE);
 
@@ -5379,7 +5379,7 @@ e_week_view_on_jump_button_event (GnomeCanvasItem *item,
 			return FALSE;
 		}
 
-		if (focus_event->in) {
+		if (focus_event->focus_change.in) {
 			week_view->focused_jump_button = day;
 			gnome_canvas_item_set (
 				week_view->jump_buttons[day],

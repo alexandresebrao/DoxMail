@@ -332,7 +332,7 @@ setup_e_table (ECalListView *cal_list_view)
 
 	container = GTK_WIDGET (cal_list_view);
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);

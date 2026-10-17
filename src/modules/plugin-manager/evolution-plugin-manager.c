@@ -414,7 +414,7 @@ plugins_page_new (EPreferencesWindow *window)
 		GTK_TREE_SORTABLE (store),
 		COL_PLUGIN_NAME, GTK_SORT_ASCENDING);
 
-	w = gtk_scrolled_window_new (NULL, NULL);
+	w = gtk_scrolled_window_new ();
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (w),
 		GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);

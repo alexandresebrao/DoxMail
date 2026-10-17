@@ -264,7 +264,7 @@ static gboolean e_day_view_on_main_canvas_motion (GtkWidget *widget,
 						  EDayView *day_view);
 static gboolean e_day_view_convert_event_coords (EDayView *day_view,
 						 GnomeCanvasEvent *event,
-						 GdkWindow *window,
+						 GdkSurface *window,
 						 gint *x_return,
 						 gint *y_return);
 static void e_day_view_update_long_event_resize (EDayView *day_view,
@@ -3070,7 +3070,7 @@ static void
 e_day_view_on_canvas_realized (GtkWidget *widget,
                                EDayView *day_view)
 {
-	GdkWindow *window;
+	GdkSurface *window;
 
 	window = gtk_layout_get_bin_window (GTK_LAYOUT (widget));
 	gdk_window_set_background_pattern (window, NULL);
@@ -4402,7 +4402,7 @@ e_day_view_on_top_canvas_button_press (GtkWidget *widget,
 	gint event_x, event_y, day, event_num;
 	ECalendarViewPosition pos;
 	GtkLayout *layout;
-	GdkWindow *window;
+	GdkSurface *window;
 	GdkDevice *event_device;
 	guint event_button = 0;
 	guint32 event_time;
@@ -4507,12 +4507,12 @@ e_day_view_on_top_canvas_button_press (GtkWidget *widget,
 static gboolean
 e_day_view_convert_event_coords (EDayView *day_view,
                                  GnomeCanvasEvent *event,
-                                 GdkWindow *window,
+                                 GdkSurface *window,
                                  gint *x_return,
                                  gint *y_return)
 {
 	gint event_x, event_y, win_x, win_y;
-	GdkWindow *event_window;
+	GdkSurface *event_window;
 
 	/* Get the event window, x & y from the appropriate event struct. */
 	switch (event->type) {
@@ -4562,7 +4562,7 @@ e_day_view_on_main_canvas_button_press (GtkWidget *widget,
 	gint event_x, event_y, row, day, event_num;
 	ECalendarViewPosition pos;
 	GtkLayout *layout;
-	GdkWindow *window;
+	GdkSurface *window;
 	GdkDevice *event_device;
 	guint event_button = 0;
 	guint32 event_time;
@@ -4675,7 +4675,7 @@ e_day_view_on_main_canvas_scroll (GtkWidget *widget,
                                   GnomeCanvasEvent *scroll,
                                   EDayView *day_view)
 {
-	switch (scroll->direction) {
+	switch (scroll->scroll.direction) {
 	case GDK_SCROLL_UP:
 		e_day_view_scroll (day_view, E_DAY_VIEW_WHEEL_MOUSE_STEP_SIZE);
 		return TRUE;
@@ -4700,7 +4700,7 @@ e_day_view_on_top_canvas_scroll (GtkWidget *widget,
                                   GnomeCanvasEvent *scroll,
                                   EDayView *day_view)
 {
-	switch (scroll->direction) {
+	switch (scroll->scroll.direction) {
 	case GDK_SCROLL_UP:
 		e_day_view_top_scroll (day_view, E_DAY_VIEW_WHEEL_MOUSE_STEP_SIZE);
 		return TRUE;
@@ -4725,7 +4725,7 @@ e_day_view_on_time_canvas_scroll (GtkWidget *widget,
                                   GnomeCanvasEvent *scroll,
                                   EDayView *day_view)
 {
-	switch (scroll->direction) {
+	switch (scroll->scroll.direction) {
 	case GDK_SCROLL_UP:
 		e_day_view_scroll (day_view, E_DAY_VIEW_WHEEL_MOUSE_STEP_SIZE);
 		return TRUE;
@@ -4847,7 +4847,7 @@ e_day_view_on_long_event_click (EDayView *day_view,
 {
 	EDayViewEvent *event;
 	GtkLayout *layout;
-	GdkWindow *window;
+	GdkSurface *window;
 	gint start_day, end_day, day;
 	gint item_x, item_y, item_w, item_h;
 
@@ -4956,7 +4956,7 @@ e_day_view_on_event_click (EDayView *day_view,
 	EDayViewEvent *event;
 	ECalendarView *cal_view;
 	GtkLayout *layout;
-	GdkWindow *window;
+	GdkSurface *window;
 	gint time_divisions;
 	gint tmp_day, row, start_row;
 
@@ -5233,7 +5233,7 @@ e_day_view_on_top_canvas_motion (GtkWidget *widget,
 	gint event_x, event_y, canvas_x, canvas_y;
 	gint day, event_num;
 	GdkCursor *cursor;
-	GdkWindow *window;
+	GdkSurface *window;
 
 	window = gtk_layout_get_bin_window (GTK_LAYOUT (widget));
 
@@ -5349,7 +5349,7 @@ e_day_view_on_main_canvas_motion (GtkWidget *widget,
 	ECalendarViewPosition pos;
 	gint event_x, event_y, canvas_x, canvas_y;
 	gint row, day, event_num;
-	GdkWindow *window;
+	GdkSurface *window;
 	GdkCursor *cursor;
 
 	window = gtk_layout_get_bin_window (GTK_LAYOUT (widget));
@@ -5902,7 +5902,7 @@ e_day_view_finish_resize (EDayView *day_view)
 static void
 e_day_view_abort_resize (EDayView *day_view)
 {
-	GdkWindow *window;
+	GdkSurface *window;
 	gint day, event_num;
 
 	if (day_view->resize_drag_pos == E_CALENDAR_VIEW_POS_NONE)
@@ -5918,16 +5918,16 @@ e_day_view_abort_resize (EDayView *day_view)
 		gtk_widget_queue_draw (day_view->top_canvas);
 
 		day_view->last_cursor_set_in_top_canvas = day_view->normal_cursor;
-		window = e_gtk_widget_get_surface (day_view->top_canvas);
-		gdk_window_set_cursor (window, day_view->normal_cursor);
+		window = NULL; /* GTK 4 sets cursors on widgets */
+		gtk_widget_set_cursor (day_view->top_canvas, day_view->normal_cursor);
 	} else {
 		e_day_view_reshape_day_event (day_view, day, event_num);
 		e_day_view_reshape_main_canvas_resize_bars (day_view);
 		gtk_widget_queue_draw (day_view->main_canvas);
 
 		day_view->last_cursor_set_in_main_canvas = day_view->normal_cursor;
-		window = e_gtk_widget_get_surface (day_view->main_canvas);
-		gdk_window_set_cursor (window, day_view->normal_cursor);
+		window = NULL; /* GTK 4 sets cursors on widgets */
+		gtk_widget_set_cursor (day_view->main_canvas, day_view->normal_cursor);
 	}
 }
 
@@ -6634,7 +6634,7 @@ e_day_view_do_key_press (GtkWidget *widget,
 	g_return_val_if_fail (event != NULL, FALSE);
 
 	day_view = E_DAY_VIEW (widget);
-	keyval = event->keyval;
+	keyval = event->key.keyval;
 
 	/* The Escape key aborts a resize operation. */
 	if (day_view->resize_drag_pos != E_CALENDAR_VIEW_POS_NONE) {
@@ -6642,7 +6642,7 @@ e_day_view_do_key_press (GtkWidget *widget,
 			if (day_view->grabbed_pointer != NULL) {
 				gdk_device_ungrab (
 					day_view->grabbed_pointer,
-					event->time);
+					event->any.time);
 				g_object_unref (day_view->grabbed_pointer);
 				day_view->grabbed_pointer = NULL;
 			}
@@ -6652,9 +6652,9 @@ e_day_view_do_key_press (GtkWidget *widget,
 	}
 
 	/* Alt + Arrow Keys to move a selected event through time lines */
-	if (((event->state & GDK_SHIFT_MASK) != GDK_SHIFT_MASK)
-		&&((event->state & GDK_CONTROL_MASK) != GDK_CONTROL_MASK)
-		&&((event->state & GDK_ALT_MASK) == GDK_ALT_MASK)) {
+	if (((event->any.state & GDK_SHIFT_MASK) != GDK_SHIFT_MASK)
+		&&((event->any.state & GDK_CONTROL_MASK) != GDK_CONTROL_MASK)
+		&&((event->any.state & GDK_ALT_MASK) == GDK_ALT_MASK)) {
 		if (keyval == GDK_KEY_Up || keyval == GDK_KEY_KP_Up)
 			return e_day_view_event_move ((ECalendarView *) day_view, E_CAL_VIEW_MOVE_UP);
 		else if (keyval == GDK_KEY_Down || keyval == GDK_KEY_KP_Down)
@@ -6667,39 +6667,39 @@ e_day_view_do_key_press (GtkWidget *widget,
 
 	/*Go to the start/end of a work day*/
 	if ((keyval == GDK_KEY_Home)
-			&&((event->state & GDK_SHIFT_MASK) != GDK_SHIFT_MASK)
-			&&((event->state & GDK_CONTROL_MASK) != GDK_CONTROL_MASK)
-			&&((event->state & GDK_ALT_MASK) != GDK_ALT_MASK)) {
+			&&((event->any.state & GDK_SHIFT_MASK) != GDK_SHIFT_MASK)
+			&&((event->any.state & GDK_CONTROL_MASK) != GDK_CONTROL_MASK)
+			&&((event->any.state & GDK_ALT_MASK) != GDK_ALT_MASK)) {
 		e_day_view_goto_start_of_work_day (day_view);
 		return TRUE;
 	}
 	if ((keyval == GDK_KEY_End)
-	    &&((event->state & GDK_SHIFT_MASK) != GDK_SHIFT_MASK)
-	    &&((event->state & GDK_CONTROL_MASK) != GDK_CONTROL_MASK)
-	    &&((event->state & GDK_ALT_MASK) != GDK_ALT_MASK)) {
+	    &&((event->any.state & GDK_SHIFT_MASK) != GDK_SHIFT_MASK)
+	    &&((event->any.state & GDK_CONTROL_MASK) != GDK_CONTROL_MASK)
+	    &&((event->any.state & GDK_ALT_MASK) != GDK_ALT_MASK)) {
 		e_day_view_goto_end_of_work_day (day_view);
 		return TRUE;
 	}
 
 	/* In DayView, Shift+Home/End, Change the duration to the time that begins/ends the current work day */
 	if ((keyval == GDK_KEY_Home)
-	    &&((event->state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
-	    &&((event->state & GDK_CONTROL_MASK) != GDK_CONTROL_MASK)
-	    &&((event->state & GDK_ALT_MASK) != GDK_ALT_MASK)) {
+	    &&((event->any.state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+	    &&((event->any.state & GDK_CONTROL_MASK) != GDK_CONTROL_MASK)
+	    &&((event->any.state & GDK_ALT_MASK) != GDK_ALT_MASK)) {
 		e_day_view_change_duration_to_start_of_work_day (day_view);
 		return TRUE;
 	}
 	if ((keyval == GDK_KEY_End)
-	    &&((event->state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
-	    &&((event->state & GDK_CONTROL_MASK) != GDK_CONTROL_MASK)
-	    &&((event->state & GDK_ALT_MASK) != GDK_ALT_MASK)) {
+	    &&((event->any.state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+	    &&((event->any.state & GDK_CONTROL_MASK) != GDK_CONTROL_MASK)
+	    &&((event->any.state & GDK_ALT_MASK) != GDK_ALT_MASK)) {
 		e_day_view_change_duration_to_end_of_work_day (day_view);
 		return TRUE;
 	}
 
 	/* Handle the cursor keys for moving & extending the selection. */
 	stop_emission = TRUE;
-	if (event->state & GDK_SHIFT_MASK) {
+	if (event->any.state & GDK_SHIFT_MASK) {
 		switch (keyval) {
 		case GDK_KEY_Up:
 			e_day_view_cursor_key_up_shifted (day_view, event);
@@ -6717,8 +6717,8 @@ e_day_view_do_key_press (GtkWidget *widget,
 			stop_emission = FALSE;
 			break;
 		}
-	} else if (!(event->state & GDK_ALT_MASK) &&
-		   !(event->state & GDK_CONTROL_MASK)) {
+	} else if (!(event->any.state & GDK_ALT_MASK) &&
+		   !(event->any.state & GDK_CONTROL_MASK)) {
 		switch (keyval) {
 		case GDK_KEY_Up:
 			e_day_view_cursor_key_up (day_view, event);
@@ -6755,8 +6755,8 @@ e_day_view_do_key_press (GtkWidget *widget,
 	 * character. */
 	if ((keyval != GDK_KEY_Return && keyval != GDK_KEY_KP_Enter) &&
 	    (((keyval >= 0x20) && (keyval <= 0xFF)
-	      && (event->state & (GDK_CONTROL_MASK | GDK_ALT_MASK)))
-	     || (event->length == 0)
+	      && (event->any.state & (GDK_CONTROL_MASK | GDK_ALT_MASK)))
+	     || (event->key.length == 0)
 	     || (keyval == GDK_KEY_Tab)
 	     || (keyval == GDK_KEY_Escape)
 	     || (keyval == GDK_KEY_Delete)
@@ -7484,10 +7484,10 @@ e_day_view_start_editing_event (EDayView *day_view,
 	if (key_event) {
 		if (gtk_im_context_filter_keypress (((EText *)(event->canvas_item))->im_context, key_event)) {
 			((EText *)(event->canvas_item))->need_im_reset = TRUE;
-		} else if (key_event->keyval != GDK_KEY_Return && key_event->keyval != GDK_KEY_KP_Enter) {
+		} else if (key_event->key.keyval != GDK_KEY_Return && key_event->key.keyval != GDK_KEY_KP_Enter) {
 			gchar *initial_text;
 
-			initial_text = e_utf8_from_gtk_event_key (GTK_WIDGET (day_view), key_event->keyval, key_event->string);
+			initial_text = e_utf8_from_gtk_event_key (GTK_WIDGET (day_view), key_event->key.keyval, key_event->key.string);
 			gnome_canvas_item_set (
 				event->canvas_item,
 				"text", initial_text,
@@ -7629,7 +7629,7 @@ e_day_view_on_text_item_event (GnomeCanvasItem *item,
 			gint event_x, event_y, row, day, event_num;
 			ECalendarViewPosition pos;
 			gboolean main_canvas = TRUE;
-			GdkWindow *window;
+			GdkSurface *window;
 			GtkLayout *layout;
 
 			if (day_view->editing_event_num != -1)

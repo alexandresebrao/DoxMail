@@ -209,7 +209,7 @@ struct _ETreePrivate {
 
 static guint signals[LAST_SIGNAL];
 
-static void et_grab_focus (GtkWidget *widget);
+static gboolean et_grab_focus (GtkWidget *widget);
 
 static void et_drag_begin (GtkWidget *widget,
 			   EGtkDragContext *context,
@@ -639,14 +639,14 @@ e_tree_init (ETree *tree)
 }
 
 /* Grab_focus handler for the ETree */
-static void
+static gboolean
 et_grab_focus (GtkWidget *widget)
 {
 	ETree *tree;
 
 	tree = E_TREE (widget);
 
-	gtk_widget_grab_focus (GTK_WIDGET (tree->priv->table_canvas));
+	return gtk_widget_grab_focus (GTK_WIDGET (tree->priv->table_canvas));
 }
 
 /* Focus handler for the ETree */
@@ -658,8 +658,8 @@ et_focus (GtkWidget *container,
 
 	tree = E_TREE (container);
 
-	if (gtk_container_get_focus_child (GTK_CONTAINER (container))) {
-		gtk_container_set_focus_child (GTK_CONTAINER (container), NULL);
+	if (gtk_widget_get_focus_child (GTK_WIDGET (container))) {
+		gtk_widget_set_focus_child (GTK_WIDGET (container), NULL);
 		return FALSE;
 	}
 
@@ -978,7 +978,7 @@ item_key_press (ETableItem *eti,
 	upper = gtk_adjustment_get_upper (adjustment);
 	value = gtk_adjustment_get_value (adjustment);
 
-	switch (key->keyval) {
+	switch (key->key.keyval) {
 	case GDK_KEY_Page_Down:
 	case GDK_KEY_KP_Page_Down:
 		y = CLAMP (value + (2 * page_size - 50), 0, upper);
@@ -993,7 +993,7 @@ item_key_press (ETableItem *eti,
 			E_SELECTION_MODEL (tree->priv->selection));
 		e_selection_model_select_as_key_press (
 			E_SELECTION_MODEL (tree->priv->selection),
-			row_local, col_local, key->state);
+			row_local, col_local, key->any.state);
 
 		return_val = 1;
 		break;
@@ -1011,7 +1011,7 @@ item_key_press (ETableItem *eti,
 			E_SELECTION_MODEL (tree->priv->selection));
 		e_selection_model_select_as_key_press (
 			E_SELECTION_MODEL (tree->priv->selection),
-			row_local, col_local, key->state);
+			row_local, col_local, key->any.state);
 
 		return_val = 1;
 		break;
@@ -1021,17 +1021,17 @@ item_key_press (ETableItem *eti,
 	case GDK_KEY_KP_Right:
 		/* Only allow if the Shift modifier is used.
 		 * eg. Ctrl-Equal shouldn't be handled.  */
-		if ((key->state & (GDK_SHIFT_MASK | GDK_LOCK_MASK | GDK_ALT_MASK)) != GDK_SHIFT_MASK) {
+		if ((key->any.state & (GDK_SHIFT_MASK | GDK_LOCK_MASK | GDK_ALT_MASK)) != GDK_SHIFT_MASK) {
 			/* Allow also plain (without modifiers) expand when in the 'line' cursor mode */
 			if (eti->cursor_mode != E_CURSOR_LINE ||
-			    (key->state & (GDK_SHIFT_MASK | GDK_LOCK_MASK | GDK_ALT_MASK)) != 0)
+			    (key->any.state & (GDK_SHIFT_MASK | GDK_LOCK_MASK | GDK_ALT_MASK)) != 0)
 				break;
 		}
 
 		if (row != -1) {
 			path = e_tree_table_adapter_node_at_row (tree->priv->etta, row);
 			if (path) {
-				if ((key->state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)) == (GDK_CONTROL_MASK | GDK_SHIFT_MASK))
+				if ((key->any.state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)) == (GDK_CONTROL_MASK | GDK_SHIFT_MASK))
 					e_tree_table_adapter_node_set_expanded_recurse (tree->priv->etta, path, TRUE);
 				else
 					e_tree_table_adapter_node_set_expanded (tree->priv->etta, path, TRUE);
@@ -1046,17 +1046,17 @@ item_key_press (ETableItem *eti,
 	case GDK_KEY_KP_Left:
 		/* Only allow if the Shift modifier is used.
 		 * eg. Ctrl-Minus shouldn't be handled.  */
-		if ((key->state & (GDK_SHIFT_MASK | GDK_LOCK_MASK | GDK_ALT_MASK)) != GDK_SHIFT_MASK) {
+		if ((key->any.state & (GDK_SHIFT_MASK | GDK_LOCK_MASK | GDK_ALT_MASK)) != GDK_SHIFT_MASK) {
 			/* Allow also plain (without modifiers) collapse when in the 'line' cursor mode */
 			if (eti->cursor_mode != E_CURSOR_LINE ||
-			    (key->state & (GDK_SHIFT_MASK | GDK_LOCK_MASK | GDK_ALT_MASK)) != 0)
+			    (key->any.state & (GDK_SHIFT_MASK | GDK_LOCK_MASK | GDK_ALT_MASK)) != 0)
 				break;
 		}
 
 		if (row != -1) {
 			path = e_tree_table_adapter_node_at_row (tree->priv->etta, row);
 			if (path) {
-				if ((key->state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)) == (GDK_CONTROL_MASK | GDK_SHIFT_MASK))
+				if ((key->any.state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)) == (GDK_CONTROL_MASK | GDK_SHIFT_MASK))
 					e_tree_table_adapter_node_set_expanded_recurse (tree->priv->etta, path, FALSE);
 				else
 					e_tree_table_adapter_node_set_expanded (tree->priv->etta, path, FALSE);
@@ -1069,13 +1069,13 @@ item_key_press (ETableItem *eti,
 			return TRUE;
 		/* Fallthrough */
 	default:
-		if ((key->state & ~(GDK_SHIFT_MASK | GDK_LOCK_MASK |
-			GDK_ALT_MASK | GDK_MOD2_MASK | GDK_MOD3_MASK |
-			GDK_MOD4_MASK | GDK_MOD5_MASK)) == 0
-		    && ((key->keyval >= GDK_KEY_a && key->keyval <= GDK_KEY_z) ||
-			(key->keyval >= GDK_KEY_A && key->keyval <= GDK_KEY_Z) ||
-			(key->keyval >= GDK_KEY_0 && key->keyval <= GDK_KEY_9))) {
-			e_table_search_input_character (tree->priv->search, key->keyval);
+		if ((key->any.state & ~(GDK_SHIFT_MASK | GDK_LOCK_MASK |
+			GDK_ALT_MASK | 0 | 0 |
+			0 | 0)) == 0
+		    && ((key->key.keyval >= GDK_KEY_a && key->key.keyval <= GDK_KEY_z) ||
+			(key->key.keyval >= GDK_KEY_A && key->key.keyval <= GDK_KEY_Z) ||
+			(key->key.keyval >= GDK_KEY_0 && key->key.keyval <= GDK_KEY_9))) {
+			e_table_search_input_character (tree->priv->search, key->key.keyval);
 		}
 		path = e_tree_table_adapter_node_at_row (tree->priv->etta, row);
 		g_signal_emit (
@@ -1131,7 +1131,7 @@ et_build_item (ETree *tree)
 		gboolean bvalue = TRUE;
 
 		/* user can only disable this option, if it's enabled by the specification */
-		gtk_widget_style_get (GTK_WIDGET (tree), "alternating-row-colors", &bvalue, NULL);
+		e_gtk_widget_style_get (GTK_WIDGET (tree), "alternating-row-colors", &bvalue, NULL);
 
 		alternating_row_colors = bvalue ? 1 : 0;
 	}
@@ -1179,11 +1179,12 @@ et_build_item (ETree *tree)
 }
 
 static void
-et_canvas_style_updated (GtkWidget *widget)
+et_canvas_css_changed (GtkWidget *widget,
+		       GtkCssStyleChange *change)
 {
 	GdkRGBA color;
 
-	GTK_WIDGET_CLASS (e_tree_parent_class)->style_updated (widget);
+	GTK_WIDGET_CLASS (e_tree_parent_class)->css_changed (widget, change);
 
 	e_utils_get_theme_color (widget, "theme_base_color", E_UTILS_DEFAULT_THEME_BASE_COLOR, &color);
 
@@ -1259,7 +1260,7 @@ table_canvas_focus_event_cb (GtkWidget *widget,
 
 	gtk_widget_queue_draw (widget);
 
-	if (!event->in)
+	if (!event->focus_change.in)
 		return TRUE;
 
 	canvas = GNOME_CANVAS (widget);
@@ -2257,7 +2258,7 @@ e_tree_drag_begin (ETree *tree,
 		targets,
 		actions,
 		button,
-		event);
+		event ? gnome_canvas_event_get_gdk_event (event) : NULL);
 }
 
 /**
@@ -2856,7 +2857,7 @@ e_tree_class_init (ETreeClass *class)
 	widget_class = GTK_WIDGET_CLASS (class);
 	widget_class->grab_focus = et_grab_focus;
 	widget_class->unrealize = et_unrealize;
-	widget_class->style_updated = et_canvas_style_updated;
+	widget_class->css_changed = et_canvas_css_changed;
 	widget_class->focus = et_focus;
 
 	gtk_widget_class_set_css_name (widget_class, "ETree");
@@ -3197,18 +3198,14 @@ e_tree_class_init (ETreeClass *class)
 			FALSE,
 			G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
-	gtk_widget_class_install_style_property (
-		widget_class,
-		g_param_spec_int (
+	e_gtk_widget_class_install_style_property (widget_class, g_param_spec_int (
 			"expander_size",
 			"Expander Size",
 			"Size of the expander arrow",
 			0, G_MAXINT, 12,
 			G_PARAM_READABLE));
 
-	gtk_widget_class_install_style_property (
-		widget_class,
-		g_param_spec_int (
+	e_gtk_widget_class_install_style_property (widget_class, g_param_spec_int (
 			"vertical-spacing",
 			"Vertical Row Spacing",
 			"Vertical space between rows. "
@@ -3217,9 +3214,7 @@ e_tree_class_init (ETreeClass *class)
 			G_PARAM_READABLE |
 			G_PARAM_STATIC_STRINGS));
 
-	gtk_widget_class_install_style_property (
-		widget_class,
-		g_param_spec_boolean (
+	e_gtk_widget_class_install_style_property (widget_class, g_param_spec_boolean (
 			"alternating-row-colors",
 			"Alternating Row Colors",
 			"Whether to use alternating row colors",

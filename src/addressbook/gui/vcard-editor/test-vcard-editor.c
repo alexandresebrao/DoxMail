@@ -131,7 +131,7 @@ on_idle_create_widget (gpointer user_data)
 	GtkWidget *window, *widget, *scrolled;
 	GtkBox *box;
 
-	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	window = gtk_window_new ();
 	gtk_window_set_default_size (GTK_WINDOW (window), 480, 640);
 
 	g_signal_connect (window, "delete-event",
@@ -172,7 +172,7 @@ on_idle_create_widget (gpointer user_data)
 	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 	glob_is_new_check = GTK_TOGGLE_BUTTON (widget);
 
-	scrolled = gtk_scrolled_window_new (NULL, NULL);
+	scrolled = gtk_scrolled_window_new ();
 	g_object_set (scrolled,
 		"halign", GTK_ALIGN_FILL,
 		"hexpand", TRUE,

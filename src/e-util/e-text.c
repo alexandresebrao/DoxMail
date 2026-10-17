@@ -1511,12 +1511,11 @@ start_editing (EText *text)
 
 	text->editing = TRUE;
 	if (text->pointer_in) {
-		GdkWindow *window;
-
-		window = e_gtk_widget_get_surface (GTK_WIDGET (GNOME_CANVAS_ITEM (text)->canvas));
+		/* GTK 4 sets cursors on widgets */
+		GtkWidget *window = GTK_WIDGET (GNOME_CANVAS_ITEM (text)->canvas);
 
 		if (text->default_cursor_shown) {
-			gdk_window_set_cursor (window, text->i_cursor);
+			gtk_widget_set_cursor (window, text->i_cursor);
 			text->default_cursor_shown = FALSE;
 		}
 	}
@@ -1543,10 +1542,7 @@ e_text_stop_editing (EText *text)
 
 	text->editing = FALSE;
 	if (!text->default_cursor_shown) {
-		GdkWindow *window;
-
-		window = e_gtk_widget_get_surface (GTK_WIDGET (GNOME_CANVAS_ITEM (text)->canvas));
-		gdk_window_set_cursor (window, text->default_cursor);
+		gtk_widget_set_cursor (GTK_WIDGET (GNOME_CANVAS_ITEM (text)->canvas), text->default_cursor);
 		text->default_cursor_shown = TRUE;
 	}
 	if (text->timer) {
@@ -1581,13 +1577,13 @@ e_text_event (GnomeCanvasItem *item,
 {
 	EText *text = E_TEXT (item);
 	ETextEventProcessorEvent e_tep_event;
-	GdkWindow *window;
+	GtkWidget *window; /* GTK 4 sets cursors on widgets */
 	gint return_val = 0;
 
 	if (!text->model)
 		return 0;
 
-	window = e_gtk_widget_get_surface (GTK_WIDGET (item->canvas));
+	window = GTK_WIDGET (item->canvas);
 
 	e_tep_event.type = event->type;
 	switch (event->type) {
@@ -1595,7 +1591,7 @@ e_text_event (GnomeCanvasItem *item,
 		if (text->editable) {
 			GnomeCanvasEvent *focus_event;
 			focus_event = (GnomeCanvasEvent *) event;
-			if (focus_event->in) {
+			if (focus_event->focus_change.in) {
 				if (text->im_context) {
 					if (!text->im_context_signals_registered) {
 						g_signal_connect (
@@ -1652,15 +1648,8 @@ e_text_event (GnomeCanvasItem *item,
 		    && (event->key.state & GDK_SHIFT_MASK)
 		    && text->handle_popup) {
 
-			/* Simulate a GnomeCanvasEvent here, so that we can
-			 * call e_text_do_popup directly */
-
-			GnomeCanvasEvent *button_event;
-
-			button_event = gdk_event_new (GNOME_CANVAS_BUTTON_PRESS);
-			button_event->button.time = event->key.time;
-			button_event->button.button = 0;
-			e_text_do_popup (text, button_event, 0);
+			/* the popup points at the text for key events */
+			e_text_do_popup (text, event, 0);
 			return 1;
 		}
 
@@ -1669,13 +1658,11 @@ e_text_event (GnomeCanvasItem *item,
 	case GNOME_CANVAS_KEY_RELEASE:
 
 		if (text->editing) {
-			GnomeCanvasEvent key;
+			GnomeCanvasEventKey key;
 			gint ret;
 
 			if (text->im_context &&
-				gtk_im_context_filter_keypress (
-					text->im_context,
-					(GnomeCanvasEvent *) event)) {
+				e_canvas_im_filter_keypress (text->im_context, event)) {
 				text->need_im_reset = TRUE;
 				return 1;
 			}
@@ -1754,7 +1741,7 @@ e_text_event (GnomeCanvasItem *item,
 		}
 
 		if (text->editing) {
-			GnomeCanvasEvent button = event->button;
+			GnomeCanvasEventButton button = event->button;
 			e_tep_event.button.time = button.time;
 			e_tep_event.button.state = button.state;
 			e_tep_event.button.button = button.button;
@@ -1779,7 +1766,7 @@ e_text_event (GnomeCanvasItem *item,
 		break;
 	case GNOME_CANVAS_MOTION_NOTIFY:
 		if (text->editing) {
-			GnomeCanvasEvent motion = event->motion;
+			GnomeCanvasEventMotion motion = event->motion;
 			e_tep_event.motion.time = motion.time;
 			e_tep_event.motion.state = motion.state;
 			e_tep_event.motion.position =
@@ -1797,7 +1784,7 @@ e_text_event (GnomeCanvasItem *item,
 		text->pointer_in = TRUE;
 		if (text->editing) {
 			if (text->default_cursor_shown) {
-				gdk_window_set_cursor (window, text->i_cursor);
+				gtk_widget_set_cursor (window, text->i_cursor);
 				text->default_cursor_shown = FALSE;
 			}
 		}
@@ -1806,7 +1793,7 @@ e_text_event (GnomeCanvasItem *item,
 		text->pointer_in = FALSE;
 		if (text->editing) {
 			if (!text->default_cursor_shown) {
-				gdk_window_set_cursor (
+				gtk_widget_set_cursor (
 					window, text->default_cursor);
 				text->default_cursor_shown = TRUE;
 			}

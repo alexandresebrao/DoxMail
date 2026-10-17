@@ -1974,7 +1974,7 @@ cal_shell_content_constructed (GObject *object)
 	gtk_widget_show (widget);
 	g_free (markup);
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
@@ -2014,7 +2014,7 @@ cal_shell_content_constructed (GObject *object)
 	gtk_widget_show (widget);
 	g_free (markup);
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);

@@ -1340,7 +1340,7 @@ quit_calendar_cb (EUIAction *action,
 	ECalShellView *cal_shell_view = user_data;
 	EShellView *shell_view;
 	EShellWindow *shell_window;
-	GdkWindow *window;
+	GdkSurface *window;
 	GdkEvent *event;
 
 	shell_view = E_SHELL_VIEW (cal_shell_view);

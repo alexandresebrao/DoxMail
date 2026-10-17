@@ -785,7 +785,7 @@ e_bulk_edit_contacts_add_address (GtkGrid *grid,
 
 	address_item->address.toggle = GTK_TOGGLE_BUTTON (widget);
 
-	scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+	scrolled_window = gtk_scrolled_window_new ();
 	g_object_set (scrolled_window,
 		"visible", TRUE,
 		"halign", GTK_ALIGN_FILL,
@@ -960,7 +960,7 @@ e_bulk_edit_contacts_fill_content (EBulkEditContacts *self)
 		if (tab_title) {
 			GtkWidget *scrolled_window;
 
-			scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+			scrolled_window = gtk_scrolled_window_new ();
 			g_object_set (scrolled_window,
 				"visible", TRUE,
 				"halign", GTK_ALIGN_FILL,

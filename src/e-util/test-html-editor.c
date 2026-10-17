@@ -127,7 +127,7 @@ view_source_dialog_show (EHTMLEditor *editor,
 
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
 
-	scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+	scrolled_window = gtk_scrolled_window_new ();
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (scrolled_window),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
@@ -636,7 +636,7 @@ create_new_editor_cb (GObject *source_object,
 		webkit_settings_set_enable_developer_extras (web_settings, TRUE);
 	}
 
-	widget = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	widget = gtk_window_new ();
 	gtk_widget_set_size_request (widget, 600, 400);
 	gtk_widget_show (widget);
 

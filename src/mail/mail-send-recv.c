@@ -796,7 +796,7 @@ build_dialog (GtkWindow *parent,
 	e_gtk_widget_set_border_width (grid, 6);
 	gtk_grid_set_column_spacing (grid, 6);
 
-	scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+	scrolled_window = gtk_scrolled_window_new ();
 	e_gtk_widget_set_border_width (scrolled_window, 6);
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (scrolled_window),

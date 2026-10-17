@@ -1696,7 +1696,7 @@ year_view_construct_year_widget (EYearView *self)
 	g_signal_connect (widget, "clicked", G_CALLBACK (year_view_next_year_clicked_cb), self);
 	#endif
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 
 	g_object_set (G_OBJECT (widget),
 		"hexpand", TRUE,
@@ -1980,7 +1980,7 @@ year_view_constructed (GObject *object)
 	e_cal_component_preview_set_attachment_store (self->priv->preview, attachment_store);
 	g_clear_object (&attachment_store);
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	g_object_set (G_OBJECT (widget),
 		"hscrollbar-policy", GTK_POLICY_AUTOMATIC,
 		"vscrollbar-policy", GTK_POLICY_AUTOMATIC,
@@ -1992,7 +1992,7 @@ year_view_constructed (GObject *object)
 
 	e_gtk_container_add (widget, year_view_construct_year_widget (self));
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	g_object_set (G_OBJECT (widget),
 		"hscrollbar-policy", GTK_POLICY_AUTOMATIC,
 		"vscrollbar-policy", GTK_POLICY_AUTOMATIC,

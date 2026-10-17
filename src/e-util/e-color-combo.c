@@ -163,6 +163,7 @@ color_combo_get_preferred_width (GtkWidget *widget,
 	GtkWidgetClass *widget_class;
 
 	widget_class = GTK_WIDGET_CLASS (e_color_combo_parent_class);
+	widget_class->measure = e_color_combo_measure;
 	widget_class->get_preferred_width (widget, min_width, natural_width);
 
 	/* Make sure the box with color sample is always visible */
@@ -178,7 +179,7 @@ color_combo_button_press_event_cb (GtkWidget *widget,
                                    GdkEvent *event)
 {
 	EColorCombo *combo = E_COLOR_COMBO (widget);
-	GdkWindow *window;
+	GdkSurface *window;
 	gint x, y, width, height;
 
 	window = e_gtk_widget_get_surface (combo->priv->color_frame);
@@ -406,6 +407,24 @@ color_combo_dispose (GObject *object)
 }
 
 static void
+e_color_combo_measure (GtkWidget *widget,
+		GtkOrientation orientation,
+		gint for_size,
+		gint *minimum,
+		gint *natural,
+		gint *minimum_baseline,
+		gint *natural_baseline)
+{
+	if (orientation == GTK_ORIENTATION_HORIZONTAL) {
+		color_combo_get_preferred_width (widget, minimum, natural);
+		return;
+	}
+
+	GTK_WIDGET_CLASS (e_color_combo_parent_class)->measure (widget, orientation, for_size,
+		minimum, natural, minimum_baseline, natural_baseline);
+}
+
+static void
 e_color_combo_class_init (EColorComboClass *class)
 {
 	GObjectClass *object_class;
@@ -417,7 +436,6 @@ e_color_combo_class_init (EColorComboClass *class)
 	object_class->dispose = color_combo_dispose;
 
 	widget_class = GTK_WIDGET_CLASS (class);
-	widget_class->get_preferred_width = color_combo_get_preferred_width;
 	widget_class->button_press_event = color_combo_button_press_event_cb;
 
 	class->popup = color_combo_popup;
@@ -560,7 +578,7 @@ e_color_combo_init (EColorCombo *combo)
 	gtk_widget_set_visible (container, TRUE);
 
 	/* Build the drop-down menu */
-	widget = gtk_popover_new (GTK_WIDGET (combo));
+	widget = e_gtk_popover_new (GTK_WIDGET (combo));
 	gtk_popover_set_position (GTK_POPOVER (widget), GTK_POS_BOTTOM);
 	gtk_popover_set_autohide (GTK_POPOVER (widget), TRUE);
 	combo->priv->popover = g_object_ref_sink (widget);

@@ -596,6 +596,20 @@ e_gtk_selection_data_targets_include_text (const EGtkSelectionData *data)
 	return result;
 }
 
+gboolean
+e_gtk_targets_include_text (EGtkAtom *targets,
+                            gint n_targets)
+{
+	gint ii;
+
+	for (ii = 0; ii < n_targets; ii++) {
+		if (atom_is_text (targets[ii]))
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
 static void
 selection_data_set_targets (EGtkSelectionData *data,
                             GdkContentFormats *formats)

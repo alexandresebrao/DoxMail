@@ -358,7 +358,7 @@ test_utils_fixture_set_up (TestFixture *fixture,
 {
 	CreateData create_data;
 
-	fixture->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	fixture->window = gtk_window_new ();
 	fixture->undo_stack = NULL;
 	fixture->key_state = 0;
 

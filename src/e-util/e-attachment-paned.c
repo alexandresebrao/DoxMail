@@ -535,9 +535,7 @@ attachment_paned_style_updated_cb (EAttachmentPaned *paned)
 {
 	g_return_if_fail (E_IS_ATTACHMENT_PANED (paned));
 
-	gtk_widget_style_get (
-		GTK_WIDGET (paned), "handle-size",
-		&paned->priv->vpaned_handle_size, NULL);
+	e_gtk_widget_style_get (GTK_WIDGET (paned), "handle-size", &paned->priv->vpaned_handle_size, NULL);
 
 	if (paned->priv->vpaned_handle_size < 0)
 		paned->priv->vpaned_handle_size = 0;
@@ -575,7 +573,7 @@ e_attachment_paned_init (EAttachmentPaned *paned)
 
 	container = paned->priv->notebook;
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
@@ -593,7 +591,7 @@ e_attachment_paned_init (EAttachmentPaned *paned)
 
 	container = paned->priv->notebook;
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);

@@ -341,7 +341,7 @@ e_alert_run_dialog (GtkWindow *parent,
 		 * before we get back from e_gtk_dialog_run (). In practice, this can happen
 		 * if Evolution exits while the dialog is up. Make sure we don't try
 		 * to access destroyed widgets. */
-		parent_destroyed_signal_id = g_signal_connect (parent, "destroy", G_CALLBACK (gtk_widget_destroyed), &parent);
+		parent_destroyed_signal_id = g_signal_connect (parent, "destroy", G_CALLBACK (e_gtk_widget_destroyed), &parent);
 
 		signal_id = g_signal_connect (
 			dialog, "focus-in-event",
@@ -349,7 +349,7 @@ e_alert_run_dialog (GtkWindow *parent,
 	} else {
 	}
 
-	g_signal_connect (dialog, "destroy", G_CALLBACK (gtk_widget_destroyed), &dialog);
+	g_signal_connect (dialog, "destroy", G_CALLBACK (e_gtk_widget_destroyed), &dialog);
 
 	response = e_gtk_dialog_run (GTK_DIALOG (dialog));
 

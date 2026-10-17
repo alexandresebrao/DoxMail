@@ -284,7 +284,7 @@ estimated_duration_entry_button_clicked_cb (EEstimatedDurationEntry *self)
 
 		gtk_widget_set_visible (GTK_WIDGET (vbox), TRUE);
 
-		self->priv->popover = gtk_popover_new (GTK_WIDGET (self));
+		self->priv->popover = e_gtk_popover_new (GTK_WIDGET (self));
 		gtk_popover_set_position (GTK_POPOVER (self->priv->popover), GTK_POS_BOTTOM);
 		e_gtk_container_add (self->priv->popover, GTK_WIDGET (vbox));
 		e_gtk_widget_set_border_width (vbox, 6);
@@ -319,7 +319,7 @@ estimated_duration_entry_button_clicked_cb (EEstimatedDurationEntry *self)
 	gtk_spin_button_set_value (GTK_SPIN_BUTTON (self->priv->days_spin), value);
 
 	gtk_widget_hide (self->priv->popover);
-	gtk_popover_set_relative_to (GTK_POPOVER (self->priv->popover), self->priv->entry);
+	e_gtk_popover_set_relative_to (GTK_POPOVER (self->priv->popover), self->priv->entry);
 	gtk_widget_show (self->priv->popover);
 
 	gtk_widget_grab_focus (self->priv->days_spin);

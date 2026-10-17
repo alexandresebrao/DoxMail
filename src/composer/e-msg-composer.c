@@ -6751,7 +6751,7 @@ e_msg_composer_can_close (EMsgComposer *composer,
 	EHTMLEditor *editor;
 	EContentEditor *cnt_editor;
 	EComposerHeaderTable *table;
-	GdkWindow *window;
+	GdkSurface *window;
 	GtkWidget *widget;
 	const gchar *subject, *message_name;
 	gint response;
@@ -6770,7 +6770,7 @@ e_msg_composer_can_close (EMsgComposer *composer,
 		return TRUE;
 
 	window = e_gtk_widget_get_surface (widget);
-	gdk_window_raise (window);
+	gtk_window_present (window);
 
 	table = e_msg_composer_get_header_table (composer);
 	subject = e_composer_header_table_get_subject (table);

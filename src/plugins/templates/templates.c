@@ -464,7 +464,7 @@ e_plugin_lib_get_configure_widget (EPlugin *epl)
 	gtk_widget_show (clue_container);
 	e_gtk_box_pack_start (GTK_BOX (templates_configuration_box), clue_container, TRUE, TRUE, 0);
 
-	scrolledwindow1 = gtk_scrolled_window_new (NULL, NULL);
+	scrolledwindow1 = gtk_scrolled_window_new ();
 	gtk_widget_show (scrolledwindow1);
 	e_gtk_box_pack_start (GTK_BOX (clue_container), scrolledwindow1, TRUE, TRUE, 0);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow1), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);

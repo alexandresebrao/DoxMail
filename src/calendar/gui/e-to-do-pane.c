@@ -2738,7 +2738,7 @@ e_to_do_pane_constructed (GObject *object)
 
 	tree_view = GTK_TREE_VIEW (widget);
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (widget), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 	e_gtk_container_add (widget, GTK_WIDGET (tree_view));
 

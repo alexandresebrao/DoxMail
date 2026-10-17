@@ -454,6 +454,29 @@ shell_switcher_get_text_alignment (GtkToolShell *shell)
 }
 
 static void
+e_shell_switcher_measure (GtkWidget *widget,
+		GtkOrientation orientation,
+		gint for_size,
+		gint *minimum,
+		gint *natural,
+		gint *minimum_baseline,
+		gint *natural_baseline)
+{
+	if (orientation == GTK_ORIENTATION_HORIZONTAL) {
+		shell_switcher_get_preferred_width (widget, minimum, natural);
+		return;
+	}
+
+	if (orientation == GTK_ORIENTATION_VERTICAL) {
+		shell_switcher_get_preferred_height (widget, minimum, natural);
+		return;
+	}
+
+	GTK_WIDGET_CLASS (e_shell_switcher_parent_class)->measure (widget, orientation, for_size,
+		minimum, natural, minimum_baseline, natural_baseline);
+}
+
+static void
 e_shell_switcher_class_init (EShellSwitcherClass *class)
 {
 	GObjectClass *object_class;
@@ -466,8 +489,7 @@ e_shell_switcher_class_init (EShellSwitcherClass *class)
 	object_class->dispose = shell_switcher_dispose;
 
 	widget_class = GTK_WIDGET_CLASS (class);
-	widget_class->get_preferred_width = shell_switcher_get_preferred_width;
-	widget_class->get_preferred_height = shell_switcher_get_preferred_height;
+	widget_class->measure = e_shell_switcher_measure;
 	widget_class->size_allocate = shell_switcher_size_allocate;
 	widget_class->screen_changed = shell_switcher_screen_changed;
 

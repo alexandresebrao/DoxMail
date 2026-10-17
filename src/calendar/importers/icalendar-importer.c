@@ -462,7 +462,7 @@ ivcal_getwidget (EImport *ei,
 
 		gtk_notebook_append_page (GTK_NOTEBOOK (nb), vbox, NULL);
 
-		scrolled = gtk_scrolled_window_new (NULL, NULL);
+		scrolled = gtk_scrolled_window_new ();
 		gtk_scrolled_window_set_policy ((GtkScrolledWindow *) scrolled, GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
 		e_gtk_container_add ((GtkContainer *) scrolled, selector);
 		e_gtk_box_pack_start (GTK_BOX (vbox), scrolled, TRUE, TRUE, 0);

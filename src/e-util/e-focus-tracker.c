@@ -204,7 +204,7 @@ focus_tracker_editable_update_actions (EFocusTracker *focus_tracker,
 		gtk_editable_get_editable (editable);
 
 	clipboard_has_text = (targets != NULL) &&
-		gtk_targets_include_text (targets, n_targets);
+		e_gtk_targets_include_text (targets, n_targets);
 
 	text_is_selected =
 		gtk_editable_get_selection_bounds (editable, NULL, NULL);
@@ -262,7 +262,7 @@ focus_tracker_text_view_update_actions (EFocusTracker *focus_tracker,
 
 	buffer = gtk_text_view_get_buffer (text_view);
 	can_edit_text = gtk_text_view_get_editable (text_view);
-	clipboard_has_text = (targets != NULL) && gtk_targets_include_text (targets, n_targets);
+	clipboard_has_text = (targets != NULL) && e_gtk_targets_include_text (targets, n_targets);
 	text_is_selected = gtk_text_buffer_get_selection_bounds (buffer, NULL, NULL);
 
 	action = e_focus_tracker_get_cut_clipboard_action (focus_tracker);
@@ -937,7 +937,7 @@ e_focus_tracker_cut_clipboard (EFocusTracker *focus_tracker)
 		e_selectable_cut_clipboard (E_SELECTABLE (focus));
 
 	} else if (GTK_IS_EDITABLE (focus)) {
-		gtk_editable_cut_clipboard (GTK_EDITABLE (focus));
+		gtk_widget_activate_action (GTK_WIDGET (focus), "clipboard.cut", NULL);
 
 	} else if (GTK_IS_TEXT_VIEW (focus)) {
 		GdkClipboard *clipboard;
@@ -971,7 +971,7 @@ e_focus_tracker_copy_clipboard (EFocusTracker *focus_tracker)
 		e_selectable_copy_clipboard (E_SELECTABLE (focus));
 
 	} else if (GTK_IS_EDITABLE (focus)) {
-		gtk_editable_copy_clipboard (GTK_EDITABLE (focus));
+		gtk_widget_activate_action (GTK_WIDGET (focus), "clipboard.copy", NULL);
 
 	} else if (GTK_IS_TEXT_VIEW (focus)) {
 		GdkClipboard *clipboard;
@@ -1003,7 +1003,7 @@ e_focus_tracker_paste_clipboard (EFocusTracker *focus_tracker)
 		e_selectable_paste_clipboard (E_SELECTABLE (focus));
 
 	} else if (GTK_IS_EDITABLE (focus)) {
-		gtk_editable_paste_clipboard (GTK_EDITABLE (focus));
+		gtk_widget_activate_action (GTK_WIDGET (focus), "clipboard.paste", NULL);
 
 	} else if (GTK_IS_TEXT_VIEW (focus)) {
 		GdkClipboard *clipboard;

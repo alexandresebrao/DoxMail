@@ -193,7 +193,7 @@ find_swatch (GtkContainer *container)
 		if (!widget)
 			continue;
 
-		if (GTK_IS_CONTAINER (widget)) {
+		if (GTK_IS_WIDGET (widget)) {
 			swatch = find_swatch (GTK_CONTAINER (widget));
 
 			if (swatch != NULL) {

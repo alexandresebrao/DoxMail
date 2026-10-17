@@ -178,7 +178,7 @@ collection_account_wizard_create_window (GtkWindow *parent,
 	GtkAccelGroup *accel_group;
 	WizardWindowData *wwd;
 
-	window = GTK_WINDOW (gtk_window_new (GTK_WINDOW_TOPLEVEL));
+	window = GTK_WINDOW (gtk_window_new ());
 	gtk_window_set_default_size (window, 480, 410);
 	gtk_window_set_title (window, _("New Collection Account"));
 	e_gtk_widget_set_border_width (window, 12);
@@ -193,7 +193,7 @@ collection_account_wizard_create_window (GtkWindow *parent,
 
 	g_object_weak_ref (G_OBJECT (window), (GWeakNotify) g_free, wwd);
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (widget), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (widget), FALSE);
 	gtk_widget_set_hexpand (widget, TRUE);
@@ -728,7 +728,7 @@ collection_account_wizard_show_password_prompt (ECollectionAccountWizard *wizard
 
 	gtk_widget_set_visible (GTK_WIDGET (grid), TRUE);
 
-	widget = gtk_popover_new (wd->running_label);
+	widget = e_gtk_popover_new (wd->running_label);
 	gtk_popover_set_position (GTK_POPOVER (widget), GTK_POS_BOTTOM);
 	gtk_popover_set_default_widget (GTK_POPOVER (widget), button);
 	e_gtk_container_add (widget, GTK_WIDGET (grid));
@@ -1788,7 +1788,7 @@ collection_account_wizard_constructed (GObject *object)
 	e_binding_bind_property (expander, "expanded", label, "visible", G_BINDING_DEFAULT | G_BINDING_SYNC_CREATE);
 	e_binding_bind_property (expander, "expanded", widget, "visible", G_BINDING_DEFAULT | G_BINDING_SYNC_CREATE);
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	g_object_set (G_OBJECT (widget),
 		"hexpand", TRUE,
 		"halign", GTK_ALIGN_FILL,
@@ -1985,7 +1985,7 @@ collection_account_wizard_constructed (GObject *object)
 
 	e_gtk_box_pack_start (vbox, label, FALSE, FALSE, 0);
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	g_object_set (G_OBJECT (widget),
 		"hexpand", TRUE,
 		"halign", GTK_ALIGN_FILL,

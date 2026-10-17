@@ -87,7 +87,7 @@ e_message_popover_closed_cb (GtkWidget *popover,
 	if ((self->flags & E_MESSAGE_POPOVER_FLAG_HIGHLIGHT_WIDGET) != 0) {
 		GtkWidget *widget;
 
-		widget = gtk_popover_get_relative_to (GTK_POPOVER (self));
+		widget = gtk_widget_get_parent (GTK_POPOVER (self));
 		if (widget) {
 			GtkStyleContext *style_context;
 

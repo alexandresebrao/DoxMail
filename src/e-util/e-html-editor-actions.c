@@ -448,7 +448,7 @@ action_insert_emoji_cb (EUIAction *action,
 		rect.height = 0;
 	}
 
-	gtk_popover_set_relative_to (popover, relative_to);
+	e_gtk_popover_set_relative_to (popover, relative_to);
 	gtk_popover_set_pointing_to (popover, &rect);
 
 	gtk_popover_popup (popover);

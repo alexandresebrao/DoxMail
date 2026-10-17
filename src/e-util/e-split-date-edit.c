@@ -418,7 +418,7 @@ e_split_date_edit_select_clicked_cb (GtkButton *button,
 
 	gtk_widget_set_visible (GTK_WIDGET (grid), TRUE);
 
-	widget = gtk_popover_new (GTK_WIDGET (button));
+	widget = e_gtk_popover_new (GTK_WIDGET (button));
 	gtk_popover_set_position (GTK_POPOVER (widget), GTK_POS_BOTTOM);
 	e_gtk_container_add (widget, GTK_WIDGET (grid));
 	e_gtk_widget_set_border_width (widget, 6);

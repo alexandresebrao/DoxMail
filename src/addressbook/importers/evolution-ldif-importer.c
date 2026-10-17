@@ -580,7 +580,7 @@ ldif_getwidget (EImport *ei,
 	registry = e_shell_get_registry (shell);
 	extension_name = E_SOURCE_EXTENSION_ADDRESS_BOOK;
 
-	scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+	scrolled_window = gtk_scrolled_window_new ();
 	g_object_set (G_OBJECT (scrolled_window),
 		"hscrollbar-policy", GTK_POLICY_AUTOMATIC,
 		"vscrollbar-policy", GTK_POLICY_AUTOMATIC,

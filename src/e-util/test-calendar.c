@@ -59,7 +59,7 @@ main (gint argc,
 
 	gtk_init ();
 
-	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	window = gtk_window_new ();
 	gtk_window_set_title (GTK_WINDOW (window), "ECalendar Test");
 	gtk_window_set_default_size (GTK_WINDOW (window), 400, 400);
 	gtk_window_set_resizable (GTK_WINDOW (window), TRUE);

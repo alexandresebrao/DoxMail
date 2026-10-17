@@ -337,9 +337,7 @@ e_preferences_window_init (EPreferencesWindow *window)
 	gtk_window_set_title (GTK_WINDOW (window), _("Evolution Preferences"));
 	gtk_window_set_resizable (GTK_WINDOW (window), TRUE);
 
-	g_signal_connect (
-		window, "delete-event",
-		G_CALLBACK (gtk_widget_hide_on_delete), NULL);
+	gtk_window_set_hide_on_close (GTK_WINDOW (window), TRUE);
 }
 
 GtkWidget *
@@ -464,7 +462,7 @@ e_preferences_window_setup (EPreferencesWindow *window)
 
 		content = e_preferences_window_row_create_page (child, window);
 		if (content) {
-			scrolled = gtk_scrolled_window_new (NULL, NULL);
+			scrolled = gtk_scrolled_window_new ();
 			g_object_set (G_OBJECT (scrolled),
 				"min-content-width", 320,
 				"min-content-height", 240,

@@ -733,7 +733,7 @@ cal_base_shell_sidebar_constructed (GObject *object)
 
 	container = widget;
 
-	widget = gtk_scrolled_window_new (NULL, NULL);
+	widget = gtk_scrolled_window_new ();
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
@@ -755,7 +755,7 @@ cal_base_shell_sidebar_constructed (GObject *object)
 
 		container = cal_base_shell_sidebar->priv->paned;
 
-		widget = gtk_scrolled_window_new (NULL, NULL);
+		widget = gtk_scrolled_window_new ();
 		gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (widget), GTK_POLICY_AUTOMATIC, GTK_POLICY_NEVER);
 		gtk_scrolled_window_set_overlay_scrolling (GTK_SCROLLED_WINDOW (widget), FALSE);
 		e_gtk_paned_pack2 (container, widget, FALSE, FALSE);

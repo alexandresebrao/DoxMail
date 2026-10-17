@@ -157,7 +157,7 @@ process_stock_request_idle_cb (gpointer user_data)
 		if (scale_factor < 1)
 			scale_factor = 1;
 
-		if (!gtk_icon_size_lookup (size, &icon_width, &icon_height)) {
+		if (!e_gtk_icon_size_lookup (size, &icon_width, &icon_height)) {
 			icon_width = size;
 			icon_height = size;
 		}

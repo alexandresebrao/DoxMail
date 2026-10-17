@@ -113,7 +113,7 @@ action_combo_box_render_pixbuf (GtkCellLayout *layout,
 	/* If some action has an icon */
 	if (combo_box->priv->group_has_icons)
 		/* Keep the pixbuf renderer a fixed size for proper alignment. */
-		gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &width, NULL);
+		e_gtk_icon_size_lookup (GTK_ICON_SIZE_NORMAL, &width, NULL);
 	else
 		width = 0;
 
@@ -265,7 +265,7 @@ e_action_combo_box_get_preferred_width (GtkWidget *widget,
 					gint *minimum_width,
 					gint *natural_width)
 {
-	GTK_WIDGET_CLASS (e_action_combo_box_parent_class)->get_preferred_width (widget, minimum_width, natural_width);
+	GTK_WIDGET_CLASS (e_action_combo_box_parent_class)->measure (widget, GTK_ORIENTATION_HORIZONTAL, -1, minimum_width, natural_width, NULL, NULL);
 
 	if (e_action_combo_box_get_ellipsize_enabled (E_ACTION_COMBO_BOX (widget)) &&
 	    natural_width && *natural_width > 250)
@@ -399,6 +399,24 @@ action_combo_box_changed (GtkComboBox *combo_box)
 }
 
 static void
+e_action_combo_box_measure (GtkWidget *widget,
+		GtkOrientation orientation,
+		gint for_size,
+		gint *minimum,
+		gint *natural,
+		gint *minimum_baseline,
+		gint *natural_baseline)
+{
+	if (orientation == GTK_ORIENTATION_HORIZONTAL) {
+		e_action_combo_box_get_preferred_width (widget, minimum, natural);
+		return;
+	}
+
+	GTK_WIDGET_CLASS (e_action_combo_box_parent_class)->measure (widget, orientation, for_size,
+		minimum, natural, minimum_baseline, natural_baseline);
+}
+
+static void
 e_action_combo_box_class_init (EActionComboBoxClass *class)
 {
 	GObjectClass *object_class;
@@ -413,7 +431,6 @@ e_action_combo_box_class_init (EActionComboBoxClass *class)
 	object_class->constructed = action_combo_box_constructed;
 
 	widget_class = GTK_WIDGET_CLASS (class);
-	widget_class->get_preferred_width = e_action_combo_box_get_preferred_width;
 
 	combo_box_class = GTK_COMBO_BOX_CLASS (class);
 	combo_box_class->changed = action_combo_box_changed;

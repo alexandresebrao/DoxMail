@@ -727,7 +727,7 @@ do_grab_focus_cb (GtkWidget *widget,
 	if (gtk_widget_get_focusable (widget) || GTK_IS_COMBO_BOX (widget)) {
 		*done = TRUE;
 		gtk_widget_grab_focus (widget);
-	} else if (GTK_IS_CONTAINER (widget)) {
+	} else if (GTK_IS_WIDGET (widget)) {
 		e_gtk_container_foreach (widget, do_grab_focus_cb, done);
 	}
 }
@@ -769,7 +769,7 @@ more_parts (GtkWidget *button,
 		attach_rule (w, data, new, data->n_rows);
 		data->n_rows++;
 
-		if (GTK_IS_CONTAINER (w)) {
+		if (GTK_IS_WIDGET (w)) {
 			gboolean done = FALSE;
 
 			e_gtk_container_foreach (w, do_grab_focus_cb, &done);
@@ -1070,7 +1070,7 @@ get_widget (EFilterRule *fr,
 
 	hadj = GTK_ADJUSTMENT (gtk_adjustment_new (0.0, 0.0, 1.0, 1.0 ,1.0, 1.0));
 	vadj = GTK_ADJUSTMENT (gtk_adjustment_new (0.0, 0.0, 1.0, 1.0 ,1.0, 1.0));
-	scrolledwindow = gtk_scrolled_window_new (hadj, vadj);
+	scrolledwindow = gtk_scrolled_window_new ();
 
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (scrolledwindow),

@@ -796,7 +796,7 @@ mail_config_identity_page_constructed (GObject *object)
 
 	container = widget;
 
-	scrolledwindow = gtk_scrolled_window_new (NULL, NULL);
+	scrolledwindow = gtk_scrolled_window_new ();
 	e_gtk_box_pack_start (GTK_BOX (container), scrolledwindow, TRUE, TRUE, 0);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (scrolledwindow), TRUE);

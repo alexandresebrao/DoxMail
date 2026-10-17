@@ -64,7 +64,7 @@ start_test (EClientCache *client_cache)
 
 	gtk_widget_show (GTK_WIDGET (name_selector_dialog));
 
-	container = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	container = gtk_window_new ();
 	e_gtk_container_add (container, name_selector_entry);
 	gtk_widget_set_visible (container, TRUE);
 

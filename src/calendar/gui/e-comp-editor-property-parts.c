@@ -874,7 +874,7 @@ ecepp_description_create_widgets (ECompEditorPropertyPart *property_part,
 	e_gtk_box_pack_start (GTK_BOX (box), description_part->real_edit_widget, TRUE, TRUE, 0);
 
 	description_part->web_view = e_web_view_new ();
-	description_part->web_view_scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+	description_part->web_view_scrolled_window = gtk_scrolled_window_new ();
 
 	e_gtk_container_add (description_part->web_view_scrolled_window, description_part->web_view);
 

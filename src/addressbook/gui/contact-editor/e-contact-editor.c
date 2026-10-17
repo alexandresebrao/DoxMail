@@ -5792,12 +5792,12 @@ static void
 e_contact_editor_raise (EABEditor *editor)
 {
 	EContactEditor *ce = E_CONTACT_EDITOR (editor);
-	GdkWindow *window;
+	GdkSurface *window;
 
 	window = e_gtk_widget_get_surface (ce->priv->app);
 
 	if (window != NULL)
-		gdk_window_raise (window);
+		gtk_window_present (window);
 }
 
 /**

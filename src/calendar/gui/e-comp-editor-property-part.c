@@ -393,7 +393,7 @@ ecepp_string_create_widgets (ECompEditorPropertyPart *property_part,
 		GtkScrolledWindow *scrolled_window;
 		GtkTextBuffer *text_buffer;
 
-		scrolled_window = GTK_SCROLLED_WINDOW (gtk_scrolled_window_new (NULL, NULL));
+		scrolled_window = GTK_SCROLLED_WINDOW (gtk_scrolled_window_new ());
 		gtk_scrolled_window_set_policy (scrolled_window, GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 		gtk_scrolled_window_set_has_frame (scrolled_window, TRUE);
 		gtk_widget_show (GTK_WIDGET (scrolled_window));

@@ -553,11 +553,11 @@ web_view_got_elem_from_point_for_popup_event_cb (GObject *source_object,
 static gboolean
 web_view_context_menu_cb (WebKitWebView *webkit_web_view,
                           WebKitContextMenu *context_menu,
-                          GdkEvent *event,
                           WebKitHitTestResult *hit_test_result,
                           gpointer user_data)
 {
 	WebKitHitTestResultContext context;
+	GdkEvent *event = webkit_context_menu_get_event (context_menu);
 	EWebView *web_view;
 	gchar *link_uri = NULL;
 	gdouble xx, yy;
@@ -592,7 +592,7 @@ web_view_context_menu_cb (WebKitWebView *webkit_web_view,
 
 	web_view->priv->last_popup_link_uri = link_uri;
 
-	if (!e_gdk_event_get_coords (event, &xx, &yy)) {
+	if (!event || !e_util_event_get_widget_coords (event, GTK_WIDGET (web_view), &xx, &yy)) {
 		xx = 1;
 		yy = 1;
 	}
@@ -1060,8 +1060,7 @@ web_view_constructor (GType type,
 				web_context = webkit_web_context_new ();
 
 				webkit_web_context_set_cache_model (web_context, WEBKIT_CACHE_MODEL_DOCUMENT_VIEWER);
-				webkit_web_context_set_web_extensions_directory (web_context, EVOLUTION_WEB_EXTENSIONS_DIR);
-				webkit_web_context_set_sandbox_enabled (web_context, TRUE);
+				webkit_web_context_set_web_process_extensions_directory (web_context, EVOLUTION_WEB_EXTENSIONS_DIR);
 				webkit_web_context_add_path_to_sandbox (web_context, EVOLUTION_WEBKITDATADIR, TRUE);
 
 				plugins_path = g_build_filename (e_get_user_data_dir (), "preview-plugins", NULL);
@@ -1379,12 +1378,12 @@ e_web_view_initialize_web_extensions_cb (WebKitWebContext *web_context,
 
 	g_return_if_fail (E_IS_WEB_VIEW (web_view));
 
-	webkit_web_context_set_web_extensions_directory (web_context, EVOLUTION_WEB_EXTENSIONS_DIR);
+	webkit_web_context_set_web_process_extensions_directory (web_context, EVOLUTION_WEB_EXTENSIONS_DIR);
 }
 
 static void
 e_web_view_element_clicked_cb (WebKitUserContentManager *manager,
-			       WebKitJavascriptResult *js_result,
+			       JSCValue *js_result,
 			       gpointer user_data)
 {
 	EWebView *web_view = user_data;
@@ -1397,7 +1396,7 @@ e_web_view_element_clicked_cb (WebKitUserContentManager *manager,
 	g_return_if_fail (web_view != NULL);
 	g_return_if_fail (js_result != NULL);
 
-	jsc_object = webkit_javascript_result_get_js_value (js_result);
+	jsc_object = (js_result);
 	g_return_if_fail (jsc_value_is_object (jsc_object));
 
 	iframe_id = e_web_view_jsc_get_object_property_string (jsc_object, "iframe-id", NULL);
@@ -1468,7 +1467,7 @@ web_view_call_register_element_clicked (EWebView *web_view,
 
 static void
 e_web_view_content_loaded_cb (WebKitUserContentManager *manager,
-			      WebKitJavascriptResult *js_result,
+			      JSCValue *js_result,
 			      gpointer user_data)
 {
 	EWebView *web_view = user_data;
@@ -1478,7 +1477,7 @@ e_web_view_content_loaded_cb (WebKitUserContentManager *manager,
 	g_return_if_fail (web_view != NULL);
 	g_return_if_fail (js_result != NULL);
 
-	jsc_value = webkit_javascript_result_get_js_value (js_result);
+	jsc_value = (js_result);
 	g_return_if_fail (jsc_value_is_string (jsc_value));
 
 	iframe_id = jsc_value_to_string (jsc_value);
@@ -1497,7 +1496,7 @@ e_web_view_content_loaded_cb (WebKitUserContentManager *manager,
 
 static void
 e_web_view_has_selection_cb (WebKitUserContentManager *manager,
-			     WebKitJavascriptResult *js_result,
+			     JSCValue *js_result,
 			     gpointer user_data)
 {
 	EWebView *web_view = user_data;
@@ -1506,7 +1505,7 @@ e_web_view_has_selection_cb (WebKitUserContentManager *manager,
 	g_return_if_fail (web_view != NULL);
 	g_return_if_fail (js_result != NULL);
 
-	jsc_value = webkit_javascript_result_get_js_value (js_result);
+	jsc_value = (js_result);
 	g_return_if_fail (jsc_value_is_boolean (jsc_value));
 
 	e_web_view_set_has_selection (web_view, jsc_value_to_boolean (jsc_value));
@@ -1528,7 +1527,7 @@ e_web_view_set_need_input (EWebView *web_view,
 
 static void
 e_web_view_need_input_changed_cb (WebKitUserContentManager *manager,
-				  WebKitJavascriptResult *js_result,
+				  JSCValue *js_result,
 				  gpointer user_data)
 {
 	EWebView *web_view = user_data;
@@ -1537,7 +1536,7 @@ e_web_view_need_input_changed_cb (WebKitUserContentManager *manager,
 	g_return_if_fail (web_view != NULL);
 	g_return_if_fail (js_result != NULL);
 
-	jsc_value = webkit_javascript_result_get_js_value (js_result);
+	jsc_value = (js_result);
 	g_return_if_fail (jsc_value_is_boolean (jsc_value));
 
 	e_web_view_set_need_input (web_view, jsc_value_to_boolean (jsc_value));
@@ -1779,9 +1778,17 @@ web_view_init_ui (EWebView *web_view)
 	e_ui_manager_set_action_groups_widget (ui_manager, GTK_WIDGET (web_view));
 }
 
+static gboolean	web_view_scroll_cb		(GtkEventControllerScroll *controller,
+						 gdouble dx,
+						 gdouble dy,
+						 EWebView *web_view);
+static void	web_view_motion_leave_cb	(GtkEventControllerMotion *controller,
+						 EWebView *web_view);
+
 static void
 web_view_constructed (GObject *object)
 {
+	GtkEventController *controller;
 	WebKitSettings *web_settings;
 	WebKitUserContentManager *manager;
 	EWebView *web_view = E_WEB_VIEW (object);
@@ -1854,10 +1861,21 @@ web_view_constructed (GObject *object)
 	g_signal_connect_object (manager, "script-message-received::needInputChanged",
 		G_CALLBACK (e_web_view_need_input_changed_cb), web_view, 0);
 
-	webkit_user_content_manager_register_script_message_handler (manager, "contentLoaded");
-	webkit_user_content_manager_register_script_message_handler (manager, "elementClicked");
-	webkit_user_content_manager_register_script_message_handler (manager, "hasSelection");
-	webkit_user_content_manager_register_script_message_handler (manager, "needInputChanged");
+	webkit_user_content_manager_register_script_message_handler (manager, "contentLoaded", NULL);
+	webkit_user_content_manager_register_script_message_handler (manager, "elementClicked", NULL);
+	webkit_user_content_manager_register_script_message_handler (manager, "hasSelection", NULL);
+	webkit_user_content_manager_register_script_message_handler (manager, "needInputChanged", NULL);
+
+	controller = gtk_event_controller_scroll_new (GTK_EVENT_CONTROLLER_SCROLL_VERTICAL);
+	gtk_event_controller_set_propagation_phase (controller, GTK_PHASE_CAPTURE);
+	g_signal_connect_object (controller, "scroll",
+		G_CALLBACK (web_view_scroll_cb), web_view, 0);
+	gtk_widget_add_controller (GTK_WIDGET (web_view), controller);
+
+	controller = gtk_event_controller_motion_new ();
+	g_signal_connect_object (controller, "leave",
+		G_CALLBACK (web_view_motion_leave_cb), web_view, 0);
+	gtk_widget_add_controller (GTK_WIDGET (web_view), controller);
 
 	settings = e_util_ref_settings ("org.gnome.evolution.mail");
 	g_signal_connect_object (settings, "changed::composer-inline-spelling",
@@ -1883,80 +1901,47 @@ e_web_view_replace_load_cancellable (EWebView *web_view,
 		web_view->priv->cancellable = g_cancellable_new ();
 }
 
+/* Ctrl+scroll zooms */
 static gboolean
-web_view_scroll_event (GtkWidget *widget,
-                       GdkEvent *event)
+web_view_scroll_cb (GtkEventControllerScroll *controller,
+		    gdouble dx,
+		    gdouble dy,
+		    EWebView *web_view)
 {
-	if (event->state & GDK_CONTROL_MASK) {
-		GdkScrollDirection direction = event->direction;
+	static gdouble total_delta_y = 0.0;
+	GdkModifierType state;
 
-		if (direction == GDK_SCROLL_SMOOTH) {
-			static gdouble total_delta_y = 0.0;
+	state = gtk_event_controller_get_current_event_state (GTK_EVENT_CONTROLLER (controller));
 
-			total_delta_y += event->delta_y;
+	if (!(state & GDK_CONTROL_MASK))
+		return FALSE;
 
-			if (total_delta_y >= 1.0) {
-				total_delta_y = 0.0;
-				direction = GDK_SCROLL_DOWN;
-			} else if (total_delta_y <= -1.0) {
-				total_delta_y = 0.0;
-				direction = GDK_SCROLL_UP;
-			} else if (event->delta_y >= 1e-9 || event->delta_y <= -1e-9) {
-				return TRUE;
-			} else {
-				return FALSE;
-			}
-		}
+	total_delta_y += dy;
 
-		switch (direction) {
-			case GDK_SCROLL_UP:
-				e_web_view_zoom_in (E_WEB_VIEW (widget));
-				return TRUE;
-			case GDK_SCROLL_DOWN:
-				e_web_view_zoom_out (E_WEB_VIEW (widget));
-				return TRUE;
-			default:
-				break;
-		}
+	if (total_delta_y >= 1.0) {
+		total_delta_y = 0.0;
+		e_web_view_zoom_out (web_view);
+	} else if (total_delta_y <= -1.0) {
+		total_delta_y = 0.0;
+		e_web_view_zoom_in (web_view);
 	}
-
-	return GTK_WIDGET_CLASS (e_web_view_parent_class)->
-		scroll_event (widget, event);
-}
-
-static gboolean
-web_view_drag_motion (GtkWidget *widget,
-                      EGtkDragContext *context,
-                      gint x,
-                      gint y,
-                      guint time_)
-{
-	/* Made this way to not pretend that this is a drop zone,
-	   when only FALSE had been returned, even it is supposed
-	   to be enough. Remove web_view_drag_leave() once fixed. */
-	e_gtk_drag_status (context, 0, time_);
 
 	return TRUE;
 }
 
-static gboolean
-web_view_drag_drop (GtkWidget *widget,
-		    EGtkDragContext *context,
-		    gint x,
-		    gint y,
-		    guint time_)
-{
-	/* Defined to avoid crash in WebKit */
-	return FALSE;
-}
-
+/* GTK 3 watched the motion events of the window, to forget the hovered
+ * link when the pointer moved out of the web view */
 static void
-web_view_drag_leave (GtkWidget *widget,
-		     EGtkDragContext *context,
-		     guint time_)
+web_view_motion_leave_cb (GtkEventControllerMotion *controller,
+			  EWebView *web_view)
 {
-	/* Defined to avoid crash in WebKit, when the web_view_drag_motion()
-	   uses the other way around. */
+	if (web_view->priv->has_hover_link) {
+		/* This won't reset WebKitGTK's cached link the cursor stays on, but do this,
+		   instead of sending a fake signal to the WebKitGTK. */
+		e_web_view_status_message (web_view, NULL);
+
+		web_view->priv->has_hover_link = FALSE;
+	}
 }
 
 static void
@@ -2231,10 +2216,8 @@ web_view_submit_alert (EAlertSink *alert_sink,
 	if (secondary_text == NULL)
 		secondary_text = "";
 
-	if (!gtk_icon_size_lookup (GTK_ICON_SIZE_LARGE, &icon_width, &icon_height)) {
-		icon_width = 48;
-		icon_height = 48;
-	}
+	icon_width = 48;
+	icon_height = 48;
 
 	buffer = g_string_sized_new (512);
 
@@ -2368,41 +2351,8 @@ web_view_selectable_select_all (ESelectable *selectable)
 }
 
 static void
-web_view_toplevel_event_after_cb (GtkWidget *widget,
-				  GdkEvent *event,
-				  EWebView *web_view)
-{
-	if (event && event->type == GDK_MOTION_NOTIFY && web_view->priv->has_hover_link &&
-	    gdk_event_get_window (event) != e_gtk_widget_get_surface (GTK_WIDGET (web_view))) {
-		/* This won't reset WebKitGTK's cached link the cursor stays on, but do this,
-		   instead of sending a fake signal to the WebKitGTK. */
-		e_web_view_status_message (web_view, NULL);
-
-		web_view->priv->has_hover_link = FALSE;
-	}
-}
-
-static void
-web_view_map (GtkWidget *widget)
-{
-	GtkWidget *toplevel;
-
-	toplevel = e_gtk_widget_get_toplevel (widget);
-
-	g_signal_connect (toplevel, "event-after", G_CALLBACK (web_view_toplevel_event_after_cb), widget);
-
-	GTK_WIDGET_CLASS (e_web_view_parent_class)->map (widget);
-}
-
-static void
 web_view_unmap (GtkWidget *widget)
 {
-	GtkWidget *toplevel;
-
-	toplevel = e_gtk_widget_get_toplevel (widget);
-
-	g_signal_handlers_disconnect_by_func (toplevel, G_CALLBACK (web_view_toplevel_event_after_cb), widget);
-
 	GTK_WIDGET_CLASS (e_web_view_parent_class)->unmap (widget);
 
 	e_web_view_status_message (E_WEB_VIEW (widget), NULL);
@@ -2423,11 +2373,6 @@ e_web_view_class_init (EWebViewClass *class)
 	object_class->constructed = web_view_constructed;
 
 	widget_class = GTK_WIDGET_CLASS (class);
-	widget_class->scroll_event = web_view_scroll_event;
-	widget_class->drag_motion = web_view_drag_motion;
-	widget_class->drag_drop = web_view_drag_drop;
-	widget_class->drag_leave = web_view_drag_leave;
-	widget_class->map = web_view_map;
 	widget_class->unmap = web_view_unmap;
 
 	class->hovering_over_link = web_view_hovering_over_link;
@@ -3297,7 +3242,7 @@ e_web_view_show_popup_menu (EWebView *web_view,
 			    GdkEvent *event)
 {
 	EUIManager *ui_manager;
-	GtkMenu *menu;
+	GtkWidget *menu;
 	GObject *ui_item;
 
 	g_return_if_fail (E_IS_WEB_VIEW (web_view));
@@ -3306,13 +3251,10 @@ e_web_view_show_popup_menu (EWebView *web_view,
 
 	ui_manager = e_web_view_get_ui_manager (web_view);
 	ui_item = e_ui_manager_create_item (ui_manager, "context");
-	menu = GTK_MENU (gtk_popover_menu_new_from_model (G_MENU_MODEL (ui_item)));
+	menu = gtk_popover_menu_new_from_model (G_MENU_MODEL (ui_item));
 	g_clear_object (&ui_item);
 
-	gtk_menu_attach_to_widget (menu, GTK_WIDGET (web_view), NULL);
-	e_util_connect_menu_detach_after_deactivate (menu);
-
-	gtk_menu_popup_at_pointer (menu, event);
+	e_util_popup_menu_at_event (menu, GTK_WIDGET (web_view), event);
 }
 
 /**
@@ -3499,11 +3441,10 @@ e_web_view_update_fonts_settings (GSettings *font_settings,
 	if (view_widget) {
 		gchar *link_str, *visited_str;
 		context = gtk_widget_get_style_context (view_widget);
-		gtk_style_context_get_style (
-			context,
-			"link-color", &link,
-			"visited-link-color", &visited,
-			NULL);
+
+		/* GTK 4 has no link color style properties, the CSS state gives them */
+		link = NULL;
+		visited = NULL;
 
 		if (link == NULL) {
 			GtkStateFlags state;

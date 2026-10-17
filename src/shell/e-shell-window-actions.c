@@ -82,7 +82,7 @@ action_close_cb (EUIAction *action,
 {
 	EShellWindow *shell_window = user_data;
 	GtkWidget *widget;
-	GdkWindow *window;
+	GdkSurface *window;
 	GdkEvent *event;
 
 	widget = GTK_WIDGET (shell_window);
@@ -386,7 +386,7 @@ shell_window_actions_find_webview (GtkContainer *container)
 
 		if (WEBKIT_IS_WEB_VIEW (child))
 			webview = WEBKIT_WEB_VIEW (child);
-		else if (GTK_IS_CONTAINER (child))
+		else if (GTK_IS_WIDGET (child))
 			webview = shell_window_actions_find_webview (GTK_CONTAINER (child));
 	}
 

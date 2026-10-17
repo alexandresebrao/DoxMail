@@ -2978,7 +2978,7 @@ tree_autoscroll (gpointer user_data)
 	GtkTreeView *tree_view;
 	GtkScrollable *scrollable;
 	GdkRectangle rect;
-	GdkWindow *window;
+	GdkSurface *window;
 	GdkDisplay *display;
 	GdkDeviceManager *device_manager;
 	GdkDevice *device;

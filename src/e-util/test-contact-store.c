@@ -66,7 +66,7 @@ start_test (const gchar *param)
 #endif /* ACCOUNT_MGMT */
 	EBookQuery *book_query;
 
-	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	window = gtk_window_new ();
 
 	vgrid = g_object_new (
 		GTK_TYPE_GRID,
@@ -80,7 +80,7 @@ start_test (const gchar *param)
 	gtk_widget_set_halign (entry, GTK_ALIGN_FILL);
 	e_gtk_container_add (vgrid, entry);
 
-	scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+	scrolled_window = gtk_scrolled_window_new ();
 	gtk_widget_set_hexpand (scrolled_window, TRUE);
 	gtk_widget_set_halign (scrolled_window, GTK_ALIGN_FILL);
 	gtk_widget_set_vexpand (scrolled_window, TRUE);

@@ -34,7 +34,7 @@ on_idle_create_widget (void)
 	GtkWidget *entry;
 	GtkEntryCompletion *completion;
 
-	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	window = gtk_window_new ();
 	gtk_window_set_default_size (GTK_WINDOW (window), 400, 200);
 
 	g_signal_connect (
