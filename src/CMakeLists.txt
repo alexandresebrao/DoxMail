@@ -2,6 +2,7 @@
 # built; add each one here as it compiles (doxmail/PORTING-GTK4.md).
 if(WITH_GTK4)
 	add_subdirectory(libgnomecanvas)
+	add_subdirectory(e-util)
 	add_subdirectory(doxmail-tests)
 	return()
 endif(WITH_GTK4)

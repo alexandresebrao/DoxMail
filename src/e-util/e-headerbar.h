@@ -37,12 +37,12 @@ typedef struct _EHeaderBarClass EHeaderBarClass;
 typedef struct _EHeaderBarPrivate EHeaderBarPrivate;
 
 struct _EHeaderBar {
-	GtkHeaderBar parent;
+	GtkWidget parent;
 	EHeaderBarPrivate *priv;
 };
 
 struct _EHeaderBarClass {
-	GtkHeaderBarClass parent_class;
+	GtkWidgetClass parent_class;
 };
 
 GType			e_header_bar_get_type		(void);
@@ -56,6 +56,7 @@ void			e_header_bar_pack_end		(EHeaderBar *self,
 void			e_header_bar_remove_all		(EHeaderBar *self);
 GList *			e_header_bar_get_start_widgets	(EHeaderBar *self);
 GList *			e_header_bar_get_end_widgets	(EHeaderBar *self);
+GtkHeaderBar *		e_header_bar_get_header_bar	(EHeaderBar *self);
 
 G_END_DECLS
 

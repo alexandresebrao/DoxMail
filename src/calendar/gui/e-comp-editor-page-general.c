@@ -678,7 +678,7 @@ ecep_general_list_view_event_cb (EMeetingListView *list_view,
 
 static gboolean
 ecep_general_list_view_key_press_cb (EMeetingListView *list_view,
-				     GdkEventKey *event,
+				     GdkEvent *event,
 				     ECompEditorPageGeneral *page_general)
 {
 	g_return_val_if_fail (E_IS_MEETING_LIST_VIEW (list_view), FALSE);
@@ -1362,7 +1362,7 @@ ecep_general_constructed (GObject *object)
 		"valign", GTK_ALIGN_START,
 		"width-request", 100,
 		NULL);
-	gtk_box_pack_start (GTK_BOX (page_general->priv->organizer_hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (page_general->priv->organizer_hbox), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	page_general->priv->organizer_combo_box = widget;
@@ -1379,7 +1379,7 @@ ecep_general_constructed (GObject *object)
 		"vexpand", FALSE,
 		"valign", GTK_ALIGN_CENTER,
 		NULL);
-	gtk_box_pack_start (GTK_BOX (page_general->priv->organizer_hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (page_general->priv->organizer_hbox), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	page_general->priv->source_label = widget;
@@ -1391,7 +1391,7 @@ ecep_general_constructed (GObject *object)
 		"vexpand", FALSE,
 		"valign", GTK_ALIGN_CENTER,
 		NULL);
-	gtk_box_pack_start (GTK_BOX (page_general->priv->organizer_hbox), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (page_general->priv->organizer_hbox), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	page_general->priv->source_and_color_hbox = widget;
@@ -1409,7 +1409,7 @@ ecep_general_constructed (GObject *object)
 		"max-natural-width", 100,
 		"show-colors", TRUE,
 		NULL);
-	gtk_box_pack_start (GTK_BOX (page_general->priv->source_and_color_hbox), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (page_general->priv->source_and_color_hbox), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	page_general->priv->source_combo_box = widget;
@@ -1425,7 +1425,7 @@ ecep_general_constructed (GObject *object)
 	if (widget) {
 		const gchar *tooltip;
 
-		gtk_box_pack_start (GTK_BOX (page_general->priv->source_and_color_hbox), widget, FALSE, FALSE, 0);
+		e_gtk_box_pack_start (GTK_BOX (page_general->priv->source_and_color_hbox), widget, FALSE, FALSE, 0);
 
 		if (g_strcmp0 (page_general->priv->source_extension_name, E_SOURCE_EXTENSION_CALENDAR) == 0) {
 			tooltip = _("Override color of the event. If not set, then color of the calendar is used.");
@@ -1480,11 +1480,11 @@ ecep_general_constructed (GObject *object)
 
 	scrolled_window = gtk_scrolled_window_new (NULL, NULL);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrolled_window), GTK_SHADOW_IN);
+	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (scrolled_window), TRUE);
 	gtk_widget_show (scrolled_window);
 
-	gtk_container_add (GTK_CONTAINER (scrolled_window), widget);
-	gtk_box_pack_start (GTK_BOX (page_general->priv->attendees_hbox), scrolled_window, TRUE, TRUE, 0);
+	e_gtk_container_add (scrolled_window, widget);
+	e_gtk_box_pack_start (GTK_BOX (page_general->priv->attendees_hbox), scrolled_window, TRUE, TRUE, 0);
 
 	page_general->priv->attendees_list_view = widget;
 
@@ -1503,14 +1503,14 @@ ecep_general_constructed (GObject *object)
 	g_signal_connect_object (page_general->priv->attendees_list_view, "key_press_event",
 		G_CALLBACK (ecep_general_list_view_key_press_cb), page_general, 0);
 
-	widget = gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
+	widget = e_gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
 	g_object_set (G_OBJECT (widget),
 		"hexpand", FALSE,
 		"halign", GTK_ALIGN_START,
 		"vexpand", FALSE,
 		"valign", GTK_ALIGN_START,
 		NULL);
-	gtk_box_pack_start (GTK_BOX (page_general->priv->attendees_hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (page_general->priv->attendees_hbox), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	page_general->priv->attendees_button_box = widget;
@@ -1519,7 +1519,7 @@ ecep_general_constructed (GObject *object)
 	g_signal_connect (selection, "changed", G_CALLBACK (ecep_general_attendees_selection_changed_cb), page_general);
 
 	widget = gtk_button_new_with_mnemonic (_("_Add"));
-	gtk_box_pack_start (GTK_BOX (page_general->priv->attendees_button_box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (page_general->priv->attendees_button_box), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	page_general->priv->attendees_button_add = widget;
@@ -1527,7 +1527,7 @@ ecep_general_constructed (GObject *object)
 	g_signal_connect (widget, "clicked", G_CALLBACK (ecep_general_attendees_add_clicked_cb), page_general);
 
 	widget = gtk_button_new_with_mnemonic (_("_Edit"));
-	gtk_box_pack_start (GTK_BOX (page_general->priv->attendees_button_box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (page_general->priv->attendees_button_box), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	page_general->priv->attendees_button_edit = widget;
@@ -1535,7 +1535,7 @@ ecep_general_constructed (GObject *object)
 	g_signal_connect (widget, "clicked", G_CALLBACK (ecep_general_attendees_edit_clicked_cb), page_general);
 
 	widget = gtk_button_new_with_mnemonic (_("_Remove"));
-	gtk_box_pack_start (GTK_BOX (page_general->priv->attendees_button_box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (page_general->priv->attendees_button_box), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	page_general->priv->attendees_button_remove = widget;
@@ -1865,13 +1865,11 @@ e_comp_editor_page_general_update_view (ECompEditorPageGeneral *page_general)
 			g_object_ref (page_general->priv->source_label);
 			g_object_ref (page_general->priv->source_and_color_hbox);
 
-			gtk_container_remove (grid, page_general->priv->source_label);
-			gtk_container_remove (grid, page_general->priv->source_and_color_hbox);
+			e_gtk_container_remove (grid, page_general->priv->source_label);
+			e_gtk_container_remove (grid, page_general->priv->source_and_color_hbox);
 
-			gtk_box_pack_start (GTK_BOX (page_general->priv->organizer_hbox),
-				page_general->priv->source_label, FALSE, FALSE, 0);
-			gtk_box_pack_start (GTK_BOX (page_general->priv->organizer_hbox),
-				page_general->priv->source_and_color_hbox, TRUE, TRUE, 0);
+			e_gtk_box_pack_start (GTK_BOX (page_general->priv->organizer_hbox), page_general->priv->source_label, FALSE, FALSE, 0);
+			e_gtk_box_pack_start (GTK_BOX (page_general->priv->organizer_hbox), page_general->priv->source_and_color_hbox, TRUE, TRUE, 0);
 
 			g_object_unref (page_general->priv->source_label);
 			g_object_unref (page_general->priv->source_and_color_hbox);
@@ -1897,8 +1895,8 @@ e_comp_editor_page_general_update_view (ECompEditorPageGeneral *page_general)
 			g_object_ref (page_general->priv->source_label);
 			g_object_ref (page_general->priv->source_and_color_hbox);
 
-			gtk_container_remove (container, page_general->priv->source_label);
-			gtk_container_remove (container, page_general->priv->source_and_color_hbox);
+			e_gtk_container_remove (container, page_general->priv->source_label);
+			e_gtk_container_remove (container, page_general->priv->source_and_color_hbox);
 
 			gtk_grid_attach (ggrid, page_general->priv->source_label, 0, 0, 1, 1);
 			gtk_grid_attach (ggrid, page_general->priv->source_and_color_hbox, 1, 0, 1, 1);

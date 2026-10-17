@@ -111,7 +111,7 @@ canvas_emit_event (GnomeCanvas *canvas,
 	/* Convert to world coordinates -- we have two cases because of
 	 * different offsets of the fields in the event structures. */
 
-	ev = gdk_event_copy (event);
+	ev = gdk_event_ref (event);
 
 	switch (ev->type) {
 		case GDK_ENTER_NOTIFY:
@@ -154,7 +154,7 @@ canvas_emit_event (GnomeCanvas *canvas,
 		item = parent;
 	}
 
-	gdk_event_free (ev);
+	gdk_event_unref (ev);
 
 	return finished;
 }
@@ -399,7 +399,7 @@ canvas_realize (GtkWidget *widget)
 	window = gtk_layout_get_bin_window (GTK_LAYOUT (widget));
 	gdk_window_set_background_pattern (window, NULL);
 
-	window = gtk_widget_get_window (widget);
+	window = e_gtk_widget_get_surface (widget);
 	gtk_im_context_set_client_window (ecanvas->im_context, window);
 }
 
@@ -431,7 +431,7 @@ canvas_style_updated (GtkWidget *widget)
 
 static gint
 canvas_button_event (GtkWidget *widget,
-                     GdkEventButton *event)
+                     GdkEvent *event)
 {
 	GnomeCanvas *canvas;
 	GdkWindow *bin_window;
@@ -510,7 +510,7 @@ canvas_button_event (GtkWidget *widget,
 
 static gint
 canvas_key_event (GtkWidget *widget,
-                  GdkEventKey *event)
+                  GdkEvent *event)
 {
 	GnomeCanvas *canvas;
 	GdkEvent full_event = { 0 };
@@ -528,7 +528,7 @@ canvas_key_event (GtkWidget *widget,
 
 static gint
 canvas_focus_in_event (GtkWidget *widget,
-                       GdkEventFocus *event)
+                       GdkEvent *event)
 {
 	GnomeCanvas *canvas;
 	ECanvas *ecanvas;
@@ -556,7 +556,7 @@ canvas_focus_in_event (GtkWidget *widget,
 
 static gint
 canvas_focus_out_event (GtkWidget *widget,
-                        GdkEventFocus *event)
+                        GdkEvent *event)
 {
 	GnomeCanvas *canvas;
 	ECanvas *ecanvas;
@@ -650,7 +650,7 @@ e_canvas_item_grab_focus (GnomeCanvasItem *item,
 	GdkEvent ev = { 0 };
 
 	g_return_if_fail (GNOME_IS_CANVAS_ITEM (item));
-	g_return_if_fail (gtk_widget_get_can_focus (GTK_WIDGET (item->canvas)));
+	g_return_if_fail (gtk_widget_get_focusable (GTK_WIDGET (item->canvas)));
 
 	bin_window = gtk_layout_get_bin_window (GTK_LAYOUT (item->canvas));
 

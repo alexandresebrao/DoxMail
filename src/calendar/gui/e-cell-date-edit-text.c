@@ -180,8 +180,8 @@ show_date_warning (ECellDateEditText *ecd)
 		GTK_BUTTONS_OK,
 		_("The date must be entered in the format: \n%s"),
 		buffer);
-	gtk_dialog_run (GTK_DIALOG (dialog));
-	gtk_widget_destroy (dialog);
+	e_gtk_dialog_run (GTK_DIALOG (dialog));
+	e_gtk_widget_destroy (dialog);
 }
 
 static void

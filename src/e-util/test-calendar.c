@@ -33,7 +33,7 @@ enum {
 	TARGET_SHORTCUT
 };
 
-static GtkTargetEntry target_table[] = {
+static EGtkTargetEntry target_table[] = {
 	{ (gchar *) "E-SHORTCUT", 0, TARGET_SHORTCUT }
 };
 
@@ -42,7 +42,7 @@ static void on_selection_changed	(ECalendarItem *calitem);
 
 static void
 delete_event_cb (GtkWidget *widget,
-                 GdkEventAny *event,
+                 GdkEvent *event,
                  gpointer data)
 {
 	gtk_main_quit ();
@@ -57,13 +57,13 @@ main (gint argc,
 	GtkWidget *vbox;
 	ECalendarItem *calitem;
 
-	gtk_init (&argc, &argv);
+	gtk_init ();
 
 	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title (GTK_WINDOW (window), "ECalendar Test");
 	gtk_window_set_default_size (GTK_WINDOW (window), 400, 400);
 	gtk_window_set_resizable (GTK_WINDOW (window), TRUE);
-	gtk_container_set_border_width (GTK_CONTAINER (window), 8);
+	e_gtk_widget_set_border_width (window, 8);
 
 	g_signal_connect (
 		window, "delete_event",
@@ -81,17 +81,17 @@ main (gint argc,
 		calitem, "selection_changed",
 		G_CALLBACK (on_selection_changed), NULL);
 
-	gtk_drag_dest_set (
+	e_gtk_drag_dest_set (
 		cal,
-		GTK_DEST_DEFAULT_ALL,
+		E_GTK_DEST_DEFAULT_ALL,
 		target_table, G_N_ELEMENTS (target_table),
 		GDK_ACTION_COPY | GDK_ACTION_MOVE);
 
 	vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-	gtk_box_pack_start (GTK_BOX (vbox), cal, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), cal, TRUE, TRUE, 0);
 	gtk_widget_show (vbox);
 
-	gtk_container_add (GTK_CONTAINER (window), vbox);
+	e_gtk_container_add (window, vbox);
 	gtk_widget_show (window);
 
 	gtk_main ();

@@ -584,13 +584,13 @@ shell_view_construct_taskbar (EShellView *self)
 	shell = e_shell_window_get_shell (self->priv->shell_window);
 
 	box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 3);
-	gtk_container_set_border_width (GTK_CONTAINER (box), 3);
+	e_gtk_widget_set_border_width (box, 3);
 	gtk_widget_show (box);
 
 	status_area = gtk_frame_new (NULL);
 	style_context = gtk_widget_get_style_context (status_area);
 	gtk_style_context_add_class (style_context, "taskbar");
-	gtk_container_add (GTK_CONTAINER (status_area), box);
+	e_gtk_container_add (status_area, box);
 
 	e_binding_bind_property (
 		self, "taskbar-visible",
@@ -602,7 +602,7 @@ shell_view_construct_taskbar (EShellView *self)
 	gtk_widget_set_size_request (status_area, -1, (height * 2) + 6);
 
 	online_button = e_online_button_new ();
-	gtk_box_pack_start (GTK_BOX (box), online_button, FALSE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (box), online_button, FALSE, TRUE, 0);
 	gtk_widget_show (online_button);
 
 	e_binding_bind_property (
@@ -622,11 +622,11 @@ shell_view_construct_taskbar (EShellView *self)
 
 	tooltip_label = gtk_label_new ("");
 	gtk_label_set_xalign (GTK_LABEL (tooltip_label), 0);
-	gtk_box_pack_start (GTK_BOX (box), tooltip_label, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (box), tooltip_label, TRUE, TRUE, 0);
 	self->priv->tooltip_label = g_object_ref (tooltip_label);
 	gtk_widget_hide (tooltip_label);
 
-	gtk_box_pack_start (GTK_BOX (box), self->priv->shell_taskbar, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (box), self->priv->shell_taskbar, TRUE, TRUE, 0);
 	gtk_widget_show (self->priv->shell_taskbar);
 
 	e_binding_bind_property (
@@ -648,7 +648,7 @@ e_shell_view_ui_manager_ignore_accel_cb (EUIManager *manager,
 	if (e_shell_view_is_active (self)) {
 		GtkWidget *toplevel;
 
-		toplevel = gtk_widget_get_toplevel (GTK_WIDGET (self));
+		toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (self));
 		if (GTK_IS_WINDOW (toplevel))
 			ignore = e_util_ignore_accel_for_focused (gtk_window_get_focus (GTK_WINDOW (toplevel)));
 	} else {
@@ -1536,8 +1536,8 @@ shell_view_ui_manager_create_item_cb (EUIManager *manager,
 			GtkToolItem *tool_item;
 
 			tool_item = gtk_tool_item_new ();
-			gtk_container_add (GTK_CONTAINER (tool_item), widget);
-			gtk_widget_show_all (GTK_WIDGET (tool_item));
+			e_gtk_container_add (tool_item, widget);
+			gtk_widget_set_visible (GTK_WIDGET (tool_item), TRUE);
 
 			*out_item = G_OBJECT (tool_item);
 		} else if (!claimed && !*out_item) {
@@ -1764,7 +1764,7 @@ e_shell_view_run_ui_customize_dialog (EShellView *self,
 
 	e_ui_customize_dialog_run (dialog, id);
 
-	gtk_widget_destroy (GTK_WIDGET (dialog));
+	e_gtk_widget_destroy (GTK_WIDGET (dialog));
 }
 
 static void
@@ -2160,7 +2160,7 @@ shell_view_constructed (GObject *object)
 	e_ui_customizer_register (customizer, "main-menu", NULL);
 
 	shell_view->priv->menu_bar = e_menu_bar_new (GTK_MENU_BAR (widget), GTK_WINDOW (shell_view->priv->shell_window), &shell_view->priv->menu_button);
-	gtk_box_pack_start (GTK_BOX (shell_view), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (shell_view), widget, FALSE, FALSE, 0);
 
 	g_signal_connect_object (widget, "deactivate",
 		G_CALLBACK (shell_view_menubar_deactivate_cb), shell_view, 0);
@@ -2178,7 +2178,7 @@ shell_view_constructed (GObject *object)
 
 	ui_item = e_ui_manager_create_item (shell_view->priv->ui_manager, toolbar_id);
 	widget = GTK_WIDGET (ui_item);
-	gtk_box_pack_start (GTK_BOX (shell_view), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (shell_view), widget, FALSE, FALSE, 0);
 
 	e_ui_customizer_register (customizer, toolbar_id, NULL);
 	e_ui_customizer_util_attach_toolbar_context_menu (widget, toolbar_id,
@@ -2190,7 +2190,7 @@ shell_view_constructed (GObject *object)
 		G_BINDING_SYNC_CREATE);
 
 	widget = gtk_paned_new (GTK_ORIENTATION_HORIZONTAL);
-	gtk_box_pack_start (GTK_BOX (shell_view), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (shell_view), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	paned = GTK_PANED (widget);
@@ -2200,7 +2200,7 @@ shell_view_constructed (GObject *object)
 		G_BINDING_SYNC_CREATE | G_BINDING_BIDIRECTIONAL);
 
 	widget = shell_view_construct_taskbar (shell_view);
-	gtk_box_pack_start (GTK_BOX (shell_view), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (shell_view), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	widget = e_shell_switcher_new ();
@@ -2216,7 +2216,7 @@ shell_view_constructed (GObject *object)
 		shell_view->priv->switcher, "toolbar-visible",
 		G_BINDING_SYNC_CREATE);
 
-	gtk_container_add (GTK_CONTAINER (shell_view->priv->switcher), shell_view->priv->shell_sidebar);
+	e_gtk_container_add (shell_view->priv->switcher, shell_view->priv->shell_sidebar);
 
 	g_object_set (shell_view->priv->shell_content,
 		"hexpand", TRUE,
@@ -2225,8 +2225,8 @@ shell_view_constructed (GObject *object)
 		"valign", GTK_ALIGN_FILL,
 		NULL);
 
-	gtk_paned_pack1 (paned, widget, FALSE, FALSE);
-	gtk_paned_pack2 (paned, shell_view->priv->shell_content, TRUE, FALSE);
+	e_gtk_paned_pack1 (paned, widget, FALSE, FALSE);
+	e_gtk_paned_pack2 (paned, shell_view->priv->shell_content, TRUE, FALSE);
 
 	e_shell_window_fill_switcher_actions (shell_view->priv->shell_window, shell_view->priv->ui_manager,
 		E_SHELL_SWITCHER (shell_view->priv->switcher));

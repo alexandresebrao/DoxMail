@@ -153,12 +153,12 @@ filename_changed (GtkWidget *widget,
 	self = E_IMPORT_ASSISTANT (assistant);
 	page = &self->priv->file_page;
 
-	child = gtk_bin_get_child (GTK_BIN (page->preview_scrolled_window));
+	child = e_gtk_bin_get_child (page->preview_scrolled_window);
 
 	if (child)
-		gtk_widget_destroy (child);
+		e_gtk_widget_destroy (child);
 
-	filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (widget));
+	filename = e_gtk_file_chooser_get_filename (widget);
 
 	fileok =
 		filename != NULL && *filename != '\0' &&
@@ -214,7 +214,7 @@ filename_changed (GtkWidget *widget,
 			preview = e_import_get_preview_widget (self->priv->import, (EImportTarget *) page->target, page->importer);
 
 			if (preview)
-				gtk_container_add (GTK_CONTAINER (page->preview_scrolled_window), preview);
+				e_gtk_container_add (page->preview_scrolled_window, preview);
 		}
 
 		fileok = first != NULL;
@@ -231,7 +231,7 @@ filename_changed (GtkWidget *widget,
 		}
 	}
 
-	gtk_widget_set_visible (page->preview_scrolled_window, gtk_bin_get_child (GTK_BIN (page->preview_scrolled_window)) != NULL);
+	gtk_widget_set_visible (page->preview_scrolled_window, e_gtk_bin_get_child (page->preview_scrolled_window) != NULL);
 
 	widget = gtk_assistant_get_nth_page (assistant, PAGE_FILE_CHOOSE);
 	gtk_assistant_set_page_complete (assistant, widget, fileok);
@@ -269,7 +269,7 @@ import_assistant_file_page_init (EImportAssistant *import_assistant)
 	gint row = 0;
 
 	page = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
-	gtk_container_set_border_width (GTK_CONTAINER (page), 12);
+	e_gtk_widget_set_border_width (page, 12);
 	gtk_widget_show (page);
 
 	container = page;
@@ -278,16 +278,16 @@ import_assistant_file_page_init (EImportAssistant *import_assistant)
 		 "and select what type of file it is from the list.");
 
 	widget = gtk_label_new (text);
-	gtk_label_set_line_wrap (GTK_LABEL (widget), TRUE);
+	gtk_label_set_wrap (GTK_LABEL (widget), TRUE);
 	gtk_label_set_width_chars (GTK_LABEL (widget), 20);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	widget = gtk_grid_new ();
 	gtk_grid_set_row_spacing (GTK_GRID (widget), 2);
 	gtk_grid_set_column_spacing (GTK_GRID (widget), 10);
-	gtk_container_set_border_width (GTK_CONTAINER (widget), 8);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_widget_set_border_width (widget, 8);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -299,8 +299,7 @@ import_assistant_file_page_init (EImportAssistant *import_assistant)
 
 	label = widget;
 
-	widget = gtk_file_chooser_button_new (
-		_("Select a file"), GTK_FILE_CHOOSER_ACTION_OPEN);
+	widget = e_gtk_file_chooser_button_new (_("Select a file"), GTK_FILE_CHOOSER_ACTION_OPEN);
 	gtk_widget_set_hexpand (widget, TRUE);
 	gtk_label_set_mnemonic_widget (GTK_LABEL (label), widget);
 	gtk_grid_attach (GTK_GRID (container), widget, 1, row, 1, 1);
@@ -348,7 +347,7 @@ import_assistant_file_page_init (EImportAssistant *import_assistant)
 	widget = gtk_scrolled_window_new (NULL, NULL);
 	gtk_widget_set_hexpand (widget, TRUE);
 	gtk_widget_set_vexpand (widget, TRUE);
-	gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (widget), GTK_SHADOW_IN);
+	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (widget), TRUE);
 	gtk_label_set_mnemonic_widget (GTK_LABEL (label), widget);
 	gtk_grid_attach (GTK_GRID (container), widget, 1, row, 1, 1);
 	import_assistant->priv->file_page.preview_scrolled_window = widget;
@@ -367,7 +366,7 @@ import_assistant_destination_page_init (EImportAssistant *import_assistant)
 	const gchar *text;
 
 	page = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
-	gtk_container_set_border_width (GTK_CONTAINER (page), 12);
+	e_gtk_widget_set_border_width (page, 12);
 	gtk_widget_show (page);
 
 	container = page;
@@ -375,9 +374,9 @@ import_assistant_destination_page_init (EImportAssistant *import_assistant)
 	text = _("Choose the destination for this import");
 
 	widget = gtk_label_new (text);
-	gtk_label_set_line_wrap (GTK_LABEL (widget), TRUE);
+	gtk_label_set_wrap (GTK_LABEL (widget), TRUE);
 	gtk_label_set_width_chars (GTK_LABEL (widget), 20);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	return page;
@@ -393,7 +392,7 @@ import_assistant_type_page_init (EImportAssistant *import_assistant)
 	const gchar *text;
 
 	page = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
-	gtk_container_set_border_width (GTK_CONTAINER (page), 12);
+	e_gtk_widget_set_border_width (page, 12);
 	gtk_widget_show (page);
 
 	container = page;
@@ -401,14 +400,14 @@ import_assistant_type_page_init (EImportAssistant *import_assistant)
 	text = _("Choose the type of importer to run:");
 
 	widget = gtk_label_new (text);
-	gtk_label_set_line_wrap (GTK_LABEL (widget), TRUE);
+	gtk_label_set_wrap (GTK_LABEL (widget), TRUE);
 	gtk_label_set_width_chars (GTK_LABEL (widget), 20);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	widget = gtk_radio_button_new_with_mnemonic (
 		NULL, _("Import a _single file"));
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	import_assistant->priv->type_page.file = widget;
 	gtk_widget_show (widget);
 
@@ -416,7 +415,7 @@ import_assistant_type_page_init (EImportAssistant *import_assistant)
 
 	widget = gtk_radio_button_new_with_mnemonic_from_widget (
 		radio_button, _("Import data and settings from _older programs"));
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	import_assistant->priv->type_page.intelligent = widget;
 	gtk_widget_show (widget);
 
@@ -432,7 +431,7 @@ import_assistant_selection_page_init (EImportAssistant *import_assistant)
 	const gchar *text;
 
 	page = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
-	gtk_container_set_border_width (GTK_CONTAINER (page), 12);
+	e_gtk_widget_set_border_width (page, 12);
 	gtk_widget_show (page);
 
 	container = page;
@@ -441,13 +440,13 @@ import_assistant_selection_page_init (EImportAssistant *import_assistant)
 		 "that you would like to import:");
 
 	widget = gtk_label_new (text);
-	gtk_label_set_line_wrap (GTK_LABEL (widget), TRUE);
+	gtk_label_set_wrap (GTK_LABEL (widget), TRUE);
 	gtk_label_set_width_chars (GTK_LABEL (widget), 20);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	widget = gtk_separator_new (GTK_ORIENTATION_HORIZONTAL);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	return page;
@@ -461,13 +460,13 @@ import_assistant_progress_page_init (EImportAssistant *import_assistant)
 	GtkWidget *widget;
 
 	page = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
-	gtk_container_set_border_width (GTK_CONTAINER (page), 12);
+	e_gtk_widget_set_border_width (page, 12);
 	gtk_widget_show (page);
 
 	container = page;
 
 	widget = gtk_progress_bar_new ();
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, FALSE, 0);
 	import_assistant->priv->progress_page.progress_bar = widget;
 	gtk_widget_show (widget);
 
@@ -486,23 +485,23 @@ import_assistant_simple_page_init (EImportAssistant *import_assistant)
 	gint row = 0;
 
 	page = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
-	gtk_container_set_border_width (GTK_CONTAINER (page), 12);
+	e_gtk_widget_set_border_width (page, 12);
 	gtk_widget_show (page);
 
 	container = page;
 
 	widget = gtk_label_new ("");
-	gtk_label_set_line_wrap (GTK_LABEL (widget), TRUE);
+	gtk_label_set_wrap (GTK_LABEL (widget), TRUE);
 	gtk_label_set_width_chars (GTK_LABEL (widget), 20);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, TRUE, 0);
 	gtk_widget_show (widget);
 	import_assistant->priv->simple_page.actionlabel = widget;
 
 	widget = gtk_grid_new ();
 	gtk_grid_set_row_spacing (GTK_GRID (widget), 2);
 	gtk_grid_set_column_spacing (GTK_GRID (widget), 10);
-	gtk_container_set_border_width (GTK_CONTAINER (widget), 8);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, TRUE, 0);
+	e_gtk_widget_set_border_width (widget, 8);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, TRUE, 0);
 	gtk_widget_show (widget);
 	import_assistant->priv->simple_page.filetypetable = widget;
 
@@ -571,9 +570,9 @@ prepare_intelligent_page (GtkAssistant *assistant,
 			 "“Back” button.");
 
 		widget = gtk_label_new (text);
-		gtk_label_set_line_wrap (GTK_LABEL (widget), TRUE);
+		gtk_label_set_wrap (GTK_LABEL (widget), TRUE);
 		gtk_label_set_width_chars (GTK_LABEL (widget), 20);
-		gtk_box_pack_start (GTK_BOX (vbox), widget, FALSE, TRUE, 0);
+		e_gtk_box_pack_start (GTK_BOX (vbox), widget, FALSE, TRUE, 0);
 		gtk_widget_show (widget);
 
 		gtk_assistant_set_page_complete (assistant, vbox, FALSE);
@@ -604,7 +603,7 @@ prepare_intelligent_page (GtkAssistant *assistant,
 	}
 
 	gtk_widget_show (grid);
-	gtk_box_pack_start (GTK_BOX (vbox), grid, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), grid, FALSE, FALSE, 0);
 
 	gtk_assistant_set_page_complete (assistant, vbox, TRUE);
 }
@@ -773,13 +772,13 @@ prepare_destination_page (GtkAssistant *assistant,
 	page = &self->priv->destination_page;
 
 	if (page->control)
-		gtk_container_remove (GTK_CONTAINER (vbox), page->control);
+		e_gtk_container_remove (vbox, page->control);
 
 	page->control = create_importer_control (
 		self->priv->import, (EImportTarget *)
 		self->priv->file_page.target, self->priv->file_page.importer);
 
-	gtk_box_pack_start (GTK_BOX (vbox), page->control, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), page->control, TRUE, TRUE, 0);
 	gtk_assistant_set_page_complete (assistant, vbox, e_import_get_widget_complete (self->priv->import));
 
 	return FALSE;
@@ -893,7 +892,7 @@ simple_filetype_changed_cb (GtkComboBox *combo_box,
 	g_return_if_fail (vbox != NULL);
 
 	if (page->control)
-		gtk_widget_destroy (page->control);
+		e_gtk_widget_destroy (page->control);
 	page->has_preview = FALSE;
 
 	control = e_import_get_preview_widget (
@@ -907,7 +906,7 @@ simple_filetype_changed_cb (GtkComboBox *combo_box,
 			self->priv->import, (EImportTarget *)
 			page->target, page->importer);
 
-	gtk_box_pack_start (GTK_BOX (vbox), control, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), control, TRUE, TRUE, 0);
 	gtk_widget_show (control);
 
 	page->control = control;
@@ -1017,13 +1016,13 @@ prepare_simple_destination_page (GtkAssistant *assistant,
 	simple_page = &self->priv->simple_page;
 
 	if (page->control)
-		gtk_container_remove (GTK_CONTAINER (vbox), page->control);
+		e_gtk_container_remove (vbox, page->control);
 
 	page->control = create_importer_control (
 		self->priv->import, (EImportTarget *)
 		simple_page->target, simple_page->importer);
 
-	gtk_box_pack_start (GTK_BOX (vbox), page->control, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), page->control, TRUE, TRUE, 0);
 	gtk_assistant_set_page_complete (assistant, vbox, e_import_get_widget_complete (self->priv->import));
 
 	return FALSE;
@@ -1221,7 +1220,7 @@ import_assistant_finalize (GObject *object)
 
 static gboolean
 import_assistant_key_press_event (GtkWidget *widget,
-                                  GdkEventKey *event)
+                                  GdkEvent *event)
 {
 	GtkWidgetClass *parent_class;
 
@@ -1347,7 +1346,6 @@ import_assistant_construct (EImportAssistant *import_assistant)
 	import_assistant->priv->import =
 		e_import_new ("org.gnome.evolution.shell.importer");
 
-	gtk_window_set_position (GTK_WINDOW (assistant), GTK_WIN_POS_CENTER);
 	gtk_window_set_title (GTK_WINDOW (assistant), _("Evolution Import Assistant"));
 	gtk_window_set_default_size (GTK_WINDOW (assistant), 500, 330);
 

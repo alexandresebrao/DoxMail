@@ -148,7 +148,7 @@ cal_config_webcal_check_complete (ESourceConfigBackend *backend,
 		return TRUE;
 
 	entry = GTK_ENTRY (context->url_entry);
-	uri_string = gtk_entry_get_text (entry);
+	uri_string = gtk_editable_get_text (GTK_EDITABLE (entry));
 
 	guri = g_uri_parse (uri_string, SOUP_HTTP_URI_FLAGS | G_URI_FLAGS_PARSE_RELAXED, NULL);
 

@@ -139,7 +139,7 @@ config_lookup_context_free (ConfigLookupContext *context)
 	/* Cannot use gtk_assistant_remove_action_widget(), because
 	   it doesn't work with the header bar. See:
 	   https://gitlab.gnome.org/GNOME/gtk/-/issues/5185 */
-	gtk_widget_destroy (context->skip_button);
+	e_gtk_widget_destroy (context->skip_button);
 
 	g_object_unref (context->assistant);
 	g_object_unref (context->cancellable);
@@ -477,7 +477,7 @@ mail_config_assistant_close_cb (GObject *object,
 	assistant = E_MAIL_CONFIG_ASSISTANT (object);
 
 	/* Set the cursor back to normal. */
-	gdk_window = gtk_widget_get_window (GTK_WIDGET (assistant));
+	gdk_window = e_gtk_widget_get_surface (GTK_WIDGET (assistant));
 	gdk_window_set_cursor (gdk_window, NULL);
 
 	/* Allow user interaction with window content. */
@@ -507,7 +507,7 @@ mail_config_assistant_close_cb (GObject *object,
 			mail_config_assistant_select_account_node (uid);
 		}
 
-		gtk_widget_destroy (GTK_WIDGET (assistant));
+		e_gtk_widget_destroy (GTK_WIDGET (assistant));
 	}
 }
 
@@ -538,10 +538,7 @@ mail_config_assistant_find_back_button_cb (GtkWidget *widget,
 			assistant->priv->back_button = button;
 
 	} else if (GTK_IS_CONTAINER (widget)) {
-		gtk_container_forall (
-			GTK_CONTAINER (widget),
-			mail_config_assistant_find_back_button_cb,
-			assistant);
+		e_gtk_container_foreach (widget, mail_config_assistant_find_back_button_cb, assistant);
 	}
 }
 
@@ -699,7 +696,6 @@ mail_config_assistant_constructed (GObject *object)
 
 	title = _("Evolution Account Assistant");
 	gtk_window_set_title (GTK_WINDOW (assistant), title);
-	gtk_window_set_position (GTK_WINDOW (assistant), GTK_WIN_POS_CENTER);
 	gtk_window_set_default_size (GTK_WINDOW (assistant), 640, 480);
 
 	session = e_mail_config_assistant_get_session (assistant);
@@ -989,10 +985,7 @@ mail_config_assistant_prepare (GtkAssistant *assistant,
 		 *     Walking the container like this is an extremely naughty
 		 *     and brittle hack, but GtkAssistant does not provide API
 		 *     to access it directly. */
-		gtk_container_forall (
-			GTK_CONTAINER (assistant),
-			mail_config_assistant_find_back_button_cb,
-			assistant);
+		e_gtk_container_foreach (assistant, mail_config_assistant_find_back_button_cb, assistant);
 	}
 
 	/* Are we viewing autoconfiguration results?  If so, temporarily
@@ -1105,7 +1098,7 @@ mail_config_assistant_close (GtkAssistant *assistant)
 	if (gdk_cursor) {
 		GdkWindow *gdk_window;
 
-		gdk_window = gtk_widget_get_window (GTK_WIDGET (assistant));
+		gdk_window = e_gtk_widget_get_surface (GTK_WIDGET (assistant));
 		gdk_window_set_cursor (gdk_window, gdk_cursor);
 		g_object_unref (gdk_cursor);
 	}
@@ -1124,7 +1117,7 @@ mail_config_assistant_cancel (GtkAssistant *assistant)
 {
 	/* Do not chain up.  GtkAssistant does not implement this method. */
 
-	gtk_widget_destroy (GTK_WIDGET (assistant));
+	e_gtk_widget_destroy (GTK_WIDGET (assistant));
 }
 
 static void
@@ -1244,7 +1237,7 @@ e_mail_config_assistant_init (EMailConfigAssistant *assistant)
 	action_area = gtk_buildable_get_internal_child (
 		GTK_BUILDABLE (assistant), builder, "action_area");
 	if (action_area)
-		gtk_container_set_border_width (GTK_CONTAINER (action_area), 12);
+		e_gtk_widget_set_border_width (action_area, 12);
 	g_object_unref (builder);
 
 	assistant->priv = e_mail_config_assistant_get_instance_private (assistant);

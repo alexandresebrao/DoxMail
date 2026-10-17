@@ -20,7 +20,9 @@ typedef struct _PriorityBasket {
 	guint priority;
 } PriorityBasket;
 
+/* GtkHeaderBar is final with GTK 4; the EHeaderBar holds one */
 struct _EHeaderBarPrivate {
+	GtkWidget *header_bar;
 	GtkWidget *start_buttons;
 	GtkWidget *end_buttons;
 
@@ -32,7 +34,7 @@ struct _EHeaderBarPrivate {
 	gboolean force_icon_only_buttons;
 };
 
-G_DEFINE_TYPE_WITH_CODE (EHeaderBar, e_header_bar, GTK_TYPE_HEADER_BAR,
+G_DEFINE_TYPE_WITH_CODE (EHeaderBar, e_header_bar, GTK_TYPE_WIDGET,
 	G_ADD_PRIVATE (EHeaderBar))
 
 static void header_bar_widget_destroyed (gpointer user_data, GObject *widget);
@@ -98,7 +100,7 @@ static void
 header_bar_update_buttons (EHeaderBar *self,
 			   gint for_width)
 {
-	GtkAllocation allocation_start, allocation_end;
+	graphene_rect_t bounds_start, bounds_end;
 	GSList *labeled_groups = NULL; /* GSList { GtkWidget * }; labeled widgets, divided by groups */
 	GSList *icon_only_buttons = NULL; /* GtkWidget * */
 	guint ii;
@@ -135,15 +137,16 @@ header_bar_update_buttons (EHeaderBar *self,
 		/* space between the start_buttons and the end_buttons is the available width,
 		   including the window title */
 
-		gtk_widget_get_allocation (self->priv->start_buttons, &allocation_start);
-		gtk_widget_get_allocation (self->priv->end_buttons, &allocation_end);
+		if (!gtk_widget_compute_bounds (self->priv->start_buttons, GTK_WIDGET (self), &bounds_start) ||
+		    !gtk_widget_compute_bounds (self->priv->end_buttons, GTK_WIDGET (self), &bounds_end))
+			return;
 
-		available_width = MAX (allocation_end.x + allocation_end.width - allocation_start.x
+		available_width = MAX (bounds_end.origin.x + bounds_end.size.width - bounds_start.origin.x
 			- MIN_TITLE_WIDTH - (2 * BUTTON_SPACING), 0);
 
 		/* when making window smaller, calculate with the new size, to have buttons of the proper size */
 		if (for_width > 0) {
-			gint current_width = gtk_widget_get_allocated_width (GTK_WIDGET (self));
+			gint current_width = gtk_widget_get_width (GTK_WIDGET (self));
 			if (current_width > for_width)
 				available_width = MAX (0, available_width - (current_width - for_width));
 		}
@@ -159,7 +162,7 @@ header_bar_update_buttons (EHeaderBar *self,
 					if (!E_IS_HEADER_BAR_BUTTON (widget)) {
 						gint minimum_width = 0;
 
-						gtk_widget_get_preferred_width (widget, &minimum_width, NULL);
+						e_gtk_widget_get_preferred_width (widget, &minimum_width, NULL);
 
 						if (minimum_width > 0)
 							available_width = MAX (available_width - minimum_width, 0);
@@ -356,20 +359,22 @@ header_bar_set_label_priority (EHeaderBar *self,
 
 static void
 header_bar_size_allocate (GtkWidget *widget,
-			  GtkAllocation *allocation)
+			  gint width,
+			  gint height,
+			  gint baseline)
 {
 	EHeaderBar *self = E_HEADER_BAR (widget);
 
 	/* prepare buttons for after-allocation size */
-	if (self->priv->allocated_width != allocation->width)
-		header_bar_update_buttons (self, allocation->width);
+	if (self->priv->allocated_width != width)
+		header_bar_update_buttons (self, width);
 
-	/* Chain up to parent's method. */
-	GTK_WIDGET_CLASS (e_header_bar_parent_class)->size_allocate (widget, allocation);
+	gtk_widget_size_allocate (self->priv->header_bar,
+		&(GtkAllocation) { 0, 0, width, height }, baseline);
 
 	/* apply the new size */
-	if (self->priv->allocated_width != allocation->width) {
-		self->priv->allocated_width = allocation->width;
+	if (self->priv->allocated_width != width) {
+		self->priv->allocated_width = width;
 		header_bar_update_buttons (self, -1);
 	}
 }
@@ -393,16 +398,20 @@ header_bar_map (GtkWidget *widget)
 }
 
 static void
-header_bar_get_preferred_width (GtkWidget *in_widget,
-				gint *minimum_width,
-				gint *natural_width)
+header_bar_measure (GtkWidget *in_widget,
+		    GtkOrientation orientation,
+		    gint for_size,
+		    gint *minimum_width,
+		    gint *natural_width,
+		    gint *minimum_baseline,
+		    gint *natural_baseline)
 {
 	EHeaderBar *self = E_HEADER_BAR (in_widget);
 
-	/* Chain up to parent's method. */
-	GTK_WIDGET_CLASS (e_header_bar_parent_class)->get_preferred_width (in_widget, minimum_width, natural_width);
+	gtk_widget_measure (self->priv->header_bar, orientation, for_size,
+		minimum_width, natural_width, minimum_baseline, natural_baseline);
 
-	if (!self->priv->force_icon_only_buttons) {
+	if (orientation == GTK_ORIENTATION_HORIZONTAL && !self->priv->force_icon_only_buttons) {
 		gint decrement_minimum = 0;
 		guint ii;
 
@@ -451,14 +460,10 @@ header_bar_constructed (GObject *object)
 	g_clear_object (&settings);
 
 	self->priv->start_buttons = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, BUTTON_SPACING);
-	gtk_header_bar_pack_start (GTK_HEADER_BAR (self), self->priv->start_buttons);
-	gtk_widget_show (self->priv->start_buttons);
+	gtk_header_bar_pack_start (GTK_HEADER_BAR (self->priv->header_bar), self->priv->start_buttons);
 
 	self->priv->end_buttons = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, BUTTON_SPACING);
-	gtk_header_bar_pack_end (GTK_HEADER_BAR (self), self->priv->end_buttons);
-	gtk_widget_show (self->priv->end_buttons);
-
-	gtk_style_context_add_class (gtk_widget_get_style_context (GTK_WIDGET (self)), "titlebar");
+	gtk_header_bar_pack_end (GTK_HEADER_BAR (self->priv->header_bar), self->priv->end_buttons);
 }
 
 static void
@@ -477,6 +482,7 @@ header_bar_dispose (GObject *object)
 	}
 
 	g_clear_pointer (&self->priv->priorities, g_ptr_array_unref);
+	g_clear_pointer (&self->priv->header_bar, gtk_widget_unparent);
 
 	/* Chain up to parent's method. */
 	G_OBJECT_CLASS (e_header_bar_parent_class)->dispose (object);
@@ -492,7 +498,7 @@ e_header_bar_class_init (EHeaderBarClass *klass)
 	widget_class->size_allocate = header_bar_size_allocate;
 	widget_class->realize = header_bar_realize;
 	widget_class->map = header_bar_map;
-	widget_class->get_preferred_width = header_bar_get_preferred_width;
+	widget_class->measure = header_bar_measure;
 
 	object_class = G_OBJECT_CLASS (klass);
 	object_class->constructed = header_bar_constructed;
@@ -505,7 +511,28 @@ e_header_bar_init (EHeaderBar *self)
 	self->priv = e_header_bar_get_instance_private (self);
 	self->priv->priorities = g_ptr_array_new_with_free_func (priority_basket_free);
 
-	gtk_header_bar_set_show_close_button (GTK_HEADER_BAR (self), TRUE);
+	self->priv->header_bar = gtk_header_bar_new ();
+	gtk_header_bar_set_show_title_buttons (GTK_HEADER_BAR (self->priv->header_bar), TRUE);
+	gtk_widget_set_parent (self->priv->header_bar, GTK_WIDGET (self));
+}
+
+/**
+ * e_header_bar_get_header_bar:
+ * @self: an #EHeaderBar
+ *
+ * Returns the #GtkHeaderBar the @self is made of, for setting a title
+ * widget and such.
+ *
+ * Returns: (transfer none): a #GtkHeaderBar
+ *
+ * Since: DoxMail
+ **/
+GtkHeaderBar *
+e_header_bar_get_header_bar (EHeaderBar *self)
+{
+	g_return_val_if_fail (E_IS_HEADER_BAR (self), NULL);
+
+	return GTK_HEADER_BAR (self->priv->header_bar);
 }
 
 /**
@@ -520,9 +547,7 @@ e_header_bar_init (EHeaderBar *self)
 GtkWidget *
 e_header_bar_new (void)
 {
-	return g_object_new (E_TYPE_HEADER_BAR,
-		"has-subtitle", FALSE,
-		NULL);
+	return g_object_new (E_TYPE_HEADER_BAR, NULL);
 }
 
 /**
@@ -546,7 +571,7 @@ e_header_bar_pack_start (EHeaderBar *self,
 {
 	g_return_if_fail (E_IS_HEADER_BAR (self));
 
-	gtk_box_pack_start (GTK_BOX (self->priv->start_buttons), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (self->priv->start_buttons), widget, FALSE, FALSE, 0);
 
 	header_bar_set_label_priority (self, widget, label_priority);
 }
@@ -572,7 +597,7 @@ e_header_bar_pack_end (EHeaderBar *self,
 {
 	g_return_if_fail (E_IS_HEADER_BAR (self));
 
-	gtk_box_pack_end (GTK_BOX (self->priv->end_buttons), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_end (GTK_BOX (self->priv->end_buttons), widget, FALSE, FALSE, 0);
 
 	header_bar_set_label_priority (self, widget, label_priority);
 }
@@ -589,22 +614,19 @@ e_header_bar_pack_end (EHeaderBar *self,
 void
 e_header_bar_remove_all (EHeaderBar *self)
 {
-	GtkContainer *container;
 	GList *children, *link;
 
 	g_return_if_fail (E_IS_HEADER_BAR (self));
 
-	container = GTK_CONTAINER (self->priv->start_buttons);
-	children = gtk_container_get_children (container);
+	children = e_gtk_widget_get_children (self->priv->start_buttons);
 	for (link = children; link; link = g_list_next (link)) {
-		gtk_container_remove (container, link->data);
+		e_gtk_container_remove (self->priv->start_buttons, link->data);
 	}
 	g_list_free (children);
 
-	container = GTK_CONTAINER (self->priv->end_buttons);
-	children = gtk_container_get_children (container);
+	children = e_gtk_widget_get_children (self->priv->end_buttons);
 	for (link = children; link; link = g_list_next (link)) {
-		gtk_container_remove (container, link->data);
+		e_gtk_container_remove (self->priv->end_buttons, link->data);
 	}
 	g_list_free (children);
 }
@@ -625,7 +647,7 @@ e_header_bar_get_start_widgets (EHeaderBar *self)
 {
 	g_return_val_if_fail (E_IS_HEADER_BAR (self), NULL);
 
-	return gtk_container_get_children (GTK_CONTAINER (self->priv->start_buttons));
+	return e_gtk_widget_get_children (self->priv->start_buttons);
 }
 
 /**
@@ -644,5 +666,5 @@ e_header_bar_get_end_widgets (EHeaderBar *self)
 {
 	g_return_val_if_fail (E_IS_HEADER_BAR (self), NULL);
 
-	return gtk_container_get_children (GTK_CONTAINER (self->priv->end_buttons));
+	return e_gtk_widget_get_children (self->priv->end_buttons);
 }

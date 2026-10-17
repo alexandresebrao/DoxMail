@@ -26,6 +26,7 @@
 #define E_SELECTION_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 
 /* This API mimics GTK's API for dealing with text, image and URI data. */
 
@@ -34,84 +35,84 @@ G_BEGIN_DECLS
 /* Selection Functions */
 
 void		e_target_list_add_calendar_targets
-					(GtkTargetList *list,
+					(EGtkTargetList *list,
 					 guint info);
 void		e_target_list_add_directory_targets
-					(GtkTargetList *list,
+					(EGtkTargetList *list,
 					 guint info);
 void		e_target_list_add_html_targets
-					(GtkTargetList *list,
+					(EGtkTargetList *list,
 					 guint info);
 gboolean	e_selection_data_set_calendar
-					(GtkSelectionData *selection_data,
+					(EGtkSelectionData *selection_data,
 					 const gchar *source,
 					 gint length);
 gboolean	e_selection_data_set_directory
-					(GtkSelectionData *selection_data,
+					(EGtkSelectionData *selection_data,
 					 const gchar *source,
 					 gint length);
 gboolean	e_selection_data_set_html
-					(GtkSelectionData *selection_data,
+					(EGtkSelectionData *selection_data,
 					 const gchar *source,
 					 gint length);
 gchar *		e_selection_data_get_calendar
-					(GtkSelectionData *selection_data);
+					(EGtkSelectionData *selection_data);
 gchar *		e_selection_data_get_directory
-					(GtkSelectionData *selection_data);
+					(EGtkSelectionData *selection_data);
 gchar *		e_selection_data_get_html
-					(GtkSelectionData *selection_data);
+					(EGtkSelectionData *selection_data);
 gboolean	e_selection_data_targets_include_calendar
-					(GtkSelectionData *selection_data);
+					(EGtkSelectionData *selection_data);
 gboolean	e_selection_data_targets_include_directory
-					(GtkSelectionData *selection_data);
+					(EGtkSelectionData *selection_data);
 gboolean	e_selection_data_targets_include_html
-					(GtkSelectionData *selection_data);
+					(EGtkSelectionData *selection_data);
 gboolean	e_targets_include_calendar
-					(GdkAtom *targets,
+					(EGtkAtom *targets,
 					 gint n_targets);
 gboolean	e_targets_include_directory
-					(GdkAtom *targets,
+					(EGtkAtom *targets,
 					 gint n_targets);
-gboolean	e_targets_include_html	(GdkAtom *targets,
+gboolean	e_targets_include_html	(EGtkAtom *targets,
 					 gint n_targets);
 
 /* Clipboard Functions */
 
 void		e_clipboard_set_calendar
-					(GtkClipboard *clipboard,
+					(GdkClipboard *clipboard,
 					 const gchar *source,
 					 gint length);
 void		e_clipboard_set_directory
-					(GtkClipboard *clipboard,
+					(GdkClipboard *clipboard,
 					 const gchar *source,
 					 gint length);
-void		e_clipboard_set_html	(GtkClipboard *clipboard,
+void		e_clipboard_set_html	(GdkClipboard *clipboard,
 					 const gchar *source,
 					 gint length);
 void		e_clipboard_request_calendar
-					(GtkClipboard *clipboard,
-					 GtkClipboardTextReceivedFunc callback,
+					(GdkClipboard *clipboard,
+					 EGtkClipboardTextReceivedFunc callback,
 					 gpointer user_data);
 void		e_clipboard_request_directory
-					(GtkClipboard *clipboard,
-					 GtkClipboardTextReceivedFunc callback,
+					(GdkClipboard *clipboard,
+					 EGtkClipboardTextReceivedFunc callback,
 					 gpointer user_data);
 void		e_clipboard_request_html
-					(GtkClipboard *clipboard,
-					 GtkClipboardTextReceivedFunc callback,
+					(GdkClipboard *clipboard,
+					 EGtkClipboardTextReceivedFunc callback,
 					 gpointer user_data);
 gchar *		e_clipboard_wait_for_calendar
-					(GtkClipboard *clipboard);
+					(GdkClipboard *clipboard);
 gchar *		e_clipboard_wait_for_directory
-					(GtkClipboard *clipboard);
+					(GdkClipboard *clipboard);
 gchar *		e_clipboard_wait_for_html
-					(GtkClipboard *clipboard);
+					(GdkClipboard *clipboard);
 gboolean	e_clipboard_wait_is_calendar_available
-					(GtkClipboard *clipboard);
+					(GdkClipboard *clipboard);
 gboolean	e_clipboard_wait_is_directory_available
-					(GtkClipboard *clipboard);
+					(GdkClipboard *clipboard);
 gboolean	e_clipboard_wait_is_html_available
-					(GtkClipboard *clipboard);
+					(GdkClipboard *clipboard);
 
 /* Drag and Drop Functions */
 

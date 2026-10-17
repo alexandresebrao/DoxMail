@@ -335,7 +335,7 @@ compose_to_meeting_content_ready_cb (GObject *source_object,
 
 		g_object_unref (comp);
 
-		gtk_widget_destroy (GTK_WIDGET (async_context->composer));
+		e_gtk_widget_destroy (GTK_WIDGET (async_context->composer));
 	}
 
 	e_content_editor_util_free_content_hash (content_hash);

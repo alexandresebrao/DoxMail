@@ -62,8 +62,8 @@ catd_response (GtkWidget *w,
 		dialog = e_cert_manager_new_certificate_viewer (GTK_WINDOW (data->dialog), data->cert);
 
 		g_signal_stop_emission_by_name (w, "response");
-		gtk_dialog_run (GTK_DIALOG (dialog));
-		gtk_widget_destroy (dialog);
+		e_gtk_dialog_run (GTK_DIALOG (dialog));
+		e_gtk_widget_destroy (dialog);
 
 		break; }
 	}
@@ -88,11 +88,11 @@ ca_trust_dialog_show (ECert *cert,
 	ctd_data->dialog = e_builder_get_widget (ctd_data->builder, "ca-trust-dialog");
 
 	dialog = GTK_DIALOG (ctd_data->dialog);
-	action_area = gtk_dialog_get_action_area (dialog);
+	action_area = e_gtk_dialog_get_action_area (dialog);
 	content_area = gtk_dialog_get_content_area (dialog);
 
-	gtk_container_set_border_width (GTK_CONTAINER (action_area), 12);
-	gtk_container_set_border_width (GTK_CONTAINER (content_area), 0);
+	e_gtk_widget_set_border_width (action_area, 12);
+	e_gtk_widget_set_border_width (content_area, 0);
 
 	ctd_data->cert = g_object_ref (cert);
 

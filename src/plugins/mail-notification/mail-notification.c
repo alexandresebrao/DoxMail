@@ -817,7 +817,7 @@ sound_file_set_cb (GtkFileChooser *file_chooser,
 	GSettings *settings;
 
 	settings = e_util_ref_settings ("org.gnome.evolution.plugin.mail-notification");
-	file = gtk_file_chooser_get_filename (file_chooser);
+	file = e_gtk_file_chooser_get_filename (file_chooser);
 
 	g_settings_set_string (settings, CONF_KEY_SOUND_FILE, (file != NULL) ? file : "");
 
@@ -834,7 +834,7 @@ sound_play_cb (GtkWidget *widget,
 	if (!gtk_toggle_button_get_active (scw->enable))
 		return;
 
-	file = gtk_file_chooser_get_filename (scw->filechooser);
+	file = e_gtk_file_chooser_get_filename (scw->filechooser);
 
 	do_play_sound (
 		gtk_toggle_button_get_active (scw->beep),
@@ -941,7 +941,7 @@ get_config_widget_sound (void)
 
 	text = _("_Play sound when a new message arrives");
 	widget = gtk_check_button_new_with_mnemonic (text);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	settings = e_util_ref_settings ("org.gnome.evolution.plugin.mail-notification");
@@ -955,7 +955,7 @@ get_config_widget_sound (void)
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
 	gtk_widget_set_margin_start (widget, 12);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	e_binding_bind_property (
@@ -967,7 +967,7 @@ get_config_widget_sound (void)
 
 	text = _("_Beep");
 	widget = gtk_radio_button_new_with_mnemonic (group, text);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	g_settings_bind (
@@ -980,7 +980,7 @@ get_config_widget_sound (void)
 
 	text = _("Use sound _theme");
 	widget = gtk_radio_button_new_with_mnemonic (group, text);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	g_settings_bind (
@@ -992,14 +992,14 @@ get_config_widget_sound (void)
 	group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (widget));
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
 
 	text = _("Play _file:");
 	widget = gtk_radio_button_new_with_mnemonic (group, text);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	g_settings_bind (
@@ -1007,18 +1007,15 @@ get_config_widget_sound (void)
 		widget, "active", G_SETTINGS_BIND_DEFAULT);
 
 	text = _("Select sound file");
-	widget = gtk_file_chooser_button_new (
-		text, GTK_FILE_CHOOSER_ACTION_OPEN);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	widget = e_gtk_file_chooser_button_new (text, GTK_FILE_CHOOSER_ACTION_OPEN);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	scw->filechooser = GTK_FILE_CHOOSER (widget);
 
 	widget = gtk_button_new ();
-	gtk_button_set_image (
-		GTK_BUTTON (widget), gtk_image_new_from_icon_name (
-		"media-playback-start", GTK_ICON_SIZE_BUTTON));
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_button_set_image (GTK_BUTTON (widget), gtk_image_new_from_icon_name ("media-playback-start"));
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	g_signal_connect (
@@ -1028,7 +1025,7 @@ get_config_widget_sound (void)
 	file = g_settings_get_string (settings, CONF_KEY_SOUND_FILE);
 
 	if (file && *file)
-		gtk_file_chooser_set_filename (scw->filechooser, file);
+		e_gtk_file_chooser_set_filename (scw->filechooser, file);
 
 	g_object_unref (settings);
 	g_free (file);
@@ -1163,7 +1160,7 @@ get_config_widget_accounts (void)
 		"valign", GTK_ALIGN_CENTER,
 		"vexpand", FALSE,
 		NULL);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	label = widget;
 
 	widget = gtk_scrolled_window_new (NULL, NULL);
@@ -1177,7 +1174,7 @@ get_config_widget_accounts (void)
 		"shadow-type", GTK_SHADOW_IN,
 		NULL);
 
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 
 	list_store = gtk_list_store_new (E_MAIL_NOTIFY_ACCOUNTS_N_COLUMNS,
 		G_TYPE_STRING,
@@ -1261,7 +1258,7 @@ get_config_widget_accounts (void)
 
 	g_object_unref (list_store);
 
-	gtk_container_add (GTK_CONTAINER (widget), tree_view);
+	e_gtk_container_add (widget, tree_view);
 	gtk_label_set_mnemonic_widget (GTK_LABEL (label), tree_view);
 
 	column = gtk_tree_view_column_new ();
@@ -1292,7 +1289,7 @@ get_config_widget_accounts (void)
 
 	gtk_tree_view_append_column (GTK_TREE_VIEW (tree_view), column);
 
-	gtk_widget_show_all (container);
+	gtk_widget_set_visible (container, TRUE);
 
 	return container;
 }
@@ -1313,7 +1310,7 @@ get_cfg_widget (void)
 	gtk_widget_show (notebook);
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 12);
-	gtk_container_set_border_width (GTK_CONTAINER (widget), 12);
+	e_gtk_widget_set_border_width (widget, 12);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -1328,13 +1325,13 @@ get_cfg_widget (void)
 		"use-markup", TRUE,
 		"label", tmp,
 		NULL);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 	g_free (tmp);
 
 	text = _("Notify new messages for _Inbox only");
 	widget = gtk_check_button_new_with_mnemonic (text);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	g_settings_bind (
@@ -1344,13 +1341,13 @@ get_cfg_widget (void)
 	if (e_util_is_running_gnome ()) {
 		widget = gtk_button_new_with_mnemonic ("Open _GNOME Notification settings");
 		g_signal_connect (widget, "clicked", G_CALLBACK (e_mail_notif_open_gnome_notification_settings_cb), NULL);
-		gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+		e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 		gtk_widget_show (widget);
 	} else {
 #ifdef HAVE_LIBNOTIFY
 		text = _("Show _notification when a new message arrives");
 		widget = gtk_check_button_new_with_mnemonic (text);
-		gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+		e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 		gtk_widget_show (widget);
 
 		g_settings_bind (
@@ -1359,7 +1356,7 @@ get_cfg_widget (void)
 #endif
 
 		widget = get_config_widget_sound ();
-		gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+		e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	}
 
 	gtk_notebook_append_page (GTK_NOTEBOOK (notebook), container, gtk_label_new (_("Configuration")));

@@ -165,7 +165,7 @@ mail_junk_options_rebuild (EMailJunkOptions *options)
 		/* Set extra padding to 12px, since only one child of
 		 * 'option_box' is visible at a time, and we still want
 		 * the extra padding if the first grid row is invisible. */
-		gtk_box_pack_start (option_box, widget, FALSE, FALSE, 12);
+		e_gtk_box_pack_start (option_box, widget, FALSE, FALSE, 12);
 	}
 
 	/* Synchronize the combo box with the active junk filter. */

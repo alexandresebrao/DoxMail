@@ -70,7 +70,6 @@ e_shell_run_open_dialog (EShell *shell,
 
 	file_chooser = GTK_FILE_CHOOSER (native);
 
-	gtk_file_chooser_set_local_only (file_chooser, FALSE);
 
 	e_util_load_file_chooser_folder (file_chooser);
 
@@ -78,10 +77,10 @@ e_shell_run_open_dialog (EShell *shell,
 	if (customize_func != NULL)
 		customize_func (native, customize_data);
 
-	if (gtk_native_dialog_run (GTK_NATIVE_DIALOG (native)) == GTK_RESPONSE_ACCEPT) {
+	if (e_gtk_native_dialog_run (GTK_NATIVE_DIALOG (native)) == GTK_RESPONSE_ACCEPT) {
 		e_util_save_file_chooser_folder (file_chooser);
 
-		chosen_file = gtk_file_chooser_get_file (file_chooser);
+		chosen_file = e_gtk_file_chooser_get_file (file_chooser);
 	}
 
 	g_object_unref (native);
@@ -134,8 +133,6 @@ e_shell_run_save_dialog (EShell *shell,
 
 	file_chooser = GTK_FILE_CHOOSER (native);
 
-	gtk_file_chooser_set_local_only (file_chooser, FALSE);
-	gtk_file_chooser_set_do_overwrite_confirmation (file_chooser, TRUE);
 
 	if (suggestion != NULL) {
 		gchar *current_name;
@@ -188,7 +185,7 @@ e_shell_run_save_dialog (EShell *shell,
 					next = strchr (next + 1, ',');
 			}
 
-			gtk_file_chooser_add_filter (file_chooser, filter);
+			e_gtk_file_chooser_add_filter (file_chooser, filter);
 		}
 
 		if (flts && flts[0]) {
@@ -196,7 +193,7 @@ e_shell_run_save_dialog (EShell *shell,
 
 			gtk_file_filter_add_pattern (filter, "*");
 			gtk_file_filter_set_name (filter, _("All Files (*)"));
-			gtk_file_chooser_add_filter (file_chooser, filter);
+			e_gtk_file_chooser_add_filter (file_chooser, filter);
 		}
 
 		g_strfreev (flts);
@@ -208,10 +205,10 @@ e_shell_run_save_dialog (EShell *shell,
 	if (customize_func != NULL)
 		customize_func (native, customize_data);
 
-	if (gtk_native_dialog_run (GTK_NATIVE_DIALOG (native)) == GTK_RESPONSE_ACCEPT) {
+	if (e_gtk_native_dialog_run (GTK_NATIVE_DIALOG (native)) == GTK_RESPONSE_ACCEPT) {
 		e_util_save_file_chooser_folder (file_chooser);
 
-		chosen_file = gtk_file_chooser_get_file (file_chooser);
+		chosen_file = e_gtk_file_chooser_get_file (file_chooser);
 	}
 
 	g_object_unref (native);
@@ -281,9 +278,6 @@ e_shell_utils_run_preferences (EShell *shell)
 	gtk_window_set_transient_for (
 		GTK_WINDOW (preferences_window),
 		window);
-	gtk_window_set_position (
-		GTK_WINDOW (preferences_window),
-		GTK_WIN_POS_CENTER_ON_PARENT);
 	gtk_window_present (GTK_WINDOW (preferences_window));
 
 	if (E_IS_SHELL_WINDOW (window)) {

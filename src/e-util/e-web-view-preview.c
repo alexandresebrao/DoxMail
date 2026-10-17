@@ -38,7 +38,7 @@ enum {
 	PROP_ESCAPE_VALUES
 };
 
-G_DEFINE_TYPE_WITH_PRIVATE (EWebViewPreview, e_web_view_preview, GTK_TYPE_PANED)
+G_DEFINE_TYPE_WITH_PRIVATE (EWebViewPreview, e_web_view_preview, E_TYPE_PANED)
 
 static void
 web_view_preview_set_property (GObject *object,
@@ -150,7 +150,7 @@ in_scrolled_window (GtkWidget *widget)
 
 	sw = gtk_scrolled_window_new (NULL, NULL);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (sw), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_container_add (GTK_CONTAINER (sw), widget);
+	e_gtk_container_add (sw, widget);
 
 	gtk_widget_show (widget);
 	gtk_widget_show (sw);
@@ -174,12 +174,12 @@ e_web_view_preview_init (EWebViewPreview *preview)
 	gtk_widget_hide (tree_view_sw);
 	gtk_widget_show (web_view);
 
-	gtk_paned_pack1 (GTK_PANED (preview), tree_view_sw, FALSE, FALSE);
-	gtk_paned_pack2 (GTK_PANED (preview), web_view, TRUE, TRUE);
+	e_gtk_paned_pack1 (preview, tree_view_sw, FALSE, FALSE);
+	e_gtk_paned_pack2 (preview, web_view, TRUE, TRUE);
 
 	/* rawly 3 lines of a text plus a little bit more */
-	if (gtk_paned_get_position (GTK_PANED (preview)) < 85)
-		gtk_paned_set_position (GTK_PANED (preview), 85);
+	if (e_gtk_paned_get_position (preview) < 85)
+		e_gtk_paned_set_position (preview, 85);
 }
 
 GtkWidget *
@@ -193,7 +193,7 @@ e_web_view_preview_get_tree_view (EWebViewPreview *preview)
 {
 	g_return_val_if_fail (E_IS_WEB_VIEW_PREVIEW (preview), NULL);
 
-	return GTK_TREE_VIEW (gtk_bin_get_child (GTK_BIN (gtk_paned_get_child1 (GTK_PANED (preview)))));
+	return GTK_TREE_VIEW (e_gtk_bin_get_child (e_gtk_paned_get_child1 (preview)));
 }
 
 GtkWidget *
@@ -201,7 +201,7 @@ e_web_view_preview_get_preview (EWebViewPreview *preview)
 {
 	g_return_val_if_fail (E_IS_WEB_VIEW_PREVIEW (preview), NULL);
 
-	return gtk_paned_get_child2 (GTK_PANED (preview));
+	return e_gtk_paned_get_child2 (preview);
 }
 
 void
@@ -213,13 +213,13 @@ e_web_view_preview_set_preview (EWebViewPreview *preview,
 	g_return_if_fail (E_IS_WEB_VIEW_PREVIEW (preview));
 	g_return_if_fail (GTK_IS_WIDGET (preview_widget));
 
-	old_child = gtk_paned_get_child2 (GTK_PANED (preview));
+	old_child = e_gtk_paned_get_child2 (preview);
 	if (old_child) {
 		g_return_if_fail (old_child != preview_widget);
-		gtk_widget_destroy (old_child);
+		e_gtk_widget_destroy (old_child);
 	}
 
-	gtk_paned_pack2 (GTK_PANED (preview), preview_widget, TRUE, TRUE);
+	e_gtk_paned_pack2 (preview, preview_widget, TRUE, TRUE);
 }
 
 void
@@ -227,7 +227,7 @@ e_web_view_preview_show_tree_view (EWebViewPreview *preview)
 {
 	g_return_if_fail (E_IS_WEB_VIEW_PREVIEW (preview));
 
-	gtk_widget_show (gtk_paned_get_child1 (GTK_PANED (preview)));
+	gtk_widget_show (e_gtk_paned_get_child1 (preview));
 }
 
 void
@@ -235,7 +235,7 @@ e_web_view_preview_hide_tree_view (EWebViewPreview *preview)
 {
 	g_return_if_fail (E_IS_WEB_VIEW_PREVIEW (preview));
 
-	gtk_widget_hide (gtk_paned_get_child1 (GTK_PANED (preview)));
+	gtk_widget_hide (e_gtk_paned_get_child1 (preview));
 }
 
 gboolean

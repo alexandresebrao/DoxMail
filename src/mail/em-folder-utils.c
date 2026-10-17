@@ -583,14 +583,14 @@ em_folder_utils_copy_folder (GtkWindow *parent,
 	em_folder_tree_set_excluded_func (
 		folder_tree, emfu_copy_folder_exclude, cfd);
 
-	if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
+	if (e_gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
 		const gchar *uri;
 
 		uri = em_folder_selector_get_selected_uri (selector);
 		emfu_copy_folder_selected (session, alert_sink, uri, cfd);
 	}
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 }
 
 const gchar *

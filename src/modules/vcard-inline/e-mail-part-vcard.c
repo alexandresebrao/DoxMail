@@ -117,15 +117,15 @@ mail_part_vcard_save_clicked_cb (EWebView *web_view,
 	e_source_selector_set_primary_selection (selector, source);
 	g_object_unref (source);
 
-	if (gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_OK) {
-		gtk_widget_destroy (dialog);
+	if (e_gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_OK) {
+		e_gtk_widget_destroy (dialog);
 		return;
 	}
 
 	source = e_source_selector_dialog_peek_primary_selection (
 		E_SOURCE_SELECTOR_DIALOG (dialog));
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 
 	g_return_if_fail (source != NULL);
 

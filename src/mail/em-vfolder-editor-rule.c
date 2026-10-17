@@ -366,7 +366,7 @@ vfr_folder_response (EMFolderSelector *selector,
 		set_sensitive (data);
 	}
 
-	gtk_widget_destroy (GTK_WIDGET (selector));
+	e_gtk_widget_destroy (GTK_WIDGET (selector));
 	g_list_free_full (selected_uris, g_free);
 }
 
@@ -381,8 +381,8 @@ source_add (GtkWidget *widget,
 	GtkWidget *dialog;
 	gpointer parent;
 
-	parent = gtk_widget_get_toplevel (widget);
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (widget);
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	model = em_folder_tree_model_get_default ();
 
@@ -574,17 +574,13 @@ static void
 tweaks_custom_icon_button_clicked_cb (GtkWidget *button,
 				      FolderTweaksData *ftd)
 {
-	GtkWidget *dialog;
 	GtkWidget *toplevel;
 	GFile *file;
 
-	toplevel = gtk_widget_get_toplevel (button);
-	dialog = e_image_chooser_dialog_new (_("Select Custom Icon"),
-		GTK_IS_WINDOW (toplevel) ? GTK_WINDOW (toplevel) : NULL);
+	toplevel = e_gtk_widget_get_toplevel (button);
 
-	file = e_image_chooser_dialog_run (E_IMAGE_CHOOSER_DIALOG (dialog));
-
-	gtk_widget_destroy (dialog);
+	file = e_image_chooser_dialog_run (e_image_chooser_dialog_new (_("Select Custom Icon"),
+		GTK_IS_WINDOW (toplevel) ? GTK_WINDOW (toplevel) : NULL));
 
 	if (file) {
 		gchar *filename;
@@ -597,7 +593,7 @@ tweaks_custom_icon_button_clicked_cb (GtkWidget *button,
 			image = gtk_button_get_image (GTK_BUTTON (button));
 			custom_icon = g_file_icon_new (file);
 
-			gtk_image_set_from_gicon (GTK_IMAGE (image), custom_icon, GTK_ICON_SIZE_BUTTON);
+			gtk_image_set_from_gicon (GTK_IMAGE (image), custom_icon);
 
 			g_clear_object (&custom_icon);
 
@@ -623,15 +619,14 @@ add_tweaks_custom_icon_row (GtkBox *vbox,
 	g_return_if_fail (ftd != NULL);
 
 	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 4);
-	gtk_box_pack_start (vbox, hbox, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (vbox, hbox, FALSE, FALSE, 0);
 
 	checkbox = gtk_check_button_new_with_mnemonic (_("_Use custom icon"));
-	gtk_box_pack_start (GTK_BOX (hbox), checkbox, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), checkbox, FALSE, FALSE, 0);
 
 	button = gtk_button_new ();
-	image = gtk_image_new_from_icon_name (NULL, GTK_ICON_SIZE_BUTTON);
-	gtk_button_set_image (GTK_BUTTON (button), image);
-	gtk_button_set_always_show_image (GTK_BUTTON (button), TRUE);
+	image = gtk_image_new_from_icon_name (NULL);
+	e_gtk_button_set_image (GTK_BUTTON (button), image);
 
 	ftd->image_button = button;
 
@@ -646,12 +641,12 @@ add_tweaks_custom_icon_row (GtkBox *vbox,
 		g_clear_object (&file);
 
 		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (checkbox), TRUE);
-		gtk_image_set_from_gicon (GTK_IMAGE (image), custom_icon, GTK_ICON_SIZE_BUTTON);
+		gtk_image_set_from_gicon (GTK_IMAGE (image), custom_icon);
 
 		g_clear_object (&custom_icon);
 	}
 
-	gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
 
 	e_binding_bind_property (
 		checkbox, "active",
@@ -665,7 +660,7 @@ add_tweaks_custom_icon_row (GtkBox *vbox,
 	g_signal_connect (button, "clicked",
 		G_CALLBACK (tweaks_custom_icon_button_clicked_cb), ftd);
 
-	gtk_widget_show_all (hbox);
+	gtk_widget_set_visible (hbox, TRUE);
 }
 
 static void
@@ -707,14 +702,14 @@ add_tweaks_text_color_row (GtkBox *vbox,
 	g_return_if_fail (ftd != NULL);
 
 	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 4);
-	gtk_box_pack_start (vbox, hbox, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (vbox, hbox, FALSE, FALSE, 0);
 
 	checkbox = gtk_check_button_new_with_mnemonic (_("Use te_xt color"));
-	gtk_box_pack_start (GTK_BOX (hbox), checkbox, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), checkbox, FALSE, FALSE, 0);
 
 	button = gtk_color_button_new ();
 
-	gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
 
 	ftd->color_chooser = button;
 
@@ -735,7 +730,7 @@ add_tweaks_text_color_row (GtkBox *vbox,
 	g_signal_connect (button, "color-set",
 		G_CALLBACK (tweaks_text_color_button_color_set_cb), ftd);
 
-	gtk_widget_show_all (hbox);
+	gtk_widget_set_visible (hbox, TRUE);
 }
 
 static void
@@ -759,7 +754,7 @@ em_vfolder_editor_rule_customize_content_cb (EFilterRule *rule,
 	gtk_widget_set_margin_start (GTK_WIDGET (vbox), 12);
 	gtk_widget_show (GTK_WIDGET (vbox));
 
-	gtk_container_add (GTK_CONTAINER (expander), GTK_WIDGET (vbox));
+	e_gtk_container_add (expander, GTK_WIDGET (vbox));
 
 	tweaks = e_mail_folder_tweaks_new ();
 	ftd = folder_tweaks_data_new (rc, rule->name, tweaks);
@@ -846,14 +841,14 @@ get_widget (EFilterRule *fr,
 		"xalign", 0.0,
 		NULL);
 
-	gtk_container_add (GTK_CONTAINER (frame), label);
+	e_gtk_container_add (frame, label);
 
 	hgrid = gtk_grid_new ();
 	gtk_orientable_set_orientation (GTK_ORIENTABLE (hgrid), GTK_ORIENTATION_HORIZONTAL);
-	gtk_container_add (GTK_CONTAINER (frame), hgrid);
+	e_gtk_container_add (frame, hgrid);
 
 	label = gtk_label_new ("    ");
-	gtk_container_add (GTK_CONTAINER (hgrid), label);
+	e_gtk_container_add (hgrid, label);
 
 	vgrid = gtk_grid_new ();
 	g_object_set (
@@ -862,15 +857,15 @@ get_widget (EFilterRule *fr,
 		"border-width", 6,
 		"row-spacing", 6,
 		NULL);
-	gtk_container_add (GTK_CONTAINER (hgrid), vgrid);
+	e_gtk_container_add (hgrid, vgrid);
 
 	hgrid = gtk_grid_new ();
 	gtk_orientable_set_orientation (GTK_ORIENTABLE (hgrid), GTK_ORIENTATION_HORIZONTAL);
 	gtk_grid_set_column_spacing (GTK_GRID (hgrid), 6);
-	gtk_container_add (GTK_CONTAINER (vgrid), hgrid);
+	e_gtk_container_add (vgrid, hgrid);
 
 	autoupdate = gtk_check_button_new_with_mnemonic (_("Automatically update on any _source folder change"));
-	gtk_container_add (GTK_CONTAINER (hgrid), autoupdate);
+	e_gtk_container_add (hgrid, autoupdate);
 
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (autoupdate), em_vfolder_rule_get_autoupdate (vr));
 	g_signal_connect (autoupdate, "toggled", G_CALLBACK (autoupdate_toggled_cb), data);
@@ -878,19 +873,19 @@ get_widget (EFilterRule *fr,
 	hgrid = gtk_grid_new ();
 	gtk_orientable_set_orientation (GTK_ORIENTABLE (hgrid), GTK_ORIENTATION_HORIZONTAL);
 	gtk_grid_set_column_spacing (GTK_GRID (hgrid), 6);
-	gtk_container_add (GTK_CONTAINER (vgrid), hgrid);
+	e_gtk_container_add (vgrid, hgrid);
 
 	combobox = gtk_combo_box_text_new ();
 	gtk_combo_box_text_append (GTK_COMBO_BOX_TEXT (combobox), NULL, _("All local folders"));
 	gtk_combo_box_text_append (GTK_COMBO_BOX_TEXT (combobox), NULL, _("All active remote folders"));
 	gtk_combo_box_text_append (GTK_COMBO_BOX_TEXT (combobox), NULL, _("All local and active remote folders"));
 	gtk_combo_box_text_append (GTK_COMBO_BOX_TEXT (combobox), NULL, _("Specific folders"));
-	gtk_container_add (GTK_CONTAINER (hgrid), combobox);
+	e_gtk_container_add (hgrid, combobox);
 
 	hgrid = gtk_grid_new ();
 	gtk_orientable_set_orientation (GTK_ORIENTABLE (hgrid), GTK_ORIENTATION_HORIZONTAL);
 	gtk_grid_set_column_spacing (GTK_GRID (hgrid), 6);
-	gtk_container_add (GTK_CONTAINER (vgrid), hgrid);
+	e_gtk_container_add (vgrid, hgrid);
 
 	scrolled_window = gtk_scrolled_window_new (NULL, NULL);
 	g_object_set (
@@ -903,7 +898,7 @@ get_widget (EFilterRule *fr,
 		"valign", GTK_ALIGN_FILL,
 		"vexpand", TRUE,
 		NULL);
-	gtk_container_add (GTK_CONTAINER (hgrid), scrolled_window);
+	e_gtk_container_add (hgrid, scrolled_window);
 
 	model = gtk_list_store_new (3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN);
 	renderer = gtk_cell_renderer_text_new ();
@@ -930,7 +925,7 @@ get_widget (EFilterRule *fr,
 	column = gtk_tree_view_get_column (GTK_TREE_VIEW (tree_view), 0);
 	gtk_tree_view_column_set_expand (column, TRUE);
 
-	gtk_container_add (GTK_CONTAINER (scrolled_window), tree_view);
+	e_gtk_container_add (scrolled_window, tree_view);
 
 	vgrid = gtk_grid_new ();
 	g_object_set (
@@ -939,7 +934,7 @@ get_widget (EFilterRule *fr,
 		"border-width", 6,
 		"row-spacing", 6,
 		NULL);
-	gtk_container_add (GTK_CONTAINER (hgrid), vgrid);
+	e_gtk_container_add (hgrid, vgrid);
 
 	data->buttons[BUTTON_ADD] = e_dialog_button_new_with_icon ("list-add", _("_Add"));
 	g_signal_connect (
@@ -951,8 +946,8 @@ get_widget (EFilterRule *fr,
 		data->buttons[BUTTON_REMOVE], "clicked",
 		G_CALLBACK (source_remove), data);
 
-	gtk_container_add (GTK_CONTAINER (vgrid), data->buttons[BUTTON_ADD]);
-	gtk_container_add (GTK_CONTAINER (vgrid), data->buttons[BUTTON_REMOVE]);
+	e_gtk_container_add (vgrid, data->buttons[BUTTON_ADD]);
+	e_gtk_container_add (vgrid, data->buttons[BUTTON_REMOVE]);
 
 	data->tree_view = GTK_TREE_VIEW (tree_view);
 	data->model = model;
@@ -995,9 +990,9 @@ get_widget (EFilterRule *fr,
 
 	gtk_widget_set_valign (frame, GTK_ALIGN_FILL);
 	gtk_widget_set_vexpand (frame, TRUE);
-	gtk_widget_show_all (frame);
+	gtk_widget_set_visible (frame, TRUE);
 
-	gtk_container_add (GTK_CONTAINER (widget), frame);
+	e_gtk_container_add (widget, frame);
 
 	return widget;
 }

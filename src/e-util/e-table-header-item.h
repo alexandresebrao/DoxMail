@@ -30,6 +30,7 @@
 #include <libxml/tree.h>
 #include <libgnomecanvas/libgnomecanvas.h>
 
+#include <e-util/e-gtk4-compat.h>
 #include <e-util/e-table-header.h>
 #include <e-util/e-table-sort-info.h>
 #include <e-util/e-table.h>
@@ -118,7 +119,7 @@ struct _ETableHeaderItem {
 	gint last_drop_x;
 	gint last_drop_y;
 	gint last_drop_time;
-	GdkDragContext *last_drop_context;
+	EGtkDragContext *last_drop_context;
 	gint scroll_idle_id;
 
 	/* For adding fields. */

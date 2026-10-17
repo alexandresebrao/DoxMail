@@ -21,7 +21,7 @@
 #include <glib/gi18n-lib.h>
 #include <gtk/gtk.h>
 
-#include <libedataserverui/libedataserverui.h>
+#include <libedataserverui4/libedataserverui4.h>
 #include <libecal/libecal.h>
 
 #include "comp-util.h"
@@ -2147,7 +2147,7 @@ etdp_delete_common (EToDoPane *to_do_pane,
 		GtkWindow *parent_window;
 		GtkWidget *toplevel;
 
-		toplevel = gtk_widget_get_toplevel (GTK_WIDGET (to_do_pane));
+		toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (to_do_pane));
 		parent_window = GTK_IS_WINDOW (toplevel) ? GTK_WINDOW (toplevel) : NULL;
 
 		if (!e_cal_component_is_instance (comp))
@@ -2295,7 +2295,7 @@ etdp_fill_popup_menu (EToDoPane *to_do_pane,
 
 	item = gtk_image_menu_item_new_with_mnemonic (_("New _Appointment…"));
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (item),
-		gtk_image_new_from_icon_name ("appointment-new", GTK_ICON_SIZE_MENU));
+		gtk_image_new_from_icon_name ("appointment-new"));
 	g_signal_connect (item, "activate",
 		G_CALLBACK (etdp_new_appointment_cb), to_do_pane);
 	gtk_widget_show (item);
@@ -2303,7 +2303,7 @@ etdp_fill_popup_menu (EToDoPane *to_do_pane,
 
 	item = gtk_image_menu_item_new_with_mnemonic (_("New _Meeting…"));
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (item),
-		gtk_image_new_from_icon_name ("stock_people", GTK_ICON_SIZE_MENU));
+		gtk_image_new_from_icon_name ("stock_people"));
 	g_signal_connect (item, "activate",
 		G_CALLBACK (etdp_new_meeting_cb), to_do_pane);
 	gtk_widget_show (item);
@@ -2311,7 +2311,7 @@ etdp_fill_popup_menu (EToDoPane *to_do_pane,
 
 	item = gtk_image_menu_item_new_with_mnemonic (_("New _Task…"));
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (item),
-		gtk_image_new_from_icon_name ("stock_task", GTK_ICON_SIZE_MENU));
+		gtk_image_new_from_icon_name ("stock_task"));
 	g_signal_connect (item, "activate",
 		G_CALLBACK (etdp_new_task_cb), to_do_pane);
 	gtk_widget_show (item);
@@ -2319,7 +2319,7 @@ etdp_fill_popup_menu (EToDoPane *to_do_pane,
 
 	item = gtk_image_menu_item_new_with_mnemonic (_("_New Assigned Task…"));
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (item),
-		gtk_image_new_from_icon_name ("stock_task-assigned-to", GTK_ICON_SIZE_MENU));
+		gtk_image_new_from_icon_name ("stock_task-assigned-to"));
 	g_signal_connect (item, "activate",
 		G_CALLBACK (etdp_new_assigned_task_cb), to_do_pane);
 	gtk_widget_show (item);
@@ -2332,7 +2332,7 @@ etdp_fill_popup_menu (EToDoPane *to_do_pane,
 
 		item = gtk_image_menu_item_new_with_mnemonic (_("_Open…"));
 		gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (item),
-			gtk_image_new_from_icon_name ("document-open", GTK_ICON_SIZE_MENU));
+			gtk_image_new_from_icon_name ("document-open"));
 		g_signal_connect (item, "activate",
 			G_CALLBACK (etdp_open_selected_cb), to_do_pane);
 		gtk_widget_show (item);
@@ -2356,7 +2356,7 @@ etdp_fill_popup_menu (EToDoPane *to_do_pane,
 			    e_cal_component_is_instance (comp)) {
 				item = gtk_image_menu_item_new_with_mnemonic (_("_Delete This Instance…"));
 				gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (item),
-					gtk_image_new_from_icon_name ("edit-delete", GTK_ICON_SIZE_MENU));
+					gtk_image_new_from_icon_name ("edit-delete"));
 				g_signal_connect (item, "activate",
 					G_CALLBACK (etdp_delete_selected_cb), to_do_pane);
 				gtk_widget_show (item);
@@ -2365,7 +2365,7 @@ etdp_fill_popup_menu (EToDoPane *to_do_pane,
 				if (!e_client_check_capability (E_CLIENT (client), E_CAL_STATIC_CAPABILITY_NO_THISANDFUTURE)) {
 					item = gtk_image_menu_item_new_with_mnemonic (_("Delete This and F_uture Occurrences…"));
 					gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (item),
-						gtk_image_new_from_icon_name ("edit-delete", GTK_ICON_SIZE_MENU));
+						gtk_image_new_from_icon_name ("edit-delete"));
 					g_signal_connect (item, "activate",
 						G_CALLBACK (etdp_delete_this_and_future_cb), to_do_pane);
 					gtk_widget_show (item);
@@ -2374,7 +2374,7 @@ etdp_fill_popup_menu (EToDoPane *to_do_pane,
 
 				item = gtk_image_menu_item_new_with_mnemonic (_("D_elete All Instances…"));
 				gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (item),
-					gtk_image_new_from_icon_name ("edit-delete", GTK_ICON_SIZE_MENU));
+					gtk_image_new_from_icon_name ("edit-delete"));
 				g_signal_connect (item, "activate",
 					G_CALLBACK (etdp_delete_series_cb), to_do_pane);
 				gtk_widget_show (item);
@@ -2382,7 +2382,7 @@ etdp_fill_popup_menu (EToDoPane *to_do_pane,
 			} else {
 				item = gtk_image_menu_item_new_with_mnemonic (_("_Delete…"));
 				gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (item),
-					gtk_image_new_from_icon_name ("edit-delete", GTK_ICON_SIZE_MENU));
+					gtk_image_new_from_icon_name ("edit-delete"));
 				g_signal_connect (item, "activate",
 					G_CALLBACK (etdp_delete_series_cb), to_do_pane);
 				gtk_widget_show (item);
@@ -2740,7 +2740,7 @@ e_to_do_pane_constructed (GObject *object)
 
 	widget = gtk_scrolled_window_new (NULL, NULL);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (widget), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-	gtk_container_add (GTK_CONTAINER (widget), GTK_WIDGET (tree_view));
+	e_gtk_container_add (widget, GTK_WIDGET (tree_view));
 
 	g_object_set (G_OBJECT (widget),
 		"halign", GTK_ALIGN_FILL,
@@ -2804,7 +2804,7 @@ e_to_do_pane_constructed (GObject *object)
 	gtk_tree_view_set_headers_visible (tree_view, FALSE);
 	gtk_tree_view_set_tooltip_column (tree_view, COLUMN_TOOLTIP);
 
-	gtk_widget_show_all (GTK_WIDGET (grid));
+	gtk_widget_set_visible (GTK_WIDGET (grid), TRUE);
 
 	to_do_pane->priv->events_data_model = e_cal_data_model_new (registry, e_to_do_pane_submit_thread_job, G_OBJECT (to_do_pane));
 	to_do_pane->priv->tasks_data_model = e_cal_data_model_new (registry, e_to_do_pane_submit_thread_job, G_OBJECT (to_do_pane));

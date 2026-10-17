@@ -44,7 +44,7 @@ filter_file_filename_changed (GtkFileChooser *file_chooser,
 	EFilterFile *file = E_FILTER_FILE (element);
 	const gchar *path;
 
-	path = gtk_file_chooser_get_filename (file_chooser);
+	path = e_gtk_file_chooser_get_filename (file_chooser);
 
 	g_free (file->path);
 	file->path = g_strdup (path);
@@ -180,10 +180,8 @@ filter_file_get_widget (EFilterElement *element)
 	EFilterFile *file = E_FILTER_FILE (element);
 	GtkWidget *widget;
 
-	widget = gtk_file_chooser_button_new (
-		_("Choose a File"), GTK_FILE_CHOOSER_ACTION_OPEN);
-	gtk_file_chooser_set_filename (
-		GTK_FILE_CHOOSER (widget), file->path);
+	widget = e_gtk_file_chooser_button_new (_("Choose a File"), GTK_FILE_CHOOSER_ACTION_OPEN);
+	e_gtk_file_chooser_set_filename (widget, file->path);
 	g_signal_connect (
 		widget, "selection-changed",
 		G_CALLBACK (filter_file_filename_changed), element);

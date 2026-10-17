@@ -89,7 +89,6 @@ mail_config_identity_page_signature_editor_created_cb (GObject *source_object,
 		g_warning ("%s: Failed to create signature editor: %s", G_STRFUNC, error->message);
 		g_clear_error (&error);
 	} else {
-		gtk_window_set_position (GTK_WINDOW (editor), GTK_WIN_POS_CENTER);
 		gtk_widget_show (editor);
 	}
 }
@@ -504,10 +503,10 @@ mail_config_identity_page_constructed (GObject *object)
 		 "in, unless you wish to include this information in email "
 		 "you send.");
 	widget = gtk_label_new (text);
-	gtk_label_set_line_wrap (GTK_LABEL (widget), TRUE);
+	gtk_label_set_wrap (GTK_LABEL (widget), TRUE);
 	gtk_label_set_width_chars (GTK_LABEL (widget), 20);
 	gtk_label_set_xalign (GTK_LABEL (widget), 0);
-	gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
 
 	e_binding_bind_property (
 		page, "show-instructions",
@@ -519,7 +518,7 @@ mail_config_identity_page_constructed (GObject *object)
 	widget = gtk_grid_new ();
 	gtk_grid_set_row_spacing (GTK_GRID (widget), 6);
 	gtk_grid_set_column_spacing (GTK_GRID (widget), 6);
-	gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
 
 	e_binding_bind_property (
 		page, "show-account-info",
@@ -578,7 +577,7 @@ mail_config_identity_page_constructed (GObject *object)
 	widget = gtk_grid_new ();
 	gtk_grid_set_row_spacing (GTK_GRID (widget), 6);
 	gtk_grid_set_column_spacing (GTK_GRID (widget), 6);
-	gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -665,7 +664,7 @@ mail_config_identity_page_constructed (GObject *object)
 	widget = gtk_grid_new ();
 	gtk_grid_set_row_spacing (GTK_GRID (widget), 6);
 	gtk_grid_set_column_spacing (GTK_GRID (widget), 6);
-	gtk_box_pack_start (GTK_BOX (main_box), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (main_box), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -798,14 +797,14 @@ mail_config_identity_page_constructed (GObject *object)
 	container = widget;
 
 	scrolledwindow = gtk_scrolled_window_new (NULL, NULL);
-	gtk_box_pack_start (GTK_BOX (container), scrolledwindow, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), scrolledwindow, TRUE, TRUE, 0);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrolledwindow), GTK_SHADOW_IN);
+	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (scrolledwindow), TRUE);
 	gtk_widget_show (scrolledwindow);
 
 	model = GTK_TREE_MODEL (gtk_list_store_new (1, G_TYPE_STRING));
 	widget = gtk_tree_view_new_with_model (model);
-	gtk_container_add (GTK_CONTAINER (scrolledwindow), widget);
+	e_gtk_container_add (scrolledwindow, widget);
 	gtk_widget_show (widget);
 
 	gtk_label_set_mnemonic_widget (GTK_LABEL (label), widget);
@@ -833,20 +832,20 @@ mail_config_identity_page_constructed (GObject *object)
 
 	page->priv->aliases_treeview = widget;
 
-	widget = gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
+	widget = e_gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
 	g_object_set (G_OBJECT (widget),
 		"halign", GTK_ALIGN_START,
 		"hexpand", FALSE,
 		"valign", GTK_ALIGN_START,
 		"vexpand", FALSE,
 		NULL);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	gtk_widget_show (widget);
 
 	container = widget;
 
 	widget = e_dialog_button_new_with_icon ("list-add", _("A_dd"));
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	gtk_widget_show (widget);
 
 	g_signal_connect (widget, "clicked",
@@ -855,7 +854,7 @@ mail_config_identity_page_constructed (GObject *object)
 	page->priv->aliases_add_button = widget;
 
 	widget = gtk_button_new_with_mnemonic (_("Edi_t"));
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	gtk_widget_show (widget);
 
 	g_signal_connect (widget, "clicked",
@@ -864,7 +863,7 @@ mail_config_identity_page_constructed (GObject *object)
 	page->priv->aliases_edit_button = widget;
 
 	widget = e_dialog_button_new_with_icon ("list-remove", _("_Remove"));
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	gtk_widget_show (widget);
 
 	g_signal_connect (widget, "clicked",
@@ -891,7 +890,7 @@ mail_config_identity_page_constructed (GObject *object)
 
 	page->priv->autodiscover_check = widget;
 
-	gtk_container_add (GTK_CONTAINER (main_box), widget);
+	e_gtk_container_add (main_box, widget);
 
 	e_mail_config_page_set_content (E_MAIL_CONFIG_PAGE (page), main_box);
 

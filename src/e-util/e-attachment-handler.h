@@ -27,6 +27,7 @@
 
 #include <libebackend/libebackend.h>
 
+#include <e-util/e-gtk4-compat.h>
 #include <e-util/e-attachment-view.h>
 
 /* Standard GObject macros */
@@ -63,7 +64,7 @@ struct _EAttachmentHandlerClass {
 	EExtensionClass parent_class;
 
 	GdkDragAction	(*get_drag_actions)	(EAttachmentHandler *handler);
-	const GtkTargetEntry *
+	const EGtkTargetEntry *
 			(*get_target_table)	(EAttachmentHandler *handler,
 						 guint *n_targets);
 };
@@ -73,7 +74,7 @@ EAttachmentView *
 		e_attachment_handler_get_view	(EAttachmentHandler *handler);
 GdkDragAction	e_attachment_handler_get_drag_actions
 						(EAttachmentHandler *handler);
-const GtkTargetEntry *
+const EGtkTargetEntry *
 		e_attachment_handler_get_target_table
 						(EAttachmentHandler *handler,
 						 guint *n_targets);

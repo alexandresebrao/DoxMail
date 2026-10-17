@@ -586,9 +586,9 @@ fill_combo_formats (GtkWidget *combo,
 	if (max_len > 10) {
 		GtkWidget *widget;
 
-		widget = gtk_bin_get_child (GTK_BIN (combo));
+		widget = e_gtk_bin_get_child (combo);
 		if (GTK_IS_ENTRY (widget))
-			gtk_entry_set_width_chars (GTK_ENTRY (widget), max_len + 1);
+			gtk_editable_set_width_chars (GTK_EDITABLE (widget), max_len + 1);
 	}
 }
 
@@ -772,7 +772,7 @@ e_datetime_format_add_setup_widget (GtkGrid *grid,
 
 	update_preview_widget (combo);
 
-	gtk_widget_show_all (GTK_WIDGET (grid));
+	gtk_widget_set_visible (GTK_WIDGET (grid), TRUE);
 }
 
 gchar *

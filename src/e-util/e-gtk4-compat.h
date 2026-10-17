@@ -1,0 +1,155 @@
+/*
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* Transitional helpers for the GTK 3 → GTK 4 port (DoxMail).
+ *
+ * Each one stands in for a GTK 3 call that GTK 4 removed and whose
+ * replacement depends on the widget type (gtk_container_add() becomes
+ * gtk_box_append(), gtk_window_set_child(), ...) or needs more than one
+ * call.  They let the code base move to GTK 4 mechanically; code that is
+ * touched for other reasons should use the GTK 4 API directly instead. */
+
+#if !defined (__E_UTIL_H_INSIDE__) && !defined (LIBEUTIL_COMPILATION)
+#error "Only <e-util/e-util.h> should be included directly."
+#endif
+
+#ifndef E_GTK4_COMPAT_H
+#define E_GTK4_COMPAT_H
+
+#include <gtk/gtk.h>
+#include <e-util/e-gtk-dnd-compat.h>
+#include <e-util/e-gtk-file-chooser-compat.h>
+
+G_BEGIN_DECLS
+
+/* GtkContainer */
+typedef void (*EGtkCallback) (GtkWidget *widget, gpointer user_data);
+
+void		e_gtk_container_add		(gpointer container,
+						 GtkWidget *child);
+void		e_gtk_container_remove		(gpointer container,
+						 GtkWidget *child);
+GList *		e_gtk_widget_get_children	(gpointer widget);
+void		e_gtk_container_foreach		(gpointer container,
+						 EGtkCallback callback,
+						 gpointer user_data);
+void		e_gtk_widget_set_border_width	(gpointer widget,
+						 guint border_width);
+GtkWidget *	e_gtk_bin_get_child		(gpointer bin);
+
+/* GtkBox */
+void		e_gtk_box_pack_start		(GtkBox *box,
+						 GtkWidget *child,
+						 gboolean expand,
+						 gboolean fill,
+						 guint padding);
+void		e_gtk_box_pack_end		(GtkBox *box,
+						 GtkWidget *child,
+						 gboolean expand,
+						 gboolean fill,
+						 guint padding);
+void		e_gtk_box_reorder_child		(GtkBox *box,
+						 GtkWidget *child,
+						 gint position);
+GtkWidget *	e_gtk_button_box_new		(GtkOrientation orientation);
+
+/* GtkPaned; these also take widgets made of a paned, like EPaned */
+GtkPaned *	e_gtk_paned_get_inner		(gpointer paned);
+void		e_gtk_paned_pack1		(gpointer paned,
+						 GtkWidget *child,
+						 gboolean resize,
+						 gboolean shrink);
+void		e_gtk_paned_pack2		(gpointer paned,
+						 GtkWidget *child,
+						 gboolean resize,
+						 gboolean shrink);
+GtkWidget *	e_gtk_paned_get_child1		(gpointer paned);
+GtkWidget *	e_gtk_paned_get_child2		(gpointer paned);
+gint		e_gtk_paned_get_position	(gpointer paned);
+void		e_gtk_paned_set_position	(gpointer paned,
+						 gint position);
+
+/* Widgets and windows */
+void		e_gtk_widget_destroy		(gpointer widget);
+GtkWidget *	e_gtk_widget_get_toplevel	(gpointer widget);
+gboolean	e_gtk_widget_is_toplevel	(gpointer widget);
+void		e_gtk_widget_grab_default	(GtkWidget *widget);
+void		e_gtk_widget_get_preferred_width
+						(GtkWidget *widget,
+						 gint *minimum,
+						 gint *natural);
+void		e_gtk_widget_get_preferred_height
+						(GtkWidget *widget,
+						 gint *minimum,
+						 gint *natural);
+void		e_gtk_widget_get_preferred_height_for_width
+						(GtkWidget *widget,
+						 gint width,
+						 gint *minimum,
+						 gint *natural);
+GdkSurface *	e_gtk_widget_get_surface	(GtkWidget *widget);
+void		e_gtk_button_set_image		(GtkButton *button,
+						 GtkWidget *image);
+void		e_gtk_button_set_label_and_icon	(GtkButton *button,
+						 const gchar *label,
+						 const gchar *icon_name);
+
+/* Dialogs: GTK 4 dropped the nested main loop of gtk_dialog_run() */
+gint		e_gtk_dialog_run		(GtkDialog *dialog);
+gint		e_gtk_native_dialog_run		(GtkNativeDialog *dialog);
+GtkWidget *	e_gtk_dialog_get_action_area	(GtkDialog *dialog);
+
+/* Pixel size of the GTK 3 icon sizes, for code that drew icons by size */
+gint		e_gtk_icon_size_to_pixels	(gint gtk3_icon_size);
+
+/* The GTK 3 GtkIconSize values, for the places that sized icons by them */
+#define E_GTK_ICON_SIZE_MENU		1
+#define E_GTK_ICON_SIZE_SMALL_TOOLBAR	2
+#define E_GTK_ICON_SIZE_LARGE_TOOLBAR	3
+#define E_GTK_ICON_SIZE_BUTTON		4
+#define E_GTK_ICON_SIZE_DND		5
+#define E_GTK_ICON_SIZE_DIALOG		6
+
+GtkIconTheme *	e_gtk_icon_theme_get_default	(void);
+
+/* GTK 4 has no gtk_get_current_event(); windows that call
+ * e_gtk_track_current_event() record the event being dispatched. */
+void		e_gtk_track_current_event	(GtkWidget *window);
+GdkEvent *	e_gtk_get_current_event		(void);
+guint32		e_gtk_get_current_event_time	(void);
+gboolean	e_gtk_get_current_event_state	(GdkModifierType *state);
+GdkDevice *	e_gtk_get_current_event_device	(void);
+
+/* GdkEvent accessors with the GTK 3 signatures */
+gboolean	e_gdk_event_get_state		(GdkEvent *event,
+						 GdkModifierType *state);
+gboolean	e_gdk_event_get_keyval		(GdkEvent *event,
+						 guint *keyval);
+gboolean	e_gdk_event_get_button		(GdkEvent *event,
+						 guint *button);
+gboolean	e_gdk_event_get_coords		(GdkEvent *event,
+						 gdouble *x,
+						 gdouble *y);
+gboolean	e_gdk_event_get_root_coords	(GdkEvent *event,
+						 gdouble *x,
+						 gdouble *y);
+
+gboolean	e_gtk_show_uri_on_window	(GtkWindow *parent,
+						 const gchar *uri,
+						 guint32 timestamp,
+						 GError **error);
+
+G_END_DECLS
+
+#endif /* E_GTK4_COMPAT_H */

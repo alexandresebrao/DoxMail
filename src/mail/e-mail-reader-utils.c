@@ -153,10 +153,10 @@ e_mail_reader_confirm_delete (EMailReader *reader)
 
 	label = _("Do not warn me again");
 	check_button = gtk_check_button_new_with_label (label);
-	gtk_box_pack_start (GTK_BOX (container), check_button, TRUE, TRUE, 6);
+	e_gtk_box_pack_start (GTK_BOX (container), check_button, TRUE, TRUE, 6);
 	gtk_widget_show (check_button);
 
-	response = gtk_dialog_run (GTK_DIALOG (dialog));
+	response = e_gtk_dialog_run (GTK_DIALOG (dialog));
 
 	if (response != GTK_RESPONSE_DELETE_EVENT)
 		g_settings_set_boolean (
@@ -165,7 +165,7 @@ e_mail_reader_confirm_delete (EMailReader *reader)
 			!gtk_toggle_button_get_active (
 			GTK_TOGGLE_BUTTON (check_button)));
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 
 exit:
 	g_clear_object (&folder);
@@ -297,7 +297,7 @@ e_mail_reader_delete_folder (EMailReader *reader,
 				full_display_name ? full_display_name : display_name, NULL);
 	}
 
-	if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
+	if (e_gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
 		EActivity *activity;
 		GCancellable *cancellable;
 		AsyncContext *async_context;
@@ -326,7 +326,7 @@ e_mail_reader_delete_folder (EMailReader *reader,
 
 		g_object_unref (activity);
 	} else {
-		gtk_widget_destroy (dialog);
+		e_gtk_widget_destroy (dialog);
 	}
 
 	g_free (full_display_name);
@@ -2912,7 +2912,7 @@ emru_file_chooser_filter_changed_cb (GtkFileChooser *file_chooser,
 
 	g_return_if_fail (GTK_IS_FILE_CHOOSER (file_chooser));
 
-	filter = gtk_file_chooser_get_filter (file_chooser);
+	filter = e_gtk_file_chooser_get_filter (file_chooser);
 	if (!filter)
 		return;
 
@@ -2973,13 +2973,13 @@ emru_setup_filters (GtkFileChooserNative *file_chooser_native,
 		file_info.filename = "message.eml";
 		file_info.mime_type = "message/rfc822";
 
-		filters = gtk_file_chooser_list_filters (file_chooser);
+		filters = e_gtk_file_chooser_list_filters (file_chooser);
 
 		for (link = filters; link; link = g_slist_next (link)) {
 			GtkFileFilter *filter = link->data;
 
 			if (gtk_file_filter_filter (filter, &file_info)) {
-				gtk_file_chooser_set_filter (file_chooser, filter);
+				e_gtk_file_chooser_set_filter (file_chooser, filter);
 				break;
 			}
 		}

@@ -50,10 +50,10 @@ cal_shell_view_add_action_button (GtkBox *box,
 	GtkWidget *button, *icon;
 
 	button = gtk_button_new ();
-	icon = gtk_image_new_from_icon_name (e_ui_action_get_icon_name (action), GTK_ICON_SIZE_MENU);
+	icon = gtk_image_new_from_icon_name (e_ui_action_get_icon_name (action));
 	gtk_image_set_pixel_size (GTK_IMAGE (icon), 16);
-	gtk_button_set_image (GTK_BUTTON (button), icon);
-	gtk_box_pack_start (box, button, FALSE, FALSE, 0);
+	e_gtk_button_set_image (GTK_BUTTON (button), icon);
+	e_gtk_box_pack_start (box, button, FALSE, FALSE, 0);
 	gtk_widget_show (button);
 
 	e_binding_bind_property (
@@ -690,11 +690,11 @@ cal_shell_view_constructed (GObject *object)
 	container = e_shell_searchbar_get_search_box (searchbar);
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
-	gtk_style_context_add_class (gtk_widget_get_style_context (widget), "linked");
+	gtk_widget_add_css_class (widget, "linked");
 	cal_shell_view_add_action_button (GTK_BOX (widget), ACTION (CALENDAR_SEARCH_PREV), ui_manager);
 	cal_shell_view_add_action_button (GTK_BOX (widget), ACTION (CALENDAR_SEARCH_NEXT), ui_manager);
 	cal_shell_view_add_action_button (GTK_BOX (widget), ACTION (CALENDAR_SEARCH_STOP), ui_manager);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	gtk_widget_show (widget);
 
 	handler_id = g_signal_connect (

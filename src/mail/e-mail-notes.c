@@ -824,7 +824,7 @@ action_close_cb (EUIAction *action,
 			return;
 	}
 
-	gtk_widget_destroy (GTK_WIDGET (notes_editor));
+	e_gtk_widget_destroy (GTK_WIDGET (notes_editor));
 }
 
 typedef struct {
@@ -853,7 +853,7 @@ save_and_close_data_free (gpointer ptr)
 
 	if (scd) {
 		if (scd->success)
-			gtk_widget_destroy (GTK_WIDGET (scd->notes_editor));
+			e_gtk_widget_destroy (GTK_WIDGET (scd->notes_editor));
 		else
 			g_clear_object (&scd->notes_editor);
 		g_clear_object (&scd->inner_message);
@@ -1183,7 +1183,7 @@ e_mail_notes_editor_new_with_editor (EHTMLEditor *html_editor,
 	gtk_window_set_default_size (GTK_WINDOW (notes_editor), 600, 440);
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-	gtk_container_add (GTK_CONTAINER (notes_editor), widget);
+	e_gtk_container_add (notes_editor, widget);
 	gtk_widget_show (widget);
 
 	content = widget;
@@ -1216,7 +1216,7 @@ e_mail_notes_editor_new_with_editor (EHTMLEditor *html_editor,
 	g_clear_object (&ui_item);
 
 	notes_editor->menu_bar = e_menu_bar_new (GTK_MENU_BAR (widget), GTK_WINDOW (notes_editor), &notes_editor->menu_button);
-	gtk_box_pack_start (GTK_BOX (content), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (content), widget, FALSE, FALSE, 0);
 
 	if (e_util_get_use_header_bar ()) {
 		ui_item = e_ui_manager_create_item (ui_manager, "main-headerbar");
@@ -1232,7 +1232,7 @@ e_mail_notes_editor_new_with_editor (EHTMLEditor *html_editor,
 	}
 
 	widget = GTK_WIDGET (ui_item);
-	gtk_box_pack_start (GTK_BOX (content), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (content), widget, FALSE, FALSE, 0);
 
 	widget = GTK_WIDGET (notes_editor->editor);
 	g_object_set (G_OBJECT (widget),
@@ -1241,11 +1241,11 @@ e_mail_notes_editor_new_with_editor (EHTMLEditor *html_editor,
 		"valign", GTK_ALIGN_FILL,
 		"vexpand", TRUE,
 		NULL);
-	gtk_box_pack_start (GTK_BOX (content), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (content), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	widget = e_attachment_paned_new ();
-	gtk_box_pack_start (GTK_BOX (content), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (content), widget, FALSE, FALSE, 0);
 	notes_editor->attachment_paned = E_ATTACHMENT_PANED (widget);
 	gtk_widget_show (widget);
 

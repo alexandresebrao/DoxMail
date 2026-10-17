@@ -165,7 +165,7 @@ struct _EDayViewPrivate {
 	GtkWidget *timezone_name_1_label; /* not referenced */
 	GtkWidget *timezone_name_2_label; /* not referenced */
 
-	GdkDragContext *drag_context;
+	EGtkDragContext *drag_context;
 
 	gchar *today_background_color;
 
@@ -179,7 +179,7 @@ typedef struct {
 } AddEventData;
 
 /* Drag and Drop stuff. */
-static GtkTargetEntry target_table[] = {
+static EGtkTargetEntry target_table[] = {
 	{ (gchar *) "application/x-e-calendar-event", 0, 0 }
 };
 
@@ -199,28 +199,28 @@ static gboolean e_day_view_get_extreme_event (EDayView *day_view,
 					      gint *day_out,
 					      gint *event_num_out);
 static gboolean e_day_view_do_key_press (GtkWidget *widget,
-					 GdkEventKey *event);
+					 GdkEvent *event);
 static void e_day_view_update_query (EDayView *day_view);
 static void e_day_view_goto_start_of_work_day (EDayView *day_view);
 static void e_day_view_goto_end_of_work_day (EDayView *day_view);
 static void e_day_view_change_duration_to_start_of_work_day (EDayView *day_view);
 static void e_day_view_change_duration_to_end_of_work_day (EDayView *day_view);
 static void e_day_view_cursor_key_up_shifted (EDayView *day_view,
-					      GdkEventKey *event);
+					      GdkEvent *event);
 static void e_day_view_cursor_key_down_shifted (EDayView *day_view,
-						GdkEventKey *event);
+						GdkEvent *event);
 static void e_day_view_cursor_key_left_shifted (EDayView *day_view,
-						GdkEventKey *event);
+						GdkEvent *event);
 static void e_day_view_cursor_key_right_shifted (EDayView *day_view,
-						 GdkEventKey *event);
+						 GdkEvent *event);
 static void e_day_view_cursor_key_up (EDayView *day_view,
-				      GdkEventKey *event);
+				      GdkEvent *event);
 static void e_day_view_cursor_key_down (EDayView *day_view,
-					GdkEventKey *event);
+					GdkEvent *event);
 static void e_day_view_cursor_key_left (EDayView *day_view,
-					GdkEventKey *event);
+					GdkEvent *event);
 static void e_day_view_cursor_key_right (EDayView *day_view,
-					 GdkEventKey *event);
+					 GdkEvent *event);
 static void e_day_view_scroll	(EDayView	*day_view,
 				 gfloat		 pages_to_scroll);
 
@@ -239,7 +239,7 @@ static gboolean e_day_view_on_top_canvas_button_release (GtkWidget *widget,
 							 GdkEvent *button_event,
 							 EDayView *day_view);
 static gboolean e_day_view_on_top_canvas_motion (GtkWidget *widget,
-						 GdkEventMotion *event,
+						 GdkEvent *event,
 						 EDayView *day_view);
 
 static gboolean e_day_view_on_main_canvas_button_press (GtkWidget *widget,
@@ -250,17 +250,17 @@ static gboolean e_day_view_on_main_canvas_button_release (GtkWidget *widget,
 							  EDayView *day_view);
 
 static gboolean e_day_view_on_top_canvas_scroll (GtkWidget *widget,
-						 GdkEventScroll *scroll,
+						 GdkEvent *scroll,
 						 EDayView *day_view);
 
 static gboolean e_day_view_on_main_canvas_scroll (GtkWidget *widget,
-						  GdkEventScroll *scroll,
+						  GdkEvent *scroll,
 						  EDayView *day_view);
 static gboolean e_day_view_on_time_canvas_scroll (GtkWidget *widget,
-						  GdkEventScroll *scroll,
+						  GdkEvent *scroll,
 						  EDayView *day_view);
 static gboolean e_day_view_on_main_canvas_motion (GtkWidget *widget,
-						  GdkEventMotion *event,
+						  GdkEvent *event,
 						  EDayView *day_view);
 static gboolean e_day_view_convert_event_coords (EDayView *day_view,
 						 GdkEvent *event,
@@ -379,7 +379,7 @@ static void e_day_view_ensure_events_sorted (EDayView *day_view);
 static void e_day_view_start_editing_event (EDayView *day_view,
 					    gint day,
 					    gint event_num,
-					    GdkEventKey *key_event);
+					    GdkEvent *key_event);
 static void e_day_view_stop_editing_event (EDayView *day_view);
 static void cancel_editing (EDayView *day_view);
 static gboolean e_day_view_on_text_item_event (GnomeCanvasItem *item,
@@ -408,7 +408,7 @@ static void e_day_view_start_auto_scroll (EDayView *day_view,
 static gboolean e_day_view_auto_scroll_handler (gpointer data);
 
 static gboolean e_day_view_on_top_canvas_drag_motion (GtkWidget      *widget,
-						      GdkDragContext *context,
+						      EGtkDragContext *context,
 						      gint            x,
 						      gint            y,
 						      guint           time,
@@ -417,7 +417,7 @@ static void e_day_view_update_top_canvas_drag (EDayView *day_view,
 					       gint day);
 static void e_day_view_reshape_top_canvas_drag_item (EDayView *day_view);
 static gboolean e_day_view_on_main_canvas_drag_motion (GtkWidget      *widget,
-						       GdkDragContext *context,
+						       EGtkDragContext *context,
 						       gint            x,
 						       gint            y,
 						       guint           time,
@@ -427,38 +427,38 @@ static void e_day_view_update_main_canvas_drag (EDayView *day_view,
 						gint row,
 						gint day);
 static void e_day_view_on_top_canvas_drag_leave (GtkWidget      *widget,
-						 GdkDragContext *context,
+						 EGtkDragContext *context,
 						 guint           time,
 						 EDayView	     *day_view);
 static void e_day_view_on_main_canvas_drag_leave (GtkWidget      *widget,
-						  GdkDragContext *context,
+						  EGtkDragContext *context,
 						  guint           time,
 						  EDayView	 *day_view);
 static void e_day_view_on_drag_begin (GtkWidget      *widget,
-				      GdkDragContext *context,
+				      EGtkDragContext *context,
 				      EDayView	   *day_view);
 static void e_day_view_on_drag_end (GtkWidget      *widget,
-				    GdkDragContext *context,
+				    EGtkDragContext *context,
 				    EDayView       *day_view);
 static void e_day_view_on_drag_data_get (GtkWidget          *widget,
-					 GdkDragContext     *context,
-					 GtkSelectionData   *selection_data,
+					 EGtkDragContext     *context,
+					 EGtkSelectionData   *selection_data,
 					 guint               info,
 					 guint               time,
 					 EDayView		*day_view);
 static void e_day_view_on_top_canvas_drag_data_received (GtkWidget	*widget,
-							 GdkDragContext *context,
+							 EGtkDragContext *context,
 							 gint            x,
 							 gint            y,
-							 GtkSelectionData *data,
+							 EGtkSelectionData *data,
 							 guint           info,
 							 guint           time,
 							 EDayView	*day_view);
 static void e_day_view_on_main_canvas_drag_data_received (GtkWidget      *widget,
-							  GdkDragContext *context,
+							  EGtkDragContext *context,
 							  gint            x,
 							  gint            y,
-							  GtkSelectionData *data,
+							  EGtkSelectionData *data,
 							  guint           info,
 							  guint           time,
 							  EDayView	 *day_view);
@@ -772,7 +772,7 @@ day_view_get_selected_time_range (ECalendarView *cal_view,
 
 typedef struct {
 	EDayView *day_view;
-	GdkEventKey *key_event;
+	GdkEvent *key_event;
 	time_t dtstart, dtend;
 	gboolean in_top_canvas;
 	gboolean paste_clipboard;
@@ -785,7 +785,7 @@ new_event_in_rage_data_free (gpointer ptr)
 
 	if (ned) {
 		g_clear_object (&ned->day_view);
-		g_slice_free (GdkEventKey, ned->key_event);
+		g_slice_free (GdkEvent, ned->key_event);
 		g_slice_free (NewEventInRangeData, ned);
 	}
 }
@@ -897,7 +897,7 @@ day_view_new_event_in_selected_range_cb (ECalModel *model,
 
 static void
 e_day_view_add_new_event_in_selected_range (EDayView *day_view,
-                                            GdkEventKey *key_event,
+                                            GdkEvent *key_event,
 					    gboolean paste_clipboard)
 {
 	NewEventInRangeData *ned;
@@ -907,7 +907,7 @@ e_day_view_add_new_event_in_selected_range (EDayView *day_view,
 	ned = g_slice_new0 (NewEventInRangeData);
 	ned->day_view = g_object_ref (day_view);
 	if (key_event) {
-		ned->key_event = g_slice_new0 (GdkEventKey);
+		ned->key_event = g_slice_new0 (GdkEvent);
 		*ned->key_event = *key_event;
 	}
 	day_view_get_selected_time_range (E_CALENDAR_VIEW (day_view), &ned->dtstart, &ned->dtend);
@@ -1751,7 +1751,7 @@ day_view_focus (GtkWidget *widget,
 
 static gboolean
 day_view_key_press (GtkWidget *widget,
-                    GdkEventKey *event)
+                    GdkEvent *event)
 {
 	gboolean handled = FALSE;
 	handled = e_day_view_do_key_press (widget, event);
@@ -1764,7 +1764,7 @@ day_view_key_press (GtkWidget *widget,
 
 static gint
 day_view_focus_in (GtkWidget *widget,
-                   GdkEventFocus *event)
+                   GdkEvent *event)
 {
 	EDayView *day_view;
 
@@ -1807,7 +1807,7 @@ day_view_focus_in (GtkWidget *widget,
 
 static gint
 day_view_focus_out (GtkWidget *widget,
-                    GdkEventFocus *event)
+                    GdkEvent *event)
 {
 	EDayView *day_view;
 
@@ -2259,7 +2259,7 @@ e_day_view_init (EDayView *day_view)
 
 	day_view->priv = e_day_view_get_instance_private (day_view);
 
-	gtk_widget_set_can_focus (GTK_WIDGET (day_view), TRUE);
+	gtk_widget_set_focusable (GTK_WIDGET (day_view), TRUE);
 
 	day_view->long_events = g_array_new (
 		FALSE, FALSE,
@@ -2369,20 +2369,20 @@ e_day_view_init (EDayView *day_view)
 
 	container = widget;
 
-	gtk_box_pack_start (GTK_BOX (container), day_view->week_number_label, TRUE, TRUE, 2);
+	e_gtk_box_pack_start (GTK_BOX (container), day_view->week_number_label, TRUE, TRUE, 2);
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 2);
-	gtk_box_pack_end (GTK_BOX (container), widget, TRUE, TRUE, 2);
+	e_gtk_box_pack_end (GTK_BOX (container), widget, TRUE, TRUE, 2);
 
-	gtk_widget_show_all (container);
+	gtk_widget_set_visible (container, TRUE);
 
 	container = widget;
 
 	gtk_box_set_homogeneous (GTK_BOX (container), TRUE);
-	gtk_box_pack_start (GTK_BOX (container), day_view->priv->timezone_name_1_label, TRUE, TRUE, 2);
-	gtk_box_pack_start (GTK_BOX (container), day_view->priv->timezone_name_2_label, TRUE, TRUE, 2);
+	e_gtk_box_pack_start (GTK_BOX (container), day_view->priv->timezone_name_1_label, TRUE, TRUE, 2);
+	e_gtk_box_pack_start (GTK_BOX (container), day_view->priv->timezone_name_2_label, TRUE, TRUE, 2);
 
-	gtk_widget_show_all (container);
+	gtk_widget_set_visible (container, TRUE);
 
 	/*
 	 * Top Canvas
@@ -2400,14 +2400,14 @@ e_day_view_init (EDayView *day_view)
 	container = widget;
 
 	widget = e_canvas_new ();
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	day_view->top_dates_canvas = widget;
 	gtk_widget_show (widget);
 
 	/* Keep our own canvas reference so we can
 	 * disconnect signal handlers in dispose(). */
 	widget = e_canvas_new ();
-	gtk_box_pack_end (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_end (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	gtk_widget_set_has_tooltip (widget, TRUE);
 	day_view->top_canvas = g_object_ref (widget);
 	gtk_widget_show (widget);
@@ -2705,15 +2705,15 @@ e_day_view_init (EDayView *day_view)
 	day_view->last_cursor_set_in_main_canvas = NULL;
 
 	/* Set up the drop sites. */
-	gtk_drag_dest_set (
-		day_view->top_canvas, GTK_DEST_DEFAULT_ALL,
+	e_gtk_drag_dest_set (
+		day_view->top_canvas, E_GTK_DEST_DEFAULT_ALL,
 		target_table, G_N_ELEMENTS (target_table),
 		GDK_ACTION_COPY | GDK_ACTION_MOVE | GDK_ACTION_ASK);
 
 	e_drag_dest_add_calendar_targets (day_view->top_canvas);
 
-	gtk_drag_dest_set (
-		day_view->main_canvas, GTK_DEST_DEFAULT_ALL,
+	e_gtk_drag_dest_set (
+		day_view->main_canvas, E_GTK_DEST_DEFAULT_ALL,
 		target_table, G_N_ELEMENTS (target_table),
 		GDK_ACTION_COPY | GDK_ACTION_MOVE | GDK_ACTION_ASK);
 
@@ -3446,7 +3446,7 @@ e_day_view_remove_event_cb (EDayView *day_view,
 			day_view->drag_event_day = -1;
 			day_view->priv->drag_event_is_recurring = FALSE;
 			if (day_view->priv->drag_context) {
-				gtk_drag_cancel (day_view->priv->drag_context);
+				e_gtk_drag_cancel (day_view->priv->drag_context);
 			}
 		} else {
 			day_view->drag_event_num--;
@@ -4410,7 +4410,7 @@ e_day_view_on_top_canvas_button_press (GtkWidget *widget,
 	layout = GTK_LAYOUT (widget);
 	window = gtk_layout_get_bin_window (layout);
 
-	gdk_event_get_button (button_event, &event_button);
+	e_gdk_event_get_button (button_event, &event_button);
 	event_device = gdk_event_get_device (button_event);
 	event_time = gdk_event_get_time (button_event);
 
@@ -4570,7 +4570,7 @@ e_day_view_on_main_canvas_button_press (GtkWidget *widget,
 	layout = GTK_LAYOUT (widget);
 	window = gtk_layout_get_bin_window (layout);
 
-	gdk_event_get_button (button_event, &event_button);
+	e_gdk_event_get_button (button_event, &event_button);
 	event_device = gdk_event_get_device (button_event);
 	event_time = gdk_event_get_time (button_event);
 
@@ -4672,7 +4672,7 @@ e_day_view_on_main_canvas_button_press (GtkWidget *widget,
 
 static gboolean
 e_day_view_on_main_canvas_scroll (GtkWidget *widget,
-                                  GdkEventScroll *scroll,
+                                  GdkEvent *scroll,
                                   EDayView *day_view)
 {
 	switch (scroll->direction) {
@@ -4697,7 +4697,7 @@ e_day_view_on_main_canvas_scroll (GtkWidget *widget,
 
 static gboolean
 e_day_view_on_top_canvas_scroll (GtkWidget *widget,
-                                  GdkEventScroll *scroll,
+                                  GdkEvent *scroll,
                                   EDayView *day_view)
 {
 	switch (scroll->direction) {
@@ -4722,7 +4722,7 @@ e_day_view_on_top_canvas_scroll (GtkWidget *widget,
 
 static gboolean
 e_day_view_on_time_canvas_scroll (GtkWidget *widget,
-                                  GdkEventScroll *scroll,
+                                  GdkEvent *scroll,
                                   EDayView *day_view)
 {
 	switch (scroll->direction) {
@@ -4755,7 +4755,7 @@ e_day_view_on_long_event_button_press (EDayView *day_view,
 {
 	guint event_button = 0;
 
-	gdk_event_get_button (button_event, &event_button);
+	e_gdk_event_get_button (button_event, &event_button);
 
 	if (event_button == 1) {
 		if (button_event->type == GDK_BUTTON_PRESS) {
@@ -4802,7 +4802,7 @@ e_day_view_on_event_button_press (EDayView *day_view,
 {
 	guint event_button = 0;
 
-	gdk_event_get_button (button_event, &event_button);
+	e_gdk_event_get_button (button_event, &event_button);
 
 	if (event_button == 1) {
 		if (button_event->type == GDK_BUTTON_PRESS) {
@@ -5225,7 +5225,7 @@ e_day_view_update_calendar_selection_time (EDayView *day_view)
 
 static gboolean
 e_day_view_on_top_canvas_motion (GtkWidget *widget,
-                                 GdkEventMotion *mevent,
+                                 GdkEvent *mevent,
                                  EDayView *day_view)
 {
 	EDayViewEvent *event = NULL;
@@ -5267,7 +5267,7 @@ e_day_view_on_top_canvas_motion (GtkWidget *widget,
 			return TRUE;
 		}
 	} else if (day_view->pressed_event_day == E_DAY_VIEW_LONG_EVENT) {
-		GtkTargetList *target_list;
+		EGtkTargetList *target_list;
 
 		if (!is_array_index_in_bounds (day_view->long_events, day_view->pressed_event_num))
 			return FALSE;
@@ -5294,16 +5294,16 @@ e_day_view_on_top_canvas_motion (GtkWidget *widget,
 				day_view->resize_bars_event_num = -1;
 			}
 
-			target_list = gtk_target_list_new (
+			target_list = e_gtk_target_list_new (
 				target_table, G_N_ELEMENTS (target_table));
 			e_target_list_add_calendar_targets (target_list, 0);
 			g_clear_object (&day_view->priv->drag_context);
-			day_view->priv->drag_context = gtk_drag_begin (
+			day_view->priv->drag_context = e_gtk_drag_begin (
 				widget, target_list,
 				(day_view->priv->drag_event_is_recurring ? 0 : GDK_ACTION_COPY) |
 				GDK_ACTION_MOVE,
 				1, (GdkEvent *) mevent);
-			gtk_target_list_unref (target_list);
+			e_gtk_target_list_unref (target_list);
 
 			if (day_view->priv->drag_context)
 				g_object_ref (day_view->priv->drag_context);
@@ -5329,7 +5329,7 @@ e_day_view_on_top_canvas_motion (GtkWidget *widget,
 		if (day_view->last_cursor_set_in_top_canvas != cursor) {
 			day_view->last_cursor_set_in_top_canvas = cursor;
 
-			gdk_window_set_cursor (gtk_widget_get_window (widget), cursor);
+			gdk_window_set_cursor (e_gtk_widget_get_surface (widget), cursor);
 		}
 
 		if (event && E_IS_TEXT (event->canvas_item) && E_TEXT (event->canvas_item)->editing) {
@@ -5342,7 +5342,7 @@ e_day_view_on_top_canvas_motion (GtkWidget *widget,
 
 static gboolean
 e_day_view_on_main_canvas_motion (GtkWidget *widget,
-                                  GdkEventMotion *mevent,
+                                  GdkEvent *mevent,
                                   EDayView *day_view)
 {
 	EDayViewEvent *event = NULL;
@@ -5394,7 +5394,7 @@ e_day_view_on_main_canvas_motion (GtkWidget *widget,
 		}
 	} else if (day_view->pressed_event_day != -1
 		   && day_view->pressed_event_day != E_DAY_VIEW_LONG_EVENT) {
-		GtkTargetList *target_list;
+		EGtkTargetList *target_list;
 
 		if (e_calendar_view_get_allow_event_dnd (E_CALENDAR_VIEW (day_view)) &&
 		    gtk_drag_check_threshold (widget, day_view->drag_event_x, day_view->drag_event_y, canvas_x, canvas_y)) {
@@ -5412,16 +5412,16 @@ e_day_view_on_main_canvas_motion (GtkWidget *widget,
 				day_view->resize_bars_event_num = -1;
 			}
 
-			target_list = gtk_target_list_new (
+			target_list = e_gtk_target_list_new (
 				target_table, G_N_ELEMENTS (target_table));
 			e_target_list_add_calendar_targets (target_list, 0);
 			g_clear_object (&day_view->priv->drag_context);
-			day_view->priv->drag_context = gtk_drag_begin (
+			day_view->priv->drag_context = e_gtk_drag_begin (
 				widget, target_list,
 				(day_view->priv->drag_event_is_recurring ? 0 : GDK_ACTION_COPY) |
 				GDK_ACTION_MOVE,
 				1, (GdkEvent *) mevent);
-			gtk_target_list_unref (target_list);
+			e_gtk_target_list_unref (target_list);
 
 			if (day_view->priv->drag_context)
 				g_object_ref (day_view->priv->drag_context);
@@ -5451,7 +5451,7 @@ e_day_view_on_main_canvas_motion (GtkWidget *widget,
 		if (day_view->last_cursor_set_in_main_canvas != cursor) {
 			day_view->last_cursor_set_in_main_canvas = cursor;
 
-			gdk_window_set_cursor (gtk_widget_get_window (widget), cursor);
+			gdk_window_set_cursor (e_gtk_widget_get_surface (widget), cursor);
 		}
 
 		if (event && E_IS_TEXT (event->canvas_item) && E_TEXT (event->canvas_item)->editing) {
@@ -5819,7 +5819,7 @@ e_day_view_finish_resize (EDayView *day_view)
 		return;
 	}
 
-	toplevel = GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (day_view)));
+	toplevel = GTK_WINDOW (e_gtk_widget_get_toplevel (GTK_WIDGET (day_view)));
 
 	if (itip_has_any_attendees (comp) &&
 	    (itip_organizer_is_user (registry, comp, client) ||
@@ -5918,7 +5918,7 @@ e_day_view_abort_resize (EDayView *day_view)
 		gtk_widget_queue_draw (day_view->top_canvas);
 
 		day_view->last_cursor_set_in_top_canvas = day_view->normal_cursor;
-		window = gtk_widget_get_window (day_view->top_canvas);
+		window = e_gtk_widget_get_surface (day_view->top_canvas);
 		gdk_window_set_cursor (window, day_view->normal_cursor);
 	} else {
 		e_day_view_reshape_day_event (day_view, day, event_num);
@@ -5926,7 +5926,7 @@ e_day_view_abort_resize (EDayView *day_view)
 		gtk_widget_queue_draw (day_view->main_canvas);
 
 		day_view->last_cursor_set_in_main_canvas = day_view->normal_cursor;
-		window = gtk_widget_get_window (day_view->main_canvas);
+		window = e_gtk_widget_get_surface (day_view->main_canvas);
 		gdk_window_set_cursor (window, day_view->normal_cursor);
 	}
 }
@@ -6623,7 +6623,7 @@ e_day_view_event_sort_func (gconstpointer arg1,
 
 static gboolean
 e_day_view_do_key_press (GtkWidget *widget,
-                         GdkEventKey *event)
+                         GdkEvent *event)
 {
 	EDayView *day_view;
 	guint keyval;
@@ -6654,7 +6654,7 @@ e_day_view_do_key_press (GtkWidget *widget,
 	/* Alt + Arrow Keys to move a selected event through time lines */
 	if (((event->state & GDK_SHIFT_MASK) != GDK_SHIFT_MASK)
 		&&((event->state & GDK_CONTROL_MASK) != GDK_CONTROL_MASK)
-		&&((event->state & GDK_MOD1_MASK) == GDK_MOD1_MASK)) {
+		&&((event->state & GDK_ALT_MASK) == GDK_ALT_MASK)) {
 		if (keyval == GDK_KEY_Up || keyval == GDK_KEY_KP_Up)
 			return e_day_view_event_move ((ECalendarView *) day_view, E_CAL_VIEW_MOVE_UP);
 		else if (keyval == GDK_KEY_Down || keyval == GDK_KEY_KP_Down)
@@ -6669,14 +6669,14 @@ e_day_view_do_key_press (GtkWidget *widget,
 	if ((keyval == GDK_KEY_Home)
 			&&((event->state & GDK_SHIFT_MASK) != GDK_SHIFT_MASK)
 			&&((event->state & GDK_CONTROL_MASK) != GDK_CONTROL_MASK)
-			&&((event->state & GDK_MOD1_MASK) != GDK_MOD1_MASK)) {
+			&&((event->state & GDK_ALT_MASK) != GDK_ALT_MASK)) {
 		e_day_view_goto_start_of_work_day (day_view);
 		return TRUE;
 	}
 	if ((keyval == GDK_KEY_End)
 	    &&((event->state & GDK_SHIFT_MASK) != GDK_SHIFT_MASK)
 	    &&((event->state & GDK_CONTROL_MASK) != GDK_CONTROL_MASK)
-	    &&((event->state & GDK_MOD1_MASK) != GDK_MOD1_MASK)) {
+	    &&((event->state & GDK_ALT_MASK) != GDK_ALT_MASK)) {
 		e_day_view_goto_end_of_work_day (day_view);
 		return TRUE;
 	}
@@ -6685,14 +6685,14 @@ e_day_view_do_key_press (GtkWidget *widget,
 	if ((keyval == GDK_KEY_Home)
 	    &&((event->state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
 	    &&((event->state & GDK_CONTROL_MASK) != GDK_CONTROL_MASK)
-	    &&((event->state & GDK_MOD1_MASK) != GDK_MOD1_MASK)) {
+	    &&((event->state & GDK_ALT_MASK) != GDK_ALT_MASK)) {
 		e_day_view_change_duration_to_start_of_work_day (day_view);
 		return TRUE;
 	}
 	if ((keyval == GDK_KEY_End)
 	    &&((event->state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
 	    &&((event->state & GDK_CONTROL_MASK) != GDK_CONTROL_MASK)
-	    &&((event->state & GDK_MOD1_MASK) != GDK_MOD1_MASK)) {
+	    &&((event->state & GDK_ALT_MASK) != GDK_ALT_MASK)) {
 		e_day_view_change_duration_to_end_of_work_day (day_view);
 		return TRUE;
 	}
@@ -6717,7 +6717,7 @@ e_day_view_do_key_press (GtkWidget *widget,
 			stop_emission = FALSE;
 			break;
 		}
-	} else if (!(event->state & GDK_MOD1_MASK) &&
+	} else if (!(event->state & GDK_ALT_MASK) &&
 		   !(event->state & GDK_CONTROL_MASK)) {
 		switch (keyval) {
 		case GDK_KEY_Up:
@@ -6755,7 +6755,7 @@ e_day_view_do_key_press (GtkWidget *widget,
 	 * character. */
 	if ((keyval != GDK_KEY_Return && keyval != GDK_KEY_KP_Enter) &&
 	    (((keyval >= 0x20) && (keyval <= 0xFF)
-	      && (event->state & (GDK_CONTROL_MASK | GDK_MOD1_MASK)))
+	      && (event->state & (GDK_CONTROL_MASK | GDK_ALT_MASK)))
 	     || (event->length == 0)
 	     || (keyval == GDK_KEY_Tab)
 	     || (keyval == GDK_KEY_Escape)
@@ -6919,7 +6919,7 @@ e_day_view_change_duration_to_end_of_work_day (EDayView *day_view)
 
 static void
 e_day_view_cursor_key_up_shifted (EDayView *day_view,
-                                  GdkEventKey *event)
+                                  GdkEvent *event)
 {
 	gint *row;
 
@@ -7177,7 +7177,7 @@ e_day_view_get_next_tab_event (EDayView *day_view,
 
 static void
 e_day_view_cursor_key_down_shifted (EDayView *day_view,
-                                    GdkEventKey *event)
+                                    GdkEvent *event)
 {
 	gint *row;
 
@@ -7207,7 +7207,7 @@ e_day_view_cursor_key_down_shifted (EDayView *day_view,
 
 static void
 e_day_view_cursor_key_left_shifted (EDayView *day_view,
-                                    GdkEventKey *event)
+                                    GdkEvent *event)
 {
 	gint *day;
 
@@ -7232,7 +7232,7 @@ e_day_view_cursor_key_left_shifted (EDayView *day_view,
 
 static void
 e_day_view_cursor_key_right_shifted (EDayView *day_view,
-                                     GdkEventKey *event)
+                                     GdkEvent *event)
 {
 	gint *day;
 
@@ -7257,7 +7257,7 @@ e_day_view_cursor_key_right_shifted (EDayView *day_view,
 
 static void
 e_day_view_cursor_key_up (EDayView *day_view,
-                          GdkEventKey *event)
+                          GdkEvent *event)
 {
 	if (day_view->selection_start_day == -1) {
 		day_view->selection_start_day = 0;
@@ -7291,7 +7291,7 @@ e_day_view_cursor_key_up (EDayView *day_view,
 
 static void
 e_day_view_cursor_key_down (EDayView *day_view,
-                            GdkEventKey *event)
+                            GdkEvent *event)
 {
 	if (day_view->selection_start_day == -1) {
 		day_view->selection_start_day = 0;
@@ -7325,7 +7325,7 @@ e_day_view_cursor_key_down (EDayView *day_view,
 
 static void
 e_day_view_cursor_key_left (EDayView *day_view,
-                            GdkEventKey *event)
+                            GdkEvent *event)
 {
 	if (day_view->selection_start_day == 0) {
 		e_calendar_view_move_view_range (E_CALENDAR_VIEW (day_view), E_CALENDAR_VIEW_MOVE_PREVIOUS, 0);
@@ -7344,7 +7344,7 @@ e_day_view_cursor_key_left (EDayView *day_view,
 
 static void
 e_day_view_cursor_key_right (EDayView *day_view,
-                             GdkEventKey *event)
+                             GdkEvent *event)
 {
 	gint days_shown;
 
@@ -7452,7 +7452,7 @@ static void
 e_day_view_start_editing_event (EDayView *day_view,
                                 gint day,
                                 gint event_num,
-                                GdkEventKey *key_event)
+                                GdkEvent *key_event)
 {
 	EDayViewEvent *event;
 	ETextEventProcessor *event_processor = NULL;
@@ -7522,7 +7522,7 @@ e_day_view_stop_editing_event (EDayView *day_view)
 		return;
 
 	/* Set focus to the toplevel so the item loses focus. */
-	toplevel = gtk_widget_get_toplevel (GTK_WIDGET (day_view));
+	toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (day_view));
 	if (toplevel && GTK_IS_WINDOW (toplevel))
 		gtk_window_set_focus (GTK_WINDOW (toplevel), NULL);
 }
@@ -7586,13 +7586,13 @@ e_day_view_on_text_item_event (GnomeCanvasItem *item,
 	       } else if ((event->key.keyval == GDK_KEY_Up)
 			  && (event->key.state & GDK_SHIFT_MASK)
 			  && (event->key.state & GDK_CONTROL_MASK)
-			  && !(event->key.state & GDK_MOD1_MASK)) {
+			  && !(event->key.state & GDK_ALT_MASK)) {
 		       e_day_view_change_event_end_time_up (day_view);
 		       return TRUE;
 	       } else if ((event->key.keyval == GDK_KEY_Down)
 			  && (event->key.state & GDK_SHIFT_MASK)
 			  && (event->key.state & GDK_CONTROL_MASK)
-			  && !(event->key.state & GDK_MOD1_MASK)) {
+			  && !(event->key.state & GDK_ALT_MASK)) {
 		       e_day_view_change_event_end_time_down (day_view);
 		       return TRUE;
 		}
@@ -7691,8 +7691,8 @@ e_day_view_on_text_item_event (GnomeCanvasItem *item,
 			g_object_set_data (G_OBJECT (item), "event-num", GINT_TO_POINTER (event_num));
 			g_object_set_data (G_OBJECT (item), "event-day", GINT_TO_POINTER (day));
 
-			pevent->x = ((GdkEventCrossing *) event)->x_root;
-			pevent->y = ((GdkEventCrossing *) event)->y_root;
+			pevent->x = ((GdkEvent *) event)->x_root;
+			pevent->y = ((GdkEvent *) event)->y_root;
 
 		return TRUE;
 		}
@@ -7712,8 +7712,8 @@ e_day_view_on_text_item_event (GnomeCanvasItem *item,
 			if (!pevent)
 				break;
 
-			pevent->x = ((GdkEventMotion *) event)->x_root;
-			pevent->y = ((GdkEventMotion *) event)->y_root;
+			pevent->x = ((GdkEvent *) event)->x_root;
+			pevent->y = ((GdkEvent *) event)->y_root;
 
 			return TRUE;
 		}
@@ -8770,7 +8770,7 @@ e_day_view_convert_position_in_main_canvas (EDayView *day_view,
 
 static void
 e_day_view_maybe_update_drag_status (EDayView *day_view,
-				     GdkDragContext *context,
+				     EGtkDragContext *context,
 				     guint time)
 {
 	if (!day_view->priv->drag_event_is_recurring &&
@@ -8779,18 +8779,18 @@ e_day_view_maybe_update_drag_status (EDayView *day_view,
 		GdkDragAction drag_action = GDK_ACTION_MOVE;
 		GdkModifierType mask;
 
-		gdk_window_get_pointer (gtk_widget_get_window (GTK_WIDGET (day_view)), NULL, NULL, &mask);
+		gdk_window_get_pointer (e_gtk_widget_get_surface (GTK_WIDGET (day_view)), NULL, NULL, &mask);
 
 		if ((mask & GDK_CONTROL_MASK) != 0)
 			drag_action = GDK_ACTION_COPY;
 
-		gdk_drag_status (context, drag_action, time);
+		e_gtk_drag_status (context, drag_action, time);
 	}
 }
 
 static gboolean
 e_day_view_on_top_canvas_drag_motion (GtkWidget *widget,
-                                      GdkDragContext *context,
+                                      EGtkDragContext *context,
                                       gint x,
                                       gint y,
                                       guint time,
@@ -8942,7 +8942,7 @@ e_day_view_update_top_canvas_drag (EDayView *day_view,
 
 static gboolean
 e_day_view_on_main_canvas_drag_motion (GtkWidget *widget,
-                                       GdkDragContext *context,
+                                       EGtkDragContext *context,
                                        gint x,
                                        gint y,
                                        guint time,
@@ -9121,7 +9121,7 @@ e_day_view_update_main_canvas_drag (EDayView *day_view,
 
 static void
 e_day_view_on_top_canvas_drag_leave (GtkWidget *widget,
-                                     GdkDragContext *context,
+                                     EGtkDragContext *context,
                                      guint time,
                                      EDayView *day_view)
 {
@@ -9133,7 +9133,7 @@ e_day_view_on_top_canvas_drag_leave (GtkWidget *widget,
 
 static void
 e_day_view_on_main_canvas_drag_leave (GtkWidget *widget,
-                                      GdkDragContext *context,
+                                      EGtkDragContext *context,
                                       guint time,
                                       EDayView *day_view)
 {
@@ -9153,7 +9153,7 @@ e_day_view_on_main_canvas_drag_leave (GtkWidget *widget,
 
 static void
 e_day_view_on_drag_begin (GtkWidget *widget,
-                          GdkDragContext *context,
+                          EGtkDragContext *context,
                           EDayView *day_view)
 {
 	EDayViewEvent *event;
@@ -9182,7 +9182,7 @@ e_day_view_on_drag_begin (GtkWidget *widget,
 
 static void
 e_day_view_on_drag_end (GtkWidget *widget,
-                        GdkDragContext *context,
+                        EGtkDragContext *context,
                         EDayView *day_view)
 {
 	EDayViewEvent *event;
@@ -9216,8 +9216,8 @@ e_day_view_on_drag_end (GtkWidget *widget,
 
 static void
 e_day_view_on_drag_data_get (GtkWidget *widget,
-                             GdkDragContext *context,
-                             GtkSelectionData *selection_data,
+                             EGtkDragContext *context,
+                             EGtkSelectionData *selection_data,
                              guint info,
                              guint time,
                              EDayView *day_view)
@@ -9265,15 +9265,15 @@ e_day_view_on_drag_data_get (GtkWidget *widget,
 	if (comp_str) {
 		ESource *source;
 		const gchar *source_uid;
-		GdkAtom target;
+		EGtkAtom target;
 		gchar *tmp;
 
 		source = e_client_get_source (E_CLIENT (event->comp_data->client));
 		source_uid = e_source_get_uid (source);
 
 		tmp = g_strconcat (source_uid, "\n", comp_str, NULL);
-		target = gtk_selection_data_get_target (selection_data);
-		gtk_selection_data_set (
+		target = e_gtk_selection_data_get_target (selection_data);
+		e_gtk_selection_data_set (
 			selection_data, target, 8,
 			(guchar *) tmp, strlen (tmp));
 
@@ -9286,10 +9286,10 @@ e_day_view_on_drag_data_get (GtkWidget *widget,
 
 static void
 e_day_view_on_top_canvas_drag_data_received (GtkWidget *widget,
-                                             GdkDragContext *context,
+                                             EGtkDragContext *context,
                                              gint x,
                                              gint y,
-                                             GtkSelectionData *selection_data,
+                                             EGtkSelectionData *selection_data,
                                              guint info,
                                              guint time,
                                              EDayView *day_view)
@@ -9312,9 +9312,9 @@ e_day_view_on_top_canvas_drag_data_received (GtkWidget *widget,
 	gboolean only_new_attendees = FALSE;
 	gboolean strip_alarms = TRUE;
 
-	data = gtk_selection_data_get_data (selection_data);
-	format = gtk_selection_data_get_format (selection_data);
-	length = gtk_selection_data_get_length (selection_data);
+	data = e_gtk_selection_data_get_data (selection_data);
+	format = e_gtk_selection_data_get_format (selection_data);
+	length = e_gtk_selection_data_get_length (selection_data);
 
 	days_shown = e_day_view_get_days_shown (day_view);
 
@@ -9403,7 +9403,7 @@ e_day_view_on_top_canvas_drag_data_received (GtkWidget *widget,
 				return;
 			}
 
-			toplevel = GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (day_view)));
+			toplevel = GTK_WINDOW (e_gtk_widget_get_toplevel (GTK_WIDGET (day_view)));
 
 			if (itip_has_any_attendees (comp) &&
 			    (itip_organizer_is_user (registry, comp, client) ||
@@ -9452,7 +9452,7 @@ e_day_view_on_top_canvas_drag_data_received (GtkWidget *widget,
 
 			drag_event_is_recurring = day_view->priv->drag_event_is_recurring;
 
-			gtk_drag_finish (context, TRUE, TRUE, time);
+			e_gtk_drag_finish (context, TRUE, TRUE, time);
 
 			/* Reset this since it will be invalid. */
 			day_view->drag_event_day = -1;
@@ -9483,7 +9483,7 @@ e_day_view_on_top_canvas_drag_data_received (GtkWidget *widget,
 
 			e_cal_component_commit_sequence (comp);
 
-			if (gdk_drag_context_get_selected_action (context) == GDK_ACTION_COPY &&
+			if (e_gtk_drag_context_get_selected_action (context) == GDK_ACTION_COPY &&
 			    !drag_event_is_recurring) {
 				gchar *uid;
 
@@ -9531,20 +9531,20 @@ e_day_view_on_top_canvas_drag_data_received (GtkWidget *widget,
 
 		e_cal_ops_paste_components (model, (const gchar *) data);
 
-		gtk_drag_finish (context, TRUE, TRUE, time);
+		e_gtk_drag_finish (context, TRUE, TRUE, time);
 		return;
 	}
 
 error:
-	gtk_drag_finish (context, FALSE, FALSE, time);
+	e_gtk_drag_finish (context, FALSE, FALSE, time);
 }
 
 static void
 e_day_view_on_main_canvas_drag_data_received (GtkWidget *widget,
-                                              GdkDragContext *context,
+                                              EGtkDragContext *context,
                                               gint x,
                                               gint y,
-                                              GtkSelectionData *selection_data,
+                                              EGtkSelectionData *selection_data,
                                               guint info,
                                               guint time,
                                               EDayView *day_view)
@@ -9572,9 +9572,9 @@ e_day_view_on_main_canvas_drag_data_received (GtkWidget *widget,
 
 	registry = e_cal_model_get_registry (model);
 
-	data = gtk_selection_data_get_data (selection_data);
-	format = gtk_selection_data_get_format (selection_data);
-	length = gtk_selection_data_get_length (selection_data);
+	data = e_gtk_selection_data_get_data (selection_data);
+	format = e_gtk_selection_data_get_format (selection_data);
+	length = e_gtk_selection_data_get_length (selection_data);
 
 	if (day_view->drag_event_day != -1)
 		drag_from_same_window = TRUE;
@@ -9659,7 +9659,7 @@ e_day_view_on_main_canvas_drag_data_received (GtkWidget *widget,
 				return;
 			}
 
-			toplevel = GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (day_view)));
+			toplevel = GTK_WINDOW (e_gtk_widget_get_toplevel (GTK_WIDGET (day_view)));
 
 			if (itip_has_any_attendees (comp) &&
 			    (itip_organizer_is_user (registry, comp, client) ||
@@ -9693,7 +9693,7 @@ e_day_view_on_main_canvas_drag_data_received (GtkWidget *widget,
 
 			drag_event_is_recurring = day_view->priv->drag_event_is_recurring;
 
-			gtk_drag_finish (context, TRUE, TRUE, time);
+			e_gtk_drag_finish (context, TRUE, TRUE, time);
 
 			/* Reset this since it will be invalid. */
 			day_view->drag_event_day = -1;
@@ -9724,7 +9724,7 @@ e_day_view_on_main_canvas_drag_data_received (GtkWidget *widget,
 
 			e_cal_component_commit_sequence (comp);
 
-			if (gdk_drag_context_get_selected_action (context) == GDK_ACTION_COPY &&
+			if (e_gtk_drag_context_get_selected_action (context) == GDK_ACTION_COPY &&
 			    !drag_event_is_recurring) {
 				gchar *uid;
 
@@ -9772,12 +9772,12 @@ e_day_view_on_main_canvas_drag_data_received (GtkWidget *widget,
 
 		e_cal_ops_paste_components (model, (const gchar *) data);
 
-		gtk_drag_finish (context, TRUE, TRUE, time);
+		e_gtk_drag_finish (context, TRUE, TRUE, time);
 		return;
 	}
 
 error:
-	gtk_drag_finish (context, FALSE, FALSE, time);
+	e_gtk_drag_finish (context, FALSE, FALSE, time);
 }
 
 /* Converts an hour from 0-23 to the preferred time format, and returns the

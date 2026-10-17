@@ -146,7 +146,7 @@ mail_config_local_backend_file_set_cb (GtkFileChooserButton *file_chooser_button
 
 	file_chooser = GTK_FILE_CHOOSER (file_chooser_button);
 
-	path = gtk_file_chooser_get_filename (file_chooser);
+	path = e_gtk_file_chooser_get_filename (file_chooser);
 	camel_local_settings_set_path (local_settings, path);
 	g_free (path);
 }
@@ -168,22 +168,20 @@ mail_config_local_backend_insert_widgets (EMailConfigServiceBackend *backend,
 	settings = e_mail_config_service_backend_get_settings (backend);
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 12);
-	gtk_box_pack_start (parent, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (parent, widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
 
 	widget = gtk_label_new_with_mnemonic (class->file_chooser_label);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	label = GTK_LABEL (widget);
 
-	widget = gtk_file_chooser_button_new (
-		class->file_chooser_title,
-		class->file_chooser_action);
+	widget = e_gtk_file_chooser_button_new (class->file_chooser_title, class->file_chooser_action);
 	gtk_label_set_mnemonic_widget (label, widget);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	g_signal_connect (
@@ -193,16 +191,15 @@ mail_config_local_backend_insert_widgets (EMailConfigServiceBackend *backend,
 
 	path = camel_local_settings_get_path (CAMEL_LOCAL_SETTINGS (settings));
 	if (path != NULL)
-		gtk_file_chooser_set_filename (
-			GTK_FILE_CHOOSER (widget), path);
+		e_gtk_file_chooser_set_filename (widget, path);
 
-	widget = gtk_image_new_from_icon_name ("dialog-warning", GTK_ICON_SIZE_BUTTON);
+	widget = gtk_image_new_from_icon_name ("dialog-warning");
 	g_object_set (G_OBJECT (widget),
 		"visible", FALSE,
 		"has-tooltip", TRUE,
 		"tooltip-text", class->file_error_message,
 		NULL);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	local_backend->path_error_image = widget;  /* do not reference */
 }
 

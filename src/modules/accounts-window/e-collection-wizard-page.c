@@ -209,7 +209,7 @@ collection_wizard_page_constructed (GObject *object)
 		"valign", GTK_ALIGN_FILL,
 		"visible", TRUE,
 		NULL);
-	gtk_box_pack_start (GTK_BOX (vbox), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), widget, TRUE, TRUE, 0);
 	page->collection_wizard = E_COLLECTION_ACCOUNT_WIZARD (widget);
 
 	g_signal_connect_swapped (page->collection_wizard, "done",
@@ -223,7 +223,7 @@ collection_wizard_page_constructed (GObject *object)
 		"valign", GTK_ALIGN_START,
 		"visible", TRUE,
 		NULL);
-	gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
 
 	widget = e_dialog_button_new_with_icon ("go-previous", _("_Back"));
 	g_object_set (G_OBJECT (widget),
@@ -233,7 +233,7 @@ collection_wizard_page_constructed (GObject *object)
 		"valign", GTK_ALIGN_START,
 		"visible", TRUE,
 		NULL);
-	gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 
 	page->prev_button = GTK_BUTTON (widget);
 
@@ -249,7 +249,7 @@ collection_wizard_page_constructed (GObject *object)
 		"visible", TRUE,
 		"can-default", TRUE,
 		NULL);
-	gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 
 	page->next_button = GTK_BUTTON (widget);
 
@@ -263,7 +263,7 @@ collection_wizard_page_constructed (GObject *object)
 
 	page->page_index = e_accounts_window_add_page (accounts_window, vbox);
 
-	gtk_widget_grab_default (GTK_WIDGET (page->next_button));
+	e_gtk_widget_grab_default (GTK_WIDGET (page->next_button));
 #endif
 }
 

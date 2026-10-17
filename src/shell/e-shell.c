@@ -1491,7 +1491,7 @@ e_setup_theme_icons_theme_changed_cb (GtkSettings *gtk_settings)
 	prefer_symbolic_icons = g_settings_get_enum (g_settings, "prefer-symbolic-icons");
 	g_clear_object (&g_settings);
 
-	icon_theme = gtk_icon_theme_get_default ();
+	icon_theme = e_gtk_icon_theme_get_default ();
 
 	switch (prefer_symbolic_icons) {
 	case E_PREFER_SYMBOLIC_ICONS_NO:
@@ -1610,7 +1610,7 @@ categories_icon_theme_hack (void)
 	gchar *filename;
 	gchar *dirname;
 
-	icon_theme = gtk_icon_theme_get_default ();
+	icon_theme = e_gtk_icon_theme_get_default ();
 	dirnames = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 
 	/* Get the icon file for some default category.  Doesn't matter
@@ -1908,7 +1908,7 @@ shell_activate (GApplication *application)
 
 		/* Add our icon directory to the theme's search path
 		 * here instead of in main() so Anjal picks it up. */
-		icon_theme = gtk_icon_theme_get_default ();
+		icon_theme = e_gtk_icon_theme_get_default ();
 		gtk_icon_theme_append_search_path (icon_theme, EVOLUTION_ICONDIR);
 		gtk_icon_theme_append_search_path (icon_theme, E_DATA_SERVER_ICONDIR);
 

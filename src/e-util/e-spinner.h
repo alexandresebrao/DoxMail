@@ -40,7 +40,7 @@ typedef struct _ESpinnerPrivate	ESpinnerPrivate;
 
 struct _ESpinner
 {
-	GtkImage parent;
+	GtkWidget parent;
 
 	/*< private >*/
 	ESpinnerPrivate *priv;
@@ -48,7 +48,7 @@ struct _ESpinner
 
 struct _ESpinnerClass
 {
-	GtkImageClass parent_class;
+	GtkWidgetClass parent_class;
 };
 
 GType		e_spinner_get_type	(void);

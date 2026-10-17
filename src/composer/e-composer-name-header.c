@@ -95,7 +95,7 @@ composer_name_header_entry_query_tooltip_cb (GtkEntry *entry,
 {
 	const gchar *text;
 
-	text = gtk_entry_get_text (entry);
+	text = gtk_editable_get_text (GTK_EDITABLE (entry));
 
 	if (keyboard_mode || text == NULL || *text == '\0')
 		return FALSE;
@@ -235,7 +235,7 @@ composer_name_header_clicked (EComposerHeader *header)
 		dialog, self->priv->destination_index);
 	e_name_selector_show_dialog (
 		self->priv->name_selector, header->title_widget);
-	gtk_dialog_run (GTK_DIALOG (dialog));
+	e_gtk_dialog_run (GTK_DIALOG (dialog));
 	gtk_widget_hide (GTK_WIDGET (dialog));
 }
 

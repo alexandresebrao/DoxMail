@@ -183,7 +183,7 @@ webdav_browser_page_constructed (GObject *object)
 		"valign", GTK_ALIGN_FILL,
 		NULL);
 	gtk_widget_show (widget);
-	gtk_box_pack_start (GTK_BOX (vbox), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), widget, TRUE, TRUE, 0);
 	page->webdav_browser = E_WEBDAV_BROWSER (widget);
 
 	g_object_unref (credentials_prompter);
@@ -196,7 +196,7 @@ webdav_browser_page_constructed (GObject *object)
 		"valign", GTK_ALIGN_START,
 		NULL);
 	gtk_widget_show (widget);
-	gtk_box_pack_start (GTK_BOX (vbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), widget, FALSE, FALSE, 0);
 
 	g_signal_connect (widget, "clicked",
 		G_CALLBACK (webdav_browser_back_button_clicked_cb), page);
@@ -207,13 +207,13 @@ webdav_browser_page_constructed (GObject *object)
 
 	widget = gtk_label_new ("");
 	gtk_widget_show (widget);
-	gtk_box_pack_start (GTK_BOX (button_box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (button_box), widget, FALSE, FALSE, 0);
 
 	widget = gtk_button_new_with_mnemonic (_("_Browse"));
 	gtk_widget_set_sensitive (widget, FALSE);
 	gtk_widget_set_tooltip_text (widget, _("Browse a WebDAV (CalDAV or CardDAV) server and create, edit or delete address books, calendars, memo lists or task lists there"));
 	gtk_widget_show (widget);
-	gtk_box_pack_start (GTK_BOX (button_box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (button_box), widget, FALSE, FALSE, 0);
 	page->browse_button = widget;
 
 	g_signal_connect (widget, "clicked",

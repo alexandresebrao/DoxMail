@@ -149,7 +149,7 @@ mail_shell_view_folder_tree_selected_cb (EMailShellView *mail_shell_view,
 
 static gboolean
 mail_shell_view_folder_tree_key_press_event_cb (EMailShellView *mail_shell_view,
-                                                GdkEventKey *event)
+                                                GdkEvent *event)
 {
 	EMailShellContent *mail_shell_content;
 	EMailView *mail_view;

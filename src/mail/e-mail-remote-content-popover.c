@@ -204,7 +204,7 @@ add_remote_content_menu_item (EMailReader *reader,
 
 static void
 show_remote_content_popup (EMailReader *reader,
-			   GdkEventButton *event,
+			   GdkEvent *event,
 			   GtkToggleButton *toggle_button)
 {
 	EMailDisplay *mail_display;
@@ -274,7 +274,7 @@ show_remote_content_popup (EMailReader *reader,
 			popup_menu, "deactivate",
 			G_CALLBACK (remote_content_menu_deactivate_cb), toggle_button);
 
-		gtk_widget_show_all (popup_menu);
+		gtk_widget_set_visible (popup_menu, TRUE);
 
 		gtk_menu_attach_to_widget (GTK_MENU (popup_menu), box, NULL);
 
@@ -294,7 +294,7 @@ show_remote_content_popup (EMailReader *reader,
 
 static gboolean
 options_remote_content_button_press_cb (GtkToggleButton *toggle_button,
-					GdkEventButton *event,
+					GdkEvent *event,
 					EMailReader *reader)
 {
 	g_return_val_if_fail (E_IS_MAIL_READER (reader), FALSE);
@@ -314,24 +314,24 @@ create_remote_content_alert_button (EMailReader *reader)
 
 	box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
 
-	gtk_style_context_add_class (gtk_widget_get_style_context (box), "linked");
+	gtk_widget_add_css_class (box, "linked");
 
 	button = gtk_button_new_with_label (_("Load remote content"));
-	gtk_container_add (GTK_CONTAINER (box), button);
+	e_gtk_container_add (box, button);
 
 	g_signal_connect (button, "clicked",
 		G_CALLBACK (load_remote_content_clicked_cb), reader);
 
 	button = gtk_toggle_button_new ();
-	gtk_box_pack_start (GTK_BOX (box), button, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (box), button, FALSE, FALSE, 0);
 
 	g_signal_connect (button, "button-press-event",
 		G_CALLBACK (options_remote_content_button_press_cb), reader);
 
-	arrow = gtk_image_new_from_icon_name ("pan-down-symbolic", GTK_ICON_SIZE_BUTTON);
-	gtk_container_add (GTK_CONTAINER (button), arrow);
+	arrow = gtk_image_new_from_icon_name ("pan-down-symbolic");
+	e_gtk_container_add (button, arrow);
 
-	gtk_widget_show_all (box);
+	gtk_widget_set_visible (box, TRUE);
 
 	return box;
 }
@@ -353,26 +353,26 @@ e_mail_remote_content_popover_run (EMailReader *reader,
 
 	gtk_popover_set_position (popover, GTK_POS_BOTTOM);
 	gtk_popover_set_pointing_to (popover, position);
-	gtk_popover_set_modal (popover, TRUE);
+	gtk_popover_set_autohide (popover, TRUE);
 
-	gtk_container_set_border_width (GTK_CONTAINER (popover), 12);
+	e_gtk_widget_set_border_width (popover, 12);
 
 	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 4);
-	gtk_container_add (GTK_CONTAINER (popover), hbox);
+	e_gtk_container_add (popover, hbox);
 
-	widget = gtk_image_new_from_icon_name ("dialog-information", GTK_ICON_SIZE_DND);
+	widget = gtk_image_new_from_icon_name ("dialog-information");
 	g_object_set (G_OBJECT (widget),
 		"valign", GTK_ALIGN_START,
 		"vexpand", FALSE,
 		NULL);
-	gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 
 	vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 4);
 	g_object_set (G_OBJECT (vbox),
 		"halign", GTK_ALIGN_FILL,
 		"hexpand", TRUE,
 		NULL);
-	gtk_box_pack_start (GTK_BOX (hbox), vbox, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), vbox, TRUE, TRUE, 0);
 
 	bold = pango_attr_list_new ();
 	pango_attr_list_insert (bold, pango_attr_weight_new (PANGO_WEIGHT_BOLD));
@@ -387,7 +387,7 @@ e_mail_remote_content_popover_run (EMailReader *reader,
 		"max-width-chars", 80,
 		"xalign", 0.0,
 		NULL);
-	gtk_box_pack_start (GTK_BOX (vbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), widget, FALSE, FALSE, 0);
 
 	pango_attr_list_unref (bold);
 
@@ -400,16 +400,16 @@ e_mail_remote_content_popover_run (EMailReader *reader,
 		"max-width-chars", 80,
 		"xalign", 0.0,
 		NULL);
-	gtk_box_pack_start (GTK_BOX (vbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), widget, FALSE, FALSE, 0);
 
 	widget = create_remote_content_alert_button (reader);
 	g_object_set (G_OBJECT (widget),
 		"halign", GTK_ALIGN_END,
 		"hexpand", TRUE,
 		NULL);
-	gtk_box_pack_start (GTK_BOX (vbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), widget, FALSE, FALSE, 0);
 
-	gtk_widget_show_all (hbox);
+	gtk_widget_set_visible (hbox, TRUE);
 
 	g_object_set_data_full (G_OBJECT (reader), REMOTE_CONTENT_KEY_POPOVER, popover, (GDestroyNotify) gtk_widget_destroy);
 

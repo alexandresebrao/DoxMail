@@ -52,8 +52,8 @@ display_error_message (GtkWidget *parent,
 		GTK_WINDOW (parent), 0,
 		GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
 		"%s", error->message);
-	gtk_dialog_run (GTK_DIALOG (dialog));
-	gtk_widget_destroy (dialog);
+	e_gtk_dialog_run (GTK_DIALOG (dialog));
+	e_gtk_widget_destroy (dialog);
 }
 
 enum { /* CSV helper enum */
@@ -329,7 +329,7 @@ do_save_calendar_csv (FormatHandler *handler,
 
 	if (source_client == NULL) {
 		display_error_message (
-			gtk_widget_get_toplevel (GTK_WIDGET (selector)),
+			e_gtk_widget_get_toplevel (GTK_WIDGET (selector)),
 			error);
 		g_error_free (error);
 		return;
@@ -337,17 +337,17 @@ do_save_calendar_csv (FormatHandler *handler,
 
 	config = g_new (CsvConfig, 1);
 
-	tmp = gtk_entry_get_text (GTK_ENTRY (d->delimiter_entry));
+	tmp = gtk_editable_get_text (GTK_EDITABLE (d->delimiter_entry));
 	config->delimiter = userstring_to_systemstring (tmp ? tmp:", ");
-	tmp = gtk_entry_get_text (GTK_ENTRY (d->newline_entry));
+	tmp = gtk_editable_get_text (GTK_EDITABLE (d->newline_entry));
 	config->newline = userstring_to_systemstring (tmp ? tmp:"\\n");
-	tmp = gtk_entry_get_text (GTK_ENTRY (d->quote_entry));
+	tmp = gtk_editable_get_text (GTK_EDITABLE (d->quote_entry));
 	config->quote = userstring_to_systemstring (tmp ? tmp:"\"");
 	config->header = gtk_toggle_button_get_active (
 		GTK_TOGGLE_BUTTON (d->header_check));
 
 	stream = open_for_writing (
-		GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (selector))),
+		GTK_WINDOW (e_gtk_widget_get_toplevel (GTK_WIDGET (selector))),
 		dest_uri, &error);
 
 	if (stream && e_cal_client_get_object_list_as_comps_sync (E_CAL_CLIENT (source_client), "#t", &objects, NULL, NULL)) {
@@ -523,7 +523,7 @@ do_save_calendar_csv (FormatHandler *handler,
 
 	if (error != NULL) {
 		display_error_message (
-			gtk_widget_get_toplevel (GTK_WIDGET (selector)),
+			e_gtk_widget_get_toplevel (GTK_WIDGET (selector)),
 			error);
 		g_error_free (error);
 	}
@@ -543,9 +543,9 @@ create_options_widget (FormatHandler *handler)
 	gtk_widget_set_halign (d->header_check, GTK_ALIGN_START);
 
 	/* Advanced CSV options */
-	gtk_entry_set_text (GTK_ENTRY (d->delimiter_entry), ", ");
-	gtk_entry_set_text (GTK_ENTRY (d->quote_entry), "\"");
-	gtk_entry_set_text (GTK_ENTRY (d->newline_entry), "\\n");
+	gtk_editable_set_text (GTK_EDITABLE (d->delimiter_entry), ", ");
+	gtk_editable_set_text (GTK_EDITABLE (d->quote_entry), "\"");
+	gtk_editable_set_text (GTK_EDITABLE (d->newline_entry), "\\n");
 
 	grid = gtk_grid_new ();
 	gtk_widget_set_margin_start (grid, 6);
@@ -570,7 +570,7 @@ create_options_widget (FormatHandler *handler)
 	gtk_grid_attach (GTK_GRID (grid), label, 0, 3, 1, 1);
 	gtk_grid_attach (GTK_GRID (grid), d->quote_entry, 1, 3, 1, 1);
 
-	gtk_widget_show_all (grid);
+	gtk_widget_set_visible (grid, TRUE);
 
 	csv_options = gtk_expander_new_with_mnemonic (
 			_("A_dvanced options for the CSV format")),
@@ -578,7 +578,7 @@ create_options_widget (FormatHandler *handler)
 	gtk_widget_set_margin_end (csv_options, 6);
 	gtk_widget_set_margin_top (csv_options, 6);
 	gtk_widget_set_margin_bottom (csv_options, 6);
-	gtk_container_add (GTK_CONTAINER (csv_options), grid);
+	e_gtk_container_add (csv_options, grid);
 
 	return csv_options;
 }

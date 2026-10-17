@@ -138,12 +138,12 @@ on_idle_create_widget (gpointer user_data)
 		G_CALLBACK (window_delete_event_cb), NULL);
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 4);
-	gtk_container_add (GTK_CONTAINER (window), widget);
+	e_gtk_container_add (window, widget);
 
 	box = GTK_BOX (widget);
 
 	widget = gtk_button_new_with_mnemonic ("_Open vCard Editor");
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 
 	g_signal_connect (widget, "clicked",
 		G_CALLBACK (open_editor_clicked_cb), user_data);
@@ -152,7 +152,7 @@ on_idle_create_widget (gpointer user_data)
 	g_object_set (widget,
 		"halign", GTK_ALIGN_START,
 		NULL);
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 
 	glob_book_label = GTK_LABEL (widget);
 
@@ -161,7 +161,7 @@ on_idle_create_widget (gpointer user_data)
 		"halign", GTK_ALIGN_START,
 		"active", FALSE,
 		NULL);
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 	glob_save_to_book_check = GTK_TOGGLE_BUTTON (widget);
 
 	widget = gtk_check_button_new_with_mnemonic ("Is _New Contact");
@@ -169,7 +169,7 @@ on_idle_create_widget (gpointer user_data)
 		"halign", GTK_ALIGN_START,
 		"active", TRUE,
 		NULL);
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 	glob_is_new_check = GTK_TOGGLE_BUTTON (widget);
 
 	scrolled = gtk_scrolled_window_new (NULL, NULL);
@@ -186,7 +186,7 @@ on_idle_create_widget (gpointer user_data)
 		"propagate-natural-height", TRUE,
 		"propagate-natural-width", TRUE,
 		NULL);
-	gtk_box_pack_start (box, scrolled, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (box, scrolled, TRUE, TRUE, 0);
 
 	widget = gtk_text_view_new ();
 	g_object_set (scrolled,
@@ -195,11 +195,11 @@ on_idle_create_widget (gpointer user_data)
 		"valign", GTK_ALIGN_FILL,
 		"vexpand", TRUE,
 		NULL);
-	gtk_container_add (GTK_CONTAINER (scrolled), widget);
+	e_gtk_container_add (scrolled, widget);
 
 	glob_vcard_text_view = GTK_TEXT_VIEW (widget);
 
-	gtk_widget_show_all (window);
+	gtk_widget_set_visible (window, TRUE);
 
 	return G_SOURCE_REMOVE;
 }
@@ -218,7 +218,7 @@ main (int argc,
 
 	e_util_init_main_thread (NULL);
 
-	gtk_init (&argc, &argv);
+	gtk_init ();
 
 	registry = e_source_registry_new_sync (NULL, &local_error);
 

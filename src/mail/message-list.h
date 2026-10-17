@@ -167,9 +167,9 @@ EMailSession *	message_list_get_session	(MessageList *message_list);
 CamelFolder *	message_list_ref_folder		(MessageList *message_list);
 void		message_list_set_folder		(MessageList *message_list,
 						 CamelFolder *folder);
-GtkTargetList *	message_list_get_copy_target_list
+EGtkTargetList *	message_list_get_copy_target_list
 						(MessageList *message_list);
-GtkTargetList *	message_list_get_paste_target_list
+EGtkTargetList *	message_list_get_paste_target_list
 						(MessageList *message_list);
 void		message_list_set_expanded_default
 						(MessageList *message_list,

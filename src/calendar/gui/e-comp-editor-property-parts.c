@@ -21,7 +21,7 @@
 #include <glib/gi18n-lib.h>
 
 #include <libedataserver/libedataserver.h>
-#include <libedataserverui/libedataserverui.h>
+#include <libedataserverui4/libedataserverui4.h>
 #include <e-util/e-util.h>
 
 #include "calendar-config.h"
@@ -261,7 +261,7 @@ ecepp_location_save_list (GtkEntry *entry)
 	g_free (filename);
 
 	filename = ecepp_location_get_locations_filename (FALSE);
-	current_location = gtk_entry_get_text (entry);
+	current_location = gtk_editable_get_text (GTK_EDITABLE (entry));
 
 	/* Put current locatin on the very top of the list */
 	contents = g_string_new (current_location);
@@ -797,7 +797,7 @@ ecepp_description_create_widgets (ECompEditorPropertyPart *property_part,
 		g_return_if_fail (*out_label_widget == NULL);
 		g_return_if_fail (*out_edit_widget != NULL);
 
-		text_view = GTK_TEXT_VIEW (gtk_bin_get_child (GTK_BIN (*out_edit_widget)));
+		text_view = GTK_TEXT_VIEW (e_gtk_bin_get_child (*out_edit_widget));
 		gtk_text_view_set_wrap_mode (text_view, GTK_WRAP_WORD);
 		gtk_text_view_set_monospace (text_view, TRUE);
 		e_buffer_tagger_connect (text_view);
@@ -840,7 +840,7 @@ ecepp_description_create_widgets (ECompEditorPropertyPart *property_part,
 		"valign", GTK_ALIGN_START,
 		NULL);
 
-	gtk_box_pack_start (GTK_BOX (box), label, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (box), label, FALSE, FALSE, 0);
 
 	description_part->view_as_label = gtk_label_new ("");
 
@@ -855,9 +855,9 @@ ecepp_description_create_widgets (ECompEditorPropertyPart *property_part,
 	g_signal_connect (description_part->view_as_label, "activate-link",
 		G_CALLBACK (ecepp_description_flip_view_as_cb), description_part);
 
-	gtk_box_pack_start (GTK_BOX (box), description_part->view_as_label, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (box), description_part->view_as_label, FALSE, FALSE, 0);
 
-	gtk_widget_show_all (box);
+	gtk_widget_set_visible (box, TRUE);
 
 	*out_label_widget = box;
 
@@ -871,12 +871,12 @@ ecepp_description_create_widgets (ECompEditorPropertyPart *property_part,
 		"visible", TRUE,
 		NULL);
 
-	gtk_box_pack_start (GTK_BOX (box), description_part->real_edit_widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (box), description_part->real_edit_widget, TRUE, TRUE, 0);
 
 	description_part->web_view = e_web_view_new ();
 	description_part->web_view_scrolled_window = gtk_scrolled_window_new (NULL, NULL);
 
-	gtk_container_add (GTK_CONTAINER (description_part->web_view_scrolled_window), description_part->web_view);
+	e_gtk_container_add (description_part->web_view_scrolled_window, description_part->web_view);
 
 	g_object_set (G_OBJECT (description_part->web_view),
 		"hexpand", TRUE,
@@ -897,7 +897,7 @@ ecepp_description_create_widgets (ECompEditorPropertyPart *property_part,
 		"visible", FALSE,
 		NULL);
 
-	gtk_box_pack_start (GTK_BOX (box), description_part->web_view_scrolled_window, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (box), description_part->web_view_scrolled_window, TRUE, TRUE, 0);
 
 	*out_edit_widget = box;
 }

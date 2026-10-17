@@ -58,8 +58,8 @@ struct _ECalendarViewPrivate {
 	gint time_divisions;
 	GSList *selected_cut_list; /* ECalendarViewSelectionData * */
 
-	GtkTargetList *copy_target_list;
-	GtkTargetList *paste_target_list;
+	EGtkTargetList *copy_target_list;
+	EGtkTargetList *paste_target_list;
 
 	gboolean allow_direct_summary_edit;
 	gboolean allow_event_dnd;
@@ -136,7 +136,7 @@ calendar_view_delete_event (ECalendarView *cal_view,
 	GtkWidget *toplevel;
 	GtkWindow *parent_window;
 
-	toplevel = gtk_widget_get_toplevel (GTK_WIDGET (cal_view));
+	toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (cal_view));
 	parent_window = GTK_IS_WINDOW (toplevel) ? GTK_WINDOW (toplevel) : NULL;
 
 	model = e_calendar_view_get_model (cal_view);
@@ -285,12 +285,12 @@ calendar_view_constructed (GObject *object)
 static void
 calendar_view_update_actions (ESelectable *selectable,
                               EFocusTracker *focus_tracker,
-                              GdkAtom *clipboard_targets,
+                              EGtkAtom *clipboard_targets,
                               gint n_clipboard_targets)
 {
 	ECalendarView *view;
 	EUIAction *action;
-	GtkTargetList *target_list;
+	EGtkTargetList *target_list;
 	GSList *selected, *link;
 	gboolean can_paste = FALSE;
 	gboolean sources_are_editable = TRUE;
@@ -326,7 +326,7 @@ calendar_view_update_actions (ESelectable *selectable,
 
 	target_list = e_selectable_get_paste_target_list (selectable);
 	for (ii = 0; ii < n_clipboard_targets && !can_paste; ii++)
-		can_paste = gtk_target_list_find (
+		can_paste = e_gtk_target_list_find (
 			target_list, clipboard_targets[ii], NULL);
 
 	action = e_focus_tracker_get_cut_clipboard_action (focus_tracker);
@@ -447,7 +447,7 @@ calendar_view_copy_clipboard (ESelectable *selectable)
 	GSList *selected, *link;
 	gchar *comp_str;
 	ICalComponent *vcal_comp;
-	GtkClipboard *clipboard;
+	GdkClipboard *clipboard;
 
 	cal_view = E_CALENDAR_VIEW (selectable);
 	priv = cal_view->priv;
@@ -484,9 +484,9 @@ calendar_view_copy_clipboard (ESelectable *selectable)
 	comp_str = i_cal_component_as_ical_string (vcal_comp);
 
 	/* copy the VCALENDAR to the clipboard */
-	clipboard = gtk_clipboard_get (GDK_SELECTION_CLIPBOARD);
+	clipboard = e_gtk_clipboard_get (E_GTK_SELECTION_CLIPBOARD);
 	e_clipboard_set_calendar (clipboard, comp_str, -1);
-	gtk_clipboard_store (clipboard);
+	e_gtk_clipboard_store (clipboard);
 
 	/* free memory */
 	g_object_unref (vcal_comp);
@@ -1000,16 +1000,16 @@ calendar_view_paste_clipboard (ESelectable *selectable)
 {
 	ECalModel *model;
 	ECalendarView *cal_view;
-	GtkClipboard *clipboard;
+	GdkClipboard *clipboard;
 
 	cal_view = E_CALENDAR_VIEW (selectable);
 
 	model = e_calendar_view_get_model (cal_view);
 
-	clipboard = gtk_clipboard_get (GDK_SELECTION_CLIPBOARD);
+	clipboard = e_gtk_clipboard_get (E_GTK_SELECTION_CLIPBOARD);
 
 	/* Paste text into an event being edited. */
-	if (gtk_clipboard_wait_is_text_available (clipboard)) {
+	if (e_gtk_clipboard_wait_is_text_available (clipboard)) {
 		e_calendar_view_paste_text (cal_view);
 
 	/* Paste iCalendar data into the view. */
@@ -1044,7 +1044,7 @@ calendar_view_paste_clipboard (ESelectable *selectable)
 		pcd->is_day_view = E_IS_DAY_VIEW (cal_view);
 		if (pcd->is_day_view)
 			pcd->time_division = e_calendar_view_get_time_divisions (cal_view);
-		pcd->top_level = gtk_widget_get_toplevel (GTK_WIDGET (cal_view));
+		pcd->top_level = e_gtk_widget_get_toplevel (GTK_WIDGET (cal_view));
 		if (pcd->top_level)
 			g_object_ref (pcd->top_level);
 		pcd->success = FALSE;
@@ -1325,18 +1325,18 @@ e_calendar_view_class_init (ECalendarViewClass *class)
 static void
 e_calendar_view_init (ECalendarView *calendar_view)
 {
-	GtkTargetList *target_list;
+	EGtkTargetList *target_list;
 
 	calendar_view->priv = e_calendar_view_get_instance_private (calendar_view);
 
 	/* Set this early to avoid a divide-by-zero during init. */
 	calendar_view->priv->time_divisions = 30;
 
-	target_list = gtk_target_list_new (NULL, 0);
+	target_list = e_gtk_target_list_new (NULL, 0);
 	e_target_list_add_calendar_targets (target_list, 0);
 	calendar_view->priv->copy_target_list = target_list;
 
-	target_list = gtk_target_list_new (NULL, 0);
+	target_list = e_gtk_target_list_new (NULL, 0);
 	e_target_list_add_calendar_targets (target_list, 0);
 	calendar_view->priv->paste_target_list = target_list;
 
@@ -1402,7 +1402,7 @@ e_calendar_view_set_timezone (ECalendarView *cal_view,
 	g_clear_object (&old_zone);
 }
 
-GtkTargetList *
+EGtkTargetList *
 e_calendar_view_get_copy_target_list (ECalendarView *cal_view)
 {
 	g_return_val_if_fail (E_IS_CALENDAR_VIEW (cal_view), NULL);
@@ -1410,7 +1410,7 @@ e_calendar_view_get_copy_target_list (ECalendarView *cal_view)
 	return cal_view->priv->copy_target_list;
 }
 
-GtkTargetList *
+EGtkTargetList *
 e_calendar_view_get_paste_target_list (ECalendarView *cal_view)
 {
 	g_return_val_if_fail (E_IS_CALENDAR_VIEW (cal_view), NULL);
@@ -1687,7 +1687,7 @@ e_calendar_view_open_event_with_flags (ECalendarView *cal_view,
 	if (!comp_editor) {
 		GtkWidget *toplevel;
 
-		toplevel = gtk_widget_get_toplevel (GTK_WIDGET (cal_view));
+		toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (cal_view));
 		if (!GTK_IS_WINDOW (toplevel))
 			toplevel = NULL;
 

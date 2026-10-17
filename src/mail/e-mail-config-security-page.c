@@ -55,9 +55,9 @@ mail_config_security_page_cert_selected (ECertSelector *selector,
                                          GtkEntry *entry)
 {
 	if (key != NULL)
-		gtk_entry_set_text (entry, key);
+		gtk_editable_set_text (GTK_EDITABLE (entry), key);
 
-	gtk_widget_destroy (GTK_WIDGET (selector));
+	e_gtk_widget_destroy (GTK_WIDGET (selector));
 }
 
 static void
@@ -67,12 +67,12 @@ mail_config_security_page_select_encrypt_cert (GtkButton *button,
 	GtkWidget *selector;
 	gpointer parent;
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (button));
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (button));
 	parent = GTK_IS_WIDGET (parent) ? parent : NULL;
 
 	selector = e_cert_selector_new (
 		E_CERT_SELECTOR_RECIPIENT,
-		gtk_entry_get_text (entry));
+		gtk_editable_get_text (GTK_EDITABLE (entry)));
 	gtk_window_set_transient_for (
 		GTK_WINDOW (selector), parent);
 	gtk_widget_show (selector);
@@ -90,12 +90,12 @@ mail_config_security_page_select_sign_cert (GtkButton *button,
 	GtkWidget *selector;
 	gpointer parent;
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (button));
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (button));
 	parent = GTK_IS_WIDGET (parent) ? parent : NULL;
 
 	selector = e_cert_selector_new (
 		E_CERT_SELECTOR_SIGNER,
-		gtk_entry_get_text (entry));
+		gtk_editable_get_text (GTK_EDITABLE (entry)));
 	gtk_window_set_transient_for (
 		GTK_WINDOW (selector), parent);
 	gtk_widget_show (selector);
@@ -110,7 +110,7 @@ static void
 mail_config_security_page_clear_cert (GtkButton *button,
                                       GtkEntry *entry)
 {
-	gtk_entry_set_text (entry, "");
+	gtk_editable_set_text (GTK_EDITABLE (entry), "");
 }
 #endif /* ENABLE_SMIME */
 
@@ -386,7 +386,7 @@ mail_security_page_get_openpgpg_combo (void)
 	gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (widget), cell, TRUE);
 	gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (widget), cell, "text", 1, NULL);
 
-	child = gtk_bin_get_child (GTK_BIN (widget));
+	child = e_gtk_bin_get_child (widget);
 	if (GTK_IS_ENTRY (child))
 		gtk_entry_set_placeholder_text (GTK_ENTRY (child), _("Use sender e-mail address"));
 
@@ -443,7 +443,7 @@ mail_config_security_page_constructed (GObject *object)
 	widget = gtk_grid_new ();
 	gtk_grid_set_row_spacing (GTK_GRID (widget), 6);
 	gtk_grid_set_column_spacing (GTK_GRID (widget), 6);
-	gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -475,7 +475,7 @@ mail_config_security_page_constructed (GObject *object)
 	widget = gtk_grid_new ();
 	gtk_grid_set_row_spacing (GTK_GRID (widget), 6);
 	gtk_grid_set_column_spacing (GTK_GRID (widget), 6);
-	gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -512,7 +512,7 @@ mail_config_security_page_constructed (GObject *object)
 
 	if (!GTK_IS_ENTRY (widget)) {
 		/* There's expected an entry, thus provide it. */
-		widget = gtk_bin_get_child (GTK_BIN (widget));
+		widget = e_gtk_bin_get_child (widget);
 		g_warn_if_fail (GTK_IS_ENTRY (widget));
 	}
 
@@ -631,7 +631,7 @@ mail_config_security_page_constructed (GObject *object)
 
 	text = _("Always _trust keys in my keyring when encrypting");
 	widget = gtk_check_button_new_with_mnemonic (text);
-	gtk_box_pack_start (GTK_BOX (expander_vbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (expander_vbox), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	e_binding_bind_property (
@@ -642,7 +642,7 @@ mail_config_security_page_constructed (GObject *object)
 
 	text = _("Prefer _inline sign/encrypt for plain text messages");
 	widget = gtk_check_button_new_with_mnemonic (text);
-	gtk_box_pack_start (GTK_BOX (expander_vbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (expander_vbox), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	e_binding_bind_property (
@@ -653,7 +653,7 @@ mail_config_security_page_constructed (GObject *object)
 
 	text = _("_Lookup keys for encryption in Web Key Directory (WKD)");
 	widget = gtk_check_button_new_with_mnemonic (text);
-	gtk_box_pack_start (GTK_BOX (expander_vbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (expander_vbox), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	e_binding_bind_property (
@@ -664,7 +664,7 @@ mail_config_security_page_constructed (GObject *object)
 
 	text = _("Send own _public key in outgoing mails");
 	widget = gtk_check_button_new_with_mnemonic (text);
-	gtk_box_pack_start (GTK_BOX (expander_vbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (expander_vbox), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	e_binding_bind_property (
@@ -676,7 +676,7 @@ mail_config_security_page_constructed (GObject *object)
 	text = _("Advertise encryption is pre_ferred");
 	widget = gtk_check_button_new_with_mnemonic (text);
 	gtk_widget_set_margin_start (widget, 12);
-	gtk_box_pack_start (GTK_BOX (expander_vbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (expander_vbox), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	e_binding_bind_property (
@@ -694,7 +694,7 @@ mail_config_security_page_constructed (GObject *object)
 	text = _("A_sk before sending mails with own public key");
 	widget = gtk_check_button_new_with_mnemonic (text);
 	gtk_widget_set_margin_start (widget, 12);
-	gtk_box_pack_start (GTK_BOX (expander_vbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (expander_vbox), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	e_binding_bind_property (
@@ -716,7 +716,7 @@ mail_config_security_page_constructed (GObject *object)
 	widget = gtk_grid_new ();
 	gtk_grid_set_row_spacing (GTK_GRID (widget), 6);
 	gtk_grid_set_column_spacing (GTK_GRID (widget), 6);
-	gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;

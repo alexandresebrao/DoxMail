@@ -306,7 +306,7 @@ plugins_page_new (EPreferencesWindow *window)
 
 	/* Setup the ui */
 	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 12);
-	gtk_container_set_border_width (GTK_CONTAINER (hbox), 6);
+	e_gtk_widget_set_border_width (hbox, 6);
 
 	string = g_markup_printf_escaped (
 		"<i>%s</i>", _("Note: Some changes "
@@ -321,8 +321,8 @@ plugins_page_new (EPreferencesWindow *window)
 	g_free (string);
 
 	vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 12);
-	gtk_box_pack_start (GTK_BOX (vbox), hbox, TRUE, TRUE, 0);
-	gtk_box_pack_start (GTK_BOX (vbox), w, FALSE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), hbox, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), w, FALSE, TRUE, 0);
 
 	glob_notebook = gtk_notebook_new ();
 	gtk_notebook_set_show_tabs (GTK_NOTEBOOK (glob_notebook), TRUE);
@@ -335,8 +335,8 @@ plugins_page_new (EPreferencesWindow *window)
 	overview_page = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
 	configure_page = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
 	g_object_ref_sink (configure_page);
-	gtk_container_set_border_width (GTK_CONTAINER (overview_page), 12);
-	gtk_container_set_border_width (GTK_CONTAINER (configure_page), 12);
+	e_gtk_widget_set_border_width (overview_page, 12);
+	e_gtk_widget_set_border_width (configure_page, 12);
 	gtk_notebook_append_page_menu (
 		GTK_NOTEBOOK (glob_notebook), overview_page,
 		gtk_label_new (_("Overview")), NULL);
@@ -353,9 +353,7 @@ plugins_page_new (EPreferencesWindow *window)
 		"xalign", 0.0,
 		"yalign", 0.0, NULL);
 	gtk_widget_show (m->config_plugin_label);
-	gtk_box_pack_start (
-		GTK_BOX (configure_page),
-		m->config_plugin_label, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (configure_page), m->config_plugin_label, FALSE, FALSE, 0);
 
 	store = gtk_list_store_new (
 		4, G_TYPE_BOOLEAN, G_TYPE_STRING,
@@ -377,9 +375,7 @@ plugins_page_new (EPreferencesWindow *window)
 		cfg_widget = e_plugin_get_configure_widget (ep);
 		if (cfg_widget) {
 			gtk_widget_hide (cfg_widget);
-			gtk_box_pack_start (
-				GTK_BOX (configure_page),
-				cfg_widget, TRUE, TRUE, 12);
+			e_gtk_box_pack_start (GTK_BOX (configure_page), cfg_widget, TRUE, TRUE, 12);
 		}
 
 		gtk_list_store_append (store, &iter);
@@ -422,17 +418,16 @@ plugins_page_new (EPreferencesWindow *window)
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (w),
 		GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_set_shadow_type (
-		GTK_SCROLLED_WINDOW (w), GTK_SHADOW_IN);
-	gtk_container_add (GTK_CONTAINER (w), GTK_WIDGET (tree_view));
+	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (w), TRUE);
+	e_gtk_container_add (w, GTK_WIDGET (tree_view));
 
-	gtk_box_pack_start (GTK_BOX (hbox), GTK_WIDGET (w), FALSE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), GTK_WIDGET (w), FALSE, TRUE, 0);
 
 	/* Show all widgets in hbox before we pack the notebook, because not
 	 * all widgets in notebook are going to be visible at one moment. */
-	gtk_widget_show_all (hbox);
+	gtk_widget_set_visible (hbox, TRUE);
 
-	gtk_box_pack_start (GTK_BOX (hbox), glob_notebook, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), glob_notebook, TRUE, TRUE, 0);
 
 	/* this is plugin's name label */
 	subvbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
@@ -442,11 +437,8 @@ plugins_page_new (EPreferencesWindow *window)
 		"selectable", FALSE,
 		"xalign", 0.0,
 		"yalign", 0.0, NULL);
-	gtk_box_pack_start (
-		GTK_BOX (subvbox),
-		GTK_WIDGET (m->items[0]), TRUE, TRUE, 0);
-	gtk_box_pack_start (
-		GTK_BOX (overview_page), subvbox, FALSE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (subvbox), GTK_WIDGET (m->items[0]), TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (overview_page), subvbox, FALSE, TRUE, 0);
 
 	/* this is every other data */
 	for (i = 1; i < LABEL_LAST; i++) {
@@ -463,9 +455,7 @@ plugins_page_new (EPreferencesWindow *window)
 			"use_markup", TRUE,
 			"xalign", 0.0,
 			"yalign", 0.0, NULL);
-		gtk_box_pack_start (
-			GTK_BOX (subvbox),
-			GTK_WIDGET (m->labels[i]), FALSE, TRUE, 0);
+		e_gtk_box_pack_start (GTK_BOX (subvbox), GTK_WIDGET (m->labels[i]), FALSE, TRUE, 0);
 		g_free (markup);
 
 		m->items[i] = g_object_new (
@@ -475,15 +465,12 @@ plugins_page_new (EPreferencesWindow *window)
 			"can-focus", FALSE,
 			"xalign", 0.0,
 			"yalign", 0.0, NULL);
-		gtk_box_pack_start (
-			GTK_BOX (subvbox),
-			GTK_WIDGET (m->items[i]), TRUE, TRUE, 0);
+		e_gtk_box_pack_start (GTK_BOX (subvbox), GTK_WIDGET (m->items[i]), TRUE, TRUE, 0);
 
-		gtk_box_pack_start (
-			GTK_BOX (overview_page), subvbox, FALSE, TRUE, 12);
+		e_gtk_box_pack_start (GTK_BOX (overview_page), subvbox, FALSE, TRUE, 12);
 	}
 
-	gtk_widget_show_all (overview_page);
+	gtk_widget_set_visible (overview_page, TRUE);
 
 	selection = gtk_tree_view_get_selection (tree_view);
 	g_signal_connect_data (

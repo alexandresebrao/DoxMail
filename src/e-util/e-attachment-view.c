@@ -37,7 +37,7 @@ enum {
 };
 
 /* Note: Do not use the info field. */
-static GtkTargetEntry target_table[] = {
+static EGtkTargetEntry target_table[] = {
 	{ (gchar *) "text/uri-list", 0, 0 },
 	{ (gchar *) "_NETSCAPE_URL", 0, 0 }
 };
@@ -73,8 +73,8 @@ action_add_cb (EUIAction *action,
 	EAttachmentStore *store;
 	gpointer parent;
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (view));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (view));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	store = e_attachment_view_get_store (view);
 	e_attachment_store_run_load_dialog (store, parent);
@@ -215,8 +215,8 @@ action_open_with_cb (EUIAction *action,
 	gpointer parent;
 	const gchar *content_type;
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (view));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (view));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	list = e_attachment_view_get_selected_paths (view);
 	g_return_if_fail (g_list_length (list) == 1);
@@ -236,11 +236,11 @@ action_open_with_cb (EUIAction *action,
 
 	dialog = gtk_app_chooser_dialog_new_for_content_type (
 		parent, 0, content_type);
-	if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
+	if (e_gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
 		GtkAppChooser *app_chooser = GTK_APP_CHOOSER (dialog);
 		app_info = gtk_app_chooser_get_app_info (app_chooser);
 	}
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 
 	if (app_info != NULL) {
 		e_attachment_view_open_path (view, path, app_info);
@@ -309,8 +309,8 @@ action_reload_cb (EUIAction *action,
 
 	g_return_if_fail (E_IS_ATTACHMENT_VIEW (view));
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (view));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (view));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	list = e_attachment_view_get_selected_attachments (view);
 
@@ -372,8 +372,8 @@ action_save_all_cb (EUIAction *action,
 
 	store = e_attachment_view_get_store (view);
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (view));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (view));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	/* XXX We lose the previous selection. */
 	e_attachment_view_select_all (view);
@@ -416,8 +416,8 @@ action_save_as_cb (EUIAction *action,
 
 	store = e_attachment_view_get_store (view);
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (view));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (view));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	list = e_attachment_view_get_selected_attachments (view);
 
@@ -446,7 +446,7 @@ exit:
 
 static void
 attachment_view_handle_uri_with_title (EAttachmentView *view,
-				       GdkDragContext *drag_context,
+				       EGtkDragContext *drag_context,
 				       const gchar *uri_with_title,
 				       guint time)
 {
@@ -458,8 +458,8 @@ attachment_view_handle_uri_with_title (EAttachmentView *view,
 	strv = g_strsplit (uri_with_title, "\n", 2);
 	store = e_attachment_view_get_store (view);
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (view));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (view));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	attachment = e_attachment_new_for_uri (strv[0]);
 	e_attachment_store_add_attachment (store, attachment);
@@ -470,34 +470,34 @@ attachment_view_handle_uri_with_title (EAttachmentView *view,
 
 	g_strfreev (strv);
 
-	gtk_drag_finish (drag_context, TRUE, FALSE, time);
+	e_gtk_drag_finish (drag_context, TRUE, FALSE, time);
 }
 
 static void
 attachment_view_netscape_url (EAttachmentView *view,
-                              GdkDragContext *drag_context,
+                              EGtkDragContext *drag_context,
                               gint x,
                               gint y,
-                              GtkSelectionData *selection_data,
+                              EGtkSelectionData *selection_data,
                               guint info,
                               guint time)
 {
-	static GdkAtom atom = GDK_NONE;
+	static EGtkAtom atom = E_GTK_ATOM_NONE;
 	const gchar *data;
 	gchar *copied_data;
 	gint length;
 
-	if (G_UNLIKELY (atom == GDK_NONE))
-		atom = gdk_atom_intern_static_string ("_NETSCAPE_URL");
+	if (G_UNLIKELY (atom == E_GTK_ATOM_NONE))
+		atom = e_gtk_atom_intern_static_string ("_NETSCAPE_URL");
 
-	if (gtk_selection_data_get_target (selection_data) != atom)
+	if (e_gtk_selection_data_get_target (selection_data) != atom)
 		return;
 
 	g_signal_stop_emission_by_name (view, "drag-data-received");
 
 	/* _NETSCAPE_URL is represented as "URI\nTITLE" */
-	data = (const gchar *) gtk_selection_data_get_data (selection_data);
-	length = gtk_selection_data_get_length (selection_data);
+	data = (const gchar *) e_gtk_selection_data_get_data (selection_data);
+	length = e_gtk_selection_data_get_length (selection_data);
 
 	copied_data = g_strndup (data, length);
 	attachment_view_handle_uri_with_title (view, drag_context, copied_data, time);
@@ -506,14 +506,14 @@ attachment_view_netscape_url (EAttachmentView *view,
 
 static void
 attachment_view_uri_list (EAttachmentView *view,
-                          GdkDragContext *drag_context,
+                          EGtkDragContext *drag_context,
                           gint x,
                           gint y,
-                          GtkSelectionData *selection_data,
+                          EGtkSelectionData *selection_data,
                           guint info,
                           guint time)
 {
-	static GdkAtom atom = GDK_NONE;
+	static EGtkAtom atom = E_GTK_ATOM_NONE;
 	EAttachmentStore *store;
 	EAttachment *attachment;
 	const gchar *data;
@@ -522,26 +522,26 @@ attachment_view_uri_list (EAttachmentView *view,
 	gchar *uri;
 
 
-	if (G_UNLIKELY (atom == GDK_NONE))
-		atom = gdk_atom_intern_static_string ("text/uri-list");
+	if (G_UNLIKELY (atom == E_GTK_ATOM_NONE))
+		atom = e_gtk_atom_intern_static_string ("text/uri-list");
 
-	if (gtk_selection_data_get_target (selection_data) != atom)
+	if (e_gtk_selection_data_get_target (selection_data) != atom)
 		return;
 
 	g_signal_stop_emission_by_name (view, "drag-data-received");
 
-	data = (const gchar *) gtk_selection_data_get_data (selection_data);
-	length = gtk_selection_data_get_length (selection_data);
+	data = (const gchar *) e_gtk_selection_data_get_data (selection_data);
+	length = e_gtk_selection_data_get_length (selection_data);
 
 	if (!data || length < 0) {
-		gtk_drag_finish (drag_context, FALSE, FALSE, time);
+		e_gtk_drag_finish (drag_context, FALSE, FALSE, time);
 		return;
 	}
 
 	store = e_attachment_view_get_store (view);
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (view));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (view));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	list_length = length;
 	do {
@@ -581,7 +581,7 @@ attachment_view_uri_list (EAttachmentView *view,
 				base64_data = g_base64_decode (base64, &base64_data_length);
 			} else {
 				g_free (uri);
-				gtk_drag_finish (drag_context, FALSE, FALSE, time);
+				e_gtk_drag_finish (drag_context, FALSE, FALSE, time);
 				return;
 			}
 
@@ -618,49 +618,49 @@ attachment_view_uri_list (EAttachmentView *view,
 		g_free (uri);
 	} while (list_length);
 
-	gtk_drag_finish (drag_context, TRUE, FALSE, time);
+	e_gtk_drag_finish (drag_context, TRUE, FALSE, time);
 }
 
 static void
 attachment_view_text_calendar (EAttachmentView *view,
-                               GdkDragContext *drag_context,
+                               EGtkDragContext *drag_context,
                                gint x,
                                gint y,
-                               GtkSelectionData *selection_data,
+                               EGtkSelectionData *selection_data,
                                guint info,
                                guint time)
 {
 	EAttachmentStore *store;
 	EAttachment *attachment;
 	CamelMimePart *mime_part;
-	GdkAtom data_type;
-	GdkAtom target;
+	EGtkAtom data_type;
+	EGtkAtom target;
 	const gchar *data;
 	gpointer parent;
 	gchar *content_type;
 	gint length;
 
-	target = gtk_selection_data_get_target (selection_data);
+	target = e_gtk_selection_data_get_target (selection_data);
 	if (!e_targets_include_calendar (&target, 1))
 		return;
 
 	g_signal_stop_emission_by_name (view, "drag-data-received");
 
-	data = (const gchar *) gtk_selection_data_get_data (selection_data);
-	length = gtk_selection_data_get_length (selection_data);
-	data_type = gtk_selection_data_get_data_type (selection_data);
+	data = (const gchar *) e_gtk_selection_data_get_data (selection_data);
+	length = e_gtk_selection_data_get_length (selection_data);
+	data_type = e_gtk_selection_data_get_data_type (selection_data);
 
 	mime_part = camel_mime_part_new ();
 
-	content_type = gdk_atom_name (data_type);
+	content_type = e_gtk_atom_name (data_type);
 	camel_mime_part_set_content (mime_part, data, length, content_type);
 	camel_mime_part_set_disposition (mime_part, "inline");
 	g_free (content_type);
 
 	store = e_attachment_view_get_store (view);
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (view));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (view));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	attachment = e_attachment_new ();
 	e_attachment_set_mime_part (attachment, mime_part);
@@ -672,49 +672,49 @@ attachment_view_text_calendar (EAttachmentView *view,
 
 	g_object_unref (mime_part);
 
-	gtk_drag_finish (drag_context, TRUE, FALSE, time);
+	e_gtk_drag_finish (drag_context, TRUE, FALSE, time);
 }
 
 static void
 attachment_view_text_x_vcard (EAttachmentView *view,
-                              GdkDragContext *drag_context,
+                              EGtkDragContext *drag_context,
                               gint x,
                               gint y,
-                              GtkSelectionData *selection_data,
+                              EGtkSelectionData *selection_data,
                               guint info,
                               guint time)
 {
 	EAttachmentStore *store;
 	EAttachment *attachment;
 	CamelMimePart *mime_part;
-	GdkAtom data_type;
-	GdkAtom target;
+	EGtkAtom data_type;
+	EGtkAtom target;
 	const gchar *data;
 	gpointer parent;
 	gchar *content_type;
 	gint length;
 
-	target = gtk_selection_data_get_target (selection_data);
+	target = e_gtk_selection_data_get_target (selection_data);
 	if (!e_targets_include_directory (&target, 1))
 		return;
 
 	g_signal_stop_emission_by_name (view, "drag-data-received");
 
-	data = (const gchar *) gtk_selection_data_get_data (selection_data);
-	length = gtk_selection_data_get_length (selection_data);
-	data_type = gtk_selection_data_get_data_type (selection_data);
+	data = (const gchar *) e_gtk_selection_data_get_data (selection_data);
+	length = e_gtk_selection_data_get_length (selection_data);
+	data_type = e_gtk_selection_data_get_data_type (selection_data);
 
 	mime_part = camel_mime_part_new ();
 
-	content_type = gdk_atom_name (data_type);
+	content_type = e_gtk_atom_name (data_type);
 	camel_mime_part_set_content (mime_part, data, length, content_type);
 	camel_mime_part_set_disposition (mime_part, "inline");
 	g_free (content_type);
 
 	store = e_attachment_view_get_store (view);
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (view));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (view));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	attachment = e_attachment_new ();
 	e_attachment_set_mime_part (attachment, mime_part);
@@ -726,15 +726,15 @@ attachment_view_text_x_vcard (EAttachmentView *view,
 
 	g_object_unref (mime_part);
 
-	gtk_drag_finish (drag_context, TRUE, FALSE, time);
+	e_gtk_drag_finish (drag_context, TRUE, FALSE, time);
 }
 
 static void
 attachment_view_uris (EAttachmentView *view,
-                      GdkDragContext *drag_context,
+                      EGtkDragContext *drag_context,
                       gint x,
                       gint y,
-                      GtkSelectionData *selection_data,
+                      EGtkSelectionData *selection_data,
                       guint info,
                       guint time)
 {
@@ -743,7 +743,7 @@ attachment_view_uris (EAttachmentView *view,
 	gchar **uris;
 	gint ii;
 
-	uris = gtk_selection_data_get_uris (selection_data);
+	uris = e_gtk_selection_data_get_uris (selection_data);
 
 	if (uris == NULL)
 		return;
@@ -752,8 +752,8 @@ attachment_view_uris (EAttachmentView *view,
 
 	store = e_attachment_view_get_store (view);
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (view));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (view));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	for (ii = 0; uris[ii] != NULL; ii++) {
 		EAttachment *attachment;
@@ -768,33 +768,33 @@ attachment_view_uris (EAttachmentView *view,
 
 	g_strfreev (uris);
 
-	gtk_drag_finish (drag_context, TRUE, FALSE, time);
+	e_gtk_drag_finish (drag_context, TRUE, FALSE, time);
 }
 
 static void
 attachment_view_text_x_moz_url (EAttachmentView *view,
-				GdkDragContext *drag_context,
+				EGtkDragContext *drag_context,
 				gint x,
 				gint y,
-				GtkSelectionData *selection_data,
+				EGtkSelectionData *selection_data,
 				guint info,
 				guint time)
 {
-	static GdkAtom atom = GDK_NONE;
+	static EGtkAtom atom = E_GTK_ATOM_NONE;
 	gchar *uri_with_title = NULL;
 	const guchar *raw_data;
 	gint len;
 
-	if (G_UNLIKELY (atom == GDK_NONE))
-		atom = gdk_atom_intern_static_string ("text/x-moz-url");
+	if (G_UNLIKELY (atom == E_GTK_ATOM_NONE))
+		atom = e_gtk_atom_intern_static_string ("text/x-moz-url");
 
-	if (gtk_selection_data_get_target (selection_data) != atom)
+	if (e_gtk_selection_data_get_target (selection_data) != atom)
 		return;
 
 	g_signal_stop_emission_by_name (view, "drag-data-received");
 
 	/* text/x-moz-url is represented as "URI\nTITLE" in UTF-16 */
-	raw_data = gtk_selection_data_get_data_with_length (selection_data, &len);
+	raw_data = e_gtk_selection_data_get_data_with_length (selection_data, &len);
 	if (raw_data)
 		uri_with_title = g_utf16_to_utf8 ((const gunichar2 *) raw_data, len, NULL, NULL, NULL);
 
@@ -970,17 +970,17 @@ static void
 attachment_view_init_drag_dest (EAttachmentView *view)
 {
 	EAttachmentViewPrivate *priv;
-	GtkTargetList *target_list;
+	EGtkTargetList *target_list;
 
 	priv = e_attachment_view_get_private (view);
 
-	target_list = gtk_target_list_new (
+	target_list = e_gtk_target_list_new (
 		target_table, G_N_ELEMENTS (target_table));
 
-	gtk_target_list_add_uri_targets (target_list, 0);
+	e_gtk_target_list_add_uri_targets (target_list, 0);
 	e_target_list_add_calendar_targets (target_list, 0);
 	e_target_list_add_directory_targets (target_list, 0);
-	gtk_target_list_add (target_list, gdk_atom_intern_static_string ("text/x-moz-url"), 0, 0);
+	e_gtk_target_list_add (target_list, e_gtk_atom_intern_static_string ("text/x-moz-url"), 0, 0);
 
 	priv->target_list = target_list;
 	priv->drag_actions = GDK_ACTION_COPY;
@@ -1362,7 +1362,7 @@ e_attachment_view_set_allow_uri (EAttachmentView *view,
 	g_object_notify (G_OBJECT (view), "allow-uri");
 }
 
-GtkTargetList *
+EGtkTargetList *
 e_attachment_view_get_target_list (EAttachmentView *view)
 {
 	EAttachmentViewPrivate *priv;
@@ -1457,8 +1457,8 @@ e_attachment_view_open_path (EAttachmentView *view,
 
 	gtk_tree_model_get (model, &iter, column_id, &attachment, -1);
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (view));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (view));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	e_attachment_open_async (
 		attachment, app_info, (GAsyncReadyCallback)
@@ -1522,7 +1522,7 @@ attachment_view_any_popup_item_visible (GtkWidget *widget)
 
 	g_return_val_if_fail (GTK_IS_MENU (widget), FALSE);
 
-	items = gtk_container_get_children (GTK_CONTAINER (widget));
+	items = e_gtk_widget_get_children (widget);
 	for (link = items; link && !any_visible; link = g_list_next (link)) {
 		any_visible = gtk_widget_get_visible (link->data);
 	}
@@ -1534,7 +1534,7 @@ attachment_view_any_popup_item_visible (GtkWidget *widget)
 
 gboolean
 e_attachment_view_button_press_event (EAttachmentView *view,
-                                      GdkEventButton *event)
+                                      GdkEvent *event)
 {
 	EAttachmentViewPrivate *priv;
 	GtkTreePath *path;
@@ -1555,7 +1555,7 @@ e_attachment_view_button_press_event (EAttachmentView *view,
 		/* Save the event to be propagated in order. */
 		priv->event_list = g_list_append (
 			priv->event_list,
-			gdk_event_copy ((GdkEvent *) event));
+			gdk_event_ref ((GdkEvent *) event));
 		return TRUE;
 	}
 
@@ -1582,7 +1582,7 @@ e_attachment_view_button_press_event (EAttachmentView *view,
 			priv->start_y = event->y;
 			priv->event_list = g_list_append (
 				priv->event_list,
-				gdk_event_copy ((GdkEvent *) event));
+				gdk_event_ref ((GdkEvent *) event));
 			handled = TRUE;
 		}
 
@@ -1624,7 +1624,7 @@ e_attachment_view_button_press_event (EAttachmentView *view,
 
 gboolean
 e_attachment_view_button_release_event (EAttachmentView *view,
-                                        GdkEventButton *event)
+                                        GdkEvent *event)
 {
 	EAttachmentViewPrivate *priv;
 	GtkWidget *widget = GTK_WIDGET (view);
@@ -1639,7 +1639,7 @@ e_attachment_view_button_release_event (EAttachmentView *view,
 		GdkEvent *an_event = iter->data;
 
 		gtk_propagate_event (widget, an_event);
-		gdk_event_free (an_event);
+		gdk_event_unref (an_event);
 	}
 
 	g_list_free (priv->event_list);
@@ -1650,11 +1650,11 @@ e_attachment_view_button_release_event (EAttachmentView *view,
 
 gboolean
 e_attachment_view_motion_notify_event (EAttachmentView *view,
-                                       GdkEventMotion *event)
+                                       GdkEvent *event)
 {
 	EAttachmentViewPrivate *priv;
 	GtkWidget *widget = GTK_WIDGET (view);
-	GtkTargetList *targets;
+	EGtkTargetList *targets;
 
 	g_return_val_if_fail (E_IS_ATTACHMENT_VIEW (view), FALSE);
 	g_return_val_if_fail (event != NULL, FALSE);
@@ -1672,9 +1672,9 @@ e_attachment_view_motion_notify_event (EAttachmentView *view,
 	g_list_free (priv->event_list);
 	priv->event_list = NULL;
 
-	targets = gtk_drag_source_get_target_list (widget);
+	targets = e_gtk_drag_source_get_target_list (widget);
 
-	gtk_drag_begin (
+	e_gtk_drag_begin (
 		widget, targets, GDK_ACTION_COPY, 1, (GdkEvent *) event);
 
 	return TRUE;
@@ -1682,7 +1682,7 @@ e_attachment_view_motion_notify_event (EAttachmentView *view,
 
 gboolean
 e_attachment_view_key_press_event (EAttachmentView *view,
-                                   GdkEventKey *event)
+                                   GdkEvent *event)
 {
 	gboolean editable;
 
@@ -1824,8 +1824,8 @@ void
 e_attachment_view_drag_source_set (EAttachmentView *view)
 {
 	EAttachmentViewInterface *iface;
-	GtkTargetEntry *targets;
-	GtkTargetList *list;
+	EGtkTargetEntry *targets;
+	EGtkTargetList *list;
 	gint n_targets;
 
 	g_return_if_fail (E_IS_ATTACHMENT_VIEW (view));
@@ -1834,16 +1834,16 @@ e_attachment_view_drag_source_set (EAttachmentView *view)
 	if (iface->drag_source_set == NULL)
 		return;
 
-	list = gtk_target_list_new (NULL, 0);
-	gtk_target_list_add_uri_targets (list, 0);
-	targets = gtk_target_table_new_from_list (list, &n_targets);
+	list = e_gtk_target_list_new (NULL, 0);
+	e_gtk_target_list_add_uri_targets (list, 0);
+	targets = e_gtk_target_table_new_from_list (list, &n_targets);
 
 	iface->drag_source_set (
 		view, GDK_BUTTON1_MASK,
 		targets, n_targets, GDK_ACTION_COPY);
 
-	gtk_target_table_free (targets, n_targets);
-	gtk_target_list_unref (list);
+	e_gtk_target_table_free (targets, n_targets);
+	e_gtk_target_list_unref (list);
 }
 
 void
@@ -1862,13 +1862,13 @@ e_attachment_view_drag_source_unset (EAttachmentView *view)
 
 void
 e_attachment_view_drag_begin (EAttachmentView *view,
-                              GdkDragContext *context)
+                              EGtkDragContext *context)
 {
 	EAttachmentViewPrivate *priv;
 	guint n_selected;
 
 	g_return_if_fail (E_IS_ATTACHMENT_VIEW (view));
-	g_return_if_fail (GDK_IS_DRAG_CONTEXT (context));
+	g_return_if_fail (E_GTK_IS_DRAG_CONTEXT (context));
 
 	priv = e_attachment_view_get_private (view);
 
@@ -1889,7 +1889,7 @@ e_attachment_view_drag_begin (EAttachmentView *view,
 		icon = e_attachment_ref_icon (attachment);
 		g_return_if_fail (icon != NULL);
 
-		icon_theme = gtk_icon_theme_get_default ();
+		icon_theme = e_gtk_icon_theme_get_default ();
 		gtk_icon_size_lookup (GTK_ICON_SIZE_DND, &width, &height);
 
 		icon_info = gtk_icon_theme_lookup_by_gicon (
@@ -1903,7 +1903,7 @@ e_attachment_view_drag_begin (EAttachmentView *view,
 			pixbuf = gtk_icon_info_load_icon (icon_info, &error);
 
 			if (pixbuf != NULL) {
-				gtk_drag_set_icon_pixbuf (
+				e_gtk_drag_set_icon_pixbuf (
 					context, pixbuf, 0, 0);
 				g_object_unref (pixbuf);
 			} else if (error != NULL) {
@@ -1920,12 +1920,12 @@ e_attachment_view_drag_begin (EAttachmentView *view,
 
 void
 e_attachment_view_drag_end (EAttachmentView *view,
-                            GdkDragContext *context)
+                            EGtkDragContext *context)
 {
 	EAttachmentViewPrivate *priv;
 
 	g_return_if_fail (E_IS_ATTACHMENT_VIEW (view));
-	g_return_if_fail (GDK_IS_DRAG_CONTEXT (context));
+	g_return_if_fail (E_GTK_IS_DRAG_CONTEXT (context));
 
 	priv = e_attachment_view_get_private (view);
 
@@ -1956,8 +1956,8 @@ attachment_view_got_uris_cb (EAttachmentStore *store,
 
 void
 e_attachment_view_drag_data_get (EAttachmentView *view,
-                                 GdkDragContext *context,
-                                 GtkSelectionData *selection,
+                                 EGtkDragContext *context,
+                                 EGtkSelectionData *selection,
                                  guint info,
                                  guint time)
 {
@@ -1970,13 +1970,13 @@ e_attachment_view_drag_data_get (EAttachmentView *view,
 	} status;
 
 	g_return_if_fail (E_IS_ATTACHMENT_VIEW (view));
-	g_return_if_fail (GDK_IS_DRAG_CONTEXT (context));
+	g_return_if_fail (E_GTK_IS_DRAG_CONTEXT (context));
 	g_return_if_fail (selection != NULL);
 
 	status.uris = g_object_get_data (G_OBJECT (context), "evo-attach-urilist");
 
 	if (status.uris) {
-		gtk_selection_data_set_uris (selection, status.uris);
+		e_gtk_selection_data_set_uris (selection, status.uris);
 		return;
 	}
 
@@ -1999,7 +1999,7 @@ e_attachment_view_drag_data_get (EAttachmentView *view,
 		g_main_context_iteration (NULL, TRUE);
 
 	if (status.uris) {
-		gtk_selection_data_set_uris (selection, status.uris);
+		e_gtk_selection_data_set_uris (selection, status.uris);
 
 		/* Remember it, to not regenerate it, when the target widget asks for the data again */
 		g_object_set_data_full (G_OBJECT (context), "evo-attach-urilist",
@@ -2012,7 +2012,7 @@ e_attachment_view_drag_dest_set (EAttachmentView *view)
 {
 	EAttachmentViewPrivate *priv;
 	EAttachmentViewInterface *iface;
-	GtkTargetEntry *targets;
+	EGtkTargetEntry *targets;
 	gint n_targets;
 
 	g_return_if_fail (E_IS_ATTACHMENT_VIEW (view));
@@ -2023,13 +2023,13 @@ e_attachment_view_drag_dest_set (EAttachmentView *view)
 
 	priv = e_attachment_view_get_private (view);
 
-	targets = gtk_target_table_new_from_list (
+	targets = e_gtk_target_table_new_from_list (
 		priv->target_list, &n_targets);
 
 	iface->drag_dest_set (
 		view, targets, n_targets, priv->drag_actions);
 
-	gtk_target_table_free (targets, n_targets);
+	e_gtk_target_table_free (targets, n_targets);
 }
 
 void
@@ -2048,7 +2048,7 @@ e_attachment_view_drag_dest_unset (EAttachmentView *view)
 
 gboolean
 e_attachment_view_drag_motion (EAttachmentView *view,
-                               GdkDragContext *context,
+                               EGtkDragContext *context,
                                gint x,
                                gint y,
                                guint time)
@@ -2058,7 +2058,7 @@ e_attachment_view_drag_motion (EAttachmentView *view,
 	GdkDragAction chosen_action;
 
 	g_return_val_if_fail (E_IS_ATTACHMENT_VIEW (view), FALSE);
-	g_return_val_if_fail (GDK_IS_DRAG_CONTEXT (context), FALSE);
+	g_return_val_if_fail (E_GTK_IS_DRAG_CONTEXT (context), FALSE);
 
 	priv = e_attachment_view_get_private (view);
 
@@ -2071,9 +2071,9 @@ e_attachment_view_drag_motion (EAttachmentView *view,
 	if (e_attachment_view_get_dragging (view))
 		return FALSE;
 
-	actions = gdk_drag_context_get_actions (context);
+	actions = e_gtk_drag_context_get_actions (context);
 	actions &= priv->drag_actions;
-	chosen_action = gdk_drag_context_get_suggested_action (context);
+	chosen_action = e_gtk_drag_context_get_suggested_action (context);
 
 	if (chosen_action == GDK_ACTION_ASK) {
 		GdkDragAction mask;
@@ -2083,20 +2083,20 @@ e_attachment_view_drag_motion (EAttachmentView *view,
 			chosen_action = GDK_ACTION_COPY;
 	}
 
-	gdk_drag_status (context, chosen_action, time);
+	e_gtk_drag_status (context, chosen_action, time);
 
 	return (chosen_action != 0);
 }
 
 gboolean
 e_attachment_view_drag_drop (EAttachmentView *view,
-                             GdkDragContext *context,
+                             EGtkDragContext *context,
                              gint x,
                              gint y,
                              guint time)
 {
 	g_return_val_if_fail (E_IS_ATTACHMENT_VIEW (view), FALSE);
-	g_return_val_if_fail (GDK_IS_DRAG_CONTEXT (context), FALSE);
+	g_return_val_if_fail (E_GTK_IS_DRAG_CONTEXT (context), FALSE);
 
 	/* Disallow drops if we initiated the drag.
 	 * This helps prevent duplicate attachments. */
@@ -2105,31 +2105,31 @@ e_attachment_view_drag_drop (EAttachmentView *view,
 
 void
 e_attachment_view_drag_data_received (EAttachmentView *view,
-                                      GdkDragContext *drag_context,
+                                      EGtkDragContext *drag_context,
                                       gint x,
                                       gint y,
-                                      GtkSelectionData *selection_data,
+                                      EGtkSelectionData *selection_data,
                                       guint info,
                                       guint time)
 {
-	GdkAtom atom;
+	EGtkAtom atom;
 	gchar *name;
 
 	g_return_if_fail (E_IS_ATTACHMENT_VIEW (view));
-	g_return_if_fail (GDK_IS_DRAG_CONTEXT (drag_context));
+	g_return_if_fail (E_GTK_IS_DRAG_CONTEXT (drag_context));
 
 	/* Drop handlers are supposed to stop further emission of the
 	 * "drag-data-received" signal if they can handle the data.  If
 	 * we get this far it means none of the handlers were successful,
 	 * so report the drop as failed. */
 
-	atom = gtk_selection_data_get_target (selection_data);
+	atom = e_gtk_selection_data_get_target (selection_data);
 
-	name = gdk_atom_name (atom);
+	name = e_gtk_atom_name (atom);
 	g_warning ("Unknown selection target: %s", name);
 	g_free (name);
 
-	gtk_drag_finish (drag_context, FALSE, FALSE, time);
+	e_gtk_drag_finish (drag_context, FALSE, FALSE, time);
 }
 
 EUIAction *

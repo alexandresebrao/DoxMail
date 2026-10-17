@@ -49,7 +49,7 @@
 #include <camel/camel.h>
 #include <libedataserver/libedataserver.h>
 
-#include <webkit2/webkit2.h>
+#include <webkit/webkit.h>
 
 #ifdef HAVE_LDAP
 #include <ldap.h>
@@ -99,34 +99,24 @@ window_update_settings (gpointer user_data)
 	GSettings *settings = data->settings;
 
 	if (data->flags & E_RESTORE_WINDOW_SIZE) {
-		GdkWindowState state;
-		GdkWindow *window;
 		gboolean maximized;
 
-		window = gtk_widget_get_window (GTK_WIDGET (data->window));
-		state = gdk_window_get_state (window);
-		maximized = ((state & GDK_WINDOW_STATE_MAXIMIZED) != 0);
+		maximized = gtk_window_is_maximized (data->window);
 
 		g_settings_set_boolean (settings, "maximized", maximized);
 
 		if (!maximized) {
 			gint width, height;
 
-			gtk_window_get_size (data->window, &width, &height);
+			/* GTK 4 keeps the default size at the current size */
+			gtk_window_get_default_size (data->window, &width, &height);
 
 			g_settings_set_int (settings, "width", width);
 			g_settings_set_int (settings, "height", height);
 		}
 	}
 
-	if (data->flags & E_RESTORE_WINDOW_POSITION) {
-		gint x, y;
-
-		gtk_window_get_position (data->window, &x, &y);
-
-		g_settings_set_int (settings, "x", x);
-		g_settings_set_int (settings, "y", y);
-	}
+	/* E_RESTORE_WINDOW_POSITION: GTK 4 neither tells nor sets window positions */
 
 	data->timeout_id = 0;
 
@@ -143,20 +133,18 @@ window_delayed_update_settings (WindowData *data)
 		1, window_update_settings, data);
 }
 
-static gboolean
-window_configure_event_cb (GtkWindow *window,
-                           GdkEventConfigure *event,
-                           WindowData *data)
+static void
+window_size_notify_cb (GtkWindow *window,
+                       GParamSpec *param,
+                       WindowData *data)
 {
 	window_delayed_update_settings (data);
-
-	return FALSE;
 }
 
-static gboolean
-window_state_event_cb (GtkWindow *window,
-                       GdkEventWindowState *event,
-                       WindowData *data)
+static void
+window_maximized_notify_cb (GtkWindow *window,
+                            GParamSpec *param,
+                            WindowData *data)
 {
 	gboolean window_was_unmaximized;
 
@@ -165,9 +153,7 @@ window_state_event_cb (GtkWindow *window,
 		data->timeout_id = 0;
 	}
 
-	window_was_unmaximized =
-		((event->changed_mask & GDK_WINDOW_STATE_MAXIMIZED) != 0) &&
-		((event->new_window_state & GDK_WINDOW_STATE_MAXIMIZED) == 0);
+	window_was_unmaximized = !gtk_window_is_maximized (window);
 
 	if (window_was_unmaximized) {
 		gint width, height;
@@ -182,15 +168,13 @@ window_state_event_cb (GtkWindow *window,
 		 * as maximized and is then unmaximized.  GTK+ handles the
 		 * unmaximized window size thereafter. */
 		if (width > 0 && height > 0)
-			gtk_window_resize (window, width, height);
+			gtk_window_set_default_size (window, width, height);
 	}
 
 	window_delayed_update_settings (data);
-
-	return FALSE;
 }
 
-static gboolean
+static void
 window_unmap_cb (GtkWindow *window,
                  WindowData *data)
 {
@@ -202,8 +186,6 @@ window_unmap_cb (GtkWindow *window,
 	/* Reset the flags so the window position and size are not
 	 * accidentally reverted to their default value at the next run. */
 	data->flags = 0;
-
-	return FALSE;
 }
 
 /**
@@ -228,17 +210,17 @@ e_show_uri (GtkWindow *parent,
 
 	g_return_if_fail (uri != NULL);
 
-	timestamp = gtk_get_current_event_time ();
+	timestamp = e_gtk_get_current_event_time ();
 	scheme = g_uri_parse_scheme (uri);
 
 	if (!scheme || !*scheme) {
 		gchar *schemed_uri;
 
 		schemed_uri = g_strconcat ("http://", uri, NULL);
-		success = gtk_show_uri_on_window (parent, schemed_uri, timestamp, &error);
+		success = e_gtk_show_uri_on_window (parent, schemed_uri, timestamp, &error);
 		g_free (schemed_uri);
 	} else {
-		success = gtk_show_uri_on_window (parent, uri, timestamp, &error);
+		success = e_gtk_show_uri_on_window (parent, uri, timestamp, &error);
 	}
 
 	g_free (scheme);
@@ -255,9 +237,9 @@ e_show_uri (GtkWindow *parent,
 	gtk_message_dialog_format_secondary_text (
 		GTK_MESSAGE_DIALOG (dialog), "%s", error ? error->message : _("Unknown error"));
 
-	gtk_dialog_run (GTK_DIALOG (dialog));
+	e_gtk_dialog_run (GTK_DIALOG (dialog));
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 	g_clear_error (&error);
 }
 
@@ -330,7 +312,7 @@ e_display_help (GtkWindow *parent,
 		uri = g_string_new ("https://gnome.pages.gitlab.gnome.org/evolution/help");
 	}
 
-	timestamp = gtk_get_current_event_time ();
+	timestamp = e_gtk_get_current_event_time ();
 
 	if (link_id != NULL) {
 		g_string_append_c (uri, '/');
@@ -360,7 +342,7 @@ e_display_help (GtkWindow *parent,
 
 		if (success)
 			goto exit;
-	} else if (gtk_show_uri_on_window (parent, uri->str, timestamp, &error)) {
+	} else if (e_gtk_show_uri_on_window (parent, uri->str, timestamp, &error)) {
 		goto exit;
 	}
 
@@ -373,9 +355,9 @@ e_display_help (GtkWindow *parent,
 	gtk_message_dialog_format_secondary_text (
 		GTK_MESSAGE_DIALOG (dialog), "%s", error->message);
 
-	gtk_dialog_run (GTK_DIALOG (dialog));
+	e_gtk_dialog_run (GTK_DIALOG (dialog));
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 	g_error_free (error);
 
 exit:
@@ -425,16 +407,16 @@ e_restore_window (GtkWindow *window,
 	if (flags & E_RESTORE_WINDOW_SIZE) {
 		GdkDisplay *display;
 		GdkMonitor *monitor;
-		GdkRectangle monitor_area;
-		gint x, y, width, height;
+		GdkRectangle monitor_area = { 0, 0, 1024, 768 };
+		gint width, height;
 
-		x = g_settings_get_int (settings, "x");
-		y = g_settings_get_int (settings, "y");
-
+		/* GTK 4 cannot tell where the window will be; use the first monitor */
 		display = gtk_widget_get_display (GTK_WIDGET (window));
-		monitor = gdk_display_get_monitor_at_point (display, x, y);
-
-		gdk_monitor_get_workarea (monitor, &monitor_area);
+		monitor = g_list_model_get_item (gdk_display_get_monitors (display), 0);
+		if (monitor) {
+			gdk_monitor_get_geometry (monitor, &monitor_area);
+			g_object_unref (monitor);
+		}
 
 		width = g_settings_get_int (settings, "width");
 		height = g_settings_get_int (settings, "height");
@@ -449,30 +431,18 @@ e_restore_window (GtkWindow *window,
 		}
 
 		if (width > 0 && height > 0)
-			gtk_window_resize (window, width, height);
+			gtk_window_set_default_size (window, width, height);
 
 		if (g_settings_get_boolean (settings, "maximized")) {
-			gtk_window_get_size (window, &width, &height);
+			gtk_window_get_default_size (window, &width, &height);
 
 			data->premax_width = width;
 			data->premax_height = height;
 
-			gtk_window_resize (
-				window,
-				monitor_area.width,
-				monitor_area.height);
+			gtk_window_set_default_size (window, monitor_area.width, monitor_area.height);
 
 			gtk_window_maximize (window);
 		}
-	}
-
-	if (flags & E_RESTORE_WINDOW_POSITION) {
-		gint x, y;
-
-		x = g_settings_get_int (settings, "x");
-		y = g_settings_get_int (settings, "y");
-
-		gtk_window_move (window, x, y);
 	}
 
 	g_object_set_data_full (
@@ -481,12 +451,16 @@ e_restore_window (GtkWindow *window,
 		(GDestroyNotify) window_data_free);
 
 	g_signal_connect (
-		window, "configure-event",
-		G_CALLBACK (window_configure_event_cb), data);
+		window, "notify::default-width",
+		G_CALLBACK (window_size_notify_cb), data);
 
 	g_signal_connect (
-		window, "window-state-event",
-		G_CALLBACK (window_state_event_cb), data);
+		window, "notify::default-height",
+		G_CALLBACK (window_size_notify_cb), data);
+
+	g_signal_connect (
+		window, "notify::maximized",
+		G_CALLBACK (window_maximized_notify_cb), data);
 
 	g_signal_connect (
 		window, "unmap",
@@ -2994,19 +2968,18 @@ e_util_prompt_user (GtkWindow *parent,
 	if (promptkey) {
 		check = gtk_check_button_new_with_mnemonic (
 			_("_Do not show this message again"));
-		gtk_box_pack_start (
-			GTK_BOX (container), check, FALSE, FALSE, 0);
+		e_gtk_box_pack_start (GTK_BOX (container), check, FALSE, FALSE, 0);
 		gtk_widget_show (check);
 	}
 
-	button = gtk_dialog_run (GTK_DIALOG (dialog));
+	button = e_gtk_dialog_run (GTK_DIALOG (dialog));
 	if (promptkey)
 		g_settings_set_boolean (
 			settings, promptkey,
 			!gtk_toggle_button_get_active (
 				GTK_TOGGLE_BUTTON (check)));
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 
 	g_clear_object (&settings);
 
@@ -3134,7 +3107,7 @@ e_util_is_main_thread (GThread *thread)
 
 /**
  * e_util_save_image_from_clipboard:
- * @clipboard: a #GtkClipboard
+ * @clipboard: a #GdkClipboard
  * @hint: (allow none): a hint to set, or %NULL to unset
  *
  * Saves the image from @clipboard to a temporary file and returns its URI.
@@ -3142,7 +3115,7 @@ e_util_is_main_thread (GThread *thread)
  * Since: 3.22
  **/
 gchar *
-e_util_save_image_from_clipboard (GtkClipboard *clipboard)
+e_util_save_image_from_clipboard (GdkClipboard *clipboard)
 {
 	GdkPixbuf *pixbuf = NULL;
 	gchar *tmpl;
@@ -3153,7 +3126,7 @@ e_util_save_image_from_clipboard (GtkClipboard *clipboard)
 	g_return_val_if_fail (GTK_IS_CLIPBOARD (clipboard), NULL);
 
 	/* Extract the image data from the clipboard. */
-	pixbuf = gtk_clipboard_wait_for_image (clipboard);
+	pixbuf = e_gtk_clipboard_wait_for_image (clipboard);
 	g_return_val_if_fail (pixbuf != NULL, FALSE);
 
 	tmpl = g_strconcat (_("Image"), "-XXXXXX.png", NULL);
@@ -3208,7 +3181,7 @@ e_util_save_file_chooser_folder (GtkFileChooser *file_chooser)
 
 	g_return_if_fail (GTK_IS_FILE_CHOOSER (file_chooser));
 
-	uri = gtk_file_chooser_get_current_folder_uri (file_chooser);
+	uri = e_gtk_file_chooser_get_current_folder_uri (file_chooser);
 	if (uri && g_str_has_prefix (uri, "file://")) {
 		settings = e_util_ref_settings ("org.gnome.evolution.shell");
 		g_settings_set_string (settings, "file-chooser-folder", uri);
@@ -3245,7 +3218,7 @@ e_util_load_file_chooser_folder (GtkFileChooser *file_chooser)
 
 		filename = g_filename_from_uri (uri, NULL, NULL);
 		if (filename && g_file_test (filename, G_FILE_TEST_IS_DIR))
-			gtk_file_chooser_set_current_folder_uri (file_chooser, uri);
+			e_gtk_file_chooser_set_current_folder_uri (file_chooser, uri);
 
 		g_free (filename);
 	}
@@ -3350,10 +3323,10 @@ e_util_resize_window_for_screen (GtkWindow *window,
 		GtkWidget *widget = link->data;
 
 		if (GTK_IS_SCROLLED_WINDOW (widget))
-			widget = gtk_bin_get_child (GTK_BIN (widget));
+			widget = e_gtk_bin_get_child (widget);
 
 		if (GTK_IS_VIEWPORT (widget))
-			widget = gtk_bin_get_child (GTK_BIN (widget));
+			widget = e_gtk_bin_get_child (widget);
 
 		if (!GTK_IS_WIDGET (widget))
 			continue;
@@ -4266,9 +4239,7 @@ e_util_ensure_scrolled_window_height (GtkScrolledWindow *scrolled_window)
 
 	scw_height = gtk_widget_get_allocated_height (GTK_WIDGET (scrolled_window));
 
-	gtk_widget_get_preferred_height_for_width (gtk_bin_get_child (GTK_BIN (scrolled_window)),
-		gtk_widget_get_allocated_width (GTK_WIDGET (scrolled_window)),
-		&require_scw_height, NULL);
+	e_gtk_widget_get_preferred_height_for_width (e_gtk_bin_get_child (scrolled_window), gtk_widget_get_allocated_width (GTK_WIDGET (scrolled_window)), &require_scw_height, NULL);
 
 	if (scw_height >= require_scw_height) {
 		if (require_scw_height > 0)
@@ -4276,11 +4247,11 @@ e_util_ensure_scrolled_window_height (GtkScrolledWindow *scrolled_window)
 		return;
 	}
 
-	if (!gtk_widget_get_window (toplevel))
+	if (!e_gtk_widget_get_surface (toplevel))
 		return;
 
 	display = gtk_widget_get_display (toplevel);
-	monitor = gdk_display_get_monitor_at_window (display, gtk_widget_get_window (toplevel));
+	monitor = gdk_display_get_monitor_at_window (display, e_gtk_widget_get_surface (toplevel));
 	gdk_monitor_get_workarea (monitor, &workarea);
 
 	/* can enlarge up to 4 / 5 monitor's work area height */
@@ -4326,24 +4297,48 @@ e_util_make_safe_filename (gchar *filename)
 }
 
 gboolean
-e_util_setup_toolbar_icon_size (GtkToolbar *toolbar,
-				GtkIconSize default_size)
+e_util_setup_toolbar_icon_size (GtkWidget *toolbar,
+				gint default_size)
 {
 	GSettings *settings;
 	EToolbarIconSize icon_size;
+	const gchar *css_class = NULL;
 
-	g_return_val_if_fail (GTK_IS_TOOLBAR (toolbar), FALSE);
+	g_return_val_if_fail (GTK_IS_WIDGET (toolbar), FALSE);
 
 	settings = e_util_ref_settings ("org.gnome.evolution.shell");
 	icon_size = g_settings_get_enum (settings, "toolbar-icon-size");
 	g_object_unref (settings);
 
+	/* GTK 4 sizes icons with CSS (-gtk-icon-size) */
 	if (icon_size == E_TOOLBAR_ICON_SIZE_SMALL)
-		gtk_toolbar_set_icon_size (toolbar, GTK_ICON_SIZE_SMALL_TOOLBAR);
-	else if (icon_size == E_TOOLBAR_ICON_SIZE_LARGE)
-		gtk_toolbar_set_icon_size (toolbar, GTK_ICON_SIZE_LARGE_TOOLBAR);
-	else if (default_size != GTK_ICON_SIZE_INVALID && e_util_get_use_header_bar ())
-		gtk_toolbar_set_icon_size (toolbar, default_size);
+		css_class = "e-toolbar-icons-small";
+	else if (icon_size == E_TOOLBAR_ICON_SIZE_LARGE ||
+		 (default_size == E_GTK_ICON_SIZE_LARGE_TOOLBAR && e_util_get_use_header_bar ()))
+		css_class = "e-toolbar-icons-large";
+
+	gtk_widget_remove_css_class (toolbar, "e-toolbar-icons-small");
+	gtk_widget_remove_css_class (toolbar, "e-toolbar-icons-large");
+
+	if (css_class) {
+		static gboolean css_loaded = FALSE;
+
+		if (!css_loaded) {
+			GtkCssProvider *provider;
+
+			css_loaded = TRUE;
+
+			provider = gtk_css_provider_new ();
+			gtk_css_provider_load_from_string (provider,
+				".e-toolbar-icons-small image { -gtk-icon-size: 16px; }\n"
+				".e-toolbar-icons-large image { -gtk-icon-size: 24px; }\n");
+			gtk_style_context_add_provider_for_display (gdk_display_get_default (),
+				GTK_STYLE_PROVIDER (provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+			g_object_unref (provider);
+		}
+
+		gtk_widget_add_css_class (toolbar, css_class);
+	}
 
 	return icon_size == E_TOOLBAR_ICON_SIZE_SMALL ||
 	       icon_size == E_TOOLBAR_ICON_SIZE_LARGE;
@@ -4560,34 +4555,32 @@ e_util_call_malloc_trim_limited (void)
 static gboolean
 e_util_detach_menu_on_idle_cb (gpointer user_data)
 {
-	GtkMenu *menu = user_data;
+	GtkWidget *popover = user_data;
 
-	/* it can be NULL when the menu is closed by clicking on a menu item and
-	   non-NULL when the menu is dismissed without picking any item */
-	if (gtk_menu_get_attach_widget (menu))
-		gtk_menu_detach (menu);
+	if (gtk_widget_get_parent (popover))
+		gtk_widget_unparent (popover);
 
 	return G_SOURCE_REMOVE;
 }
 
 static void
-e_util_menu_deactivate_cb (GtkMenu *menu,
+e_util_menu_deactivate_cb (GtkPopover *popover,
 			   gpointer user_data)
 {
-	g_return_if_fail (GTK_IS_MENU (menu));
+	g_return_if_fail (GTK_IS_POPOVER (popover));
 
-	g_signal_handlers_disconnect_by_func (menu, e_util_menu_deactivate_cb, user_data);
+	g_signal_handlers_disconnect_by_func (popover, e_util_menu_deactivate_cb, user_data);
 
-	g_idle_add_full (G_PRIORITY_LOW, e_util_detach_menu_on_idle_cb, g_object_ref (menu), g_object_unref);
+	g_idle_add_full (G_PRIORITY_LOW, e_util_detach_menu_on_idle_cb, g_object_ref (popover), g_object_unref);
 }
 
 /**
  * e_util_connect_menu_detach_after_deactivate:
- * @menu: a #GtkMenu
+ * @menu: a #GtkPopover, usually a #GtkPopoverMenu
  *
- * Connects a signal handler on a "deactivate" signal of the @menu and
- * calls gtk_menu_detach() after the handler is invoked, which can cause
- * destroy of the @menu. The @menu should be already attached to a widget.
+ * Connects a signal handler on a "closed" signal of the @menu and
+ * unparents it after the handler is invoked, which can cause
+ * destroy of the @menu. The @menu should already have a parent widget.
  *
  * As the #GAction-s are not executed immediately by the GTK, the detach can be
  * called only later, not in the deactivate signal handler. This function makes
@@ -4597,14 +4590,164 @@ e_util_menu_deactivate_cb (GtkMenu *menu,
  * Since: 3.56
  **/
 void
-e_util_connect_menu_detach_after_deactivate (GtkMenu *menu)
+e_util_connect_menu_detach_after_deactivate (GtkWidget *menu)
 {
-	g_return_if_fail (GTK_IS_MENU (menu));
-	g_return_if_fail (gtk_menu_get_attach_widget (menu) != NULL);
+	g_return_if_fail (GTK_IS_POPOVER (menu));
+	g_return_if_fail (gtk_widget_get_parent (menu) != NULL);
 
 	g_signal_connect (
-		menu, "deactivate",
+		menu, "closed",
 		G_CALLBACK (e_util_menu_deactivate_cb), NULL);
+}
+
+/**
+ * e_util_popup_menu:
+ * @menu: a #GtkPopover, usually a #GtkPopoverMenu, without a parent
+ * @relative_to: a widget to show the @menu for
+ * @x: X coordinate in @relative_to to point to, or -1
+ * @y: Y coordinate in @relative_to to point to, or -1
+ *
+ * Shows @menu as a popup menu of @relative_to, pointing at the given
+ * coordinates, or at the whole widget when they are -1. The @menu is
+ * unparented after it closes. This replaces the GTK 3 sequence of
+ * gtk_menu_attach_to_widget(), e_util_connect_menu_detach_after_deactivate()
+ * and gtk_menu_popup_at_pointer().
+ *
+ * Since: DoxMail
+ **/
+void
+e_util_popup_menu (GtkWidget *menu,
+		   GtkWidget *relative_to,
+		   gdouble x,
+		   gdouble y)
+{
+	g_return_if_fail (GTK_IS_POPOVER (menu));
+	g_return_if_fail (GTK_IS_WIDGET (relative_to));
+
+	if (gtk_widget_get_parent (menu) != relative_to) {
+		if (gtk_widget_get_parent (menu))
+			gtk_widget_unparent (menu);
+		gtk_widget_set_parent (menu, relative_to);
+	}
+
+	gtk_popover_set_has_arrow (GTK_POPOVER (menu), FALSE);
+
+	if (x >= 0 && y >= 0) {
+		GdkRectangle rect = { x, y, 1, 1 };
+
+		gtk_popover_set_pointing_to (GTK_POPOVER (menu), &rect);
+		gtk_widget_set_halign (menu, GTK_ALIGN_START);
+	} else {
+		gtk_popover_set_pointing_to (GTK_POPOVER (menu), NULL);
+	}
+
+	g_signal_handlers_disconnect_by_func (menu, e_util_menu_deactivate_cb, NULL);
+	e_util_connect_menu_detach_after_deactivate (menu);
+
+	gtk_popover_popup (GTK_POPOVER (menu));
+}
+
+/**
+ * e_util_popup_menu_at_event:
+ * @menu: a #GtkPopover, usually a #GtkPopoverMenu, without a parent
+ * @relative_to: a widget to show the @menu for
+ * @event: (nullable): the #GdkEvent which triggered the menu, or %NULL
+ *
+ * Like e_util_popup_menu(), pointing at the position of the @event,
+ * which replaces gtk_menu_popup_at_pointer(). Without a position the
+ * menu points at the whole @relative_to.
+ *
+ * Since: DoxMail
+ **/
+void
+e_util_popup_menu_at_event (GtkWidget *menu,
+			    GtkWidget *relative_to,
+			    GdkEvent *event)
+{
+	gdouble x = -1, y = -1;
+
+	g_return_if_fail (GTK_IS_WIDGET (relative_to));
+
+	if (event)
+		e_util_event_get_widget_coords (event, relative_to, &x, &y);
+
+	e_util_popup_menu (menu, relative_to, x, y);
+}
+
+/**
+ * e_util_event_get_widget_coords:
+ * @event: a #GdkEvent
+ * @widget: a #GtkWidget
+ * @out_x: (out): X coordinate relative to @widget
+ * @out_y: (out): Y coordinate relative to @widget
+ *
+ * Translates the position of the @event, which is relative to its surface,
+ * into @widget coordinates.
+ *
+ * Returns: whether the @event has a position and it could be translated
+ *
+ * Since: DoxMail
+ **/
+gboolean
+e_util_event_get_widget_coords (GdkEvent *event,
+				GtkWidget *widget,
+				gdouble *out_x,
+				gdouble *out_y)
+{
+	GtkNative *native;
+	graphene_point_t point;
+	gdouble ex, ey, nx = 0, ny = 0;
+
+	g_return_val_if_fail (event != NULL, FALSE);
+	g_return_val_if_fail (GTK_IS_WIDGET (widget), FALSE);
+
+	*out_x = -1;
+	*out_y = -1;
+
+	native = gtk_widget_get_native (widget);
+	if (!native || !gdk_event_get_position (event, &ex, &ey))
+		return FALSE;
+
+	gtk_native_get_surface_transform (native, &nx, &ny);
+
+	if (!gtk_widget_compute_point (GTK_WIDGET (native), widget,
+		&GRAPHENE_POINT_INIT (ex - nx, ey - ny), &point))
+		return FALSE;
+
+	*out_x = point.x;
+	*out_y = point.y;
+
+	return TRUE;
+}
+
+/**
+ * e_util_popup_menu_model:
+ * @model: a #GMenuModel
+ * @relative_to: a widget to show the menu for
+ * @x: X coordinate in @relative_to to point to, or -1
+ * @y: Y coordinate in @relative_to to point to, or -1
+ *
+ * Creates a #GtkPopoverMenu for @model and shows it with e_util_popup_menu().
+ *
+ * Returns: (transfer none): the shown menu
+ *
+ * Since: DoxMail
+ **/
+GtkWidget *
+e_util_popup_menu_model (GMenuModel *model,
+			 GtkWidget *relative_to,
+			 gdouble x,
+			 gdouble y)
+{
+	GtkWidget *menu;
+
+	g_return_val_if_fail (G_IS_MENU_MODEL (model), NULL);
+	g_return_val_if_fail (GTK_IS_WIDGET (relative_to), NULL);
+
+	menu = gtk_popover_menu_new_from_model (model);
+	e_util_popup_menu (menu, relative_to, x, y);
+
+	return menu;
 }
 
 /**
@@ -4629,7 +4772,7 @@ e_util_ignore_accel_for_focused (GtkWidget *focused)
 		GdkEvent *event;
 		gboolean ignore = TRUE;
 
-		event = gtk_get_current_event ();
+		event = e_gtk_get_current_event ();
 		if (event) {
 			GdkModifierType modifs = 0;
 			guint keyval = 0;
@@ -4638,10 +4781,10 @@ e_util_ignore_accel_for_focused (GtkWidget *focused)
 			/* multi-key presses are always allowed;
 			   the GDK_SHIFT_MASK can be used to type numbers and such,
 			   thus do not add it to the list of the modifiers */
-			can_process = gdk_event_get_state (event, &modifs) &&
-				(modifs & (GDK_CONTROL_MASK | GDK_MOD1_MASK)) != 0;
+			can_process = e_gdk_event_get_state (event, &modifs) &&
+				(modifs & (GDK_CONTROL_MASK | GDK_ALT_MASK)) != 0;
 
-			if (!can_process && gdk_event_get_keyval (event, &keyval)) {
+			if (!can_process && e_gdk_event_get_keyval (event, &keyval)) {
 				/* function keys are allowed (they are used as shortcuts in the mail view) */
 				can_process = keyval == GDK_KEY_F1 || keyval == GDK_KEY_F2 || keyval == GDK_KEY_F3 || keyval == GDK_KEY_F4 ||
 					keyval == GDK_KEY_F5 || keyval == GDK_KEY_F6 || keyval == GDK_KEY_F7 || keyval == GDK_KEY_F8 ||
@@ -4673,14 +4816,12 @@ e_util_ignore_accel_for_focused (GtkWidget *focused)
 gboolean
 e_util_is_dark_theme (GtkWidget *widget)
 {
-	GtkStyleContext *style_context;
 	GdkRGBA rgba;
 	gdouble brightness;
 
 	g_return_val_if_fail (GTK_IS_WIDGET (widget), FALSE);
 
-	style_context = gtk_widget_get_style_context (widget);
-	gtk_style_context_get_color (style_context, gtk_style_context_get_state (style_context), &rgba);
+	gtk_widget_get_color (widget, &rgba);
 
 	brightness =
 		(0.2109 * 255.0 * rgba.red) +

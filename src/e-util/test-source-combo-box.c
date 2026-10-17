@@ -52,16 +52,16 @@ on_idle_create_widget (ESourceRegistry *registry)
 	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 
 	box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
-	gtk_container_add (GTK_CONTAINER (window), box);
+	e_gtk_container_add (window, box);
 
 	combo_box = e_source_combo_box_new (registry, extension_name);
 	g_signal_connect (
 		combo_box, "changed",
 		G_CALLBACK (source_changed_cb), NULL);
-	gtk_box_pack_start (GTK_BOX (box), combo_box, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (box), combo_box, FALSE, FALSE, 0);
 
 	button = gtk_toggle_button_new_with_label ("Show Colors");
-	gtk_box_pack_start (GTK_BOX (box), button, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (box), button, FALSE, FALSE, 0);
 
 	e_binding_bind_property (
 		combo_box, "show-colors",
@@ -69,7 +69,7 @@ on_idle_create_widget (ESourceRegistry *registry)
 		G_BINDING_SYNC_CREATE |
 		G_BINDING_BIDIRECTIONAL);
 
-	gtk_widget_show_all (window);
+	gtk_widget_set_visible (window, TRUE);
 
 	return FALSE;
 }
@@ -81,7 +81,7 @@ main (gint argc,
 	ESourceRegistry *registry;
 	GError *error = NULL;
 
-	gtk_init (&argc, &argv);
+	gtk_init ();
 
 	if (argc < 2)
 		extension_name = E_SOURCE_EXTENSION_ADDRESS_BOOK;

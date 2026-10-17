@@ -408,7 +408,7 @@ sao_folders_add_button_clicked_cb (GtkButton *button,
 	g_return_if_fail (GTK_IS_TREE_VIEW (widget));
 	tree_view = GTK_TREE_VIEW (widget);
 
-	window = GTK_WINDOW (gtk_widget_get_toplevel (widget));
+	window = GTK_WINDOW (e_gtk_widget_get_toplevel (widget));
 
 	dialog = em_folder_selector_new (
 		window, em_folder_tree_model_get_default ());
@@ -426,7 +426,7 @@ sao_folders_add_button_clicked_cb (GtkButton *button,
 
 	em_folder_tree_set_excluded (folder_tree, EMFT_EXCLUDE_NOSELECT);
 
-	if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
+	if (e_gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
 		GList *list, *folder_uris;
 
 		model = gtk_tree_view_get_model (tree_view);
@@ -486,7 +486,7 @@ sao_folders_add_button_clicked_cb (GtkButton *button,
 		g_list_free_full (folder_uris, g_free);
 	}
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 	g_free (account_uid);
 	g_free (alias_name);
 	g_free (alias_address);
@@ -1641,7 +1641,7 @@ em_composer_prefs_construct (EMComposerPrefs *prefs,
 	action_combo_box = e_html_editor_util_new_mode_combobox ();
 	widget = GTK_WIDGET (action_combo_box);
 	gtk_widget_show (widget);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	widget = e_builder_get_widget (prefs->builder, "lblSendMode");
 	gtk_label_set_mnemonic_widget (GTK_LABEL (widget), GTK_WIDGET (action_combo_box));
 	g_settings_bind_with_mapping (
@@ -1708,7 +1708,7 @@ em_composer_prefs_construct (EMComposerPrefs *prefs,
 
 	widget = e_charset_combo_box_new ();
 	container = e_builder_get_widget (prefs->builder, "hboxComposerCharset");
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 	g_settings_bind (
 		settings, "composer-charset",
@@ -1740,9 +1740,7 @@ em_composer_prefs_construct (EMComposerPrefs *prefs,
 	selection = gtk_tree_view_get_selection (view);
 	gtk_tree_selection_set_mode (selection, GTK_SELECTION_NONE);
 	info_pixmap = e_builder_get_widget (prefs->builder, "pixmapSpellInfo");
-	gtk_image_set_from_icon_name (
-		GTK_IMAGE (info_pixmap),
-		"dialog-information", GTK_ICON_SIZE_BUTTON);
+	gtk_image_set_from_icon_name (GTK_IMAGE (info_pixmap), "dialog-information");
 
 	spell_setup (prefs);
 
@@ -1770,7 +1768,7 @@ em_composer_prefs_construct (EMComposerPrefs *prefs,
 	container = e_builder_get_widget (
 		prefs->builder, "signature-alignment");
 	widget = e_mail_signature_manager_new (registry);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	gtk_widget_show (widget);
 
 	/* The mail shell backend responds to the "window-added" signal
@@ -1805,7 +1803,7 @@ em_composer_prefs_construct (EMComposerPrefs *prefs,
 	target = em_config_target_new_prefs (ec);
 	e_config_set_target ((EConfig *) ec, (EConfigTarget *) target);
 	toplevel = e_config_create_widget ((EConfig *) ec);
-	gtk_container_add (GTK_CONTAINER (prefs), toplevel);
+	e_gtk_container_add (prefs, toplevel);
 
 	g_object_unref (settings);
 }

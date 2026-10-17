@@ -87,7 +87,7 @@ mail_config_imapx_options_constructed (GObject *object)
 	g_return_if_fail (placeholder != NULL);
 
 	hbox = e_dialog_offline_settings_new_limit_box (CAMEL_OFFLINE_SETTINGS (settings));
-	gtk_box_pack_start (placeholder, hbox, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (placeholder, hbox, FALSE, FALSE, 0);
 	gtk_widget_show (hbox);
 }
 

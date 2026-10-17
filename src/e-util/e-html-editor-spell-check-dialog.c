@@ -399,10 +399,8 @@ e_html_editor_spell_check_dialog_init (EHTMLEditorSpellCheckDialog *dialog)
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_set_shadow_type (
-		GTK_SCROLLED_WINDOW (widget),
-		GTK_SHADOW_ETCHED_IN);
-	gtk_container_add (GTK_CONTAINER (widget), dialog->priv->tree_view);
+	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (widget), TRUE);
+	e_gtk_container_add (widget, dialog->priv->tree_view);
 	gtk_grid_attach (main_layout, widget, 0, 1, 1, 5);
 
 	/* Replace */
@@ -480,7 +478,7 @@ e_html_editor_spell_check_dialog_init (EHTMLEditorSpellCheckDialog *dialog)
 		widget, "clicked",
 		G_CALLBACK (html_editor_spell_check_dialog_learn), dialog);
 
-	gtk_widget_show_all (GTK_WIDGET (main_layout));
+	gtk_widget_set_visible (GTK_WIDGET (main_layout), TRUE);
 }
 
 GtkWidget *

@@ -100,7 +100,7 @@ cell_toggle_ensure_icons (ECellToggle *cell_toggle,
 
 	g_ptr_array_set_size (cell_toggle->priv->surfaces, 0);
 
-	icon_theme = gtk_icon_theme_get_default ();
+	icon_theme = e_gtk_icon_theme_get_default ();
 	gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, &width, &height);
 
 	for (ii = 0; ii < cell_toggle->priv->n_icon_names; ii++) {

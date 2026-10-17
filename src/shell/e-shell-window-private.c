@@ -91,7 +91,7 @@ e_shell_window_private_constructed (EShellWindow *shell_window)
 	e_shell_window_actions_constructed (shell_window);
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-	gtk_container_add (GTK_CONTAINER (shell_window), widget);
+	e_gtk_container_add (shell_window, widget);
 	g_object_set (widget,
 		"halign", GTK_ALIGN_FILL,
 		"hexpand", TRUE,
@@ -101,7 +101,7 @@ e_shell_window_private_constructed (EShellWindow *shell_window)
 		NULL);
 
 	/* it draws some children differently with it in some themes */
-	gtk_style_context_remove_class (gtk_widget_get_style_context (widget), "vertical");
+	gtk_widget_remove_css_class (widget, "vertical");
 
 	box = GTK_BOX (widget);
 
@@ -131,7 +131,7 @@ e_shell_window_private_constructed (EShellWindow *shell_window)
 	}
 
 	widget = e_alert_bar_new ();
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 	shell_window->priv->alert_bar = g_object_ref (widget);
 	/* EAlertBar controls its own visibility. */
 
@@ -145,7 +145,7 @@ e_shell_window_private_constructed (EShellWindow *shell_window)
 		"show-tabs", FALSE,
 		"show-border", FALSE,
 		NULL);
-	gtk_box_pack_start (box, widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (box, widget, TRUE, TRUE, 0);
 	shell_window->priv->views_notebook = g_object_ref (GTK_NOTEBOOK (widget));
 
 	/* Bunch of chores to do when the active view changes. */

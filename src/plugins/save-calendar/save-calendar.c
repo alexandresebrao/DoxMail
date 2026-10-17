@@ -74,10 +74,7 @@ on_type_combobox_changed (GtkComboBox *combobox,
 	GtkTreeIter iter;
 	GtkTreeModel *model = gtk_combo_box_get_model (combobox);
 
-	gtk_container_foreach (
-		GTK_CONTAINER (extra_widget),
-		extra_widget_foreach_hide,
-		g_object_get_data (G_OBJECT (combobox), "format-box"));
+	e_gtk_container_foreach (extra_widget, extra_widget_foreach_hide, g_object_get_data (G_OBJECT (combobox), "format-box"));
 
 	if (!gtk_combo_box_get_active_iter (combobox, &iter))
 		return;
@@ -98,7 +95,7 @@ format_handlers_foreach_free (gpointer data)
 	FormatHandler *handler = data;
 
 	if (handler->options_widget)
-		gtk_widget_destroy (handler->options_widget);
+		e_gtk_widget_destroy (handler->options_widget);
 
 	g_free (handler->data);
 	g_free (data);
@@ -131,13 +128,13 @@ ask_destination_and_save (ESourceSelector *selector,
 	format_handlers = g_list_append (format_handlers,
 		rdf_format_handler_new ());
 
-	gtk_box_pack_start (GTK_BOX (extra_widget), GTK_WIDGET (hbox), FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (extra_widget), GTK_WIDGET (hbox), FALSE, FALSE, 0);
 	gtk_label_set_mnemonic_widget (label, GTK_WIDGET (combo));
 
-	gtk_box_pack_start (GTK_BOX (hbox), GTK_WIDGET (label), FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), GTK_WIDGET (label), FALSE, FALSE, 0);
 
 	/* The Type GtkComboBox */
-	gtk_box_pack_start (GTK_BOX (hbox), GTK_WIDGET (combo), TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), GTK_WIDGET (combo), TRUE, TRUE, 0);
 	gtk_combo_box_set_model (combo, model);
 
 	gtk_list_store_clear (store);
@@ -157,9 +154,7 @@ ask_destination_and_save (ESourceSelector *selector,
 		gtk_list_store_set (store, &iter, DEST_HANDLER, handler, -1);
 
 		if (handler->options_widget) {
-			gtk_box_pack_start (
-				GTK_BOX (extra_widget),
-				GTK_WIDGET (handler->options_widget), TRUE, TRUE, 0);
+			e_gtk_box_pack_start (GTK_BOX (extra_widget), GTK_WIDGET (handler->options_widget), TRUE, TRUE, 0);
 			gtk_widget_hide (handler->options_widget);
 		}
 
@@ -175,7 +170,7 @@ ask_destination_and_save (ESourceSelector *selector,
 		G_CALLBACK (on_type_combobox_changed), extra_widget);
 	g_object_set_data (G_OBJECT (combo), "format-box", hbox);
 
-	toplevel = gtk_widget_get_toplevel (GTK_WIDGET (selector));
+	toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (selector));
 
 	native = gtk_file_chooser_native_new (
 		_("Select destination file"),
@@ -184,7 +179,6 @@ ask_destination_and_save (ESourceSelector *selector,
 		_("_Save As"), _("_Cancel"));
 
 	gtk_file_chooser_set_extra_widget (GTK_FILE_CHOOSER (native), extra_widget);
-	gtk_file_chooser_set_local_only (GTK_FILE_CHOOSER (native), FALSE);
 	gtk_widget_show (hbox);
 	gtk_widget_show (GTK_WIDGET (label));
 	gtk_widget_show (GTK_WIDGET (combo));
@@ -192,7 +186,7 @@ ask_destination_and_save (ESourceSelector *selector,
 
 	e_util_load_file_chooser_folder (GTK_FILE_CHOOSER (native));
 
-	if (gtk_native_dialog_run (GTK_NATIVE_DIALOG (native)) == GTK_RESPONSE_ACCEPT) {
+	if (e_gtk_native_dialog_run (GTK_NATIVE_DIALOG (native)) == GTK_RESPONSE_ACCEPT) {
 		gchar *tmp = NULL;
 
 		e_util_save_file_chooser_folder (GTK_FILE_CHOOSER (native));
@@ -204,7 +198,7 @@ ask_destination_and_save (ESourceSelector *selector,
 		else
 			handler = NULL;
 
-		dest_uri = gtk_file_chooser_get_uri (GTK_FILE_CHOOSER (native));
+		dest_uri = e_gtk_file_chooser_get_uri (native);
 
 		if (handler) {
 			tmp = strstr (dest_uri, handler->filename_ext);

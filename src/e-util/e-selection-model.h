@@ -30,6 +30,7 @@
 #include <gtk/gtk.h>
 #include <e-util/e-misc-utils.h>
 #include <e-util/e-sorter.h>
+#include <libgnomecanvas/libgnomecanvas.h>
 
 /* Standard GObject macros */
 #define E_TYPE_SELECTION_MODEL \
@@ -136,7 +137,7 @@ void		e_selection_model_right_click_down
 void		e_selection_model_right_click_up
 						(ESelectionModel *model);
 gboolean	e_selection_model_key_press	(ESelectionModel *model,
-						 GdkEventKey *key);
+						 GnomeCanvasEventKey *key);
 void		e_selection_model_select_as_key_press
 						(ESelectionModel *model,
 						 guint row,

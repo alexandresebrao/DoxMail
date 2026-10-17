@@ -45,16 +45,16 @@ create_uri (UrlEditorDialog *dialog)
 
 	if (uri->service_type == TYPE_URI) {
 		g_free (uri->location);
-		uri->location = g_strdup (gtk_entry_get_text (GTK_ENTRY (dialog->server_entry)));
+		uri->location = g_strdup (gtk_editable_get_text (GTK_EDITABLE (dialog->server_entry)));
 	} else {
 		const gchar *method = "file";
 		gchar *server, *file, *port, *username, *password;
 
-		server = g_strdup (gtk_entry_get_text (GTK_ENTRY (dialog->server_entry)));
-		file = g_strdup (gtk_entry_get_text (GTK_ENTRY (dialog->file_entry)));
-		port = g_strdup (gtk_entry_get_text (GTK_ENTRY (dialog->port_entry)));
-		username = g_uri_escape_string (gtk_entry_get_text (GTK_ENTRY (dialog->username_entry)), "", FALSE);
-		password = g_strdup (gtk_entry_get_text (GTK_ENTRY (dialog->password_entry)));
+		server = g_strdup (gtk_editable_get_text (GTK_EDITABLE (dialog->server_entry)));
+		file = g_strdup (gtk_editable_get_text (GTK_EDITABLE (dialog->file_entry)));
+		port = g_strdup (gtk_editable_get_text (GTK_EDITABLE (dialog->port_entry)));
+		username = g_uri_escape_string (gtk_editable_get_text (GTK_EDITABLE (dialog->username_entry)), "", FALSE);
+		password = g_strdup (gtk_editable_get_text (GTK_EDITABLE (dialog->password_entry)));
 
 		switch (uri->service_type) {
 		case TYPE_SMB:
@@ -140,11 +140,11 @@ check_input (UrlEditorDialog *dialog)
 	case TYPE_DAV:
 	case TYPE_DAVS:
 	case TYPE_ANON_FTP:
-		if (!strlen (gtk_entry_get_text (GTK_ENTRY (dialog->server_entry)))) goto fail;
-		if (!strlen (gtk_entry_get_text (GTK_ENTRY (dialog->file_entry))))   goto fail;
+		if (!strlen (gtk_editable_get_text (GTK_EDITABLE (dialog->server_entry)))) goto fail;
+		if (!strlen (gtk_editable_get_text (GTK_EDITABLE (dialog->file_entry))))   goto fail;
 		break;
 	case TYPE_URI:
-		if (!strlen (gtk_entry_get_text (GTK_ENTRY (dialog->server_entry)))) goto fail;
+		if (!strlen (gtk_editable_get_text (GTK_EDITABLE (dialog->server_entry)))) goto fail;
 		break;
 	}
 
@@ -179,7 +179,7 @@ publish_service_changed (GtkComboBox *combo,
 		gtk_label_set_text_with_mnemonic (GTK_LABEL (dialog->server_label), "_Server:");
 		gtk_label_set_text_with_mnemonic (GTK_LABEL (dialog->port_label), "_Port:");
 		gtk_label_set_text_with_mnemonic (GTK_LABEL (dialog->port_label), "S_hare:");
-		gtk_entry_set_text (GTK_ENTRY (dialog->port_entry), "");
+		gtk_editable_set_text (GTK_EDITABLE (dialog->port_entry), "");
 		gtk_widget_show (dialog->file_hbox);
 		gtk_widget_show (dialog->optional_label);
 		gtk_widget_show (dialog->port_hbox);
@@ -194,9 +194,9 @@ publish_service_changed (GtkComboBox *combo,
 		gtk_label_set_text_with_mnemonic (GTK_LABEL (dialog->server_label), "_Server:");
 		gtk_label_set_text_with_mnemonic (GTK_LABEL (dialog->port_label), "_Port:");
 		if (uri->service_type == TYPE_SMB)
-			gtk_entry_set_text (GTK_ENTRY (dialog->port_entry), "");
+			gtk_editable_set_text (GTK_EDITABLE (dialog->port_entry), "");
 		else if (uri->service_type == TYPE_URI)
-			gtk_entry_set_text (GTK_ENTRY (dialog->server_entry), "");
+			gtk_editable_set_text (GTK_EDITABLE (dialog->server_entry), "");
 		gtk_widget_show (dialog->file_hbox);
 		gtk_widget_show (dialog->optional_label);
 		gtk_widget_show (dialog->port_hbox);
@@ -208,9 +208,9 @@ publish_service_changed (GtkComboBox *combo,
 		gtk_label_set_text_with_mnemonic (GTK_LABEL (dialog->server_label), "_Server:");
 		gtk_label_set_text_with_mnemonic (GTK_LABEL (dialog->port_label), "_Port:");
 		if (uri->service_type == TYPE_SMB)
-			gtk_entry_set_text (GTK_ENTRY (dialog->port_entry), "");
+			gtk_editable_set_text (GTK_EDITABLE (dialog->port_entry), "");
 		else if (uri->service_type == TYPE_URI)
-			gtk_entry_set_text (GTK_ENTRY (dialog->server_entry), "");
+			gtk_editable_set_text (GTK_EDITABLE (dialog->server_entry), "");
 		gtk_widget_show (dialog->file_hbox);
 		gtk_widget_show (dialog->optional_label);
 		gtk_widget_show (dialog->port_hbox);
@@ -221,7 +221,7 @@ publish_service_changed (GtkComboBox *combo,
 	case TYPE_URI:
 		gtk_label_set_text_with_mnemonic (GTK_LABEL (dialog->server_label), "_Location (URI):");
 		if (uri->service_type != TYPE_URI)
-			gtk_entry_set_text (GTK_ENTRY (dialog->server_entry), "");
+			gtk_editable_set_text (GTK_EDITABLE (dialog->server_entry), "");
 		gtk_widget_hide (dialog->file_hbox);
 		gtk_widget_hide (dialog->optional_label);
 		gtk_widget_hide (dialog->port_hbox);
@@ -337,23 +337,23 @@ set_from_uri (UrlEditorDialog *dialog)
 	path = g_uri_get_path (guri);
 
 	if (user != NULL)
-		gtk_entry_set_text (GTK_ENTRY (dialog->username_entry), user);
+		gtk_editable_set_text (GTK_EDITABLE (dialog->username_entry), user);
 
 	if (host != NULL)
-		gtk_entry_set_text (GTK_ENTRY (dialog->server_entry), host);
+		gtk_editable_set_text (GTK_EDITABLE (dialog->server_entry), host);
 
 	if (port > 0) {
 		gchar *port_str;
 		port_str = g_strdup_printf ("%d", port);
-		gtk_entry_set_text (GTK_ENTRY (dialog->port_entry), port_str);
+		gtk_editable_set_text (GTK_EDITABLE (dialog->port_entry), port_str);
 		g_free (port_str);
 	}
 
 	if (path != NULL)
-		gtk_entry_set_text (GTK_ENTRY (dialog->file_entry), path);
+		gtk_editable_set_text (GTK_EDITABLE (dialog->file_entry), path);
 
 	if (uri->service_type == TYPE_URI)
-		gtk_entry_set_text (GTK_ENTRY (dialog->server_entry), uri->location);
+		gtk_editable_set_text (GTK_EDITABLE (dialog->server_entry), uri->location);
 
 	gtk_combo_box_set_active (GTK_COMBO_BOX (dialog->publish_service), uri->service_type);
 
@@ -410,9 +410,9 @@ url_editor_dialog_construct (UrlEditorDialog *dialog)
 
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
 	toplevel = e_builder_get_widget (dialog->builder, "publishing toplevel");
-	gtk_container_add (GTK_CONTAINER (content_area), toplevel);
+	e_gtk_container_add (content_area, toplevel);
 
-	gtk_container_set_border_width (GTK_CONTAINER (dialog), 6);
+	e_gtk_widget_set_border_width (dialog, 6);
 
 	dialog->cancel = gtk_dialog_add_button (GTK_DIALOG (dialog), _("_Cancel"), GTK_RESPONSE_CANCEL);
 	dialog->ok = gtk_dialog_add_button (GTK_DIALOG (dialog), _("_OK"), GTK_RESPONSE_OK);
@@ -425,7 +425,7 @@ url_editor_dialog_construct (UrlEditorDialog *dialog)
 	dialog->events_selector = e_source_selector_new (
 		registry, E_SOURCE_EXTENSION_CALENDAR);
 	gtk_widget_show (dialog->events_selector);
-	gtk_container_add (GTK_CONTAINER (dialog->events_swin), dialog->events_selector);
+	e_gtk_container_add (dialog->events_swin, dialog->events_selector);
 
 	group = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	gtk_size_group_add_widget (group, dialog->type_selector);
@@ -474,7 +474,7 @@ url_editor_dialog_construct (UrlEditorDialog *dialog)
 		uri->password = e_passwords_get_password (uri->location);
 		if (uri->password) {
 			if (strlen (uri->password) != 0) {
-				gtk_entry_set_text (GTK_ENTRY (dialog->password_entry), uri->password);
+				gtk_editable_set_text (GTK_EDITABLE (dialog->password_entry), uri->password);
 				gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (dialog->remember_pw), TRUE);
 			} else {
 				gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (dialog->remember_pw), FALSE);
@@ -578,7 +578,7 @@ url_editor_dialog_run (UrlEditorDialog *dialog)
 {
 	gint response;
 
-	response = gtk_dialog_run (GTK_DIALOG (dialog));
+	response = e_gtk_dialog_run (GTK_DIALOG (dialog));
 	if (response == GTK_RESPONSE_OK) {
 		GList *list, *link;
 
@@ -590,7 +590,7 @@ url_editor_dialog_run (UrlEditorDialog *dialog)
 
 		create_uri (dialog);
 
-		dialog->uri->password = g_strdup (gtk_entry_get_text (GTK_ENTRY (dialog->password_entry)));
+		dialog->uri->password = g_strdup (gtk_editable_get_text (GTK_EDITABLE (dialog->password_entry)));
 
 		if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (dialog->remember_pw))) {
 			e_passwords_add_password (dialog->uri->location, dialog->uri->password);

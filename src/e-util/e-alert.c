@@ -996,7 +996,7 @@ e_alert_create_image (EAlert *alert,
 
 	icon_name = e_alert_get_icon_name (alert);
 
-	return gtk_image_new_from_icon_name (icon_name, size);
+	return gtk_image_new_from_icon_name (icon_name);
 }
 
 void

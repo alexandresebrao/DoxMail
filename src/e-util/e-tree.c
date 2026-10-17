@@ -187,7 +187,7 @@ struct _ETreePrivate {
 	gint last_drop_x;
 	gint last_drop_y;
 	gint last_drop_time;
-	GdkDragContext *last_drop_context;
+	EGtkDragContext *last_drop_context;
 
 	gint hover_x;
 	gint hover_y;
@@ -213,42 +213,42 @@ static guint signals[LAST_SIGNAL];
 static void et_grab_focus (GtkWidget *widget);
 
 static void et_drag_begin (GtkWidget *widget,
-			   GdkDragContext *context,
+			   EGtkDragContext *context,
 			   ETree *tree);
 static void et_drag_end (GtkWidget *widget,
-			 GdkDragContext *context,
+			 EGtkDragContext *context,
 			 ETree *tree);
 static void et_drag_data_get (GtkWidget *widget,
-			     GdkDragContext *context,
-			     GtkSelectionData *selection_data,
+			     EGtkDragContext *context,
+			     EGtkSelectionData *selection_data,
 			     guint info,
 			     guint time,
 			     ETree *tree);
 static void et_drag_data_delete (GtkWidget *widget,
-				GdkDragContext *context,
+				EGtkDragContext *context,
 				ETree *tree);
 
 static void et_drag_leave (GtkWidget *widget,
-			  GdkDragContext *context,
+			  EGtkDragContext *context,
 			  guint time,
 			  ETree *tree);
 static gboolean et_drag_motion (GtkWidget *widget,
-			       GdkDragContext *context,
+			       EGtkDragContext *context,
 			       gint x,
 			       gint y,
 			       guint time,
 			       ETree *tree);
 static gboolean et_drag_drop (GtkWidget *widget,
-			     GdkDragContext *context,
+			     EGtkDragContext *context,
 			     gint x,
 			     gint y,
 			     guint time,
 			     ETree *tree);
 static void et_drag_data_received (GtkWidget *widget,
-				  GdkDragContext *context,
+				  EGtkDragContext *context,
 				  gint x,
 				  gint y,
-				  GtkSelectionData *selection_data,
+				  EGtkSelectionData *selection_data,
 				  guint info,
 				  guint time,
 				  ETree *tree);
@@ -451,7 +451,7 @@ et_dispose (GObject *object)
 	g_clear_object (&self->priv->spec);
 
 	if (self->priv->header_canvas != NULL) {
-		gtk_widget_destroy (GTK_WIDGET (self->priv->header_canvas));
+		e_gtk_widget_destroy (GTK_WIDGET (self->priv->header_canvas));
 		self->priv->header_canvas = NULL;
 	}
 
@@ -473,7 +473,7 @@ et_dispose (GObject *object)
 
 	if (self->priv->table_canvas != NULL) {
 		g_signal_handlers_disconnect_by_data (self->priv->table_canvas, object);
-		gtk_widget_destroy (GTK_WIDGET (self->priv->table_canvas));
+		e_gtk_widget_destroy (GTK_WIDGET (self->priv->table_canvas));
 		self->priv->table_canvas = NULL;
 	}
 
@@ -600,7 +600,7 @@ et_search_accept (ETableSearch *search,
 static void
 e_tree_init (ETree *tree)
 {
-	gtk_widget_set_can_focus (GTK_WIDGET (tree), TRUE);
+	gtk_widget_set_focusable (GTK_WIDGET (tree), TRUE);
 
 	tree->priv = e_tree_get_instance_private (tree);
 
@@ -733,9 +733,8 @@ e_tree_setup_header (ETree *tree)
 
 	widget = e_canvas_new ();
 	gtk_widget_set_hexpand (widget, TRUE);
-	gtk_style_context_add_class (
-		gtk_widget_get_style_context (widget), "table-header");
-	gtk_widget_set_can_focus (widget, FALSE);
+	gtk_widget_add_css_class (widget, "table-header");
+	gtk_widget_set_focusable (widget, FALSE);
 	tree->priv->header_canvas = GNOME_CANVAS (widget);
 	gtk_widget_show (widget);
 
@@ -964,7 +963,7 @@ item_key_press (ETableItem *eti,
                 ETree *tree)
 {
 	gint return_val = 0;
-	GdkEventKey *key = (GdkEventKey *) event;
+	GdkEvent *key = (GdkEvent *) event;
 	ETreePath path;
 	gint y, row_local, col_local;
 	GtkAdjustment *adjustment;
@@ -1023,10 +1022,10 @@ item_key_press (ETableItem *eti,
 	case GDK_KEY_KP_Right:
 		/* Only allow if the Shift modifier is used.
 		 * eg. Ctrl-Equal shouldn't be handled.  */
-		if ((key->state & (GDK_SHIFT_MASK | GDK_LOCK_MASK | GDK_MOD1_MASK)) != GDK_SHIFT_MASK) {
+		if ((key->state & (GDK_SHIFT_MASK | GDK_LOCK_MASK | GDK_ALT_MASK)) != GDK_SHIFT_MASK) {
 			/* Allow also plain (without modifiers) expand when in the 'line' cursor mode */
 			if (eti->cursor_mode != E_CURSOR_LINE ||
-			    (key->state & (GDK_SHIFT_MASK | GDK_LOCK_MASK | GDK_MOD1_MASK)) != 0)
+			    (key->state & (GDK_SHIFT_MASK | GDK_LOCK_MASK | GDK_ALT_MASK)) != 0)
 				break;
 		}
 
@@ -1048,10 +1047,10 @@ item_key_press (ETableItem *eti,
 	case GDK_KEY_KP_Left:
 		/* Only allow if the Shift modifier is used.
 		 * eg. Ctrl-Minus shouldn't be handled.  */
-		if ((key->state & (GDK_SHIFT_MASK | GDK_LOCK_MASK | GDK_MOD1_MASK)) != GDK_SHIFT_MASK) {
+		if ((key->state & (GDK_SHIFT_MASK | GDK_LOCK_MASK | GDK_ALT_MASK)) != GDK_SHIFT_MASK) {
 			/* Allow also plain (without modifiers) collapse when in the 'line' cursor mode */
 			if (eti->cursor_mode != E_CURSOR_LINE ||
-			    (key->state & (GDK_SHIFT_MASK | GDK_LOCK_MASK | GDK_MOD1_MASK)) != 0)
+			    (key->state & (GDK_SHIFT_MASK | GDK_LOCK_MASK | GDK_ALT_MASK)) != 0)
 				break;
 		}
 
@@ -1072,7 +1071,7 @@ item_key_press (ETableItem *eti,
 		/* Fallthrough */
 	default:
 		if ((key->state & ~(GDK_SHIFT_MASK | GDK_LOCK_MASK |
-			GDK_MOD1_MASK | GDK_MOD2_MASK | GDK_MOD3_MASK |
+			GDK_ALT_MASK | GDK_MOD2_MASK | GDK_MOD3_MASK |
 			GDK_MOD4_MASK | GDK_MOD5_MASK)) == 0
 		    && ((key->keyval >= GDK_KEY_a && key->keyval <= GDK_KEY_z) ||
 			(key->keyval >= GDK_KEY_A && key->keyval <= GDK_KEY_Z) ||
@@ -1210,7 +1209,7 @@ white_item_event (GnomeCanvasItem *white_item,
 	if (!return_val && event && tree->priv->item) {
 		guint event_button = 0;
 
-		gdk_event_get_button (event, &event_button);
+		e_gdk_event_get_button (event, &event_button);
 
 		if (event->type == GDK_BUTTON_PRESS && (event_button == 1 || event_button == 2)) {
 			gnome_canvas_item_grab_focus (GNOME_CANVAS_ITEM (tree->priv->item));
@@ -1253,7 +1252,7 @@ et_canvas_root_event (GnomeCanvasItem *root,
  */
 static gboolean
 table_canvas_focus_event_cb (GtkWidget *widget,
-                             GdkEventFocus *event,
+                             GdkEvent *event,
                              gpointer data)
 {
 	GnomeCanvas *canvas;
@@ -2073,7 +2072,7 @@ e_tree_get_header_item (ETree *tree)
 struct _ETreeDragSourceSite
 {
 	GdkModifierType    start_button_mask;
-	GtkTargetList     *target_list;        /* Targets for drag data */
+	EGtkTargetList     *target_list;        /* Targets for drag data */
 	GdkDragAction      actions;            /* Possible actions */
 	GdkPixbuf         *pixbuf;             /* Icon for drag data */
 
@@ -2096,9 +2095,9 @@ typedef struct _GtkDragSourceInfo GtkDragSourceInfo;
 struct _GtkDragDestInfo
 {
   GtkWidget         *widget;	   /* Widget in which drag is in */
-  GdkDragContext    *context;	   /* Drag context */
+  EGtkDragContext    *context;	   /* Drag context */
   GtkDragSourceInfo *proxy_source; /* Set if this is a proxy drag */
-  GtkSelectionData  *proxy_data;   /* Set while retrieving proxied data */
+  EGtkSelectionData  *proxy_data;   /* Set while retrieving proxied data */
   guint              dropped : 1;     /* Set after we receive a drop */
   guint32            proxy_drop_time; /* Timestamp for proxied drop */
   guint              proxy_drop_wait : 1; /* Set if we are waiting for a
@@ -2111,9 +2110,9 @@ struct _GtkDragDestInfo
 struct _GtkDragSourceInfo
 {
   GtkWidget         *widget;
-  GtkTargetList     *target_list; /* Targets for drag data */
+  EGtkTargetList     *target_list; /* Targets for drag data */
   GdkDragAction      possible_actions; /* Actions allowed by source */
-  GdkDragContext    *context;	  /* drag context */
+  EGtkDragContext    *context;	  /* drag context */
   GtkWidget         *icon_window; /* Window for drag */
   GtkWidget         *ipc_widget;  /* GtkInvisible for grab, message passing */
   GdkCursor         *cursor;	  /* Cursor for drag */
@@ -2147,7 +2146,7 @@ et_real_start_drag (ETree *tree,
                     GdkEvent *event)
 {
 	GtkDragSourceInfo *info;
-	GdkDragContext *context;
+	EGtkDragContext *context;
 	ETreeDragSourceSite *site;
 
 	if (tree->priv->do_drag) {
@@ -2165,12 +2164,12 @@ et_real_start_drag (ETree *tree,
 
 			if (info && !info->icon_window) {
 				if (site->pixbuf)
-					gtk_drag_set_icon_pixbuf (
+					e_gtk_drag_set_icon_pixbuf (
 						context,
 						site->pixbuf,
 						-2, -2);
 				else
-					gtk_drag_set_icon_default (context);
+					e_gtk_drag_set_icon_default (context);
 			}
 		}
 		return TRUE;
@@ -2181,7 +2180,7 @@ et_real_start_drag (ETree *tree,
 void
 e_tree_drag_source_set (ETree *tree,
                         GdkModifierType start_button_mask,
-                        const GtkTargetEntry *targets,
+                        const EGtkTargetEntry *targets,
                         gint n_targets,
                         GdkDragAction actions)
 {
@@ -2195,15 +2194,10 @@ e_tree_drag_source_set (ETree *tree,
 
 	tree->priv->do_drag = TRUE;
 
-	gtk_widget_add_events (
-		canvas,
-		gtk_widget_get_events (canvas) |
-		GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
-		GDK_BUTTON_MOTION_MASK | GDK_STRUCTURE_MASK);
 
 	if (site) {
 		if (site->target_list)
-			gtk_target_list_unref (site->target_list);
+			e_gtk_target_list_unref (site->target_list);
 	} else {
 		site = g_new0 (ETreeDragSourceSite, 1);
 		tree->priv->site = site;
@@ -2212,7 +2206,7 @@ e_tree_drag_source_set (ETree *tree,
 	site->start_button_mask = start_button_mask;
 
 	if (targets)
-		site->target_list = gtk_target_list_new (targets, n_targets);
+		site->target_list = e_gtk_target_list_new (targets, n_targets);
 	else
 		site->target_list = NULL;
 
@@ -2230,21 +2224,21 @@ e_tree_drag_source_unset (ETree *tree)
 
 	if (site) {
 		if (site->target_list)
-			gtk_target_list_unref (site->target_list);
+			e_gtk_target_list_unref (site->target_list);
 		g_free (site);
 		tree->priv->site = NULL;
 	}
 }
 
 /* There probably should be functions for setting the targets
- * as a GtkTargetList
+ * as a EGtkTargetList
  */
 
-GdkDragContext *
+EGtkDragContext *
 e_tree_drag_begin (ETree *tree,
                    gint row,
                    gint col,
-                   GtkTargetList *targets,
+                   EGtkTargetList *targets,
                    GdkDragAction actions,
                    gint button,
                    GdkEvent *event)
@@ -2259,7 +2253,7 @@ e_tree_drag_begin (ETree *tree,
 	tree->priv->drag_path = path;
 	tree->priv->drag_col = col;
 
-	return gtk_drag_begin (
+	return e_gtk_drag_begin (
 		GTK_WIDGET (tree->priv->table_canvas),
 		targets,
 		actions,
@@ -2380,7 +2374,7 @@ e_tree_get_cell_geometry (ETree *tree,
 
 static void
 et_drag_begin (GtkWidget *widget,
-               GdkDragContext *context,
+               EGtkDragContext *context,
                ETree *tree)
 {
 	tree->priv->is_dragging = TRUE;
@@ -2396,7 +2390,7 @@ et_drag_begin (GtkWidget *widget,
 
 static void
 et_drag_end (GtkWidget *widget,
-             GdkDragContext *context,
+             EGtkDragContext *context,
              ETree *tree)
 {
 	tree->priv->is_dragging = FALSE;
@@ -2412,8 +2406,8 @@ et_drag_end (GtkWidget *widget,
 
 static void
 et_drag_data_get (GtkWidget *widget,
-                  GdkDragContext *context,
-                  GtkSelectionData *selection_data,
+                  EGtkDragContext *context,
+                  EGtkSelectionData *selection_data,
                   guint info,
                   guint time,
                   ETree *tree)
@@ -2432,7 +2426,7 @@ et_drag_data_get (GtkWidget *widget,
 
 static void
 et_drag_data_delete (GtkWidget *widget,
-                     GdkDragContext *context,
+                     EGtkDragContext *context,
                      ETree *tree)
 {
 	g_signal_emit (
@@ -2446,7 +2440,7 @@ et_drag_data_delete (GtkWidget *widget,
 
 static gboolean
 do_drag_motion (ETree *tree,
-                GdkDragContext *context,
+                EGtkDragContext *context,
                 gint x,
                 gint y,
                 guint time)
@@ -2676,7 +2670,7 @@ context_destroyed (gpointer data,
 
 static void
 context_connect (ETree *tree,
-                 GdkDragContext *context)
+                 EGtkDragContext *context)
 {
 	if (context == tree->priv->last_drop_context)
 		return;
@@ -2693,7 +2687,7 @@ context_connect (ETree *tree,
 
 static void
 et_drag_leave (GtkWidget *widget,
-               GdkDragContext *context,
+               EGtkDragContext *context,
                guint time,
                ETree *tree)
 {
@@ -2714,7 +2708,7 @@ et_drag_leave (GtkWidget *widget,
 
 static gboolean
 et_drag_motion (GtkWidget *widget,
-                GdkDragContext *context,
+                EGtkDragContext *context,
                 gint x,
                 gint y,
                 guint time,
@@ -2762,7 +2756,7 @@ et_drag_motion (GtkWidget *widget,
 
 static gboolean
 et_drag_drop (GtkWidget *widget,
-              GdkDragContext *context,
+              EGtkDragContext *context,
               gint x,
               gint y,
               guint time,
@@ -2822,10 +2816,10 @@ et_drag_drop (GtkWidget *widget,
 
 static void
 et_drag_data_received (GtkWidget *widget,
-                       GdkDragContext *context,
+                       EGtkDragContext *context,
                        gint x,
                        gint y,
-                       GtkSelectionData *selection_data,
+                       EGtkSelectionData *selection_data,
                        guint info,
                        guint time,
                        ETree *tree)
@@ -2996,7 +2990,7 @@ e_tree_class_init (ETreeClass *class)
 		G_TYPE_INT,
 		G_TYPE_POINTER,
 		G_TYPE_INT,
-		GDK_TYPE_DRAG_CONTEXT);
+		E_GTK_TYPE_DRAG_CONTEXT);
 
 	signals[TREE_DRAG_END] = g_signal_new (
 		"tree_drag_end",
@@ -3009,7 +3003,7 @@ e_tree_class_init (ETreeClass *class)
 		G_TYPE_INT,
 		G_TYPE_POINTER,
 		G_TYPE_INT,
-		GDK_TYPE_DRAG_CONTEXT);
+		E_GTK_TYPE_DRAG_CONTEXT);
 
 	signals[TREE_DRAG_DATA_GET] = g_signal_new (
 		"tree_drag_data_get",
@@ -3022,8 +3016,8 @@ e_tree_class_init (ETreeClass *class)
 		G_TYPE_INT,
 		G_TYPE_POINTER,
 		G_TYPE_INT,
-		GDK_TYPE_DRAG_CONTEXT,
-		GTK_TYPE_SELECTION_DATA | G_SIGNAL_TYPE_STATIC_SCOPE,
+		E_GTK_TYPE_DRAG_CONTEXT,
+		E_GTK_TYPE_SELECTION_DATA | G_SIGNAL_TYPE_STATIC_SCOPE,
 		G_TYPE_UINT,
 		G_TYPE_UINT);
 
@@ -3038,7 +3032,7 @@ e_tree_class_init (ETreeClass *class)
 		G_TYPE_INT,
 		G_TYPE_POINTER,
 		G_TYPE_INT,
-		GDK_TYPE_DRAG_CONTEXT);
+		E_GTK_TYPE_DRAG_CONTEXT);
 
 	signals[TREE_DRAG_LEAVE] = g_signal_new (
 		"tree_drag_leave",
@@ -3051,7 +3045,7 @@ e_tree_class_init (ETreeClass *class)
 		G_TYPE_INT,
 		G_TYPE_POINTER,
 		G_TYPE_INT,
-		GDK_TYPE_DRAG_CONTEXT,
+		E_GTK_TYPE_DRAG_CONTEXT,
 		G_TYPE_UINT);
 
 	signals[TREE_DRAG_MOTION] = g_signal_new (
@@ -3065,7 +3059,7 @@ e_tree_class_init (ETreeClass *class)
 		G_TYPE_INT,
 		G_TYPE_POINTER,
 		G_TYPE_INT,
-		GDK_TYPE_DRAG_CONTEXT,
+		E_GTK_TYPE_DRAG_CONTEXT,
 		G_TYPE_INT,
 		G_TYPE_INT,
 		G_TYPE_UINT);
@@ -3081,7 +3075,7 @@ e_tree_class_init (ETreeClass *class)
 		G_TYPE_INT,
 		G_TYPE_POINTER,
 		G_TYPE_INT,
-		GDK_TYPE_DRAG_CONTEXT,
+		E_GTK_TYPE_DRAG_CONTEXT,
 		G_TYPE_INT,
 		G_TYPE_INT,
 		G_TYPE_UINT);
@@ -3097,10 +3091,10 @@ e_tree_class_init (ETreeClass *class)
 		G_TYPE_INT,
 		G_TYPE_POINTER,
 		G_TYPE_INT,
-		GDK_TYPE_DRAG_CONTEXT,
+		E_GTK_TYPE_DRAG_CONTEXT,
 		G_TYPE_INT,
 		G_TYPE_INT,
-		GTK_TYPE_SELECTION_DATA,
+		E_GTK_TYPE_SELECTION_DATA,
 		G_TYPE_UINT,
 		G_TYPE_UINT);
 

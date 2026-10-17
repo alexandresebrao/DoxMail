@@ -199,10 +199,10 @@ simple_changed_cb (GtkComboBox *simple,
 
 		dialog_content = gtk_dialog_get_content_area (dialog);
 		advanced_widget = e_autoar_gtk_chooser_advanced_new (previous[0], previous[1]);
-		gtk_container_add (GTK_CONTAINER (dialog_content), advanced_widget);
-		gtk_widget_show_all (dialog_widget);
+		e_gtk_container_add (dialog_content, advanced_widget);
+		gtk_widget_set_visible (dialog_widget, TRUE);
 
-		response = gtk_dialog_run (dialog);
+		response = e_gtk_dialog_run (dialog);
 		if (response == GTK_RESPONSE_ACCEPT &&
 		    gtk_tree_model_iter_previous (model, &iter) &&
 		    e_autoar_gtk_chooser_advanced_get (advanced_widget, &format, &filter))
@@ -210,7 +210,7 @@ simple_changed_cb (GtkComboBox *simple,
 		else
 			simple_set_active (simple, model, previous[0], previous[1]);
 
-		gtk_widget_destroy (dialog_widget);
+		e_gtk_widget_destroy (dialog_widget);
 	} else {
 		previous[0] = format;
 		previous[1] = filter;

@@ -375,7 +375,7 @@ part_combobox_changed (GtkComboBox *combobox,
 	/* here we do a widget shuffle, throw away the old widget/rulepart,
 	 * and create another */
 	if (data->partwidget)
-		gtk_container_remove (GTK_CONTAINER (data->container), data->partwidget);
+		e_gtk_container_remove (data->container, data->partwidget);
 
 	newpart = e_filter_part_clone (part);
 	e_filter_part_copy_values (newpart, data->part);
@@ -384,9 +384,7 @@ part_combobox_changed (GtkComboBox *combobox,
 	data->part = newpart;
 	data->partwidget = e_filter_part_get_widget (newpart);
 	if (data->partwidget)
-		gtk_box_pack_start (
-			GTK_BOX (data->container),
-			data->partwidget, TRUE, TRUE, 0);
+		e_gtk_box_pack_start (GTK_BOX (data->container), data->partwidget, TRUE, TRUE, 0);
 }
 
 static GtkWidget *
@@ -432,11 +430,11 @@ get_rule_part_widget (EMFilterContext *f,
 		G_CALLBACK (part_combobox_changed), data);
 	gtk_widget_show (combobox);
 
-	gtk_box_pack_start (GTK_BOX (hbox), combobox, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), combobox, FALSE, FALSE, 0);
 	if (p)
-		gtk_box_pack_start (GTK_BOX (hbox), p, TRUE, TRUE, 0);
+		e_gtk_box_pack_start (GTK_BOX (hbox), p, TRUE, TRUE, 0);
 
-	gtk_widget_show_all (hbox);
+	gtk_widget_set_visible (hbox, TRUE);
 
 	return hbox;
 }
@@ -455,15 +453,15 @@ enum {
 	N_DND_TYPES
 };
 
-static GtkTargetEntry dnd_types[] = {
-	{ (gchar *) "x-evolution-filter-action", GTK_TARGET_SAME_APP, DND_TYPE_FILTER_ACTION }
+static EGtkTargetEntry dnd_types[] = {
+	{ (gchar *) "x-evolution-filter-action", E_GTK_TARGET_SAME_APP, DND_TYPE_FILTER_ACTION }
 };
 
-static GdkAtom dnd_atoms[N_DND_TYPES] = { 0 };
+static EGtkAtom dnd_atoms[N_DND_TYPES] = { 0 };
 
 static void
 event_box_drag_begin (GtkWidget *widget,
-		      GdkDragContext *context,
+		      EGtkDragContext *context,
 		      gpointer user_data)
 {
 	struct _rule_data *data = user_data;
@@ -475,7 +473,7 @@ event_box_drag_begin (GtkWidget *widget,
 
 	/* Just 1x1 dot as an image. No need to have there real icon,
 	   because the move is done immediately */
-	surface = gdk_window_create_similar_surface ( gtk_widget_get_window (widget), CAIRO_CONTENT_COLOR, 1, 1);
+	surface = gdk_window_create_similar_surface ( e_gtk_widget_get_surface (widget), CAIRO_CONTENT_COLOR, 1, 1);
 	style_context = gtk_widget_get_style_context (widget);
 	cr = cairo_create (surface);
 	gtk_render_background (style_context, cr, 0, 0, 1, 1);
@@ -483,13 +481,13 @@ event_box_drag_begin (GtkWidget *widget,
 
 	cairo_surface_set_device_offset (surface, 0, 0);
 
-	gtk_drag_set_icon_surface (context, surface);
+	e_gtk_drag_set_icon_surface (context, surface);
 	cairo_surface_destroy (surface);
 }
 
 static gboolean
 event_box_drag_drop (GtkWidget *widget,
-		     GdkDragContext *context,
+		     EGtkDragContext *context,
 		     gint x,
 		     gint y,
 		     guint time,
@@ -504,7 +502,7 @@ event_box_drag_drop (GtkWidget *widget,
 
 static void
 event_box_drag_end (GtkWidget *widget,
-		    GdkDragContext *context,
+		    EGtkDragContext *context,
 		    gpointer user_data)
 {
 	struct _rule_data *data = user_data;
@@ -514,7 +512,7 @@ event_box_drag_end (GtkWidget *widget,
 
 static gboolean
 event_box_drag_motion_cb (GtkWidget *widget,
-			  GdkDragContext *context,
+			  EGtkDragContext *context,
 			  gint x,
 			  gint y,
 			  guint time,
@@ -522,7 +520,7 @@ event_box_drag_motion_cb (GtkWidget *widget,
 {
 	struct _rule_data *data = user_data;
 
-	gdk_drag_status (context, widget == data->drag_widget ? 0 : GDK_ACTION_MOVE, time);
+	e_gtk_drag_status (context, widget == data->drag_widget ? 0 : GDK_ACTION_MOVE, time);
 
 	if (widget != data->drag_widget) {
 		gint index, index_src = -1, index_des = -1;
@@ -582,7 +580,7 @@ event_box_drag_motion_cb (GtkWidget *widget,
 
 static gboolean
 rule_widget_drag_motion_cb (GtkWidget *widget,
-			    GdkDragContext *context,
+			    EGtkDragContext *context,
 			    gint x,
 			    gint y,
 			    guint time,
@@ -598,7 +596,7 @@ rule_widget_drag_motion_cb (GtkWidget *widget,
 		}
 	}
 
-	gdk_drag_status (context, 0, time);
+	e_gtk_drag_status (context, 0, time);
 
 	return FALSE;
 }
@@ -655,7 +653,7 @@ attach_rule (GtkWidget *rule,
 
 	event_box = gtk_event_box_new ();
 	label = gtk_label_new ("⇕");
-	gtk_container_add (GTK_CONTAINER (event_box), label);
+	e_gtk_container_add (event_box, label);
 	gtk_widget_set_sensitive (label, FALSE);
 	gtk_widget_show (label);
 
@@ -696,11 +694,11 @@ attach_rule (GtkWidget *rule,
 		gint ii;
 
 		for (ii = 0; ii < N_DND_TYPES; ii++)
-			dnd_atoms[ii] = gdk_atom_intern (dnd_types[ii].target, FALSE);
+			dnd_atoms[ii] = e_gtk_atom_intern (dnd_types[ii].target, FALSE);
 	}
 
-	gtk_drag_source_set (event_box, GDK_BUTTON1_MASK, dnd_types, N_DND_TYPES, GDK_ACTION_MOVE);
-	gtk_drag_dest_set (event_box, GTK_DEST_DEFAULT_MOTION, dnd_types, N_DND_TYPES, GDK_ACTION_MOVE);
+	e_gtk_drag_source_set (event_box, GDK_BUTTON1_MASK, dnd_types, N_DND_TYPES, GDK_ACTION_MOVE);
+	e_gtk_drag_dest_set (event_box, E_GTK_DEST_DEFAULT_MOTION, dnd_types, N_DND_TYPES, GDK_ACTION_MOVE);
 
 	g_signal_connect (event_box, "drag-begin",
 		G_CALLBACK (event_box_drag_begin), data);
@@ -711,7 +709,7 @@ attach_rule (GtkWidget *rule,
 	g_signal_connect (event_box, "drag-end",
 		G_CALLBACK (event_box_drag_end), data);
 
-	gtk_drag_dest_set (rule, GTK_DEST_DEFAULT_MOTION, dnd_types, N_DND_TYPES, GDK_ACTION_MOVE);
+	e_gtk_drag_dest_set (rule, E_GTK_DEST_DEFAULT_MOTION, dnd_types, N_DND_TYPES, GDK_ACTION_MOVE);
 
 	g_signal_connect (rule, "drag-motion",
 		G_CALLBACK (rule_widget_drag_motion_cb), data);
@@ -726,11 +724,11 @@ do_grab_focus_cb (GtkWidget *widget,
 	if (*done || !widget)
 		return;
 
-	if (gtk_widget_get_can_focus (widget) || GTK_IS_COMBO_BOX (widget)) {
+	if (gtk_widget_get_focusable (widget) || GTK_IS_COMBO_BOX (widget)) {
 		*done = TRUE;
 		gtk_widget_grab_focus (widget);
 	} else if (GTK_IS_CONTAINER (widget)) {
-		gtk_container_foreach (GTK_CONTAINER (widget), do_grab_focus_cb, done);
+		e_gtk_container_foreach (widget, do_grab_focus_cb, done);
 	}
 }
 
@@ -774,7 +772,7 @@ more_parts (GtkWidget *button,
 		if (GTK_IS_CONTAINER (w)) {
 			gboolean done = FALSE;
 
-			gtk_container_foreach (GTK_CONTAINER (w), do_grab_focus_cb, &done);
+			e_gtk_container_foreach (w, do_grab_focus_cb, &done);
 		} else
 			gtk_widget_grab_focus (w);
 
@@ -1021,14 +1019,14 @@ get_widget (EFilterRule *fr,
 	label = gtk_label_new (msg);
 	gtk_label_set_use_markup (GTK_LABEL (label), TRUE);
 	gtk_label_set_xalign (GTK_LABEL (label), 0);
-	gtk_container_add (GTK_CONTAINER (widget), label);
+	e_gtk_container_add (widget, label);
 	g_free (msg);
 
 	hgrid = GTK_GRID (gtk_grid_new ());
 	gtk_grid_set_column_spacing (hgrid, 3);
 	gtk_widget_set_hexpand (GTK_WIDGET (hgrid), TRUE);
 	gtk_widget_set_halign (GTK_WIDGET (hgrid), GTK_ALIGN_FILL);
-	gtk_container_add (GTK_CONTAINER (widget), GTK_WIDGET (hgrid));
+	e_gtk_container_add (widget, GTK_WIDGET (hgrid));
 
 	label = gtk_label_new ("");
 	gtk_grid_attach (hgrid, label, 0, 0, 1, 1);
@@ -1077,15 +1075,14 @@ get_widget (EFilterRule *fr,
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (scrolledwindow),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_container_add (
-		GTK_CONTAINER (scrolledwindow), GTK_WIDGET (parts_grid));
+	e_gtk_container_add (scrolledwindow, GTK_WIDGET (parts_grid));
 
 	gtk_widget_set_hexpand (scrolledwindow, TRUE);
 	gtk_widget_set_halign (scrolledwindow, GTK_ALIGN_FILL);
 	gtk_widget_set_vexpand (scrolledwindow, TRUE);
 	gtk_widget_set_valign (scrolledwindow, GTK_ALIGN_FILL);
 
-	gtk_container_add (GTK_CONTAINER (inframe), scrolledwindow);
+	e_gtk_container_add (inframe, scrolledwindow);
 
 	hgrid = GTK_GRID (gtk_grid_new ());
 	gtk_grid_set_column_spacing (hgrid, 3);
@@ -1096,7 +1093,7 @@ get_widget (EFilterRule *fr,
 		G_CALLBACK (more_parts), data);
 	gtk_grid_attach (hgrid, add, 0, 0, 1, 1);
 
-	gtk_container_add (GTK_CONTAINER (inframe), GTK_WIDGET (hgrid));
+	e_gtk_container_add (inframe, GTK_WIDGET (hgrid));
 
 	g_object_set_data (G_OBJECT (add), "scrolled-window", scrolledwindow);
 
@@ -1106,7 +1103,7 @@ get_widget (EFilterRule *fr,
 
 	g_signal_connect (scrolledwindow, "map", G_CALLBACK (e_util_ensure_scrolled_window_height), NULL);
 
-	gtk_widget_show_all (widget);
+	gtk_widget_set_visible (widget, TRUE);
 
 	return widget;
 }

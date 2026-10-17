@@ -344,7 +344,7 @@ e_composer_private_constructed (EMsgComposer *composer)
 	priv->focus_tracker = focus_tracker;
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-	gtk_container_add (GTK_CONTAINER (composer), widget);
+	e_gtk_container_add (composer, widget);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -354,7 +354,7 @@ e_composer_private_constructed (EMsgComposer *composer)
 	widget = gtk_menu_bar_new_from_model (G_MENU_MODEL (ui_item));
 
 	priv->menu_bar = e_menu_bar_new (GTK_MENU_BAR (widget), window, &priv->menu_button);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 
 	if (e_util_get_use_header_bar ()) {
 		ui_item = e_ui_manager_create_item (ui_manager, "main-headerbar");
@@ -366,7 +366,7 @@ e_composer_private_constructed (EMsgComposer *composer)
 
 	ui_item = e_html_editor_get_ui_object (editor, E_HTML_EDITOR_UI_OBJECT_MAIN_TOOLBAR);
 	widget = GTK_WIDGET (ui_item);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 
 	e_binding_bind_property (
 		ACTION (TOOLBAR_SHOW_MAIN), "active",
@@ -376,8 +376,8 @@ e_composer_private_constructed (EMsgComposer *composer)
 	/* Construct the header table. */
 
 	widget = e_composer_header_table_new (client_cache);
-	gtk_container_set_border_width (GTK_CONTAINER (widget), 6);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_widget_set_border_width (widget, 6);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	priv->header_table = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -393,13 +393,13 @@ e_composer_private_constructed (EMsgComposer *composer)
 	 * the embedded EHTMLEditorView a little further down. */
 
 	widget = GTK_WIDGET (editor);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	/* Construct the attachment paned. */
 
 	widget = e_attachment_paned_new ();
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	priv->attachment_paned = g_object_ref_sink (widget);
 	gtk_widget_show (widget);
 
@@ -413,7 +413,7 @@ e_composer_private_constructed (EMsgComposer *composer)
 
 	widget = gtk_paned_new (GTK_ORIENTATION_VERTICAL);
 	gtk_paned_set_wide_handle (GTK_PANED (widget), TRUE);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -423,7 +423,7 @@ e_composer_private_constructed (EMsgComposer *composer)
 		GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_widget_set_size_request (widget, -1, GALLERY_INITIAL_HEIGHT);
-	gtk_paned_pack1 (GTK_PANED (container), widget, FALSE, FALSE);
+	e_gtk_paned_pack1 (container, widget, FALSE, FALSE);
 	priv->gallery_scrolled_window = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -438,7 +438,7 @@ e_composer_private_constructed (EMsgComposer *composer)
 	gallery_path = g_settings_get_string (
 		settings, "composer-gallery-path");
 	widget = e_picture_gallery_new (gallery_path);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	priv->gallery_icon_view = g_object_ref_sink (widget);
 	g_free (gallery_path);
 
@@ -635,7 +635,7 @@ e_composer_get_default_charset (void)
 
 gboolean
 e_composer_paste_image (EMsgComposer *composer,
-                        GtkClipboard *clipboard)
+                        GdkClipboard *clipboard)
 {
 	EAttachment *attachment;
 	EAttachmentStore *store;
@@ -666,7 +666,7 @@ e_composer_paste_image (EMsgComposer *composer,
 
 gboolean
 e_composer_paste_uris (EMsgComposer *composer,
-                       GtkClipboard *clipboard)
+                       GdkClipboard *clipboard)
 {
 	EAttachmentStore *store;
 	EAttachmentView *view;
@@ -680,7 +680,7 @@ e_composer_paste_uris (EMsgComposer *composer,
 	store = e_attachment_view_get_store (view);
 
 	/* Extract the URI data from the clipboard. */
-	uris = gtk_clipboard_wait_for_uris (clipboard);
+	uris = e_gtk_clipboard_wait_for_uris (clipboard);
 	g_return_val_if_fail (uris != NULL, FALSE);
 
 	/* Add the URIs to the attachment store. */
@@ -700,7 +700,7 @@ e_composer_paste_uris (EMsgComposer *composer,
 
 gboolean
 e_composer_selection_is_base64_uris (EMsgComposer *composer,
-                                     GtkSelectionData *selection)
+                                     EGtkSelectionData *selection)
 {
 	gboolean all_base64_uris = TRUE;
 	gchar **uris;
@@ -709,7 +709,7 @@ e_composer_selection_is_base64_uris (EMsgComposer *composer,
 	g_return_val_if_fail (E_IS_MSG_COMPOSER (composer), FALSE);
 	g_return_val_if_fail (selection != NULL, FALSE);
 
-	uris = gtk_selection_data_get_uris (selection);
+	uris = e_gtk_selection_data_get_uris (selection);
 
 	if (!uris)
 		return FALSE;
@@ -777,7 +777,7 @@ e_composer_selection_uri_is_image (const gchar *uri)
 
 gboolean
 e_composer_selection_is_image_uris (EMsgComposer *composer,
-                                    GtkSelectionData *selection)
+                                    EGtkSelectionData *selection)
 {
 	gboolean all_image_uris = TRUE;
 	gchar **uris;
@@ -786,7 +786,7 @@ e_composer_selection_is_image_uris (EMsgComposer *composer,
 	g_return_val_if_fail (E_IS_MSG_COMPOSER (composer), FALSE);
 	g_return_val_if_fail (selection != NULL, FALSE);
 
-	uris = gtk_selection_data_get_uris (selection);
+	uris = e_gtk_selection_data_get_uris (selection);
 
 	if (!uris)
 		return FALSE;
@@ -804,10 +804,10 @@ e_composer_selection_is_image_uris (EMsgComposer *composer,
 
 gboolean
 e_composer_selection_is_moz_url_image (EMsgComposer *composer,
-				       GtkSelectionData *selection,
+				       EGtkSelectionData *selection,
 				       gchar **out_moz_url)
 {
-	static GdkAtom moz_url_atom = GDK_NONE;
+	static EGtkAtom moz_url_atom = E_GTK_ATOM_NONE;
 	const guchar *raw_data;
 	gchar *utf8 = NULL;
 	gint len;
@@ -815,13 +815,13 @@ e_composer_selection_is_moz_url_image (EMsgComposer *composer,
 	g_return_val_if_fail (E_IS_MSG_COMPOSER (composer), FALSE);
 	g_return_val_if_fail (selection != NULL, FALSE);
 
-	if (moz_url_atom == GDK_NONE)
-		moz_url_atom = gdk_atom_intern_static_string ("text/x-moz-url");
+	if (moz_url_atom == E_GTK_ATOM_NONE)
+		moz_url_atom = e_gtk_atom_intern_static_string ("text/x-moz-url");
 
-	if (gtk_selection_data_get_data_type (selection) != moz_url_atom)
+	if (e_gtk_selection_data_get_data_type (selection) != moz_url_atom)
 		return FALSE;
 
-	raw_data = gtk_selection_data_get_data_with_length (selection, &len);
+	raw_data = e_gtk_selection_data_get_data_with_length (selection, &len);
 	if (raw_data)
 		utf8 = g_utf16_to_utf8 ((const gunichar2 *) raw_data, len, NULL, NULL, NULL);
 

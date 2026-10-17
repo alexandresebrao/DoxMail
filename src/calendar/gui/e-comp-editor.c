@@ -367,7 +367,7 @@ save_data_free (SaveData *sd)
 		if (sd->success) {
 			if (sd->close_after_save) {
 				g_signal_emit (sd->comp_editor, signals[EDITOR_CLOSED], 0, TRUE, NULL);
-				gtk_widget_destroy (GTK_WIDGET (sd->comp_editor));
+				e_gtk_widget_destroy (GTK_WIDGET (sd->comp_editor));
 			} else {
 				e_comp_editor_set_flags (sd->comp_editor, e_comp_editor_get_flags (sd->comp_editor) & (~E_COMP_EDITOR_FLAG_IS_NEW));
 				e_comp_editor_set_component (sd->comp_editor, sd->component);
@@ -1368,7 +1368,7 @@ e_comp_editor_close (ECompEditor *comp_editor)
 
 	g_signal_emit (comp_editor, signals[EDITOR_CLOSED], 0, FALSE, NULL);
 
-	gtk_widget_destroy (GTK_WIDGET (comp_editor));
+	e_gtk_widget_destroy (GTK_WIDGET (comp_editor));
 }
 
 static void
@@ -1498,7 +1498,7 @@ e_comp_editor_customize_toolbar_activate_cb (GtkWidget *toolbar,
 	e_ui_customize_dialog_add_customizer (dialog, e_ui_manager_get_customizer (self->priv->ui_manager));
 	e_ui_customize_dialog_run (dialog, id);
 
-	gtk_widget_destroy (GTK_WIDGET (dialog));
+	e_gtk_widget_destroy (GTK_WIDGET (dialog));
 }
 
 static void
@@ -1919,7 +1919,7 @@ comp_editor_unrealize_cb (ECompEditor *comp_editor)
 
 static gboolean
 comp_editor_delete_event (GtkWidget *widget,
-			  GdkEventAny *event)
+			  GdkEvent *event)
 {
 	ECompEditor *comp_editor;
 
@@ -1936,7 +1936,7 @@ comp_editor_delete_event (GtkWidget *widget,
 
 static gboolean
 comp_editor_key_press_event (GtkWidget *widget,
-			     GdkEventKey *event)
+			     GdkEvent *event)
 {
 	ECompEditor *comp_editor;
 
@@ -1975,7 +1975,6 @@ e_comp_editor_focus_in_event_cb (GtkWindow *comp_editor,
 				 GdkEvent *event,
 				 gpointer user_data)
 {
-	gtk_window_set_urgency_hint (comp_editor, FALSE);
 
 	g_signal_handlers_disconnect_by_func (comp_editor,
 		G_CALLBACK (e_comp_editor_focus_in_event_cb), NULL);
@@ -1995,7 +1994,6 @@ e_comp_editor_set_urgency_hint (ECompEditor *comp_editor)
 	if (gtk_widget_get_visible (GTK_WIDGET (window)) &&
 	    !gtk_window_is_active (window) &&
 	    !gtk_window_get_urgency_hint (window)) {
-		gtk_window_set_urgency_hint (window, TRUE);
 
 		g_signal_connect (
 			window, "focus-in-event",
@@ -2500,7 +2498,7 @@ e_comp_editor_constructed (GObject *object)
 
 	vbox = GTK_BOX (widget);
 
-	gtk_container_add (GTK_CONTAINER (comp_editor), widget);
+	e_gtk_container_add (comp_editor, widget);
 
 	customizer = e_ui_manager_get_customizer (comp_editor->priv->ui_manager);
 
@@ -2512,7 +2510,7 @@ e_comp_editor_constructed (GObject *object)
 	e_ui_customizer_register (customizer, "main-menu", NULL);
 
 	comp_editor->priv->menu_bar = e_menu_bar_new (GTK_MENU_BAR (widget), GTK_WINDOW (comp_editor), &comp_editor->priv->menu_button);
-	gtk_box_pack_start (GTK_BOX (vbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), widget, FALSE, FALSE, 0);
 
 	if (e_util_get_use_header_bar ()) {
 		ui_item = e_ui_manager_create_item (comp_editor->priv->ui_manager, "main-headerbar");
@@ -2534,7 +2532,7 @@ e_comp_editor_constructed (GObject *object)
 	widget = GTK_WIDGET (ui_item);
 	e_ui_customizer_util_attach_toolbar_context_menu (widget, toolbar_id,
 		e_comp_editor_customize_toolbar_activate_cb, comp_editor);
-	gtk_box_pack_start (GTK_BOX (vbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), widget, FALSE, FALSE, 0);
 
 	g_settings_bind (
 		comp_editor->priv->calendar_settings, "editor-show-toolbar",
@@ -2551,7 +2549,7 @@ e_comp_editor_constructed (GObject *object)
 
 	comp_editor->priv->alert_bar = E_ALERT_BAR (widget);
 
-	gtk_box_pack_start (vbox, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (vbox, widget, FALSE, FALSE, 0);
 
 	widget = e_activity_bar_new ();
 	g_object_set (G_OBJECT (widget),
@@ -2563,7 +2561,7 @@ e_comp_editor_constructed (GObject *object)
 
 	comp_editor->priv->activity_bar = E_ACTIVITY_BAR (widget);
 
-	gtk_box_pack_start (vbox, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (vbox, widget, FALSE, FALSE, 0);
 
 	widget = gtk_notebook_new ();
 	g_object_set (G_OBJECT (widget),
@@ -2578,7 +2576,7 @@ e_comp_editor_constructed (GObject *object)
 
 	comp_editor->priv->content = GTK_NOTEBOOK (widget);
 
-	gtk_box_pack_start (vbox, widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (vbox, widget, TRUE, TRUE, 0);
 
 	/* Configure an EFocusTracker to manage selection actions. */
 
@@ -3534,7 +3532,7 @@ e_comp_editor_select_page (ECompEditor *comp_editor,
 			if (!nth_page || E_IS_COMP_EDITOR_PAGE (nth_page) || !GTK_IS_CONTAINER (nth_page))
 				continue;
 
-			children = gtk_container_get_children (GTK_CONTAINER (nth_page));
+			children = e_gtk_widget_get_children (nth_page);
 			for (link = children; link; link = g_list_next (link)) {
 				GtkWidget *child = link->data;
 

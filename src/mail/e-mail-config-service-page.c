@@ -466,7 +466,7 @@ mail_config_service_page_constructed (GObject *object)
 
 	widget = gtk_grid_new ();
 	gtk_grid_set_row_spacing (GTK_GRID (widget), 12);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -516,7 +516,7 @@ mail_config_service_page_constructed (GObject *object)
 	gtk_widget_show (widget);
 
 	widget = gtk_label_new (NULL);
-	gtk_label_set_line_wrap (GTK_LABEL (widget), TRUE);
+	gtk_label_set_wrap (GTK_LABEL (widget), TRUE);
 	gtk_label_set_width_chars (GTK_LABEL (widget), 20);
 	gtk_label_set_xalign (GTK_LABEL (widget), 0);
 	gtk_grid_attach (GTK_GRID (container), widget, 1, 1, 2, 1);
@@ -528,11 +528,11 @@ mail_config_service_page_constructed (GObject *object)
 	container = GTK_WIDGET (main_box);
 
 	widget = gtk_separator_new (GTK_ORIENTATION_HORIZONTAL);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	widget = e_mail_config_service_notebook_new ();
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	page->priv->notebook = widget;  /* not referenced */
 	gtk_widget_show (widget);
 

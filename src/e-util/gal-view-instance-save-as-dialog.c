@@ -103,7 +103,7 @@ static void
 gvisad_setup_validate_button (GalViewInstanceSaveAsDialog *dialog)
 {
 	if ((dialog->toggle == GAL_VIEW_INSTANCE_SAVE_AS_DIALOG_TOGGLE_CREATE
-	      && g_utf8_strlen (gtk_entry_get_text (GTK_ENTRY (dialog->entry_create)), -1) > 0)
+	      && g_utf8_strlen (gtk_editable_get_text (GTK_EDITABLE (dialog->entry_create)), -1) > 0)
 	    || dialog->toggle == GAL_VIEW_INSTANCE_SAVE_AS_DIALOG_TOGGLE_REPLACE) {
 		gtk_dialog_set_response_sensitive (GTK_DIALOG (dialog), GTK_RESPONSE_OK, TRUE);
 	} else {
@@ -254,10 +254,10 @@ gal_view_instance_save_as_dialog_init (GalViewInstanceSaveAsDialog *dialog)
 
 	widget = e_builder_get_widget (dialog->builder, "vbox-top");
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
-	gtk_box_pack_start (GTK_BOX (content_area), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (content_area), widget, TRUE, TRUE, 0);
 
 	/* TODO: add position/size saving/restoring */
-	gtk_container_set_border_width (GTK_CONTAINER (dialog), 5);
+	e_gtk_widget_set_border_width (dialog, 5);
 	gtk_window_set_default_size (GTK_WINDOW (dialog), 300, 360);
 
 	gtk_dialog_add_buttons (
@@ -348,7 +348,7 @@ gal_view_instance_save_as_dialog_save (GalViewInstanceSaveAsDialog *dialog)
 
 	case GAL_VIEW_INSTANCE_SAVE_AS_DIALOG_TOGGLE_CREATE:
 		if (dialog->entry_create && GTK_IS_ENTRY (dialog->entry_create)) {
-			title = gtk_entry_get_text (GTK_ENTRY (dialog->entry_create));
+			title = gtk_editable_get_text (GTK_EDITABLE (dialog->entry_create));
 			id = gal_view_collection_append_with_title (collection, title, view);
 			gal_view_collection_save (collection);
 		}

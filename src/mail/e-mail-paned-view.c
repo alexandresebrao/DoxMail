@@ -811,7 +811,7 @@ mail_paned_view_constructed (GObject *object)
 
 	widget = e_paned_new (GTK_ORIENTATION_VERTICAL);
 	e_paned_set_fixed_resize (E_PANED (widget), FALSE);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	self->priv->paned = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -826,14 +826,14 @@ mail_paned_view_constructed (GObject *object)
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
-	gtk_paned_pack1 (GTK_PANED (container), widget, TRUE, FALSE);
+	e_gtk_paned_pack1 (container, widget, TRUE, FALSE);
 	self->priv->scrolled_window = g_object_ref (widget);
 	gtk_widget_show (widget);
 
 	container = widget;
 
 	widget = message_list_new (session);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	self->priv->message_list = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -846,7 +846,7 @@ mail_paned_view_constructed (GObject *object)
 
 	widget = GTK_WIDGET (e_mail_display_get_attachment_view (self->priv->display));
 	gtk_widget_show (widget);
-	gtk_paned_pack2 (GTK_PANED (container), widget, FALSE, FALSE);
+	e_gtk_paned_pack2 (container, widget, FALSE, FALSE);
 
 	e_binding_bind_property (
 		object, "preview-visible",
@@ -859,9 +859,9 @@ mail_paned_view_constructed (GObject *object)
 	/* cannot ask the shell_view for the "mail-preview-toolbar" now, because its EUIManager is not loaded yet;
 	   postpone it to the e_mail_paned_view_take_preview_toolbar() function */
 	self->priv->preview_toolbar_box = g_object_ref_sink (gtk_box_new (GTK_ORIENTATION_VERTICAL, 0));
-	gtk_box_pack_start (GTK_BOX (container), GTK_WIDGET (self->priv->preview_toolbar_box), FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), GTK_WIDGET (self->priv->preview_toolbar_box), FALSE, FALSE, 0);
 
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 
 	self->priv->preview_pane = g_object_ref (widget);
 	gtk_widget_show (GTK_WIDGET (self->priv->display));
@@ -1348,5 +1348,5 @@ e_mail_paned_view_take_preview_toolbar (EMailPanedView *self,
 
 	gtk_widget_set_visible (toolbar, TRUE);
 
-	gtk_box_pack_start (GTK_BOX (self->priv->preview_toolbar_box), toolbar, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (self->priv->preview_toolbar_box), toolbar, FALSE, FALSE, 0);
 }

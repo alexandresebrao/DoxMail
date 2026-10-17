@@ -86,7 +86,7 @@ static void     shutdown_name_selector_model  (ENameSelectorDialog *name_selecto
 static void     contact_activated             (ENameSelectorDialog *name_selector_dialog, GtkTreePath *path);
 static void     destination_activated         (ENameSelectorDialog *name_selector_dialog, GtkTreePath *path,
 					       GtkTreeViewColumn *column, GtkTreeView *tree_view);
-static gboolean destination_key_press         (ENameSelectorDialog *name_selector_dialog, GdkEventKey *event, GtkTreeView *tree_view);
+static gboolean destination_key_press         (ENameSelectorDialog *name_selector_dialog, GdkEvent *event, GtkTreeView *tree_view);
 static void remove_button_clicked (GtkButton *button, SelData *data);
 static void     remove_books                  (ENameSelectorDialog *name_selector_dialog);
 static void     contact_column_formatter      (GtkTreeViewColumn *column, GtkCellRenderer *cell,
@@ -253,12 +253,12 @@ name_selector_dialog_constructed (GObject *object)
 		"row-spacing", 6,
 		NULL);
 	gtk_widget_show (name_selector_grid);
-	gtk_container_set_border_width (GTK_CONTAINER (name_selector_grid), 0);
+	e_gtk_widget_set_border_width (name_selector_grid, 0);
 
 	tmp_str = g_strconcat ("<b>", _("Show Contacts"), "</b>", NULL);
 	show_contacts_label = gtk_label_new (tmp_str);
 	gtk_widget_show (show_contacts_label);
-	gtk_container_add (GTK_CONTAINER (name_selector_grid), show_contacts_label);
+	e_gtk_container_add (name_selector_grid, show_contacts_label);
 	gtk_label_set_use_markup (GTK_LABEL (show_contacts_label), TRUE);
 	gtk_label_set_xalign (GTK_LABEL (show_contacts_label), 0);
 	g_free (tmp_str);
@@ -270,15 +270,15 @@ name_selector_dialog_constructed (GObject *object)
 		"column-spacing", 12,
 		NULL);
 	gtk_widget_show (hgrid);
-	gtk_container_add (GTK_CONTAINER (name_selector_grid), hgrid);
+	e_gtk_container_add (name_selector_grid, hgrid);
 
 	label = gtk_label_new ("");
 	gtk_widget_show (label);
-	gtk_container_add (GTK_CONTAINER (hgrid), label);
+	e_gtk_container_add (hgrid, label);
 
 	show_contacts_grid = gtk_grid_new ();
 	gtk_widget_show (show_contacts_grid);
-	gtk_container_add (GTK_CONTAINER (hgrid), show_contacts_grid);
+	e_gtk_container_add (hgrid, show_contacts_grid);
 	g_object_set (
 		G_OBJECT (show_contacts_grid),
 		"column-spacing", 12,
@@ -316,7 +316,7 @@ name_selector_dialog_constructed (GObject *object)
 	gtk_widget_show (search);
 	gtk_widget_set_hexpand (search, TRUE);
 	gtk_widget_set_halign (search, GTK_ALIGN_FILL);
-	gtk_container_add (GTK_CONTAINER (hgrid), search);
+	e_gtk_container_add (hgrid, search);
 
 	label_search = gtk_label_new_with_mnemonic (_("_Search:"));
 	gtk_widget_show (label_search);
@@ -349,7 +349,7 @@ name_selector_dialog_constructed (GObject *object)
 	tmp_str = g_strconcat ("<b>", _("Co_ntacts"), "</b>", NULL);
 	label_contacts = gtk_label_new_with_mnemonic (tmp_str);
 	gtk_widget_show (label_contacts);
-	gtk_container_add (GTK_CONTAINER (name_selector_grid), label_contacts);
+	e_gtk_container_add (name_selector_grid, label_contacts);
 	gtk_label_set_use_markup (GTK_LABEL (label_contacts), TRUE);
 	gtk_label_set_xalign (GTK_LABEL (label_contacts), 0);
 	g_free (tmp_str);
@@ -359,7 +359,7 @@ name_selector_dialog_constructed (GObject *object)
 	gtk_widget_show (scrolledwindow0);
 	gtk_widget_set_vexpand (scrolledwindow0, TRUE);
 	gtk_widget_set_valign (scrolledwindow0, GTK_ALIGN_FILL);
-	gtk_container_add (GTK_CONTAINER (name_selector_grid), scrolledwindow0);
+	e_gtk_container_add (name_selector_grid, scrolledwindow0);
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (scrolledwindow0),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
@@ -371,26 +371,25 @@ name_selector_dialog_constructed (GObject *object)
 		"column-spacing", 12,
 		NULL);
 	gtk_widget_show (hgrid);
-	gtk_container_add (GTK_CONTAINER (scrolledwindow0), hgrid);
+	e_gtk_container_add (scrolledwindow0, hgrid);
 
 	label = gtk_label_new ("");
 	gtk_widget_show (label);
-	gtk_container_add (GTK_CONTAINER (hgrid), label);
+	e_gtk_container_add (hgrid, label);
 
 	scrolledwindow1 = gtk_scrolled_window_new (NULL, NULL);
 	gtk_widget_show (scrolledwindow1);
-	gtk_container_add (GTK_CONTAINER (hgrid), scrolledwindow1);
+	e_gtk_container_add (hgrid, scrolledwindow1);
 	gtk_widget_set_hexpand (scrolledwindow1, TRUE);
 	gtk_widget_set_halign (scrolledwindow1, GTK_ALIGN_FILL);
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (scrolledwindow1),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_set_shadow_type (
-		GTK_SCROLLED_WINDOW (scrolledwindow1), GTK_SHADOW_IN);
+	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (scrolledwindow1), TRUE);
 
 	source_tree_view = gtk_tree_view_new ();
 	gtk_widget_show (source_tree_view);
-	gtk_container_add (GTK_CONTAINER (scrolledwindow1), source_tree_view);
+	e_gtk_container_add (scrolledwindow1, source_tree_view);
 	gtk_tree_view_set_headers_visible (
 		GTK_TREE_VIEW (source_tree_view), FALSE);
 	gtk_tree_view_set_enable_search (
@@ -407,7 +406,7 @@ name_selector_dialog_constructed (GObject *object)
 		"valign", GTK_ALIGN_FILL,
 		NULL);
 	gtk_widget_show (destination_vgrid);
-	gtk_container_add (GTK_CONTAINER (hgrid), destination_vgrid);
+	e_gtk_container_add (hgrid, destination_vgrid);
 
 	status_message = g_object_new (
 		GTK_TYPE_LABEL,
@@ -417,7 +416,7 @@ name_selector_dialog_constructed (GObject *object)
 		"visible", TRUE,
 		"xalign", 0.0,
 		NULL);
-	gtk_container_add (GTK_CONTAINER (name_selector_grid), status_message);
+	e_gtk_container_add (name_selector_grid, status_message);
 
 	gtk_label_set_mnemonic_widget (GTK_LABEL (AddressBookLabel), source_menu_hgrid);
 	gtk_label_set_mnemonic_widget (GTK_LABEL (label_category), combobox_category);
@@ -440,9 +439,7 @@ name_selector_dialog_constructed (GObject *object)
 	g_object_unref (G_OBJECT (tmp_relation));
 	g_object_unref (G_OBJECT (tmp_relation_set));
 
-	gtk_box_pack_start (
-		GTK_BOX (gtk_dialog_get_content_area (GTK_DIALOG (object))),
-		name_selector_grid, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area (GTK_DIALOG (object))), name_selector_grid, TRUE, TRUE, 0);
 
 	/* Store pointers to relevant widgets */
 
@@ -505,7 +502,7 @@ name_selector_dialog_constructed (GObject *object)
 	gtk_widget_show (client_combo);
 	gtk_widget_set_hexpand (client_combo, TRUE);
 	gtk_widget_set_halign (client_combo, GTK_ALIGN_FILL);
-	gtk_container_add (GTK_CONTAINER (source_menu_hgrid), client_combo);
+	e_gtk_container_add (source_menu_hgrid, client_combo);
 
 	name_selector_dialog_populate_categories (
 		E_NAME_SELECTOR_DIALOG (object));
@@ -551,7 +548,7 @@ name_selector_dialog_constructed (GObject *object)
 		GTK_DIALOG (object), GTK_RESPONSE_CLOSE);
 	gtk_window_set_modal (GTK_WINDOW (object), TRUE);
 	gtk_window_set_resizable (GTK_WINDOW (object), TRUE);
-	gtk_container_set_border_width (GTK_CONTAINER (object), 4);
+	e_gtk_widget_set_border_width (object, 4);
 	gtk_window_set_title (
 		GTK_WINDOW (object),
 		_("Select Contacts from Address Book"));
@@ -902,20 +899,20 @@ setup_section_button (ENameSelectorDialog *name_selector_dialog,
 		"column-spacing", 2,
 		NULL);
 	gtk_widget_show (hgrid);
-	gtk_container_add (GTK_CONTAINER (button), hgrid);
+	e_gtk_container_add (button, hgrid);
 
 	label = gtk_label_new_with_mnemonic (label_text);
 	gtk_widget_show (label);
 
-	image = gtk_image_new_from_icon_name (icon_name, GTK_ICON_SIZE_BUTTON);
+	image = gtk_image_new_from_icon_name (icon_name);
 	gtk_widget_show (image);
 
 	if (icon_before_label) {
-		gtk_container_add (GTK_CONTAINER (hgrid), image);
-		gtk_container_add (GTK_CONTAINER (hgrid), label);
+		e_gtk_container_add (hgrid, image);
+		e_gtk_container_add (hgrid, label);
 	} else {
-		gtk_container_add (GTK_CONTAINER (hgrid), label);
-		gtk_container_add (GTK_CONTAINER (hgrid), image);
+		e_gtk_container_add (hgrid, label);
+		e_gtk_container_add (hgrid, image);
 	}
 }
 
@@ -988,14 +985,14 @@ add_section (ENameSelectorDialog *name_selector_dialog,
 		"row-spacing", 6,
 		NULL);
 
-	gtk_container_add (GTK_CONTAINER (section.section_grid), vgrid);
+	e_gtk_container_add (section.section_grid, vgrid);
 
 	/* "Add" button */
-	gtk_container_add (GTK_CONTAINER (vgrid), GTK_WIDGET (section.transfer_button));
+	e_gtk_container_add (vgrid, GTK_WIDGET (section.transfer_button));
 	setup_section_button (name_selector_dialog, section.transfer_button, _("_Add"), "go-next", FALSE);
 
 	/* "Remove" button */
-	gtk_container_add (GTK_CONTAINER (vgrid), GTK_WIDGET (section.remove_button));
+	e_gtk_container_add (vgrid, GTK_WIDGET (section.remove_button));
 	setup_section_button (name_selector_dialog, section.remove_button, _("_Remove"), "go-previous", TRUE);
 	gtk_widget_set_sensitive (GTK_WIDGET (section.remove_button), FALSE);
 
@@ -1012,7 +1009,7 @@ add_section (ENameSelectorDialog *name_selector_dialog,
 		"vexpand", TRUE,
 		"valign", GTK_ALIGN_FILL,
 		NULL);
-	gtk_container_add (GTK_CONTAINER (section.section_grid), hgrid);
+	e_gtk_container_add (section.section_grid, hgrid);
 
 	/* Title label */
 
@@ -1020,18 +1017,18 @@ add_section (ENameSelectorDialog *name_selector_dialog,
 
 	gtk_label_set_xalign (GTK_LABEL (section.label), 0);
 	gtk_label_set_yalign (GTK_LABEL (section.label), 0);
-	gtk_container_add (GTK_CONTAINER (hgrid), GTK_WIDGET (section.label));
+	e_gtk_container_add (hgrid, GTK_WIDGET (section.label));
 
 	/* Treeview in a scrolled window */
 	scrollwin = gtk_scrolled_window_new (NULL, NULL);
-	gtk_container_add (GTK_CONTAINER (hgrid), scrollwin);
+	e_gtk_container_add (hgrid, scrollwin);
 	gtk_widget_set_hexpand (scrollwin, TRUE);
 	gtk_widget_set_halign (scrollwin, GTK_ALIGN_FILL);
 	gtk_widget_set_vexpand (scrollwin, TRUE);
 	gtk_widget_set_valign (scrollwin, GTK_ALIGN_FILL);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrollwin), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrollwin), GTK_SHADOW_IN);
-	gtk_container_add (GTK_CONTAINER (scrollwin), GTK_WIDGET (section.destination_view));
+	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (scrollwin), TRUE);
+	e_gtk_container_add (scrollwin, GTK_WIDGET (section.destination_view));
 
 	/*data for 'changed' callback*/
 	data = g_malloc0 (sizeof (SelData));
@@ -1054,10 +1051,10 @@ add_section (ENameSelectorDialog *name_selector_dialog,
 
 	/* Done! */
 
-	gtk_widget_show_all (GTK_WIDGET (section.section_grid));
+	gtk_widget_set_visible (GTK_WIDGET (section.section_grid), TRUE);
 
 	/* Pack this section's box into the dialog */
-	gtk_container_add (GTK_CONTAINER (name_selector_dialog->priv->destination_vgrid), GTK_WIDGET (section.section_grid));
+	e_gtk_container_add (name_selector_dialog->priv->destination_vgrid, GTK_WIDGET (section.section_grid));
 	g_object_set (
 		G_OBJECT (section.section_grid),
 		"vexpand", TRUE,
@@ -1085,7 +1082,7 @@ free_section (ENameSelectorDialog *name_selector_dialog,
 		name_selector_dialog->priv->sections, Section, n);
 
 	g_free (section->name);
-	gtk_widget_destroy (GTK_WIDGET (section->section_grid));
+	e_gtk_widget_destroy (GTK_WIDGET (section->section_grid));
 }
 
 static void
@@ -1282,7 +1279,7 @@ search_changed (ENameSelectorDialog *name_selector_dialog)
 	category = gtk_combo_box_text_get_active_text (GTK_COMBO_BOX_TEXT (combo_box));
 	category_escaped = escape_sexp_string (category);
 
-	text = gtk_entry_get_text (name_selector_dialog->priv->search_entry);
+	text = gtk_editable_get_text (GTK_EDITABLE (name_selector_dialog->priv->search_entry));
 	text_escaped = escape_sexp_string (text);
 
 	if (g_strcmp0 (category, _("Any Category")) == 0)
@@ -1505,7 +1502,7 @@ remove_button_clicked (GtkButton *button,
 
 static gboolean
 destination_key_press (ENameSelectorDialog *name_selector_dialog,
-                       GdkEventKey *event,
+                       GdkEvent *event,
                        GtkTreeView *tree_view)
 {
 

@@ -282,7 +282,7 @@ e_composer_from_header_get_name (EComposerFromHeader *header)
 
 	g_return_val_if_fail (E_IS_COMPOSER_FROM_HEADER (header), NULL);
 
-	text = gtk_entry_get_text (e_composer_from_header_get_name_entry (header));
+	text = gtk_editable_get_text (GTK_EDITABLE (e_composer_from_header_get_name_entry (header)));
 	if (text && !*text)
 		text = NULL;
 
@@ -302,7 +302,7 @@ e_composer_from_header_set_name (EComposerFromHeader *header,
 
 	widget = e_composer_from_header_get_name_entry (header);
 
-	gtk_entry_set_text (widget, name);
+	gtk_editable_set_text (GTK_EDITABLE (widget), name);
 }
 
 GtkEntry *
@@ -320,7 +320,7 @@ e_composer_from_header_get_address (EComposerFromHeader *header)
 
 	g_return_val_if_fail (E_IS_COMPOSER_FROM_HEADER (header), NULL);
 
-	text = gtk_entry_get_text (e_composer_from_header_get_address_entry (header));
+	text = gtk_editable_get_text (GTK_EDITABLE (e_composer_from_header_get_address_entry (header)));
 	if (text && !*text)
 		text = NULL;
 
@@ -340,7 +340,7 @@ e_composer_from_header_set_address (EComposerFromHeader *header,
 
 	widget = e_composer_from_header_get_address_entry (header);
 
-	gtk_entry_set_text (widget, address);
+	gtk_editable_set_text (GTK_EDITABLE (widget), address);
 }
 
 gboolean

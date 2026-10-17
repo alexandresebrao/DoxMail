@@ -589,8 +589,8 @@ jh_dialog_entry_changed_cb (GtkEntry *entry,
 	entry1 = e_builder_get_widget (builder, "junk-header-name");
 	entry2 = e_builder_get_widget (builder, "junk-header-content");
 
-	name = gtk_entry_get_text (GTK_ENTRY (entry1));
-	value = gtk_entry_get_text (GTK_ENTRY (entry2));
+	name = gtk_editable_get_text (GTK_EDITABLE (entry1));
+	value = gtk_editable_get_text (GTK_EDITABLE (entry2));
 
 	gtk_widget_set_sensitive (ok_button, name && *name && value && *value);
 }
@@ -621,13 +621,13 @@ jh_add_cb (GtkWidget *widget,
 		entry, "changed",
 		G_CALLBACK (jh_dialog_entry_changed_cb), builder);
 
-	if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT) {
+	if (e_gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT) {
 		gchar **strv;
 		GPtrArray *array;
 		gint ii;
 
-		name = gtk_entry_get_text (GTK_ENTRY (e_builder_get_widget (builder, "junk-header-name")));
-		value = gtk_entry_get_text (GTK_ENTRY (e_builder_get_widget (builder, "junk-header-content")));
+		name = gtk_editable_get_text (GTK_EDITABLE (e_builder_get_widget (builder, "junk-header-name")));
+		value = gtk_editable_get_text (GTK_EDITABLE (e_builder_get_widget (builder, "junk-header-content")));
 
 		strv = g_settings_get_strv (prefs->priv->settings, "junk-custom-header");
 		array = g_ptr_array_new ();
@@ -643,7 +643,7 @@ jh_add_cb (GtkWidget *widget,
 	}
 
 	g_object_unref (builder);
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 
 	jh_tree_refill (prefs);
 }
@@ -768,7 +768,7 @@ emmp_header_add_sensitivity (EMMailerPrefs *prefs)
 	 * a valid header string, that is not a duplicate with something already
 	 * in the list view
 	*/
-	entry_contents = gtk_entry_get_text (GTK_ENTRY (prefs->priv->entry_header));
+	entry_contents = gtk_editable_get_text (GTK_EDITABLE (prefs->priv->entry_header));
 	if (!emmp_header_is_valid (entry_contents)) {
 		gtk_widget_set_sensitive (GTK_WIDGET (prefs->priv->add_header), FALSE);
 		return;
@@ -890,7 +890,7 @@ emmp_header_add_header (GtkWidget *widget,
 {
 	GtkTreeModel *model = GTK_TREE_MODEL (prefs->priv->header_list_store);
 	GtkTreeIter iter;
-	const gchar *text = gtk_entry_get_text (prefs->priv->entry_header);
+	const gchar *text = gtk_editable_get_text (GTK_EDITABLE (prefs->priv->entry_header));
 
 	g_strstrip ((gchar *) text);
 
@@ -905,7 +905,7 @@ emmp_header_add_header (GtkWidget *widget,
 			HEADER_LIST_HEADER_COLUMN, text,
 			HEADER_LIST_IS_DEFAULT_COLUMN, FALSE,
 			-1);
-		gtk_entry_set_text (prefs->priv->entry_header, "");
+		gtk_editable_set_text (GTK_EDITABLE (prefs->priv->entry_header), "");
 		emmp_header_remove_sensitivity (prefs);
 		emmp_header_add_sensitivity (prefs);
 
@@ -1258,7 +1258,7 @@ rc_entry_changed_cb (GtkEntry *entry,
 {
 	const gchar *text;
 
-	text = gtk_entry_get_text (entry);
+	text = gtk_editable_get_text (GTK_EDITABLE (entry));
 
 	if (text && *text) {
 		gint ii;
@@ -1297,10 +1297,10 @@ rc_add_btn_clicked_cb (GObject *button,
 	g_return_if_fail (GTK_IS_ENTRY (entry));
 	g_return_if_fail (GTK_IS_TREE_VIEW (tree_view));
 
-	text = g_strdup (gtk_entry_get_text (entry));
+	text = g_strdup (gtk_editable_get_text (GTK_EDITABLE (entry)));
 	if (!text || !*text) {
 		g_free (text);
-		gtk_entry_set_text (entry, "");
+		gtk_editable_set_text (GTK_EDITABLE (entry), "");
 		return;
 	}
 
@@ -1334,7 +1334,7 @@ rc_add_btn_clicked_cb (GObject *button,
 	}
 
 	g_free (text);
-	gtk_entry_set_text (entry, "");
+	gtk_editable_set_text (GTK_EDITABLE (entry), "");
 }
 
 static void
@@ -1900,7 +1900,7 @@ em_mailer_prefs_construct (EMMailerPrefs *prefs,
 	gtk_label_set_mnemonic_widget (
 		GTK_LABEL (e_builder_get_widget (
 		prefs->priv->builder, "lblDefaultCharset")), widget);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 	g_settings_bind (
 		settings, "charset",
@@ -1996,7 +1996,7 @@ em_mailer_prefs_construct (EMMailerPrefs *prefs,
 
 	container = e_builder_get_widget (prefs->priv->builder, "labels-alignment");
 	widget = e_mail_label_manager_new ();
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	gtk_widget_show (widget);
 
 	e_binding_bind_property (
@@ -2017,7 +2017,7 @@ em_mailer_prefs_construct (EMMailerPrefs *prefs,
 	em_folder_selection_button_set_can_none (EM_FOLDER_SELECTION_BUTTON (widget), TRUE);
 	gtk_widget_set_hexpand (widget, FALSE);
 	gtk_label_set_mnemonic_widget (GTK_LABEL (e_builder_get_widget (prefs->priv->builder, "lblArchiveMailFolder")), widget);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	gtk_widget_show (widget);
 
 	g_settings_bind (
@@ -2344,7 +2344,7 @@ em_mailer_prefs_construct (EMMailerPrefs *prefs,
 	target = em_config_target_new_prefs (ec);
 	e_config_set_target ((EConfig *) ec, (EConfigTarget *) target);
 	toplevel = e_config_create_widget ((EConfig *) ec);
-	gtk_container_add (GTK_CONTAINER (prefs), toplevel);
+	e_gtk_container_add (prefs, toplevel);
 
 	em_prefs_bind_settings (prefs, settings, "prompt-check-if-default-mailer", "chk-prompt-check-if-default-mailer", "active");
 	em_prefs_bind_settings (prefs, settings, "prompt-on-empty-trash", "chk-prompt-on-empty-trash", "active");

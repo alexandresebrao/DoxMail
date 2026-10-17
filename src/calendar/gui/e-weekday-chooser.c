@@ -150,11 +150,11 @@ e_weekday_chooser_init (EWeekdayChooser *chooser)
 
 	chooser->week_start_day = G_DATE_MONDAY;
 	gtk_box_set_homogeneous (GTK_BOX (chooser), TRUE);
-	gtk_style_context_add_class (gtk_widget_get_style_context (GTK_WIDGET (chooser)), "linked");
+	gtk_widget_add_css_class (GTK_WIDGET (chooser), "linked");
 	for (ii = 0; ii < 7; ii++) {
 		chooser->buttons[ii] = gtk_toggle_button_new_with_label (e_get_weekday_name (G_DATE_MONDAY + ii, TRUE));
 		gtk_widget_set_visible (chooser->buttons[ii], TRUE);
-		gtk_container_add (GTK_CONTAINER (chooser), chooser->buttons[ii]);
+		e_gtk_container_add (chooser, chooser->buttons[ii]);
 		g_signal_connect_swapped (
 			chooser->buttons[ii],
 			"toggled",

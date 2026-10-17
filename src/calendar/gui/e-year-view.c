@@ -17,7 +17,7 @@
 
 /* #define WITH_PREV_NEXT_BUTTONS 1 */
 
-static GtkTargetEntry target_table[] = {
+static EGtkTargetEntry target_table[] = {
 	{ (gchar *) "application/x-e-calendar-event", 0, 0 }
 };
 
@@ -835,7 +835,7 @@ year_view_paste_text (ECalendarView *cal_view)
 
 static void
 year_view_month_widget_day_clicked_cb (EMonthWidget *month_widget,
-				       GdkEventButton *event,
+				       GdkEvent *event,
 				       guint year,
 				       gint /* GDateMonth */ month,
 				       guint day,
@@ -1365,7 +1365,7 @@ year_view_tree_view_row_activated_cb (GtkTreeView *tree_view,
 
 static void
 year_view_tree_view_drag_begin_cb (GtkWidget *tree_view,
-				   GdkDragContext *context,
+				   EGtkDragContext *context,
 				   gpointer user_data)
 {
 	EYearView *self = user_data;
@@ -1405,14 +1405,14 @@ year_view_tree_view_drag_begin_cb (GtkWidget *tree_view,
 	self->priv->drag_year = self->priv->current_year;
 
 	if (surface) {
-		gtk_drag_set_icon_surface (context, surface);
+		e_gtk_drag_set_icon_surface (context, surface);
 		cairo_surface_destroy (surface);
 	}
 }
 
 static void
 year_view_tree_view_drag_end_cb (GtkWidget *widget,
-				 GdkDragContext *context,
+				 EGtkDragContext *context,
 				 gpointer user_data)
 {
 	EYearView *self = user_data;
@@ -1426,7 +1426,7 @@ year_view_tree_view_drag_end_cb (GtkWidget *widget,
 
 static gboolean
 year_view_month_drag_motion_cb (GtkWidget *widget,
-				GdkDragContext *context,
+				EGtkDragContext *context,
 				gint x,
 				gint y,
 				guint time,
@@ -1461,20 +1461,20 @@ year_view_month_drag_motion_cb (GtkWidget *widget,
 	if (can_drop) {
 		GdkModifierType mask;
 
-		gdk_window_get_pointer (gtk_widget_get_window (widget), NULL, NULL, &mask);
+		gdk_window_get_pointer (e_gtk_widget_get_surface (widget), NULL, NULL, &mask);
 
 		if ((mask & GDK_CONTROL_MASK) != 0)
 			drag_action = GDK_ACTION_COPY;
 	}
 
-	gdk_drag_status (context, can_drop ? drag_action : 0, time);
+	e_gtk_drag_status (context, can_drop ? drag_action : 0, time);
 
 	return TRUE;
 }
 
 static gboolean
 year_view_month_drag_drop_cb (GtkWidget *widget,
-			      GdkDragContext *context,
+			      EGtkDragContext *context,
 			      gint x,
 			      gint y,
 			      guint time,
@@ -1510,9 +1510,9 @@ year_view_month_drag_drop_cb (GtkWidget *widget,
 			gboolean is_move;
 
 			drag_data = g_steal_pointer (&self->priv->drag_data);
-			toplevel = gtk_widget_get_toplevel (widget);
+			toplevel = e_gtk_widget_get_toplevel (widget);
 			parent = GTK_IS_WINDOW (toplevel) ? GTK_WINDOW (toplevel) : NULL;
-			is_move = gdk_drag_context_get_selected_action (context) == GDK_ACTION_MOVE;
+			is_move = e_gtk_drag_context_get_selected_action (context) == GDK_ACTION_MOVE;
 
 			for (link = drag_data; link; link = g_slist_next (link)) {
 				DragData *dd = link->data;
@@ -1528,7 +1528,7 @@ year_view_month_drag_drop_cb (GtkWidget *widget,
 		g_date_free (to);
 	}
 
-	gdk_drag_status (context, 0, time);
+	e_gtk_drag_status (context, 0, time);
 
 	return FALSE;
 }
@@ -1571,7 +1571,7 @@ year_view_construct_year_widget (EYearView *self)
 		"valign", GTK_ALIGN_FILL,
 		NULL);
 
-	gtk_style_context_add_class (gtk_widget_get_style_context (widget), GTK_STYLE_CLASS_VIEW);
+	gtk_widget_add_css_class (widget, GTK_STYLE_CLASS_VIEW);
 
 	top_container = widget;
 	container = widget;
@@ -1587,20 +1587,20 @@ year_view_construct_year_widget (EYearView *self)
 		"margin-bottom", 6,
 		NULL);
 
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 
 	hbox = widget;
 
 	#ifdef WITH_PREV_NEXT_BUTTONS
-	widget = gtk_button_new_from_icon_name ("go-previous-symbolic", GTK_ICON_SIZE_BUTTON);
+	widget = gtk_button_new_from_icon_name ("go-previous-symbolic");
 
 	g_object_set (G_OBJECT (widget),
 		"valign", GTK_ALIGN_BASELINE,
 		NULL);
 
-	gtk_style_context_add_class (gtk_widget_get_style_context (widget), GTK_STYLE_CLASS_FLAT);
+	gtk_widget_add_css_class (widget, GTK_STYLE_CLASS_FLAT);
 
-	gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 
 	g_signal_connect (widget, "clicked", G_CALLBACK (year_view_prev_year_clicked_cb), self);
 	#endif
@@ -1617,7 +1617,7 @@ year_view_construct_year_widget (EYearView *self)
 	gtk_style_context_add_class (style_context, GTK_STYLE_CLASS_FLAT);
 	gtk_style_context_add_class (style_context, "prev-year");
 
-	gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 
 	g_signal_connect (widget, "clicked", G_CALLBACK (year_view_prev_year2_clicked_cb), self);
 
@@ -1633,7 +1633,7 @@ year_view_construct_year_widget (EYearView *self)
 	gtk_style_context_add_class (style_context, GTK_STYLE_CLASS_FLAT);
 	gtk_style_context_add_class (style_context, "prev-year");
 
-	gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 
 	g_signal_connect (widget, "clicked", G_CALLBACK (year_view_prev_year_clicked_cb), self);
 
@@ -1648,7 +1648,7 @@ year_view_construct_year_widget (EYearView *self)
 	gtk_style_context_add_provider (style_context, style_provider, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 	gtk_style_context_add_class (style_context, "current-year");
 
-	gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 
 	widget = gtk_button_new ();
 	self->priv->next_year_button1 = GTK_BUTTON (widget);
@@ -1662,7 +1662,7 @@ year_view_construct_year_widget (EYearView *self)
 	gtk_style_context_add_class (style_context, GTK_STYLE_CLASS_FLAT);
 	gtk_style_context_add_class (style_context, "next-year");
 
-	gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 
 	g_signal_connect (widget, "clicked", G_CALLBACK (year_view_next_year_clicked_cb), self);
 
@@ -1678,20 +1678,20 @@ year_view_construct_year_widget (EYearView *self)
 	gtk_style_context_add_class (style_context, GTK_STYLE_CLASS_FLAT);
 	gtk_style_context_add_class (style_context, "next-year");
 
-	gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 
 	g_signal_connect (widget, "clicked", G_CALLBACK (year_view_next_year2_clicked_cb), self);
 
 	#ifdef WITH_PREV_NEXT_BUTTONS
-	widget = gtk_button_new_from_icon_name ("go-next-symbolic", GTK_ICON_SIZE_BUTTON);
+	widget = gtk_button_new_from_icon_name ("go-next-symbolic");
 
 	g_object_set (G_OBJECT (widget),
 		"valign", GTK_ALIGN_BASELINE,
 		NULL);
 
-	gtk_style_context_add_class (gtk_widget_get_style_context (widget), GTK_STYLE_CLASS_FLAT);
+	gtk_widget_add_css_class (widget, GTK_STYLE_CLASS_FLAT);
 
-	gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 
 	g_signal_connect (widget, "clicked", G_CALLBACK (year_view_next_year_clicked_cb), self);
 	#endif
@@ -1714,7 +1714,7 @@ year_view_construct_year_widget (EYearView *self)
 	gtk_style_context_add_class (style_context, GTK_STYLE_CLASS_FLAT);
 	gtk_style_context_add_class (style_context, "calendar-window");
 
-	gtk_container_add (GTK_CONTAINER (top_container), widget);
+	e_gtk_container_add (top_container, widget);
 
 	container = widget;
 
@@ -1738,7 +1738,7 @@ year_view_construct_year_widget (EYearView *self)
 	gtk_style_context_add_class (style_context, GTK_STYLE_CLASS_VIEW);
 	gtk_style_context_add_class (style_context, "calendar-flowbox");
 
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	container = widget;
 
 	/* The date is used only for the month name */
@@ -1763,7 +1763,7 @@ year_view_construct_year_widget (EYearView *self)
 			"yalign", 0.5,
 			NULL);
 
-		gtk_box_pack_start (GTK_BOX (vbox), widget, FALSE, FALSE, 0);
+		e_gtk_box_pack_start (GTK_BOX (vbox), widget, FALSE, FALSE, 0);
 
 		widget = e_month_widget_new ();
 
@@ -1772,7 +1772,7 @@ year_view_construct_year_widget (EYearView *self)
 			"valign", GTK_ALIGN_CENTER,
 			NULL);
 
-		gtk_box_pack_start (GTK_BOX (vbox), widget, FALSE, FALSE, 0);
+		e_gtk_box_pack_start (GTK_BOX (vbox), widget, FALSE, FALSE, 0);
 
 		self->priv->months[ii] = E_MONTH_WIDGET (widget);
 
@@ -1785,8 +1785,8 @@ year_view_construct_year_widget (EYearView *self)
 
 		e_month_widget_set_month (E_MONTH_WIDGET (widget), ii + 1, self->priv->current_year);
 
-		gtk_drag_dest_set (
-			widget, GTK_DEST_DEFAULT_ALL,
+		e_gtk_drag_dest_set (
+			widget, E_GTK_DEST_DEFAULT_ALL,
 			target_table, G_N_ELEMENTS (target_table),
 			GDK_ACTION_COPY | GDK_ACTION_MOVE);
 
@@ -1796,7 +1796,7 @@ year_view_construct_year_widget (EYearView *self)
 		g_signal_connect_object (widget, "drag-drop",
 			G_CALLBACK (year_view_month_drag_drop_cb), self, 0);
 
-		gtk_container_add (GTK_CONTAINER (container), vbox);
+		e_gtk_container_add (container, vbox);
 
 		child = gtk_flow_box_get_child_at_index (GTK_FLOW_BOX (container), ii);
 
@@ -1809,7 +1809,7 @@ year_view_construct_year_widget (EYearView *self)
 	g_clear_object (&settings);
 	g_date_free (date);
 
-	gtk_widget_show_all (top_container);
+	gtk_widget_set_visible (top_container, TRUE);
 
 	return top_container;
 }
@@ -1954,7 +1954,7 @@ year_view_constructed (GObject *object)
 		"visible", TRUE,
 		NULL);
 
-	gtk_paned_pack1 (GTK_PANED (self->priv->preview_paned), self->priv->hpaned, TRUE, FALSE);
+	e_gtk_paned_pack1 (self->priv->preview_paned, self->priv->hpaned, TRUE, FALSE);
 
 	attachment_store = E_ATTACHMENT_STORE (e_attachment_store_new ());
 	widget = e_attachment_bar_new (attachment_store);
@@ -1962,7 +1962,7 @@ year_view_constructed (GObject *object)
 	self->priv->attachment_bar = widget;
 	attachment_bar = E_ATTACHMENT_BAR (widget);
 
-	gtk_paned_pack2 (GTK_PANED (self->priv->preview_paned), widget, FALSE, FALSE);
+	e_gtk_paned_pack2 (self->priv->preview_paned, widget, FALSE, FALSE);
 
 	e_binding_bind_property_full (
 		attachment_store, "num-attachments",
@@ -1977,7 +1977,7 @@ year_view_constructed (GObject *object)
 		"height-request", 50,
 		"visible", TRUE,
 		NULL);
-	gtk_box_pack_start (GTK_BOX (e_attachment_bar_get_content_area (attachment_bar)), GTK_WIDGET (self->priv->preview), TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (e_attachment_bar_get_content_area (attachment_bar)), GTK_WIDGET (self->priv->preview), TRUE, TRUE, 0);
 
 	e_cal_component_preview_set_attachment_store (self->priv->preview, attachment_store);
 	g_clear_object (&attachment_store);
@@ -1990,9 +1990,9 @@ year_view_constructed (GObject *object)
 		"min-content-height", 50,
 		"visible", TRUE,
 		NULL);
-	gtk_paned_pack1 (GTK_PANED (self->priv->hpaned), widget, TRUE, FALSE);
+	e_gtk_paned_pack1 (self->priv->hpaned, widget, TRUE, FALSE);
 
-	gtk_container_add (GTK_CONTAINER (widget), year_view_construct_year_widget (self));
+	e_gtk_container_add (widget, year_view_construct_year_widget (self));
 
 	widget = gtk_scrolled_window_new (NULL, NULL);
 	g_object_set (G_OBJECT (widget),
@@ -2003,7 +2003,7 @@ year_view_constructed (GObject *object)
 		"visible", TRUE,
 		NULL);
 
-	gtk_paned_pack2 (GTK_PANED (self->priv->hpaned), widget, FALSE, FALSE);
+	e_gtk_paned_pack2 (self->priv->hpaned, widget, FALSE, FALSE);
 
 	self->priv->list_store = gtk_list_store_new (N_COLUMNS,
 		GDK_TYPE_RGBA,		/* COLUMN_BGCOLOR */
@@ -2035,7 +2035,7 @@ year_view_constructed (GObject *object)
 		"model", self->priv->list_store,
 		NULL);
 
-	gtk_container_add (GTK_CONTAINER (widget), GTK_WIDGET (self->priv->tree_view));
+	e_gtk_container_add (widget, GTK_WIDGET (self->priv->tree_view));
 
 	column = gtk_tree_view_column_new ();
 
@@ -2074,7 +2074,7 @@ year_view_constructed (GObject *object)
 
 	gtk_tree_view_append_column (self->priv->tree_view, column);
 
-	gtk_drag_source_set (GTK_WIDGET (self->priv->tree_view), GDK_BUTTON1_MASK,
+	e_gtk_drag_source_set (GTK_WIDGET (self->priv->tree_view), GDK_BUTTON1_MASK,
 		target_table, G_N_ELEMENTS (target_table),
 		GDK_ACTION_COPY | GDK_ACTION_MOVE);
 

@@ -442,7 +442,7 @@ calendar_config_select_day_second_zone (GtkWidget *parent)
 	if (GTK_IS_WINDOW (parent))
 		gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (parent));
 
-	if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT) {
+	if (e_gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT) {
 		const gchar *location = NULL;
 
 		zone = e_timezone_dialog_get_timezone (tzdlg);

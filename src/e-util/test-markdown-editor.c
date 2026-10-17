@@ -202,7 +202,7 @@ on_idle_create_widget (gpointer user_data)
 		"visible", TRUE,
 		NULL);
 
-	gtk_container_add (GTK_CONTAINER (window), widget);
+	e_gtk_container_add (window, widget);
 
 	grid = GTK_GRID (widget);
 
@@ -269,7 +269,7 @@ on_idle_create_widget (gpointer user_data)
 		"vscrollbar-policy", GTK_POLICY_AUTOMATIC,
 		NULL);
 
-	gtk_container_add (GTK_CONTAINER (widget), GTK_WIDGET (plain_text_view));
+	e_gtk_container_add (widget, GTK_WIDGET (plain_text_view));
 
 	gtk_grid_attach (grid, widget, 0, 2, 1, 2);
 
@@ -298,7 +298,7 @@ on_idle_create_widget (gpointer user_data)
 		"vscrollbar-policy", GTK_POLICY_AUTOMATIC,
 		NULL);
 
-	gtk_container_add (GTK_CONTAINER (widget), GTK_WIDGET (html_text_view));
+	e_gtk_container_add (widget, GTK_WIDGET (html_text_view));
 
 	gtk_grid_attach (grid, widget, 2, 2, 1, 2);
 
@@ -405,15 +405,15 @@ main (gint argc,
 	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
 	textdomain (GETTEXT_PACKAGE);
 
-	gtk_init (&argc, &argv);
+	gtk_init ();
 
 	e_util_init_main_thread (NULL);
 	e_passwords_init ();
 
 	g_setenv ("EVOLUTION_SOURCE_WEBKITDATADIR", EVOLUTION_SOURCE_WEBKITDATADIR, FALSE);
 
-	gtk_icon_theme_append_search_path (gtk_icon_theme_get_default (), EVOLUTION_ICONDIR);
-	gtk_icon_theme_append_search_path (gtk_icon_theme_get_default (), E_DATA_SERVER_ICONDIR);
+	gtk_icon_theme_append_search_path (e_gtk_icon_theme_get_default (), EVOLUTION_ICONDIR);
+	gtk_icon_theme_append_search_path (e_gtk_icon_theme_get_default (), E_DATA_SERVER_ICONDIR);
 
 	modules = e_module_load_all_in_directory (EVOLUTION_MODULEDIR);
 	g_list_free_full (modules, (GDestroyNotify) g_type_module_unuse);

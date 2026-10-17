@@ -162,7 +162,7 @@ mail_account_tree_view_constructed (GObject *object)
 
 static void
 mail_account_tree_view_drag_end (GtkWidget *widget,
-                                 GdkDragContext *context)
+                                 EGtkDragContext *context)
 {
 	GtkTreeModel *tree_model;
 

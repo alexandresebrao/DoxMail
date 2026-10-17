@@ -418,7 +418,7 @@ shell_migrate_mail_folders_show_dialog_cb (gpointer user_data)
 		"border-width", 12,
 		NULL);
 
-	gtk_container_add (GTK_CONTAINER (mfd->window), box);
+	e_gtk_container_add (mfd->window, box);
 
 	widget = gtk_label_new (_("Migrating mail folders, please wait…"));
 
@@ -428,7 +428,7 @@ shell_migrate_mail_folders_show_dialog_cb (gpointer user_data)
 	gtk_label_set_attributes (GTK_LABEL (widget), attrs);
 	pango_attr_list_unref (attrs);
 
-	gtk_box_pack_start (GTK_BOX (box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (box), widget, FALSE, FALSE, 0);
 
 	widget = gtk_progress_bar_new ();
 	g_object_set (widget,
@@ -439,7 +439,7 @@ shell_migrate_mail_folders_show_dialog_cb (gpointer user_data)
 		"ellipsize", PANGO_ELLIPSIZE_END,
 		"width-request", 300,
 		NULL);
-	gtk_box_pack_start (GTK_BOX (box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (box), widget, FALSE, FALSE, 0);
 
 	mfd->total_progress = GTK_PROGRESS_BAR (widget);
 
@@ -452,7 +452,7 @@ shell_migrate_mail_folders_show_dialog_cb (gpointer user_data)
 		"ellipsize", PANGO_ELLIPSIZE_END,
 		"width-request", 300,
 		NULL);
-	gtk_box_pack_start (GTK_BOX (box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (box), widget, FALSE, FALSE, 0);
 
 	mfd->file_progress = GTK_PROGRESS_BAR (widget);
 
@@ -463,7 +463,7 @@ shell_migrate_mail_folders_show_dialog_cb (gpointer user_data)
 
 	g_signal_connect (mfd->window, "delete-event", G_CALLBACK (prevent_window_delete_cb), NULL);
 
-	gtk_widget_show_all (box);
+	gtk_widget_set_visible (box, TRUE);
 	gtk_window_present (GTK_WINDOW (mfd->window));
 
 	return G_SOURCE_REMOVE;
@@ -532,7 +532,7 @@ e_shell_maybe_migrate_mail_folders_db (EShell *shell)
 		g_string_free (mfd.all_errors, TRUE);
 	}
 	if (mfd.window)
-		gtk_widget_destroy (mfd.window);
+		e_gtk_widget_destroy (mfd.window);
 	g_object_unref (mfd.cancellable);
 	g_ptr_array_unref (mfd.dirs);
 	g_main_loop_unref (mfd.main_loop);

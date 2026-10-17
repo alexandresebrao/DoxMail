@@ -52,12 +52,12 @@ typedef struct _EAlertBarClass EAlertBarClass;
 typedef struct _EAlertBarPrivate EAlertBarPrivate;
 
 struct _EAlertBar {
-	GtkInfoBar parent;
+	GtkBox parent;
 	EAlertBarPrivate *priv;
 };
 
 struct _EAlertBarClass {
-	GtkInfoBarClass parent_class;
+	GtkBoxClass parent_class;
 };
 
 GType		e_alert_bar_get_type		(void) G_GNUC_CONST;

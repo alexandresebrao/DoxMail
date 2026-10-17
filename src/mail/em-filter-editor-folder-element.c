@@ -113,7 +113,7 @@ filter_editor_folder_element_selected_cb (EMFolderSelectionButton *button,
 
 	em_filter_folder_element_set_uri ((EMFilterFolderElement *) ff, uri);
 
-	toplevel = gtk_widget_get_toplevel (GTK_WIDGET (button));
+	toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (button));
 	gtk_window_present (GTK_WINDOW (toplevel));
 }
 

@@ -109,7 +109,7 @@ em_filter_editor_response (GtkWidget *dialog,
 		g_free (user);
 	}
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 
 	filter_editor = NULL;
 }
@@ -253,7 +253,7 @@ em_utils_flag_for_followup (EMailReader *reader,
 		}
 	}
 
-	response = gtk_dialog_run (GTK_DIALOG (editor));
+	response = e_gtk_dialog_run (GTK_DIALOG (editor));
 	if (response != GTK_RESPONSE_OK && response != GTK_RESPONSE_REJECT)
 		goto exit;
 
@@ -302,7 +302,7 @@ em_utils_flag_for_followup (EMailReader *reader,
 	camel_name_value_array_free (tags);
 
 exit:
-	gtk_widget_destroy (GTK_WIDGET (editor));
+	e_gtk_widget_destroy (GTK_WIDGET (editor));
 }
 
 /**
@@ -573,21 +573,21 @@ em_utils_read_messages_from_stream (CamelFolder *folder,
  * Warning: This could block the ui for an extended period.
  **/
 void
-em_utils_selection_set_mailbox (GtkSelectionData *data,
+em_utils_selection_set_mailbox (EGtkSelectionData *data,
                                 CamelFolder *folder,
                                 GPtrArray *uids)
 {
 	GByteArray *byte_array;
 	CamelStream *stream;
-	GdkAtom target;
+	EGtkAtom target;
 
-	target = gtk_selection_data_get_target (data);
+	target = e_gtk_selection_data_get_target (data);
 
 	byte_array = g_byte_array_new ();
 	stream = camel_stream_mem_new_with_byte_array (byte_array);
 
 	if (em_utils_write_messages_to_stream (folder, uids, stream) == 0)
-		gtk_selection_data_set (
+		e_gtk_selection_data_set (
 			data, target, 8,
 			byte_array->data, byte_array->len);
 
@@ -602,15 +602,15 @@ em_utils_selection_set_mailbox (GtkSelectionData *data,
  * get a message/rfc822 data.
  **/
 void
-em_utils_selection_get_message (GtkSelectionData *selection_data,
+em_utils_selection_get_message (EGtkSelectionData *selection_data,
                                 CamelFolder *folder)
 {
 	CamelStream *stream;
 	const guchar *data;
 	gint length;
 
-	data = gtk_selection_data_get_data (selection_data);
-	length = gtk_selection_data_get_length (selection_data);
+	data = e_gtk_selection_data_get_data (selection_data);
+	length = e_gtk_selection_data_get_length (selection_data);
 
 	if (data == NULL || length == -1)
 		return;
@@ -631,12 +631,12 @@ em_utils_selection_get_message (GtkSelectionData *selection_data,
  * Sets a "x-uid-list" format selection data.
  **/
 void
-em_utils_selection_set_uidlist (GtkSelectionData *selection_data,
+em_utils_selection_set_uidlist (EGtkSelectionData *selection_data,
                                 CamelFolder *folder,
                                 GPtrArray *uids)
 {
 	GByteArray *array = g_byte_array_new ();
-	GdkAtom target;
+	EGtkAtom target;
 	gchar *folder_uri;
 	gint ii;
 
@@ -681,15 +681,15 @@ em_utils_selection_set_uidlist (GtkSelectionData *selection_data,
 		g_free (folder_uri);
 	}
 
-	target = gtk_selection_data_get_target (selection_data);
-	gtk_selection_data_set (
+	target = e_gtk_selection_data_get_target (selection_data);
+	e_gtk_selection_data_set (
 		selection_data, target, 8, array->data, array->len);
 	g_byte_array_free (array, TRUE);
 }
 
 /**
  * em_utils_selection_uidlist_foreach_sync:
- * @selection_data: a #GtkSelectionData with x-uid-list content
+ * @selection_data: a #EGtkSelectionData with x-uid-list content
  * @session: an #EMailSession
  * @func: a function to call for each UID and its folder
  * @user_data: user data for @func
@@ -703,7 +703,7 @@ em_utils_selection_set_uidlist (GtkSelectionData *selection_data,
  * Since: 3.28
  **/
 void
-em_utils_selection_uidlist_foreach_sync (GtkSelectionData *selection_data,
+em_utils_selection_uidlist_foreach_sync (EGtkSelectionData *selection_data,
 					 EMailSession *session,
 					 EMUtilsUIDListFunc func,
 					 gpointer user_data,
@@ -726,8 +726,8 @@ em_utils_selection_uidlist_foreach_sync (GtkSelectionData *selection_data,
 	g_return_if_fail (E_IS_MAIL_SESSION (session));
 	g_return_if_fail (func != NULL);
 
-	data = gtk_selection_data_get_data (selection_data);
-	length = gtk_selection_data_get_length (selection_data);
+	data = e_gtk_selection_data_get_data (selection_data);
+	length = e_gtk_selection_data_get_length (selection_data);
 
 	if (data == NULL || length == -1)
 		return;
@@ -828,7 +828,7 @@ uidlist_move_uids_cb (CamelFolder *folder,
  * Warning: Could take some time to run.
  **/
 void
-em_utils_selection_get_uidlist (GtkSelectionData *selection_data,
+em_utils_selection_get_uidlist (EGtkSelectionData *selection_data,
                                 EMailSession *session,
                                 CamelFolder *dest,
                                 gint move,
@@ -923,8 +923,8 @@ em_utils_build_export_basename (CamelFolder *folder,
  * up when the application quits.
  **/
 void
-em_utils_selection_set_urilist (GdkDragContext *context,
-				GtkSelectionData *data,
+em_utils_selection_set_urilist (EGtkDragContext *context,
+				EGtkSelectionData *data,
                                 CamelFolder *folder,
                                 GPtrArray *uids)
 {
@@ -947,10 +947,10 @@ em_utils_selection_set_urilist (GdkDragContext *context,
 	/* Use cached value from the last call, if exists */
 	tmpdir = g_object_get_data (G_OBJECT (context), "evo-urilist");
 	if (tmpdir) {
-		GdkAtom type;
+		EGtkAtom type;
 
-		type = gtk_selection_data_get_target (data);
-		gtk_selection_data_set (
+		type = e_gtk_selection_data_get_target (data);
+		e_gtk_selection_data_set (
 			data, type, 8,
 			(guchar *) tmpdir,
 			strlen (tmpdir));
@@ -1014,14 +1014,14 @@ em_utils_selection_set_urilist (GdkDragContext *context,
 		fstream = camel_stream_fs_new_with_fd (fd);
 		if (fstream != NULL) {
 			if (em_utils_write_messages_to_stream (folder, uids, fstream) == 0) {
-				GdkAtom type;
+				EGtkAtom type;
 				gchar *uri_crlf;
 
 				/* terminate with \r\n to be compliant with the spec */
 				uri_crlf = g_strconcat (uri, "\r\n", NULL);
 
-				type = gtk_selection_data_get_target (data);
-				gtk_selection_data_set (
+				type = e_gtk_selection_data_get_target (data);
+				e_gtk_selection_data_set (
 					data, type, 8,
 					(guchar *) uri_crlf,
 					strlen (uri_crlf));
@@ -1077,10 +1077,10 @@ em_utils_selection_set_urilist (GdkDragContext *context,
 			g_free (filename);
 		}
 
-		if (gtk_selection_data_set_uris (data, uris)) {
+		if (e_gtk_selection_data_set_uris (data, uris)) {
 			/* Remember it, to not regenerate it, when the target widget asks for the data again */
 			g_object_set_data_full (G_OBJECT (context), "evo-urilist",
-				g_strndup ((const gchar *) gtk_selection_data_get_data (data), gtk_selection_data_get_length (data)),
+				g_strndup ((const gchar *) e_gtk_selection_data_get_data (data), e_gtk_selection_data_get_length (data)),
 				g_free);
 		}
 
@@ -1104,7 +1104,7 @@ exit:
  * automatically cleaned up when the application quits.
  **/
 void
-em_utils_selection_get_urilist (GtkSelectionData *selection_data,
+em_utils_selection_get_urilist (EGtkSelectionData *selection_data,
                                 CamelFolder *folder)
 {
 	CamelStream *stream;
@@ -1114,7 +1114,7 @@ em_utils_selection_get_urilist (GtkSelectionData *selection_data,
 
 	d (printf (" * drop uri list\n"));
 
-	uris = gtk_selection_data_get_uris (selection_data);
+	uris = e_gtk_selection_data_get_uris (selection_data);
 
 	for (i = 0; res == 0 && uris[i]; i++) {
 		g_strstrip (uris[i]);
@@ -2066,7 +2066,7 @@ em_utils_import_pgp_key (GtkWindow *parent,
 
 	container = e_alert_dialog_get_content_area (E_ALERT_DIALOG (dialog));
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 2);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	container = widget;
 
 	for (link = key_infos; link; link = g_slist_next (link)) {
@@ -2084,7 +2084,7 @@ em_utils_import_pgp_key (GtkWindow *parent,
 				"selectable", TRUE,
 				"xalign", 0.0,
 				NULL);
-			gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+			e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 			g_free (tmp);
 
 			tmp = g_strdup_printf (_("Fingerprint: %s"), camel_gpg_key_info_get_fingerprint (nfo));
@@ -2095,7 +2095,7 @@ em_utils_import_pgp_key (GtkWindow *parent,
 				"selectable", TRUE,
 				"xalign", 0.0,
 				NULL);
-			gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+			e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 			g_free (tmp);
 
 			if (camel_gpg_key_info_get_creation_date (nfo) > 0) {
@@ -2111,7 +2111,7 @@ em_utils_import_pgp_key (GtkWindow *parent,
 						"selectable", TRUE,
 						"xalign", 0.0,
 						NULL);
-					gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+					e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 					g_free (tmp);
 					g_free (fmt);
 				}
@@ -2147,7 +2147,7 @@ em_utils_import_pgp_key (GtkWindow *parent,
 						"wrap-mode", PANGO_WRAP_WORD_CHAR,
 						"xalign", 0.0,
 						NULL);
-					gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+					e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 					g_free (tmp);
 				}
 
@@ -2159,13 +2159,13 @@ em_utils_import_pgp_key (GtkWindow *parent,
 	widget = gtk_label_new (_("Set trust level for the key:"));
 	gtk_widget_set_halign (widget, GTK_ALIGN_START);
 	gtk_widget_set_margin_top (widget, 12);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 
 	for (ii = 0; ii < G_N_ELEMENTS (trust_options); ii++) {
 		widget = gtk_radio_button_new_with_mnemonic_from_widget (GTK_RADIO_BUTTON (trust_options[0].button),
 			g_dpgettext2 (GETTEXT_PACKAGE, "trust", trust_options[ii].label));
 		gtk_widget_set_margin_start (widget, 12);
-		gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+		e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 
 		trust_options[ii].button = GTK_TOGGLE_BUTTON (widget);
 	}
@@ -2175,9 +2175,9 @@ em_utils_import_pgp_key (GtkWindow *parent,
 	g_warn_if_fail (trust_options[3].trust == CAMEL_GPG_TRUST_FULL);
 	gtk_toggle_button_set_active (trust_options[3].button, TRUE);
 
-	gtk_widget_show_all (container);
+	gtk_widget_set_visible (container, TRUE);
 
-	if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_YES) {
+	if (e_gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_YES) {
 		CamelGpgTrust trust = CAMEL_GPG_TRUST_NONE;
 
 		for (ii = 0; ii < G_N_ELEMENTS (trust_options); ii++) {
@@ -2203,7 +2203,7 @@ em_utils_import_pgp_key (GtkWindow *parent,
 	}
 
 	g_slist_free_full (key_infos, (GDestroyNotify) camel_gpg_key_info_free);
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 	g_clear_object (&gpgctx);
 
 	return success;
@@ -2423,7 +2423,7 @@ em_utils_select_folder_for_copy_move_message (GtkWindow *parent,
 		}
 	}
 
-	if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
+	if (e_gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
 		const gchar *uri;
 
 		uri = em_folder_selector_get_selected_uri (EM_FOLDER_SELECTOR (dialog));
@@ -2436,7 +2436,7 @@ em_utils_select_folder_for_copy_move_message (GtkWindow *parent,
 		}
 	}
 
-	gtk_widget_destroy (GTK_WIDGET (dialog));
+	e_gtk_widget_destroy (GTK_WIDGET (dialog));
 
 	return res_uri;
 }

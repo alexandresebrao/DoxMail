@@ -70,8 +70,8 @@ action_image_set_as_background_saved_cb (EAttachment *attachment,
 	goto exit;
 
 error:
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (view));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (view));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	dialog = gtk_message_dialog_new_with_markup (
 		parent, GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -82,9 +82,9 @@ error:
 	gtk_message_dialog_format_secondary_text (
 		GTK_MESSAGE_DIALOG (dialog), "%s", error->message);
 
-	gtk_dialog_run (GTK_DIALOG (dialog));
+	e_gtk_dialog_run (GTK_DIALOG (dialog));
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 	g_error_free (error);
 
 exit:

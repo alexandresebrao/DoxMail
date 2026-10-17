@@ -150,7 +150,7 @@ mail_config_smtp_backend_insert_widgets (EMailConfigServiceBackend *backend,
 	widget = gtk_label_new (markup);
 	gtk_label_set_use_markup (GTK_LABEL (widget), TRUE);
 	gtk_label_set_xalign (GTK_LABEL (widget), 0);
-	gtk_box_pack_start (GTK_BOX (parent), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (parent), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 	g_free (markup);
 
@@ -158,7 +158,7 @@ mail_config_smtp_backend_insert_widgets (EMailConfigServiceBackend *backend,
 	gtk_widget_set_margin_start (widget, 12);
 	gtk_grid_set_row_spacing (GTK_GRID (widget), 6);
 	gtk_grid_set_column_spacing (GTK_GRID (widget), 6);
-	gtk_box_pack_start (GTK_BOX (parent), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (parent), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -188,7 +188,7 @@ mail_config_smtp_backend_insert_widgets (EMailConfigServiceBackend *backend,
 	self->priv->port_entry = widget;  /* do not reference */
 	gtk_widget_show (widget);
 
-	widget = gtk_image_new_from_icon_name ("dialog-warning", GTK_ICON_SIZE_BUTTON);
+	widget = gtk_image_new_from_icon_name ("dialog-warning");
 	g_object_set (G_OBJECT (widget),
 		"visible", FALSE,
 		"has-tooltip", TRUE,
@@ -212,7 +212,7 @@ mail_config_smtp_backend_insert_widgets (EMailConfigServiceBackend *backend,
 	gtk_widget_set_margin_top (widget, 6);
 	gtk_label_set_use_markup (GTK_LABEL (widget), TRUE);
 	gtk_label_set_xalign (GTK_LABEL (widget), 0);
-	gtk_box_pack_start (GTK_BOX (parent), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (parent), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 	g_free (markup);
 
@@ -220,7 +220,7 @@ mail_config_smtp_backend_insert_widgets (EMailConfigServiceBackend *backend,
 	gtk_widget_set_margin_start (widget, 12);
 	gtk_grid_set_row_spacing (GTK_GRID (widget), 6);
 	gtk_grid_set_column_spacing (GTK_GRID (widget), 6);
-	gtk_box_pack_start (GTK_BOX (parent), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (parent), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -263,7 +263,7 @@ mail_config_smtp_backend_insert_widgets (EMailConfigServiceBackend *backend,
 	gtk_widget_set_margin_top (widget, 6);
 	gtk_label_set_use_markup (GTK_LABEL (widget), TRUE);
 	gtk_label_set_xalign (GTK_LABEL (widget), 0);
-	gtk_box_pack_start (GTK_BOX (parent), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (parent), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 	g_free (markup);
 
@@ -276,7 +276,7 @@ mail_config_smtp_backend_insert_widgets (EMailConfigServiceBackend *backend,
 	gtk_widget_set_margin_start (widget, 12);
 	gtk_grid_set_row_spacing (GTK_GRID (widget), 6);
 	gtk_grid_set_column_spacing (GTK_GRID (widget), 6);
-	gtk_box_pack_start (GTK_BOX (parent), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (parent), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	e_binding_bind_property (

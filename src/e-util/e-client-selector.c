@@ -305,7 +305,7 @@ client_selector_can_reach_cb (GObject *source_object,
 
 static gboolean
 client_selector_drag_motion (GtkWidget *widget,
-			     GdkDragContext *context,
+			     EGtkDragContext *context,
 			     gint x,
 			     gint y,
 			     guint time_)
@@ -316,7 +316,7 @@ client_selector_drag_motion (GtkWidget *widget,
 	if (!GTK_WIDGET_CLASS (e_client_selector_parent_class)->drag_motion (widget, context, x, y, time_))
 		return FALSE;
 
-	if (!gdk_drag_context_get_selected_action (context))
+	if (!e_gtk_drag_context_get_selected_action (context))
 		return TRUE;
 
 	gtk_tree_view_get_drag_dest_row (GTK_TREE_VIEW (widget), &path, NULL);
@@ -331,7 +331,7 @@ client_selector_drag_motion (GtkWidget *widget,
 			if (client) {
 				/* Cannot drop into a read-only client */
 				if (e_client_is_readonly (client))
-					gdk_drag_status (context, 0, time_);
+					e_gtk_drag_status (context, 0, time_);
 
 				g_object_unref (client);
 			}

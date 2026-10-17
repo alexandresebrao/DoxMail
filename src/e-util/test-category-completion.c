@@ -47,7 +47,7 @@ on_idle_create_widget (void)
 		"column-homogeneous", FALSE,
 		"row-spacing", 3,
 		NULL);
-	gtk_container_add (GTK_CONTAINER (window), vgrid);
+	e_gtk_container_add (window, vgrid);
 
 	entry = gtk_entry_new ();
 	completion = e_category_completion_new ();
@@ -55,9 +55,9 @@ on_idle_create_widget (void)
 	gtk_widget_set_vexpand (entry, TRUE);
 	gtk_widget_set_hexpand (entry, TRUE);
 	gtk_widget_set_halign (entry, GTK_ALIGN_FILL);
-	gtk_container_add (GTK_CONTAINER (vgrid), entry);
+	e_gtk_container_add (vgrid, entry);
 
-	gtk_widget_show_all (window);
+	gtk_widget_set_visible (window, TRUE);
 
 	return FALSE;
 }
@@ -66,7 +66,7 @@ gint
 main (gint argc,
       gchar **argv)
 {
-	gtk_init (&argc, &argv);
+	gtk_init ();
 
 	g_idle_add ((GSourceFunc) on_idle_create_widget, NULL);
 

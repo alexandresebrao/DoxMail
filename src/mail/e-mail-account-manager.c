@@ -98,7 +98,6 @@ mail_account_manager_build_goa_message (EMailAccountManager *manager)
 	GtkWidget *container;
 
 	frame = gtk_frame_new (NULL);
-	gtk_frame_set_shadow_type (GTK_FRAME (frame), GTK_SHADOW_IN);
 
 	container = frame;
 
@@ -110,7 +109,7 @@ mail_account_manager_build_goa_message (EMailAccountManager *manager)
 			GTK_INFO_BAR (widget),
 			_("Open _Online Accounts"),
 			OPEN_ONLINE_ACCOUNTS_RESPONSE);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	gtk_widget_show (widget);
 
 	g_signal_connect (
@@ -128,18 +127,17 @@ mail_account_manager_build_goa_message (EMailAccountManager *manager)
 		GTK_ORIENTABLE (container), GTK_ORIENTATION_HORIZONTAL);
 
 	/* Icon is provided by gnome-control-center-data. */
-	widget = gtk_image_new_from_icon_name (
-		"goa-panel", GTK_ICON_SIZE_DIALOG);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	widget = gtk_image_new_from_icon_name ("goa-panel");
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	widget = gtk_label_new (
 		_("This account was created through "
 		"the Online Accounts service."));
-	gtk_label_set_line_wrap (GTK_LABEL (widget), TRUE);
+	gtk_label_set_wrap (GTK_LABEL (widget), TRUE);
 	gtk_label_set_width_chars (GTK_LABEL (widget), 20);
 	gtk_label_set_xalign (GTK_LABEL (widget), 0);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	return frame;
@@ -186,7 +184,6 @@ mail_account_manager_build_uoa_message (EMailAccountManager *manager)
 	GtkWidget *container;
 
 	frame = gtk_frame_new (NULL);
-	gtk_frame_set_shadow_type (GTK_FRAME (frame), GTK_SHADOW_IN);
 
 	container = frame;
 
@@ -198,7 +195,7 @@ mail_account_manager_build_uoa_message (EMailAccountManager *manager)
 			GTK_INFO_BAR (widget),
 			_("Open _Online Accounts"),
 			OPEN_ONLINE_ACCOUNTS_RESPONSE);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	gtk_widget_show (widget);
 
 	g_signal_connect (
@@ -216,18 +213,17 @@ mail_account_manager_build_uoa_message (EMailAccountManager *manager)
 		GTK_ORIENTABLE (container), GTK_ORIENTATION_HORIZONTAL);
 
 	/* Icon is provided by gnome-control-center-signon. */
-	widget = gtk_image_new_from_icon_name (
-		"credentials-preferences", GTK_ICON_SIZE_DIALOG);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	widget = gtk_image_new_from_icon_name ("credentials-preferences");
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	widget = gtk_label_new (
 		_("This account was created through "
 		"the Online Accounts service."));
-	gtk_label_set_line_wrap (GTK_LABEL (widget), TRUE);
+	gtk_label_set_wrap (GTK_LABEL (widget), TRUE);
 	gtk_label_set_width_chars (GTK_LABEL (widget), 20);
 	gtk_label_set_xalign (GTK_LABEL (widget), 0);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	return frame;
@@ -277,8 +273,8 @@ mail_account_manager_remove_cb (EMailAccountManager *manager)
 	tree_view = E_MAIL_ACCOUNT_TREE_VIEW (manager->priv->tree_view);
 	service = e_mail_account_tree_view_get_selected_service (tree_view);
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (manager));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (manager));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	store = e_mail_account_manager_get_store (manager);
 	e_mail_account_store_remove_service (store, parent, service);
@@ -295,8 +291,8 @@ mail_account_manager_enable_cb (EMailAccountManager *manager)
 	tree_view = E_MAIL_ACCOUNT_TREE_VIEW (manager->priv->tree_view);
 	service = e_mail_account_tree_view_get_selected_service (tree_view);
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (manager));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (manager));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	store = e_mail_account_manager_get_store (manager);
 	e_mail_account_store_enable_service (store, parent, service);
@@ -313,8 +309,8 @@ mail_account_manager_disable_cb (EMailAccountManager *manager)
 	tree_view = E_MAIL_ACCOUNT_TREE_VIEW (manager->priv->tree_view);
 	service = e_mail_account_tree_view_get_selected_service (tree_view);
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (manager));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (manager));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	store = e_mail_account_manager_get_store (manager);
 	e_mail_account_store_disable_service (store, parent, service);
@@ -362,7 +358,7 @@ mail_account_manager_info_bar_response_cb (EMailAccountManager *manager,
 
 static gboolean
 mail_account_manager_key_press_event_cb (EMailAccountManager *manager,
-                                         GdkEventKey *event)
+                                         GdkEvent *event)
 {
 	if (event->keyval == GDK_KEY_Delete) {
 		mail_account_manager_remove_cb (manager);
@@ -616,8 +612,7 @@ mail_account_manager_constructed (GObject *object)
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_set_shadow_type (
-		GTK_SCROLLED_WINDOW (widget), GTK_SHADOW_IN);
+	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (widget), TRUE);
 	gtk_widget_set_hexpand (widget, TRUE);
 	gtk_widget_set_vexpand (widget, TRUE);
 	gtk_grid_attach (GTK_GRID (container), widget, 0, 0, 1, 1);
@@ -626,7 +621,7 @@ mail_account_manager_constructed (GObject *object)
 	container = widget;
 
 	widget = e_mail_account_tree_view_new (store);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	manager->priv->tree_view = widget;  /* not referenced */
 	gtk_widget_show (widget);
 
@@ -667,7 +662,6 @@ mail_account_manager_constructed (GObject *object)
 	gtk_widget_show (widget);
 
 	widget = gtk_frame_new (NULL);
-	gtk_frame_set_shadow_type (GTK_FRAME (widget), GTK_SHADOW_IN);
 	gtk_grid_attach (GTK_GRID (container), widget, 0, 3, 1, 1);
 	gtk_widget_show (widget);
 
@@ -679,7 +673,7 @@ mail_account_manager_constructed (GObject *object)
 	gtk_info_bar_add_button (
 		GTK_INFO_BAR (widget), _("_Reset Order"),
 		DEFAULT_ORDER_RESPONSE);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	gtk_widget_show (widget);
 
 	g_signal_connect_swapped (
@@ -692,14 +686,12 @@ mail_account_manager_constructed (GObject *object)
 	widget = gtk_label_new (
 		_("You can drag and drop account names to reorder them."));
 	gtk_label_set_xalign (GTK_LABEL (widget), 0);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	container = GTK_WIDGET (manager);
 
-	widget = gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
-	gtk_button_box_set_layout (
-		GTK_BUTTON_BOX (widget), GTK_BUTTONBOX_START);
+	widget = e_gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
 	gtk_box_set_spacing (GTK_BOX (widget), 6);
 	gtk_grid_attach (GTK_GRID (container), widget, 1, 0, 1, 2);
 	gtk_widget_show (widget);
@@ -707,7 +699,7 @@ mail_account_manager_constructed (GObject *object)
 	container = widget;
 
 	widget = e_dialog_button_new_with_icon ("list-add", _("_Add"));
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	manager->priv->add_button = widget;  /* not referenced */
 	gtk_widget_show (widget);
 
@@ -716,7 +708,7 @@ mail_account_manager_constructed (GObject *object)
 		G_CALLBACK (mail_account_manager_add_cb), manager);
 
 	widget = gtk_button_new_with_mnemonic (_("_Edit"));
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	manager->priv->edit_button = widget;  /* not referenced */
 	gtk_widget_show (widget);
 
@@ -725,7 +717,7 @@ mail_account_manager_constructed (GObject *object)
 		G_CALLBACK (mail_account_manager_edit_cb), manager);
 
 	widget = e_dialog_button_new_with_icon ("edit-delete", _("_Delete"));
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	manager->priv->delete_button = widget;  /* not referenced */
 	gtk_widget_show (widget);
 
@@ -734,7 +726,7 @@ mail_account_manager_constructed (GObject *object)
 		G_CALLBACK (mail_account_manager_remove_cb), manager);
 
 	widget = e_dialog_button_new_with_icon ("emblem-default", _("De_fault"));
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	manager->priv->default_button = widget;  /* not referenced */
 	gtk_widget_show (widget);
 

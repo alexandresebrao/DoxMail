@@ -330,7 +330,7 @@ meeting_to_composer_composer_created_cb (GObject *source_object,
 
 	gtk_window_present (GTK_WINDOW (composer));
 
-	gtk_widget_destroy (GTK_WIDGET (comp_editor));
+	e_gtk_widget_destroy (GTK_WIDGET (comp_editor));
 	g_object_unref (icomp);
 }
 

@@ -24,7 +24,7 @@
 
 #include <libsoup/soup.h>
 #include <camel/camel.h>
-#include <webkit2/webkit2.h>
+#include <webkit/webkit.h>
 
 #include <e-util/e-util.h>
 #include <libemail-engine/libemail-engine.h>

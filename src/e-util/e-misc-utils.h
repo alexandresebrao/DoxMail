@@ -32,6 +32,7 @@
 
 #include <libedataserver/libedataserver.h>
 
+#include <e-util/e-gtk4-compat.h>
 #include <e-util/e-marshal.h>
 #include <e-util/e-util-enums.h>
 
@@ -268,7 +269,7 @@ void		e_util_set_entry_issue_hint	(GtkWidget *entry,
 void		e_util_init_main_thread		(GThread *thread);
 gboolean	e_util_is_main_thread		(GThread *thread);
 gchar *		e_util_save_image_from_clipboard
-						(GtkClipboard *clipboard);
+						(GdkClipboard *clipboard);
 void		e_util_save_file_chooser_folder	(GtkFileChooser *file_chooser);
 void		e_util_load_file_chooser_folder	(GtkFileChooser *file_chooser);
 gboolean	e_util_get_webkit_developer_mode_enabled
@@ -312,8 +313,8 @@ const ESupportedLocales *
 void		e_util_ensure_scrolled_window_height
 						(GtkScrolledWindow *scrolled_window);
 void		e_util_make_safe_filename	(gchar *filename);
-gboolean	e_util_setup_toolbar_icon_size	(GtkToolbar *toolbar,
-						 GtkIconSize default_size);
+gboolean	e_util_setup_toolbar_icon_size	(GtkWidget *toolbar,
+						 gint default_size); /* E_GTK_ICON_SIZE_* or 0 */
 gboolean	e_util_get_use_header_bar	(void);
 void		e_open_map_uri			(GtkWindow *parent,
 						 const gchar *location);
@@ -321,7 +322,22 @@ gboolean	e_util_link_requires_reference	(const gchar *href,
 						 const gchar *text);
 void		e_util_call_malloc_trim_limited	(void);
 void		e_util_connect_menu_detach_after_deactivate
-						(GtkMenu *menu);
+						(GtkWidget *menu);
+void		e_util_popup_menu		(GtkWidget *menu,
+						 GtkWidget *relative_to,
+						 gdouble x,
+						 gdouble y);
+void		e_util_popup_menu_at_event	(GtkWidget *menu,
+						 GtkWidget *relative_to,
+						 GdkEvent *event);
+gboolean	e_util_event_get_widget_coords	(GdkEvent *event,
+						 GtkWidget *widget,
+						 gdouble *out_x,
+						 gdouble *out_y);
+GtkWidget *	e_util_popup_menu_model		(GMenuModel *model,
+						 GtkWidget *relative_to,
+						 gdouble x,
+						 gdouble y);
 gboolean	e_util_ignore_accel_for_focused	(GtkWidget *focused);
 gboolean	e_util_is_dark_theme		(GtkWidget *widget);
 

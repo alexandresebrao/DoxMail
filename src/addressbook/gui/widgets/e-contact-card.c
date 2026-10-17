@@ -185,7 +185,7 @@ e_contact_card_constructed (GObject *object)
 
 	widget = GTK_WIDGET (self);
 
-	gtk_widget_set_can_focus (widget, TRUE);
+	gtk_widget_set_focusable (widget, TRUE);
 
 	gtk_style_context_add_provider (gtk_widget_get_style_context (widget),
 		GTK_STYLE_PROVIDER (self->priv->css_provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
@@ -199,10 +199,10 @@ e_contact_card_constructed (GObject *object)
 		"visible", TRUE,
 		NULL);
 
-	gtk_style_context_add_class (gtk_widget_get_style_context (widget), "econtent");
+	gtk_widget_add_css_class (widget, "econtent");
 	gtk_style_context_add_provider (gtk_widget_get_style_context (widget),
 		GTK_STYLE_PROVIDER (self->priv->css_provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-	gtk_container_add (GTK_CONTAINER (self), widget);
+	e_gtk_container_add (self, widget);
 
 	vbox = GTK_BOX (widget);
 
@@ -214,10 +214,10 @@ e_contact_card_constructed (GObject *object)
 		"valign", GTK_ALIGN_FILL,
 		"visible", TRUE,
 		NULL);
-	gtk_style_context_add_class (gtk_widget_get_style_context (widget), "eheader");
+	gtk_widget_add_css_class (widget, "eheader");
 	gtk_style_context_add_provider (gtk_widget_get_style_context (widget),
 		GTK_STYLE_PROVIDER (self->priv->css_provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-	gtk_box_pack_start (vbox, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (vbox, widget, FALSE, FALSE, 0);
 
 	hbox = GTK_BOX (widget);
 
@@ -232,10 +232,10 @@ e_contact_card_constructed (GObject *object)
 		"visible", TRUE,
 		NULL);
 	self->priv->header = GTK_LABEL (widget);
-	gtk_style_context_add_class (gtk_widget_get_style_context (widget), "eheaderlabel");
+	gtk_widget_add_css_class (widget, "eheaderlabel");
 	gtk_style_context_add_provider (gtk_widget_get_style_context (widget),
 		GTK_STYLE_PROVIDER (self->priv->css_provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-	gtk_box_pack_start (hbox, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (hbox, widget, FALSE, FALSE, 0);
 
 	widget = gtk_image_new ();
 	g_object_set (widget,
@@ -248,10 +248,10 @@ e_contact_card_constructed (GObject *object)
 		"icon-name", "stock_contact-list",
 		NULL);
 	self->priv->image = GTK_IMAGE (widget);
-	gtk_style_context_add_class (gtk_widget_get_style_context (widget), "eheaderimage");
+	gtk_widget_add_css_class (widget, "eheaderimage");
 	gtk_style_context_add_provider (gtk_widget_get_style_context (widget),
 		GTK_STYLE_PROVIDER (self->priv->css_provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-	gtk_box_pack_end (hbox, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_end (hbox, widget, FALSE, FALSE, 0);
 
 	widget = gtk_spinner_new ();
 	g_object_set (widget,
@@ -262,10 +262,10 @@ e_contact_card_constructed (GObject *object)
 		"visible", FALSE,
 		NULL);
 	self->priv->spinner = widget;
-	gtk_style_context_add_class (gtk_widget_get_style_context (widget), "eheaderspinner");
+	gtk_widget_add_css_class (widget, "eheaderspinner");
 	gtk_style_context_add_provider (gtk_widget_get_style_context (widget),
 		GTK_STYLE_PROVIDER (self->priv->css_provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-	gtk_box_pack_end (hbox, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_end (hbox, widget, FALSE, FALSE, 0);
 
 	widget = gtk_grid_new ();
 	g_object_set (widget,
@@ -280,7 +280,7 @@ e_contact_card_constructed (GObject *object)
 
 	gtk_style_context_add_provider (gtk_widget_get_style_context (widget),
 		GTK_STYLE_PROVIDER (self->priv->css_provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-	gtk_box_pack_start (vbox, widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (vbox, widget, TRUE, TRUE, 0);
 
 	self->priv->rows_grid = widget;
 
@@ -298,7 +298,7 @@ e_contact_card_constructed (GObject *object)
 			"ellipsize", PANGO_ELLIPSIZE_END,
 			NULL);
 		self->priv->rows[ii].label = GTK_LABEL (widget);
-		gtk_style_context_add_class (gtk_widget_get_style_context (widget), "erowlabel");
+		gtk_widget_add_css_class (widget, "erowlabel");
 		gtk_style_context_add_provider (gtk_widget_get_style_context (widget),
 			GTK_STYLE_PROVIDER (self->priv->css_provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 		gtk_grid_attach (grid, widget, 0, ii, 1, 1);
@@ -313,7 +313,7 @@ e_contact_card_constructed (GObject *object)
 			"ellipsize", PANGO_ELLIPSIZE_END,
 			NULL);
 		self->priv->rows[ii].value = GTK_LABEL (widget);
-		gtk_style_context_add_class (gtk_widget_get_style_context (widget), "erowvalue");
+		gtk_widget_add_css_class (widget, "erowvalue");
 		gtk_style_context_add_provider (gtk_widget_get_style_context (widget),
 			GTK_STYLE_PROVIDER (self->priv->css_provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 		gtk_grid_attach (grid, widget, 1, ii, 1, 1);
@@ -532,7 +532,7 @@ e_contact_card_update (EContactCard *self)
 						gtk_label_set_label (self->priv->rows[row].label, label);
 						gtk_label_set_label (self->priv->rows[row].value, value);
 
-						gtk_widget_get_preferred_height (GTK_WIDGET (self->priv->rows[row].value), &min_height, NULL);
+						e_gtk_widget_get_preferred_height (GTK_WIDGET (self->priv->rows[row].value), &min_height, NULL);
 
 						/* this can happen with odd text encoding saved in the contact */
 						if (!min_height) {
@@ -581,7 +581,7 @@ e_contact_card_update (EContactCard *self)
 					gtk_label_set_label (self->priv->rows[row].label, is_list ? "" : e_contact_pretty_name (label_field));
 					gtk_label_set_label (self->priv->rows[row].value, value);
 
-					gtk_widget_get_preferred_height (GTK_WIDGET (self->priv->rows[row].value), &min_height, NULL);
+					e_gtk_widget_get_preferred_height (GTK_WIDGET (self->priv->rows[row].value), &min_height, NULL);
 
 					/* this can happen with odd text encoding saved in the contact */
 					if (!min_height) {

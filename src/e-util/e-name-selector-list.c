@@ -78,11 +78,10 @@ enl_popup_position (ENameSelectorList *list)
 	gtk_widget_get_allocation (GTK_WIDGET (list), &allocation);
 
 	enl_popup_size (list);
-	window = gtk_widget_get_window (GTK_WIDGET (list));
+	window = e_gtk_widget_get_surface (GTK_WIDGET (list));
 	gdk_window_get_origin (window, &x, &y);
 	y = y + allocation.height;
 
-	gtk_window_move (list->priv->popup, x, y);
 }
 
 static gboolean
@@ -125,12 +124,12 @@ enl_popup_grab (ENameSelectorList *list,
 	if (list->priv->grab_pointer && list->priv->grab_keyboard)
 		return;
 
-	window = gtk_widget_get_window (GTK_WIDGET (list->priv->popup));
+	window = e_gtk_widget_get_surface (GTK_WIDGET (list->priv->popup));
 
 	if (event)
 		device = gdk_event_get_device (event);
 	if (!device)
-		device = gtk_get_current_event_device ();
+		device = e_gtk_get_current_event_device ();
 	if (!device) {
 		GdkDeviceManager *device_manager;
 
@@ -146,7 +145,7 @@ enl_popup_grab (ENameSelectorList *list,
 		keyboard = gdk_device_get_associated_device (device);
 	}
 
-	if (!popup_grab_on_window (window, keyboard, pointer, gtk_get_current_event_time ()))
+	if (!popup_grab_on_window (window, keyboard, pointer, e_gtk_get_current_event_time ()))
 		return;
 
 	gtk_widget_grab_focus ((GtkWidget *) list);
@@ -159,7 +158,7 @@ enl_popup_grab (ENameSelectorList *list,
 		GTK_TREE_MODEL (store));
 
 	/* If any selection of text is present, unselect it */
-	len = strlen (gtk_entry_get_text (GTK_ENTRY (list)));
+	len = strlen (gtk_editable_get_text (GTK_EDITABLE (list)));
 	gtk_editable_select_region (GTK_EDITABLE (list), len, -1);
 
 	gtk_device_grab_add (GTK_WIDGET (list->priv->popup), pointer, TRUE);
@@ -184,7 +183,7 @@ enl_popup_ungrab (ENameSelectorList *list)
 
 static gboolean
 enl_entry_focus_out (ENameSelectorList *list,
-                     GdkEventFocus *event,
+                     GdkEvent *event,
                      gpointer dummy)
 {
 	/* When we lose focus and popup is still present hide it. Dont do it, when we click the popup. Look for grab */
@@ -201,7 +200,7 @@ enl_entry_focus_out (ENameSelectorList *list,
 
 static gboolean
 enl_popup_button_press (GtkWidget *widget,
-                        GdkEventButton *event,
+                        GdkEvent *event,
                         ENameSelectorList *list)
 {
 	if (!gtk_widget_get_mapped (widget))
@@ -215,7 +214,7 @@ enl_popup_button_press (GtkWidget *widget,
 
 static gboolean
 enl_popup_focus_out (GtkWidget *w,
-                     GdkEventFocus *event,
+                     GdkEvent *event,
                      ENameSelectorList *list)
 {
 	/* Just ungrab. We lose focus on button press event */
@@ -225,7 +224,7 @@ enl_popup_focus_out (GtkWidget *w,
 
 static gboolean
 enl_popup_enter_notify (GtkWidget *widget,
-                        GdkEventCrossing *event,
+                        GdkEvent *event,
                         ENameSelectorList *list)
 {
 	if (event->type == GDK_ENTER_NOTIFY && !gtk_widget_has_grab (GTK_WIDGET (list->priv->popup)))
@@ -268,7 +267,7 @@ enl_tree_select_node (ENameSelectorList *list,
 
 static gboolean
 enl_entry_key_press_event (ENameSelectorList *list,
-                           GdkEventKey *event,
+                           GdkEvent *event,
                            gpointer dummy)
 {
 	/* Disabled for now, see https://gitlab.gnome.org/GNOME/evolution/issues/788 */
@@ -280,7 +279,7 @@ enl_entry_key_press_event (ENameSelectorList *list,
 		store = e_name_selector_entry_peek_destination_store (entry);
 
 		enl_popup_position (list);
-		gtk_widget_show_all (GTK_WIDGET (list->priv->popup));
+		gtk_widget_set_visible (GTK_WIDGET (list->priv->popup), TRUE);
 		enl_popup_grab (list, (GdkEvent *) event);
 		list->priv->rows = e_destination_store_get_destination_count (store);
 		enl_popup_size (list);
@@ -420,7 +419,7 @@ menu_deactivate (GtkMenuShell *junk,
 
 static gboolean
 enl_tree_button_press_event (GtkWidget *widget,
-                             GdkEventButton *event,
+                             GdkEvent *event,
                              ENameSelectorList *list)
 {
 	GtkWidget *menu;
@@ -586,7 +585,7 @@ enl_tree_button_press_event (GtkWidget *widget,
 
 static gboolean
 enl_tree_key_press_event (GtkWidget *w,
-                          GdkEventKey *event,
+                          GdkEvent *event,
                           ENameSelectorList *list)
 {
 	if (event->keyval == GDK_KEY_Escape) {
@@ -627,7 +626,7 @@ e_name_selector_list_expand_clicked (ENameSelectorList *list)
 
 	if (!gtk_widget_get_visible (GTK_WIDGET (list->priv->popup))) {
 		enl_popup_position (list);
-		gtk_widget_show_all (GTK_WIDGET (list->priv->popup));
+		gtk_widget_set_visible (GTK_WIDGET (list->priv->popup), TRUE);
 		enl_popup_grab (list, NULL);
 		list->priv->rows = e_destination_store_get_destination_count (store);
 		enl_popup_size (list);
@@ -667,7 +666,7 @@ name_selector_list_dispose (GObject *object)
 	list = E_NAME_SELECTOR_LIST (object);
 
 	if (list->priv->popup) {
-		gtk_widget_destroy (GTK_WIDGET (list->priv->popup));
+		e_gtk_widget_destroy (GTK_WIDGET (list->priv->popup));
 		list->priv->popup = NULL;
 	}
 
@@ -727,8 +726,7 @@ e_name_selector_list_init (ENameSelectorList *list)
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (scroll),
 		GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_set_shadow_type (
-		GTK_SCROLLED_WINDOW (scroll), GTK_SHADOW_NONE);
+	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (scroll), FALSE);
 	gtk_widget_set_size_request (
 		gtk_scrolled_window_get_vscrollbar (
 		GTK_SCROLLED_WINDOW (scroll)), -1, 0);
@@ -739,10 +737,8 @@ e_name_selector_list_init (ENameSelectorList *list)
 	gtk_window_set_resizable (GTK_WINDOW (list->priv->popup), FALSE);
 
 	popup_frame = gtk_frame_new (NULL);
-	gtk_frame_set_shadow_type (
-		GTK_FRAME (popup_frame), GTK_SHADOW_ETCHED_IN);
 
-	gtk_container_add (GTK_CONTAINER (list->priv->popup), popup_frame);
+	e_gtk_container_add (list->priv->popup, popup_frame);
 
 	vgrid = g_object_new (
 		GTK_TYPE_GRID,
@@ -750,10 +746,10 @@ e_name_selector_list_init (ENameSelectorList *list)
 		"column-homogeneous", FALSE,
 		"row-spacing", 0,
 		NULL);
-	gtk_container_add (GTK_CONTAINER (popup_frame), vgrid);
+	e_gtk_container_add (popup_frame, vgrid);
 
-	gtk_container_add (GTK_CONTAINER (scroll), list->priv->tree_view);
-	gtk_container_add (GTK_CONTAINER (vgrid), scroll);
+	e_gtk_container_add (scroll, list->priv->tree_view);
+	e_gtk_container_add (vgrid, scroll);
 
 	g_signal_connect (
 		GTK_WIDGET (list), "focus-out-event",

@@ -346,8 +346,8 @@ picture_gallery_constructed (GObject *object)
 	GtkCellLayout *cell_layout;
 	GtkCellRenderer *renderer;
 	GtkListStore *list_store;
-	GtkTargetEntry *targets;
-	GtkTargetList *list;
+	EGtkTargetEntry *targets;
+	EGtkTargetList *list;
 	gint n_targets;
 
 	/* Chain up to parent's constructed() method. */
@@ -392,16 +392,16 @@ picture_gallery_constructed (GObject *object)
 
 	gtk_cell_layout_add_attribute (cell_layout, renderer, "text", COL_FILENAME_TEXT);
 
-	list = gtk_target_list_new (NULL, 0);
-	gtk_target_list_add_uri_targets (list, 0);
-	targets = gtk_target_table_new_from_list (list, &n_targets);
+	list = e_gtk_target_list_new (NULL, 0);
+	e_gtk_target_list_add_uri_targets (list, 0);
+	targets = e_gtk_target_table_new_from_list (list, &n_targets);
 
 	gtk_icon_view_enable_model_drag_source (
 		icon_view, GDK_BUTTON1_MASK,
 		targets, n_targets, GDK_ACTION_COPY);
 
-	gtk_target_table_free (targets, n_targets);
-	gtk_target_list_unref (list);
+	e_gtk_target_table_free (targets, n_targets);
+	e_gtk_target_list_unref (list);
 
 	e_signal_connect_notify (object, "notify::visible", G_CALLBACK (visible_cb), NULL);
 }

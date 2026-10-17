@@ -180,29 +180,29 @@ e_cal_dialogs_delete_with_comment (GtkWindow *parent,
 		content_area = e_alert_dialog_get_content_area (E_ALERT_DIALOG (dialog));
 		vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 2);
 		gtk_widget_show (vbox);
-		gtk_box_pack_start (GTK_BOX (content_area), vbox, TRUE, TRUE, 0);
+		e_gtk_box_pack_start (GTK_BOX (content_area), vbox, TRUE, TRUE, 0);
 
 		label = gtk_label_new_with_mnemonic (_("Deletion _reason:"));
 		gtk_widget_set_halign (label, GTK_ALIGN_START);
 		gtk_widget_show (label);
-		gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
+		e_gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
 
 		scrolled_window = gtk_scrolled_window_new (NULL, NULL);
 		gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-		gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrolled_window), GTK_SHADOW_IN);
-		gtk_box_pack_start (GTK_BOX (vbox), scrolled_window, TRUE, TRUE, 0);
+		gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (scrolled_window), TRUE);
+		e_gtk_box_pack_start (GTK_BOX (vbox), scrolled_window, TRUE, TRUE, 0);
 		gtk_widget_show (scrolled_window);
 
 		textview = gtk_text_view_new ();
 		gtk_text_view_set_accepts_tab (GTK_TEXT_VIEW (textview), FALSE);
 		gtk_widget_show (textview);
-		gtk_container_add (GTK_CONTAINER (scrolled_window), textview);
+		e_gtk_container_add (scrolled_window, textview);
 		gtk_label_set_mnemonic_widget (GTK_LABEL (label), textview);
 
 		e_spell_text_view_attach (GTK_TEXT_VIEW (textview));
 	}
 
-	result = gtk_dialog_run (GTK_DIALOG (dialog));
+	result = e_gtk_dialog_run (GTK_DIALOG (dialog));
 
 	if (result == GTK_RESPONSE_APPLY && textview) {
 		GtkTextIter text_iter_start, text_iter_end;
@@ -227,7 +227,7 @@ e_cal_dialogs_delete_with_comment (GtkWindow *parent,
 		g_free (comment);
 	}
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 
 	if (out_can_send_notice)
 		*out_can_send_notice = result == GTK_RESPONSE_APPLY;
@@ -316,29 +316,29 @@ e_cal_dialogs_cancel_component (GtkWindow *parent,
 		content_area = e_alert_dialog_get_content_area (E_ALERT_DIALOG (dialog));
 		vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 2);
 		gtk_widget_show (vbox);
-		gtk_box_pack_start (GTK_BOX (content_area), vbox, TRUE, TRUE, 0);
+		e_gtk_box_pack_start (GTK_BOX (content_area), vbox, TRUE, TRUE, 0);
 
 		label = gtk_label_new_with_mnemonic (_("Cancellation _reason:"));
 		gtk_widget_set_halign (label, GTK_ALIGN_START);
 		gtk_widget_show (label);
-		gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
+		e_gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
 
 		scrolled_window = gtk_scrolled_window_new (NULL, NULL);
 		gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-		gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrolled_window), GTK_SHADOW_IN);
-		gtk_box_pack_start (GTK_BOX (vbox), scrolled_window, TRUE, TRUE, 0);
+		gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (scrolled_window), TRUE);
+		e_gtk_box_pack_start (GTK_BOX (vbox), scrolled_window, TRUE, TRUE, 0);
 		gtk_widget_show (scrolled_window);
 
 		textview = gtk_text_view_new ();
 		gtk_text_view_set_accepts_tab (GTK_TEXT_VIEW (textview), FALSE);
 		gtk_widget_show (textview);
-		gtk_container_add (GTK_CONTAINER (scrolled_window), textview);
+		e_gtk_container_add (scrolled_window, textview);
 		gtk_label_set_mnemonic_widget (GTK_LABEL (label), textview);
 
 		e_spell_text_view_attach (GTK_TEXT_VIEW (textview));
 	}
 
-	res = gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_YES;
+	res = e_gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_YES;
 
 	if (res && can_set_cancel_comment && textview) {
 		GtkTextIter text_iter_start, text_iter_end;
@@ -363,7 +363,7 @@ e_cal_dialogs_cancel_component (GtkWindow *parent,
 		g_free (comment);
 	}
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 
 	return res;
 }
@@ -718,7 +718,7 @@ e_cal_dialogs_delete_component (ECalComponent *comp,
 			arg0 = g_strdup_printf ("%d", n_comps);
 	}
 
-	response = e_alert_run_dialog_for_args ((GtkWindow *) gtk_widget_get_toplevel (widget), id, arg0, NULL);
+	response = e_alert_run_dialog_for_args ((GtkWindow *) e_gtk_widget_get_toplevel (widget), id, arg0, NULL);
 	g_free (arg0);
 
 	return response == GTK_RESPONSE_YES;
@@ -765,7 +765,7 @@ e_cal_dialogs_prompt_retract (GtkWidget *parent,
 	}
 
 	dialog = (GtkMessageDialog *) gtk_message_dialog_new_with_markup
-		((GtkWindow *) gtk_widget_get_toplevel (parent), GTK_DIALOG_MODAL,
+		((GtkWindow *) e_gtk_widget_get_toplevel (parent), GTK_DIALOG_MODAL,
 		 GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL, "<b>%s</b>", message);
 	g_free (message);
 
@@ -776,31 +776,30 @@ e_cal_dialogs_prompt_retract (GtkWidget *parent,
 	gtk_box_set_spacing (GTK_BOX (vbox), 12);
 
 	cb = gtk_check_button_new_with_mnemonic (_("_Delete this item from all other recipient’s mailboxes?"));
-	gtk_container_add (GTK_CONTAINER (vbox), cb);
+	e_gtk_container_add (vbox, cb);
 
 	label = gtk_label_new_with_mnemonic (_("_Retract comment"));
 
 	frame = gtk_frame_new (NULL);
 	gtk_frame_set_label_widget ((GtkFrame *) frame, label);
 	gtk_frame_set_label_align ((GtkFrame *) frame, 0, 0);
-	gtk_container_add (GTK_CONTAINER (vbox), frame);
-	gtk_frame_set_shadow_type ((GtkFrame *) frame, GTK_SHADOW_NONE);
+	e_gtk_container_add (vbox, frame);
 
 	sw = gtk_scrolled_window_new (NULL, NULL);
 	gtk_scrolled_window_set_policy ((GtkScrolledWindow *) sw, GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
 	entry = gtk_text_view_new ();
-	gtk_container_add (GTK_CONTAINER (sw), entry);
+	e_gtk_container_add (sw, entry);
 	gtk_label_set_mnemonic_widget ((GtkLabel *) label, entry);
-	gtk_container_add (GTK_CONTAINER (frame), sw);
+	e_gtk_container_add (frame, sw);
 
 	g_signal_connect (
 		cb, "toggled",
 		G_CALLBACK (cb_toggled_cb), entry);
 
-	gtk_widget_show_all ((GtkWidget *) dialog);
+	gtk_widget_set_visible ((GtkWidget *) dialog, TRUE);
 
-	ret_val = (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK);
+	ret_val = (e_gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK);
 
 	if (ret_val) {
 		if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (cb))) {
@@ -818,7 +817,7 @@ e_cal_dialogs_prompt_retract (GtkWidget *parent,
 			*retract = FALSE;
 	}
 
-	gtk_widget_destroy ((GtkWidget *) dialog);
+	e_gtk_widget_destroy ((GtkWidget *) dialog);
 
 	return ret_val;
 }
@@ -949,7 +948,7 @@ goto_dialog_create_widgets (GoToDialog *dlg,
 	grid = GTK_GRID (widget);
 
 	widget = gtk_dialog_get_content_area (GTK_DIALOG (dlg->dialog));
-	gtk_box_pack_start (GTK_BOX (widget), dlg->grid, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (widget), dlg->grid, TRUE, TRUE, 0);
 
 	widget = gtk_combo_box_text_new ();
 	dlg->month_combobox = widget;
@@ -999,7 +998,7 @@ goto_dialog_create_widgets (GoToDialog *dlg,
 	e_calendar_item_set_first_month (calitem, dlg->year_val, dlg->month_val);
 	e_calendar_item_set_get_time_callback (calitem, get_current_time, dlg, NULL);
 
-	gtk_widget_show_all (GTK_WIDGET (grid));
+	gtk_widget_set_visible (GTK_WIDGET (grid), TRUE);
 }
 
 /* Create a copy, thus a move to a distant date will not cause large event lookups */
@@ -1079,11 +1078,11 @@ e_cal_dialogs_goto_run (GtkWindow *parent,
 
 	e_tag_calendar_subscribe (glob_dlg->tag_calendar, glob_dlg->data_model);
 
-	response = gtk_dialog_run (GTK_DIALOG (glob_dlg->dialog));
+	response = e_gtk_dialog_run (GTK_DIALOG (glob_dlg->dialog));
 
 	e_tag_calendar_unsubscribe (glob_dlg->tag_calendar, glob_dlg->data_model);
 
-	gtk_widget_destroy (glob_dlg->dialog);
+	e_gtk_widget_destroy (glob_dlg->dialog);
 
 	if (response == GTK_RESPONSE_ACCEPT)
 		*(glob_dlg->out_move_type) = E_CALENDAR_VIEW_MOVE_TO_TODAY;
@@ -1155,42 +1154,42 @@ e_cal_dialogs_recur_component (ECalClient *client,
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
 
 	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 12);
-	gtk_container_add (GTK_CONTAINER (content_area), hbox);
+	e_gtk_container_add (content_area, hbox);
 
 	placeholder = gtk_label_new ("");
 	gtk_widget_set_size_request (placeholder, 48, 48);
-	gtk_box_pack_start (GTK_BOX (hbox), placeholder, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), placeholder, FALSE, FALSE, 0);
 	gtk_widget_show (placeholder);
 
 	vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
-	gtk_box_pack_start (GTK_BOX (hbox), vbox, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), vbox, TRUE, TRUE, 0);
 	gtk_widget_show (vbox);
 
 	rb_this = gtk_radio_button_new_with_label (NULL, _("This Instance Only"));
-	gtk_container_add (GTK_CONTAINER (vbox), rb_this);
+	e_gtk_container_add (vbox, rb_this);
 
 	if (!e_client_check_capability (E_CLIENT (client), E_CAL_STATIC_CAPABILITY_NO_THISANDPRIOR)) {
 		rb_prior = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (rb_this), _("This and Prior Instances"));
-		gtk_container_add (GTK_CONTAINER (vbox), rb_prior);
+		e_gtk_container_add (vbox, rb_prior);
 	} else
 		rb_prior = NULL;
 
 	if (!e_client_check_capability (E_CLIENT (client), E_CAL_STATIC_CAPABILITY_NO_THISANDFUTURE)) {
 		rb_future = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (rb_this), _("This and Future Instances"));
-		gtk_container_add (GTK_CONTAINER (vbox), rb_future);
+		e_gtk_container_add (vbox, rb_future);
 	} else
 		rb_future = NULL;
 
 	rb_all = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (rb_this), _("All Instances"));
-	gtk_container_add (GTK_CONTAINER (vbox), rb_all);
+	e_gtk_container_add (vbox, rb_all);
 
-	gtk_widget_show_all (hbox);
+	gtk_widget_set_visible (hbox, TRUE);
 
 	placeholder = gtk_label_new ("");
-	gtk_box_pack_start (GTK_BOX (content_area), placeholder, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (content_area), placeholder, FALSE, FALSE, 0);
 	gtk_widget_show (placeholder);
 
-	ret = gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK;
+	ret = e_gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK;
 
 	if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rb_this)))
 		*mod = E_CAL_OBJ_MOD_THIS;
@@ -1202,7 +1201,7 @@ e_cal_dialogs_recur_component (ECalClient *client,
 		*mod = E_CAL_OBJ_MOD_ALL;
 	}
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 
 	return ret;
 }
@@ -1274,7 +1273,7 @@ e_cal_dialogs_select_source (GtkWindow *parent,
 	if (except_source)
 		e_source_selector_dialog_set_except_source (E_SOURCE_SELECTOR_DIALOG (dialog), except_source);
 
-	if (gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_OK)
+	if (e_gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_OK)
 		goto exit;
 
 	selected_source = e_source_selector_dialog_peek_primary_selection (
@@ -1283,7 +1282,7 @@ e_cal_dialogs_select_source (GtkWindow *parent,
 		g_object_ref (selected_source);
 
  exit:
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 
 	return selected_source;
 }
@@ -1344,7 +1343,7 @@ add_checkbox (GtkBox *where,
 	gtk_widget_set_margin_start (checkbox, 12);
 	gtk_widget_set_margin_end (checkbox, 12);
 	gtk_widget_set_halign (checkbox, GTK_ALIGN_START);
-	gtk_box_pack_start (where, checkbox, TRUE, TRUE, 2);
+	e_gtk_box_pack_start (where, checkbox, TRUE, TRUE, 2);
 	gtk_widget_show (checkbox);
 
 	return checkbox;
@@ -1436,7 +1435,7 @@ e_cal_dialogs_send_component (GtkWindow *parent,
 	if (only_new_attendees)
 		ona_checkbox = add_checkbox (GTK_BOX (content_area), _("Notify new attendees _only"));
 
-	res = gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_YES;
+	res = e_gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_YES;
 
 	if (res && strip_alarms) {
 		gboolean send_alarms = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (sa_checkbox));
@@ -1446,7 +1445,7 @@ e_cal_dialogs_send_component (GtkWindow *parent,
 	if (only_new_attendees)
 		*only_new_attendees = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ona_checkbox));
 
-	gtk_widget_destroy (GTK_WIDGET (dialog));
+	e_gtk_widget_destroy (GTK_WIDGET (dialog));
 	g_clear_object (&settings);
 
 	return res;
@@ -1526,7 +1525,7 @@ e_cal_dialogs_send_dragged_or_resized_component (GtkWindow *parent,
 	if (only_new_attendees)
 		ona_checkbox = add_checkbox (GTK_BOX (content_area), _("Notify new attendees _only"));
 
-	res = gtk_dialog_run (GTK_DIALOG (dialog));
+	res = e_gtk_dialog_run (GTK_DIALOG (dialog));
 
 	/*
 	 * When the Escape key is pressed a GTK_RESPONSE_DELETE_EVENT is generated.
@@ -1543,7 +1542,7 @@ e_cal_dialogs_send_dragged_or_resized_component (GtkWindow *parent,
 	if (only_new_attendees)
 		*only_new_attendees = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ona_checkbox));
 
-	gtk_widget_destroy (GTK_WIDGET (dialog));
+	e_gtk_widget_destroy (GTK_WIDGET (dialog));
 	g_clear_object (&settings);
 
 	return res;

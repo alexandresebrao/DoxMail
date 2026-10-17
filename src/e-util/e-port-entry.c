@@ -42,7 +42,7 @@ G_DEFINE_TYPE_WITH_PRIVATE (EPortEntry, e_port_entry, GTK_TYPE_COMBO_BOX)
 static GtkEntry *
 port_entry_get_entry (EPortEntry *port_entry)
 {
-	return GTK_ENTRY (gtk_bin_get_child (GTK_BIN (port_entry)));
+	return GTK_ENTRY (e_gtk_bin_get_child (port_entry));
 }
 
 static gboolean
@@ -56,7 +56,7 @@ port_entry_get_numeric_port (EPortEntry *port_entry,
 
 	entry = port_entry_get_entry (port_entry);
 
-	port_string = gtk_entry_get_text (entry);
+	port_string = gtk_editable_get_text (GTK_EDITABLE (entry));
 	g_return_val_if_fail (port_string != NULL, FALSE);
 
 	errno = 0;
@@ -219,7 +219,7 @@ port_entry_constructed (GObject *object)
 		entry, "changed",
 		G_CALLBACK (port_entry_text_changed), object);
 
-	gtk_entry_set_width_chars (entry, 5);
+	gtk_editable_set_width_chars (GTK_EDITABLE (entry), 5);
 }
 
 static void
@@ -249,8 +249,8 @@ port_entry_get_preferred_width (GtkWidget *widget,
 		pango_font_metrics_get_approximate_digit_width (metrics));
 
 	/* Preferred width of the entry */
-	entry = gtk_bin_get_child (GTK_BIN (widget));
-	gtk_widget_get_preferred_width (entry, NULL, &parent_entry_width_min);
+	entry = e_gtk_bin_get_child (widget);
+	e_gtk_widget_get_preferred_width (entry, NULL, &parent_entry_width_min);
 
 	/* Preferred width of a standard combobox */
 	GTK_WIDGET_CLASS (e_port_entry_parent_class)->
@@ -434,7 +434,7 @@ e_port_entry_set_port (EPortEntry *port_entry,
 
 	entry = port_entry_get_entry (port_entry);
 	port_string = g_strdup_printf ("%i", port);
-	gtk_entry_set_text (entry, port_string);
+	gtk_editable_set_text (GTK_EDITABLE (entry), port_string);
 	g_free (port_string);
 }
 

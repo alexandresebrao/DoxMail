@@ -45,17 +45,16 @@ emfe_show_html (GtkWindow *parent,
 		_("_Close"), GTK_RESPONSE_CLOSE,
 		NULL);
 	gtk_window_set_default_size (GTK_WINDOW (dialog), 480, 410);
-	gtk_window_set_position (GTK_WINDOW (dialog), parent ? GTK_WIN_POS_CENTER_ON_PARENT : GTK_WIN_POS_CENTER);
 
 	container = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
 
 	widget = gtk_scrolled_window_new (NULL, NULL);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (widget), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (widget), GTK_SHADOW_IN);
+	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (widget), TRUE);
 	gtk_widget_set_hexpand (widget, TRUE);
 	gtk_widget_set_vexpand (widget, TRUE);
-	gtk_container_add (GTK_CONTAINER (container), widget);
-	gtk_container_set_border_width (GTK_CONTAINER (widget), 12);
+	e_gtk_container_add (container, widget);
+	e_gtk_widget_set_border_width (widget, 12);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -69,7 +68,7 @@ emfe_show_html (GtkWindow *parent,
 		"visible", TRUE,
 		"editable", FALSE,
 		NULL);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 
 	container = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
 	searchbar = e_search_bar_new (E_WEB_VIEW (widget));
@@ -77,13 +76,13 @@ emfe_show_html (GtkWindow *parent,
 		"can-hide", FALSE,
 		"visible", TRUE,
 		NULL);
-	gtk_container_add (GTK_CONTAINER (container), searchbar);
+	e_gtk_container_add (container, searchbar);
 
 	e_web_view_load_string (E_WEB_VIEW (widget), html);
 
-	gtk_dialog_run (GTK_DIALOG (dialog));
+	e_gtk_dialog_run (GTK_DIALOG (dialog));
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 }
 
 /*  Some parts require special processing, which cannot access session from their place */
@@ -412,11 +411,11 @@ em_filter_editor_construct (EMFilterEditor *fe,
 	column = gtk_tree_view_get_column (GTK_TREE_VIEW (E_RULE_EDITOR (fe)->list), 0);
 	gtk_tree_view_column_set_visible (column, TRUE);
 
-	action_area = gtk_dialog_get_action_area (GTK_DIALOG (fe));
+	action_area = e_gtk_dialog_get_action_area (GTK_DIALOG (fe));
 	button = gtk_button_new_with_mnemonic (_("De_scribe Filters…"));
 	gtk_widget_show (button);
-	gtk_box_pack_start (GTK_BOX (action_area), button, FALSE, TRUE, 0);
-	gtk_box_reorder_child (GTK_BOX (action_area), button, 0);
+	e_gtk_box_pack_start (GTK_BOX (action_area), button, FALSE, TRUE, 0);
+	e_gtk_box_reorder_child (GTK_BOX (action_area), button, 0);
 
 	if (GTK_IS_BUTTON_BOX (action_area))
 		gtk_button_box_set_child_secondary (GTK_BUTTON_BOX (action_area), button, TRUE);

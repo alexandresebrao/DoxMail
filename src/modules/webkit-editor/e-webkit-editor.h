@@ -17,7 +17,7 @@
 #ifndef E_WEBKIT_EDITOR_H
 #define E_WEBKIT_EDITOR_H
 
-#include <webkit2/webkit2.h>
+#include <webkit/webkit.h>
 
 /* Standard GObject macros */
 #define E_TYPE_WEBKIT_EDITOR \
@@ -53,7 +53,7 @@ struct _EWebKitEditorClass {
 	WebKitWebViewClass parent_class;
 
 	gboolean	(*popup_event)		(EWebKitEditor *wk_editor,
-						 GdkEventButton *event);
+						 GdkEvent *event);
 	void		(*paste_primary_clipboard)
 						(EWebKitEditor *wk_editor);
 };

@@ -29,6 +29,7 @@
 
 #include <libgnomecanvas/libgnomecanvas.h>
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 #include <libxml/tree.h>
 
 #include <e-util/e-printable.h>
@@ -168,7 +169,7 @@ struct _ETable {
 	gint last_drop_x;
 	gint last_drop_y;
 	gint last_drop_time;
-	GdkDragContext *last_drop_context;
+	EGtkDragContext *last_drop_context;
 
 	gint drag_row;
 	gint drag_col;
@@ -218,41 +219,41 @@ struct _ETableClass {
 	void		(*table_drag_begin)	 (ETable *table,
 						 gint row,
 						 gint col,
-						 GdkDragContext *context);
+						 EGtkDragContext *context);
 	void		(*table_drag_end)	(ETable *table,
 						 gint row,
 						 gint col,
-						 GdkDragContext *context);
+						 EGtkDragContext *context);
 	void		(*table_drag_data_get)	(ETable *table,
 						 gint row,
 						 gint col,
-						 GdkDragContext *context,
-						 GtkSelectionData *selection_data,
+						 EGtkDragContext *context,
+						 EGtkSelectionData *selection_data,
 						 guint info,
 						 guint time);
 	void		(*table_drag_data_delete)
 						(ETable *table,
 						 gint row,
 						 gint col,
-						 GdkDragContext *context);
+						 EGtkDragContext *context);
 
 	/* Target side drag signals */
 	void		(*table_drag_leave)	(ETable *table,
 						 gint row,
 						 gint col,
-						 GdkDragContext *context,
+						 EGtkDragContext *context,
 						 guint time);
 	gboolean	(*table_drag_motion)	(ETable *table,
 						 gint row,
 						 gint col,
-						 GdkDragContext *context,
+						 EGtkDragContext *context,
 						 gint x,
 						 gint y,
 						 guint time);
 	gboolean	(*table_drag_drop)	(ETable *table,
 						 gint row,
 						 gint col,
-						 GdkDragContext *context,
+						 EGtkDragContext *context,
 						 gint x,
 						 gint y,
 						 guint time);
@@ -260,10 +261,10 @@ struct _ETableClass {
 						(ETable *table,
 						 gint row,
 						 gint col,
-						 GdkDragContext *context,
+						 EGtkDragContext *context,
 						 gint x,
 						 gint y,
-						 GtkSelectionData *selection_data,
+						 EGtkSelectionData *selection_data,
 						 guint info,
 						 guint time);
 };
@@ -329,43 +330,39 @@ ESelectionModel *e_table_get_selection_model	(ETable *table);
 void		e_table_drag_get_data		(ETable *table,
 						 gint row,
 						 gint col,
-						 GdkDragContext *context,
-						 GdkAtom target,
+						 EGtkDragContext *context,
+						 EGtkAtom target,
 						 guint32 time);
 void		e_table_drag_highlight	(ETable *table,
 						 gint row,
 						 gint col); /* col == -1 to highlight entire row. */
 void		e_table_drag_unhighlight	(ETable *table);
 void		e_table_drag_dest_set		(ETable *table,
-						 GtkDestDefaults flags,
-						 const GtkTargetEntry *targets,
+						 EGtkDestDefaults flags,
+						 const EGtkTargetEntry *targets,
 						 gint n_targets,
 						 GdkDragAction actions);
-void		e_table_drag_dest_set_proxy	(ETable *table,
-						 GdkWindow *proxy_window,
-						 GdkDragProtocol protocol,
-						 gboolean use_coordinates);
 
 /* There probably should be functions for setting the targets
- * as a GtkTargetList
+ * as a EGtkTargetList
  */
 void		e_table_drag_dest_unset		(GtkWidget *widget);
 
 /* Source side */
 void		e_table_drag_source_set		(ETable *table,
 						 GdkModifierType start_button_mask,
-						 const GtkTargetEntry *targets,
+						 const EGtkTargetEntry *targets,
 						 gint n_targets,
 						 GdkDragAction actions);
 void		e_table_drag_source_unset	(ETable *table);
 
 /* There probably should be functions for setting the targets
- * as a GtkTargetList
+ * as a EGtkTargetList
  */
-GdkDragContext *e_table_drag_begin		(ETable *table,
+EGtkDragContext *e_table_drag_begin		(ETable *table,
 						 gint row,
 						 gint col,
-						 GtkTargetList *targets,
+						 EGtkTargetList *targets,
 						 GdkDragAction actions,
 						 gint button,
 						 GdkEvent *event);

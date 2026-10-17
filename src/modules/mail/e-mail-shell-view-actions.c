@@ -484,9 +484,9 @@ action_mail_folder_edit_sort_order_cb (EUIAction *action,
 
 	dialog = e_mail_folder_sort_order_dialog_new (window, store, selected_uri);
 
-	gtk_dialog_run (GTK_DIALOG (dialog));
+	e_gtk_dialog_run (GTK_DIALOG (dialog));
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 	g_object_unref (store);
 	g_free (selected_uri);
 }
@@ -711,7 +711,7 @@ mark_all_read_prompt_user (EMailShellView *mail_shell_view,
 		keymap = gdk_keymap_get_for_display (display);
 
 		settings = e_util_ref_settings ("org.gnome.evolution.mail");
-		if ((gdk_keymap_get_modifier_state (keymap) & (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK)) != GDK_SHIFT_MASK &&
+		if ((gdk_keymap_get_modifier_state (keymap) & (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_ALT_MASK)) != GDK_SHIFT_MASK &&
 		    !g_settings_get_boolean (settings, "prompt-on-mark-all-read")) {
 			g_object_unref (settings);
 			return MARK_ALL_READ_CURRENT_ONLY;
@@ -1311,7 +1311,7 @@ action_mail_goto_folder_cb (EUIAction *action,
 		}
 	}
 
-	if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
+	if (e_gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
 		uri = em_folder_selector_get_selected_uri (selector);
 
 		if (uri != NULL) {
@@ -1320,7 +1320,7 @@ action_mail_goto_folder_cb (EUIAction *action,
 		}
 	}
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 
 	g_clear_object (&folder);
 }
@@ -1596,8 +1596,8 @@ action_mail_tools_subscriptions_cb (EUIAction *action,
 	if (store != NULL)
 		g_object_unref (store);
 
-	gtk_dialog_run (GTK_DIALOG (dialog));
-	gtk_widget_destroy (dialog);
+	e_gtk_dialog_run (GTK_DIALOG (dialog));
+	e_gtk_widget_destroy (dialog);
 }
 
 void

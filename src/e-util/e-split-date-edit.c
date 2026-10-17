@@ -68,14 +68,14 @@ e_split_date_edit_extract_combo_value (GtkComboBox *combo,
 		GtkWidget *entry;
 		guint value;
 
-		entry = gtk_bin_get_child (GTK_BIN (combo));
+		entry = e_gtk_bin_get_child (combo);
 
 		g_warn_if_fail (GTK_IS_ENTRY (entry));
 
 		if (!GTK_IS_ENTRY (entry))
 			return 0;
 
-		text = gtk_entry_get_text (GTK_ENTRY (entry));
+		text = gtk_editable_get_text (GTK_EDITABLE (entry));
 		if (!text || !*text)
 			return 0;
 
@@ -203,9 +203,9 @@ e_split_date_edit_reorder_parts (ESplitDateEdit *self)
 	container = GTK_CONTAINER (self);
 	grid = GTK_GRID (self);
 
-	gtk_container_remove (container, GTK_WIDGET (self->year_entry));
-	gtk_container_remove (container, GTK_WIDGET (self->month_combo));
-	gtk_container_remove (container, GTK_WIDGET (self->day_combo));
+	e_gtk_container_remove (container, GTK_WIDGET (self->year_entry));
+	e_gtk_container_remove (container, GTK_WIDGET (self->month_combo));
+	e_gtk_container_remove (container, GTK_WIDGET (self->day_combo));
 
 	gtk_grid_attach (grid, GTK_WIDGET (self->year_entry), year_index, 0, 1, 1);
 	gtk_grid_attach (grid, GTK_WIDGET (self->month_combo), month_index, 0, 1, 1);
@@ -257,7 +257,7 @@ e_split_date_edit_update_content (ESplitDateEdit *self)
 		buff[0] = '\0';
 	else
 		g_snprintf (buff, sizeof (buff) - 1, "%u", self->year);
-	gtk_entry_set_text (self->year_entry, buff);
+	gtk_editable_set_text (GTK_EDITABLE (self->year_entry), buff);
 
 	gtk_combo_box_set_active (self->month_combo, self->month);
 
@@ -324,7 +324,7 @@ e_split_date_edit_part_changed (GtkWidget *changed_widget,
 
 	g_return_if_fail (E_IS_SPLIT_DATE_EDIT (self));
 
-	text = gtk_entry_get_text (self->year_entry);
+	text = gtk_editable_get_text (GTK_EDITABLE (self->year_entry));
 	year = text ? (guint) g_ascii_strtoull (text, NULL, 10) : 0;
 	month = e_split_date_edit_extract_combo_value (self->month_combo, 12);
 	day = e_split_date_edit_extract_combo_value (self->day_combo, 31);
@@ -416,12 +416,12 @@ e_split_date_edit_select_clicked_cb (GtkButton *button,
 	g_signal_connect_object (widget, "clicked",
 		G_CALLBACK (e_split_date_edit_none_clicked_cb), self, 0);
 
-	gtk_widget_show_all (GTK_WIDGET (grid));
+	gtk_widget_set_visible (GTK_WIDGET (grid), TRUE);
 
 	widget = gtk_popover_new (GTK_WIDGET (button));
 	gtk_popover_set_position (GTK_POPOVER (widget), GTK_POS_BOTTOM);
-	gtk_container_add (GTK_CONTAINER (widget), GTK_WIDGET (grid));
-	gtk_container_set_border_width (GTK_CONTAINER (widget), 6);
+	e_gtk_container_add (widget, GTK_WIDGET (grid));
+	e_gtk_widget_set_border_width (widget, 6);
 
 	self->popover = widget;
 	g_object_weak_ref (G_OBJECT (self->popover), (GWeakNotify) g_nullify_pointer, &self->popover);
@@ -489,7 +489,7 @@ e_split_date_edit_constructed (GObject *object)
 	gtk_grid_attach (grid, widget, 2, 0, 1, 1);
 	self->day_combo = GTK_COMBO_BOX (widget);
 
-	widget = gtk_button_new_from_icon_name ("edit-find", GTK_ICON_SIZE_BUTTON);
+	widget = gtk_button_new_from_icon_name ("edit-find");
 	g_object_set (widget,
 		"visible", TRUE,
 		"margin-start", 4,

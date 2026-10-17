@@ -149,20 +149,20 @@ enum DndDropType {
 	NUM_DROP_TYPES
 };
 
-static GtkTargetEntry drag_types[] = {
+static EGtkTargetEntry drag_types[] = {
 	{ (gchar *) "x-folder",         0, DND_DRAG_TYPE_FOLDER         },
 	{ (gchar *) "text/uri-list",    0, DND_DRAG_TYPE_TEXT_URI_LIST  },
 };
 
-static GtkTargetEntry drop_types[] = {
+static EGtkTargetEntry drop_types[] = {
 	{ (gchar *) "x-uid-list" ,      0, DND_DROP_TYPE_UID_LIST       },
 	{ (gchar *) "x-folder",         0, DND_DROP_TYPE_FOLDER         },
 	{ (gchar *) "message/rfc822",   0, DND_DROP_TYPE_MESSAGE_RFC822 },
 	{ (gchar *) "text/uri-list",    0, DND_DROP_TYPE_TEXT_URI_LIST  },
 };
 
-static GdkAtom drag_atoms[NUM_DRAG_TYPES];
-static GdkAtom drop_atoms[NUM_DROP_TYPES];
+static EGtkAtom drag_atoms[NUM_DRAG_TYPES];
+static EGtkAtom drop_atoms[NUM_DROP_TYPES];
 
 static guint signals[LAST_SIGNAL] = { 0 };
 
@@ -651,8 +651,8 @@ folder_tree_cell_edited_cb (EMFolderTree *folder_tree,
 	 *     em_folder_tree_rename_folder_async()
 	 *     em_folder_tree_rename_folder_finish() */
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (folder_tree));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (folder_tree));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	tree_view = GTK_TREE_VIEW (folder_tree);
 	model = gtk_tree_view_get_model (tree_view);
@@ -1179,10 +1179,10 @@ folder_tree_set_session (EMFolderTree *folder_tree,
 	folder_tree->priv->session = g_object_ref (session);
 }
 
-static GtkTargetList *
+static EGtkTargetList *
 folder_tree_get_copy_target_list (EMFolderTree *folder_tree)
 {
-	GtkTargetList *target_list = NULL;
+	EGtkTargetList *target_list = NULL;
 
 	if (E_IS_SELECTABLE (folder_tree->priv->selectable)) {
 		ESelectable *selectable;
@@ -1194,10 +1194,10 @@ folder_tree_get_copy_target_list (EMFolderTree *folder_tree)
 	return target_list;
 }
 
-static GtkTargetList *
+static EGtkTargetList *
 folder_tree_get_paste_target_list (EMFolderTree *folder_tree)
 {
-	GtkTargetList *target_list = NULL;
+	EGtkTargetList *target_list = NULL;
 
 	if (E_IS_SELECTABLE (folder_tree->priv->selectable)) {
 		ESelectable *selectable;
@@ -1499,7 +1499,7 @@ folder_tree_constructed (GObject *object)
 
 static gboolean
 folder_tree_button_press_event (GtkWidget *widget,
-                                GdkEventButton *event)
+                                GdkEvent *event)
 {
 	EMFolderTree *self = EM_FOLDER_TREE (widget);
 	GtkTreeSelection *selection;
@@ -1545,7 +1545,7 @@ chainup:
 
 static gboolean
 folder_tree_key_press_event (GtkWidget *widget,
-                             GdkEventKey *event)
+                             GdkEvent *event)
 {
 	EMFolderTree *self;
 	GtkTreeSelection *selection;
@@ -1914,7 +1914,7 @@ em_folder_tree_init (EMFolderTree *folder_tree)
 	g_object_unref (settings);
 
 	/* FIXME Gross hack. */
-	gtk_widget_set_can_focus (GTK_WIDGET (folder_tree), TRUE);
+	gtk_widget_set_focusable (GTK_WIDGET (folder_tree), TRUE);
 
 	a11y = gtk_widget_get_accessible (GTK_WIDGET (folder_tree));
 	atk_object_set_name (a11y, _("Mail Folder Tree"));
@@ -1938,7 +1938,7 @@ em_folder_tree_set_selectable_widget (EMFolderTree *folder_tree,
 static void
 folder_tree_selectable_update_actions (ESelectable *selectable,
 				       EFocusTracker *focus_tracker,
-				       GdkAtom *clipboard_targets,
+				       EGtkAtom *clipboard_targets,
 				       gint n_clipboard_targets)
 {
 	EMFolderTree *folder_tree;
@@ -1979,7 +1979,7 @@ folder_tree_selectable_cut_clipboard (ESelectable *selectable)
 	if (iface->cut_clipboard == NULL)
 		return;
 
-	if (gtk_widget_get_can_focus (proxy))
+	if (gtk_widget_get_focusable (proxy))
 		gtk_widget_grab_focus (proxy);
 
 	iface->cut_clipboard (E_SELECTABLE (proxy));
@@ -2003,7 +2003,7 @@ folder_tree_selectable_copy_clipboard (ESelectable *selectable)
 	if (iface->copy_clipboard == NULL)
 		return;
 
-	if (gtk_widget_get_can_focus (proxy))
+	if (gtk_widget_get_focusable (proxy))
 		gtk_widget_grab_focus (proxy);
 
 	iface->copy_clipboard (E_SELECTABLE (proxy));
@@ -2027,7 +2027,7 @@ folder_tree_selectable_paste_clipboard (ESelectable *selectable)
 	if (iface->paste_clipboard == NULL)
 		return;
 
-	if (gtk_widget_get_can_focus (proxy))
+	if (gtk_widget_get_focusable (proxy))
 		gtk_widget_grab_focus (proxy);
 
 	iface->paste_clipboard (E_SELECTABLE (proxy));
@@ -2051,7 +2051,7 @@ folder_tree_selectable_delete_selection (ESelectable *selectable)
 	if (iface->delete_selection == NULL)
 		return;
 
-	if (gtk_widget_get_can_focus (proxy))
+	if (gtk_widget_get_focusable (proxy))
 		gtk_widget_grab_focus (proxy);
 
 	iface->delete_selection (E_SELECTABLE (proxy));
@@ -2075,7 +2075,7 @@ folder_tree_selectable_select_all (ESelectable *selectable)
 	if (iface->select_all == NULL)
 		return;
 
-	if (gtk_widget_get_can_focus (proxy))
+	if (gtk_widget_get_focusable (proxy))
 		gtk_widget_grab_focus (proxy);
 
 	iface->select_all (E_SELECTABLE (proxy));
@@ -2166,7 +2166,7 @@ em_folder_tree_get_session (EMFolderTree *folder_tree)
 
 static void
 tree_drag_begin (GtkWidget *widget,
-                 GdkDragContext *context,
+                 EGtkDragContext *context,
                  EMFolderTree *folder_tree)
 {
 	EMFolderTreePrivate *priv = folder_tree->priv;
@@ -2186,7 +2186,7 @@ tree_drag_begin (GtkWidget *widget,
 	priv->drag_row = gtk_tree_row_reference_new (model, path);
 
 	s = gtk_tree_view_create_row_drag_icon (tree_view, path);
-	gtk_drag_set_icon_surface (context, s);
+	e_gtk_drag_set_icon_surface (context, s);
 	cairo_surface_destroy (s);
 
 	gtk_tree_path_free (path);
@@ -2194,8 +2194,8 @@ tree_drag_begin (GtkWidget *widget,
 
 static void
 tree_drag_data_get (GtkWidget *widget,
-                    GdkDragContext *context,
-                    GtkSelectionData *selection,
+                    EGtkDragContext *context,
+                    EGtkSelectionData *selection,
                     guint info,
                     guint time,
                     EMFolderTree *folder_tree)
@@ -2232,7 +2232,7 @@ tree_drag_data_get (GtkWidget *widget,
 	switch (info) {
 	case DND_DRAG_TYPE_FOLDER:
 		/* dragging to a new location in the folder tree */
-		gtk_selection_data_set (
+		e_gtk_selection_data_set (
 			selection, drag_atoms[info], 8,
 			(guchar *) folder_uri, strlen (folder_uri) + 1);
 		break;
@@ -2350,8 +2350,8 @@ ask_drop_folder (EMFolderTree *folder_tree,
 	}
 
 	parent = NULL;
-	widget = gtk_widget_get_toplevel (GTK_WIDGET (folder_tree));
-	if (widget && gtk_widget_is_toplevel (widget) && GTK_IS_WINDOW (widget))
+	widget = e_gtk_widget_get_toplevel (GTK_WIDGET (folder_tree));
+	if (widget && e_gtk_widget_is_toplevel (widget) && GTK_IS_WINDOW (widget))
 		parent = GTK_WINDOW (widget);
 
 	widget = e_alert_dialog_new_for_args (
@@ -2361,8 +2361,8 @@ ask_drop_folder (EMFolderTree *folder_tree,
 		des_full_name && *des_full_name ? des_folder :
 			camel_service_get_display_name (CAMEL_SERVICE (des_store)),
 		NULL);
-	response = gtk_dialog_run (GTK_DIALOG (widget));
-	gtk_widget_destroy (widget);
+	response = e_gtk_dialog_run (GTK_DIALOG (widget));
+	e_gtk_widget_destroy (widget);
 
 	if (response == GTK_RESPONSE_OK)
 		g_settings_set_string (settings, key, "always");
@@ -2383,10 +2383,10 @@ struct _DragDataReceivedAsync {
 	MailMsg base;
 
 	/* input data */
-	GdkDragContext *context;
+	EGtkDragContext *context;
 
 	/* Only selection->data and selection->length are valid */
-	GtkSelectionData *selection;
+	EGtkSelectionData *selection;
 
 	EMFolderTree *folder_tree;
 	EMailSession *session;
@@ -2411,7 +2411,7 @@ folder_tree_drop_folder (struct _DragDataReceivedAsync *m)
 	const gchar *full_name;
 	const guchar *data;
 
-	data = gtk_selection_data_get_data (m->selection);
+	data = e_gtk_selection_data_get_data (m->selection);
 
 	d (printf (" * Drop folder '%s' onto '%s'\n", data, m->full_name));
 
@@ -2454,7 +2454,7 @@ folder_tree_drop_async__desc (struct _DragDataReceivedAsync *m)
 {
 	const guchar *data;
 
-	data = gtk_selection_data_get_data (m->selection);
+	data = e_gtk_selection_data_get_data (m->selection);
 
 	if (m->info == DND_DROP_TYPE_FOLDER) {
 		gchar *folder_name = NULL;
@@ -2544,7 +2544,7 @@ folder_tree_drop_async__free (struct _DragDataReceivedAsync *m)
 	g_object_unref (m->store);
 	g_free (m->full_name);
 	g_free (m->dest_folder_uri);
-	gtk_selection_data_free (m->selection);
+	e_gtk_selection_data_free (m->selection);
 }
 
 static MailMsgInfo folder_tree_drop_async_info = {
@@ -2564,10 +2564,10 @@ tree_drag_data_action (struct _DragDataReceivedAsync *m)
 
 static void
 tree_drag_data_received (GtkWidget *widget,
-                         GdkDragContext *context,
+                         EGtkDragContext *context,
                          gint x,
                          gint y,
-                         GtkSelectionData *selection,
+                         EGtkSelectionData *selection,
                          guint info,
                          guint time,
                          EMFolderTree *folder_tree)
@@ -2592,20 +2592,20 @@ tree_drag_data_received (GtkWidget *widget,
 		return;
 
 	/* this means we are receiving no data */
-	if (gtk_selection_data_get_data (selection) == NULL) {
-		gtk_drag_finish (context, FALSE, FALSE, GDK_CURRENT_TIME);
+	if (e_gtk_selection_data_get_data (selection) == NULL) {
+		e_gtk_drag_finish (context, FALSE, FALSE, GDK_CURRENT_TIME);
 		gtk_tree_path_free (dest_path);
 		return;
 	}
 
-	if (gtk_selection_data_get_length (selection) == -1) {
-		gtk_drag_finish (context, FALSE, FALSE, GDK_CURRENT_TIME);
+	if (e_gtk_selection_data_get_length (selection) == -1) {
+		e_gtk_drag_finish (context, FALSE, FALSE, GDK_CURRENT_TIME);
 		gtk_tree_path_free (dest_path);
 		return;
 	}
 
 	if (!gtk_tree_model_get_iter (model, &iter, dest_path)) {
-		gtk_drag_finish (context, FALSE, FALSE, GDK_CURRENT_TIME);
+		e_gtk_drag_finish (context, FALSE, FALSE, GDK_CURRENT_TIME);
 		gtk_tree_path_free (dest_path);
 		return;
 	}
@@ -2618,7 +2618,7 @@ tree_drag_data_received (GtkWidget *widget,
 
 	/* make sure user isn't try to drop on a placeholder row */
 	if (full_name == NULL && !is_store) {
-		gtk_drag_finish (context, FALSE, FALSE, GDK_CURRENT_TIME);
+		e_gtk_drag_finish (context, FALSE, FALSE, GDK_CURRENT_TIME);
 		gtk_tree_path_free (dest_path);
 		g_clear_object (&store);
 		return;
@@ -2626,10 +2626,10 @@ tree_drag_data_received (GtkWidget *widget,
 
 	if (info == DND_DROP_TYPE_FOLDER &&
 	    !ask_drop_folder (folder_tree,
-			      (const gchar *) gtk_selection_data_get_data (selection),
+			      (const gchar *) e_gtk_selection_data_get_data (selection),
 			      full_name, store,
-			      gdk_drag_context_get_selected_action (context) == GDK_ACTION_MOVE)) {
-		gtk_drag_finish (context, FALSE, FALSE, GDK_CURRENT_TIME);
+			      e_gtk_drag_context_get_selected_action (context) == GDK_ACTION_MOVE)) {
+		e_gtk_drag_finish (context, FALSE, FALSE, GDK_CURRENT_TIME);
 		gtk_tree_path_free (dest_path);
 		g_clear_object (&store);
 		g_free (full_name);
@@ -2643,11 +2643,11 @@ tree_drag_data_received (GtkWidget *widget,
 	m->store = g_object_ref (store);
 	m->full_name = full_name;
 	m->dest_folder_uri = NULL;
-	m->action = gdk_drag_context_get_selected_action (context);
+	m->action = e_gtk_drag_context_get_selected_action (context);
 	m->info = info;
 
 	/* need to copy, goes away once we exit */
-	m->selection = gtk_selection_data_copy (selection);
+	m->selection = e_gtk_selection_data_copy (selection);
 
 	tree_drag_data_action (m);
 	gtk_tree_path_free (dest_path);
@@ -2664,9 +2664,9 @@ is_special_local_folder (const gchar *name)
 		|| strcmp (name, "Templates") == 0;
 }
 
-static GdkAtom
+static EGtkAtom
 folder_tree_drop_target (EMFolderTree *folder_tree,
-                         GdkDragContext *context,
+                         EGtkDragContext *context,
                          GtkTreePath *path,
                          GdkDragAction *actions,
                          GdkDragAction *suggested_action)
@@ -2676,7 +2676,7 @@ folder_tree_drop_target (EMFolderTree *folder_tree,
 	gchar *src_full_name = NULL;
 	CamelStore *dst_store = NULL;
 	CamelStore *src_store = NULL;
-	GdkAtom atom = GDK_NONE;
+	EGtkAtom atom = E_GTK_ATOM_NONE;
 	gboolean is_store;
 	GtkTreeModel *model;
 	GtkTreeIter iter;
@@ -2692,11 +2692,11 @@ folder_tree_drop_target (EMFolderTree *folder_tree,
 	model = gtk_tree_view_get_model (GTK_TREE_VIEW (folder_tree));
 
 	if (!gtk_tree_model_get_iter (model, &iter, path))
-		return GDK_NONE;
+		return E_GTK_ATOM_NONE;
 
 	/* We may override these further down. */
-	*actions = gdk_drag_context_get_actions (context);
-	*suggested_action = gdk_drag_context_get_suggested_action (context);
+	*actions = e_gtk_drag_context_get_actions (context);
+	*suggested_action = e_gtk_drag_context_get_suggested_action (context);
 
 	gtk_tree_model_get (
 		model, &iter,
@@ -2708,7 +2708,7 @@ folder_tree_drop_target (EMFolderTree *folder_tree,
 	uid = camel_service_get_uid (CAMEL_SERVICE (dst_store));
 	dst_is_vfolder = (g_strcmp0 (uid, E_MAIL_SESSION_VFOLDER_UID) == 0);
 
-	targets = gdk_drag_context_list_targets (context);
+	targets = e_gtk_drag_context_list_targets (context);
 
 	/* Check for special destinations */
 
@@ -2752,7 +2752,7 @@ folder_tree_drop_target (EMFolderTree *folder_tree,
 			if ((src_flags & CAMEL_FOLDER_TYPE_MASK) == CAMEL_FOLDER_TYPE_INBOX ||
 			    (src_flags & CAMEL_FOLDER_SYSTEM) != 0) {
 				/* allow only copy of the Inbox and other system folders */
-				GdkAtom xfolder;
+				EGtkAtom xfolder;
 
 				/* force copy for special local folders */
 				*suggested_action = GDK_ACTION_COPY;
@@ -2787,7 +2787,7 @@ folder_tree_drop_target (EMFolderTree *folder_tree,
 
 		/* Don't allow moving any of the special local folders. */
 		if (src_is_local && is_special_local_folder (src_full_name)) {
-			GdkAtom xfolder;
+			EGtkAtom xfolder;
 
 			/* force copy for special local folders */
 			*suggested_action = GDK_ACTION_COPY;
@@ -2824,7 +2824,7 @@ folder_tree_drop_target (EMFolderTree *folder_tree,
 			*suggested_action = GDK_ACTION_MOVE;
 
 			if (dst_is_vfolder) {
-				GdkAtom xfolder;
+				EGtkAtom xfolder;
 
 				xfolder = drop_atoms[DND_DROP_TYPE_FOLDER];
 				while (targets != NULL) {
@@ -2848,7 +2848,7 @@ folder_tree_drop_target (EMFolderTree *folder_tree,
 	/* Now we either have a store or a normal folder. */
 
 	if (is_store) {
-		GdkAtom xfolder;
+		EGtkAtom xfolder;
 
 		xfolder = drop_atoms[DND_DROP_TYPE_FOLDER];
 		while (targets != NULL) {
@@ -2885,7 +2885,7 @@ done:
 
 static gboolean
 tree_drag_drop (GtkWidget *widget,
-                GdkDragContext *context,
+                EGtkDragContext *context,
                 gint x,
                 gint y,
                 guint time,
@@ -2898,7 +2898,7 @@ tree_drag_drop (GtkWidget *widget,
 	GdkDragAction actions;
 	GdkDragAction suggested_action;
 	GtkTreePath *path;
-	GdkAtom target;
+	EGtkAtom target;
 
 	tree_view = GTK_TREE_VIEW (folder_tree);
 
@@ -2925,12 +2925,12 @@ tree_drag_drop (GtkWidget *widget,
 
 	gtk_tree_path_free (path);
 
-	return (target != GDK_NONE);
+	return (target != E_GTK_ATOM_NONE);
 }
 
 static void
 tree_drag_end (GtkWidget *widget,
-               GdkDragContext *context,
+               EGtkDragContext *context,
                EMFolderTree *folder_tree)
 {
 	EMFolderTreePrivate *priv = folder_tree->priv;
@@ -2942,7 +2942,7 @@ tree_drag_end (GtkWidget *widget,
 
 static void
 tree_drag_leave (GtkWidget *widget,
-                 GdkDragContext *context,
+                 EGtkDragContext *context,
                  guint time,
                  EMFolderTree *folder_tree)
 {
@@ -3038,7 +3038,7 @@ tree_autoexpand (gpointer user_data)
 
 static gboolean
 tree_drag_motion (GtkWidget *widget,
-                  GdkDragContext *context,
+                  EGtkDragContext *context,
                   gint x,
                   gint y,
                   guint time,
@@ -3053,7 +3053,7 @@ tree_drag_motion (GtkWidget *widget,
 	GdkDragAction chosen_action = 0;
 	GtkTreePath *path = NULL;
 	GtkTreeIter iter;
-	GdkAtom target;
+	EGtkAtom target;
 	gint i;
 
 	tree_view = GTK_TREE_VIEW (folder_tree);
@@ -3105,7 +3105,7 @@ tree_drag_motion (GtkWidget *widget,
 	target = folder_tree_drop_target (
 		folder_tree, context, path,
 		&actions, &suggested_action);
-	for (i = 0; target != GDK_NONE && i < NUM_DROP_TYPES; i++) {
+	for (i = 0; target != E_GTK_ATOM_NONE && i < NUM_DROP_TYPES; i++) {
 		if (drop_atoms[i] != target)
 			continue;
 		switch (i) {
@@ -3130,7 +3130,7 @@ tree_drag_motion (GtkWidget *widget,
 		break;
 	}
 
-	gdk_drag_status (context, chosen_action, time);
+	e_gtk_drag_status (context, chosen_action, time);
 	gtk_tree_path_free (path);
 
 	return chosen_action != 0;
@@ -3149,19 +3149,19 @@ em_folder_tree_enable_drag_and_drop (EMFolderTree *folder_tree)
 
 	if (!setup) {
 		for (i = 0; i < NUM_DRAG_TYPES; i++)
-			drag_atoms[i] = gdk_atom_intern (drag_types[i].target, FALSE);
+			drag_atoms[i] = e_gtk_atom_intern (drag_types[i].target, FALSE);
 
 		for (i = 0; i < NUM_DROP_TYPES; i++)
-			drop_atoms[i] = gdk_atom_intern (drop_types[i].target, FALSE);
+			drop_atoms[i] = e_gtk_atom_intern (drop_types[i].target, FALSE);
 
 		setup = 1;
 	}
 
-	gtk_drag_source_set (
+	e_gtk_drag_source_set (
 		GTK_WIDGET (tree_view), GDK_BUTTON1_MASK,drag_types,
 		NUM_DRAG_TYPES, GDK_ACTION_COPY | GDK_ACTION_MOVE);
-	gtk_drag_dest_set (
-		GTK_WIDGET (tree_view), GTK_DEST_DEFAULT_ALL, drop_types,
+	e_gtk_drag_dest_set (
+		GTK_WIDGET (tree_view), E_GTK_DEST_DEFAULT_ALL, drop_types,
 		NUM_DROP_TYPES, GDK_ACTION_COPY | GDK_ACTION_MOVE);
 
 	g_signal_connect (

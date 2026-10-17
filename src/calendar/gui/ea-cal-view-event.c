@@ -471,7 +471,7 @@ ea_cal_view_get_extents (AtkComponent *component,
 	if (!canvas)
 		return;
 
-	window = gtk_widget_get_window (canvas);
+	window = e_gtk_widget_get_surface (canvas);
 	gdk_window_get_origin (window, &x_window, &y_window);
 	gnome_canvas_get_scroll_offsets (GNOME_CANVAS (canvas), &scroll_x, &scroll_y);
 
@@ -483,7 +483,7 @@ ea_cal_view_get_extents (AtkComponent *component,
 	if (coord_type == ATK_XY_WINDOW) {
 		gint x_toplevel, y_toplevel;
 
-		window = gtk_widget_get_window (GTK_WIDGET (cal_view));
+		window = e_gtk_widget_get_surface (GTK_WIDGET (cal_view));
 		window = gdk_window_get_toplevel (window);
 		gdk_window_get_origin (window, &x_toplevel, &y_toplevel);
 

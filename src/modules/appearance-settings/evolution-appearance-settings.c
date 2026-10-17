@@ -578,7 +578,7 @@ e_appearance_settings_page_new (EPreferencesWindow *window)
 	pango_attr_list_unref (italic);
 
 	widget = GTK_WIDGET (grid);
-	gtk_widget_show_all (widget);
+	gtk_widget_set_visible (widget, TRUE);
 
 	g_clear_object (&settings);
 

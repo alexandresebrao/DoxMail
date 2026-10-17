@@ -133,7 +133,7 @@ add_editor_response (GtkWidget *dialog,
 		}
 	}
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 }
 
 static void
@@ -184,10 +184,10 @@ rule_add (GtkWidget *widget,
 	gtk_window_set_default_size (GTK_WINDOW (editor->dialog), 650, 400);
 	gtk_window_set_resizable (GTK_WINDOW (editor->dialog), TRUE);
 	gtk_window_set_transient_for ((GtkWindow *) editor->dialog, (GtkWindow *) editor);
-	gtk_container_set_border_width ((GtkContainer *) editor->dialog, 6);
+	e_gtk_widget_set_border_width ((GtkContainer *) editor->dialog, 6);
 
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (editor->dialog));
-	gtk_box_pack_start (GTK_BOX (content_area), rules, TRUE, TRUE, 3);
+	e_gtk_box_pack_start (GTK_BOX (content_area), rules, TRUE, TRUE, 3);
 
 	g_signal_connect (
 		editor->dialog, "response",
@@ -267,7 +267,7 @@ edit_editor_response (GtkWidget *dialog,
 		}
 	}
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 }
 
 static void
@@ -296,11 +296,11 @@ rule_edit (GtkWidget *widget,
 	gtk_window_set_title ((GtkWindow *) editor->dialog, _("Edit Rule"));
 	gtk_window_set_default_size (GTK_WINDOW (editor->dialog), 650, 400);
 	gtk_window_set_resizable (GTK_WINDOW (editor->dialog), TRUE);
-	gtk_window_set_transient_for (GTK_WINDOW (editor->dialog), GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (editor))));
-	gtk_container_set_border_width ((GtkContainer *) editor->dialog, 6);
+	gtk_window_set_transient_for (GTK_WINDOW (editor->dialog), GTK_WINDOW (e_gtk_widget_get_toplevel (GTK_WIDGET (editor))));
+	e_gtk_widget_set_border_width ((GtkContainer *) editor->dialog, 6);
 
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (editor->dialog));
-	gtk_box_pack_start (GTK_BOX (content_area), rules, TRUE, TRUE, 3);
+	e_gtk_box_pack_start (GTK_BOX (content_area), rules, TRUE, TRUE, 3);
 
 	g_signal_connect (
 		editor->dialog, "response",
@@ -349,11 +349,11 @@ rule_duplicate (GtkWidget *widget,
 	gtk_window_set_title ((GtkWindow *) editor->dialog, _("Edit Rule"));
 	gtk_window_set_default_size (GTK_WINDOW (editor->dialog), 650, 400);
 	gtk_window_set_resizable (GTK_WINDOW (editor->dialog), TRUE);
-	gtk_window_set_transient_for (GTK_WINDOW (editor->dialog), GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (editor))));
-	gtk_container_set_border_width ((GtkContainer *) editor->dialog, 6);
+	gtk_window_set_transient_for (GTK_WINDOW (editor->dialog), GTK_WINDOW (e_gtk_widget_get_toplevel (GTK_WIDGET (editor))));
+	e_gtk_widget_set_border_width ((GtkContainer *) editor->dialog, 6);
 
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (editor->dialog));
-	gtk_box_pack_start (GTK_BOX (content_area), rules, TRUE, TRUE, 3);
+	e_gtk_box_pack_start (GTK_BOX (content_area), rules, TRUE, TRUE, 3);
 
 	g_signal_connect (
 		editor->dialog, "response",
@@ -387,7 +387,7 @@ rule_delete (GtkWidget *widget,
 		GtkWidget *toplevel;
 		gint response;
 
-		toplevel = gtk_widget_get_toplevel (widget);
+		toplevel = e_gtk_widget_get_toplevel (widget);
 		parent = GTK_IS_WINDOW (toplevel) ? GTK_WINDOW (toplevel) : NULL;
 
 		response = e_alert_run_dialog_for_args (parent, "filter:remove-rule-question",
@@ -575,7 +575,7 @@ rule_editor_dispose (GObject *object)
 	ERuleEditor *editor = E_RULE_EDITOR (object);
 
 	if (editor->dialog != NULL) {
-		gtk_widget_destroy (GTK_WIDGET (editor->dialog));
+		e_gtk_widget_destroy (GTK_WIDGET (editor->dialog));
 		editor->dialog = NULL;
 	}
 
@@ -778,7 +778,7 @@ rule_able_toggled (GtkCellRendererToggle *renderer,
 
 static void
 editor_tree_drag_begin_cb (GtkWidget *widget,
-			   GdkDragContext *context,
+			   EGtkDragContext *context,
 			   gpointer user_data)
 {
 	ERuleEditor *editor = user_data;
@@ -808,7 +808,7 @@ editor_tree_drag_begin_cb (GtkWidget *widget,
 	path = gtk_tree_model_get_path (model, &iter);
 
 	surface = gtk_tree_view_create_row_drag_icon (editor->list, path);
-	gtk_drag_set_icon_surface (context, surface);
+	e_gtk_drag_set_icon_surface (context, surface);
 	cairo_surface_destroy (surface);
 
 	gtk_tree_path_free (path);
@@ -816,7 +816,7 @@ editor_tree_drag_begin_cb (GtkWidget *widget,
 
 static gboolean
 editor_tree_drag_drop_cb (GtkWidget *widget,
-			  GdkDragContext *context,
+			  EGtkDragContext *context,
 			  gint x,
 			  gint y,
 			  guint time,
@@ -833,7 +833,7 @@ editor_tree_drag_drop_cb (GtkWidget *widget,
 
 static void
 editor_tree_drag_end_cb (GtkWidget *widget,
-			 GdkDragContext *context,
+			 EGtkDragContext *context,
 			 gpointer user_data)
 {
 	ERuleEditor *editor = user_data;
@@ -845,7 +845,7 @@ editor_tree_drag_end_cb (GtkWidget *widget,
 
 static gboolean
 editor_tree_drag_motion_cb (GtkWidget *widget,
-			    GdkDragContext *context,
+			    EGtkDragContext *context,
 			    gint x,
 			    gint y,
 			    guint time,
@@ -887,7 +887,7 @@ editor_tree_drag_motion_cb (GtkWidget *widget,
 		}
 	}
 
-	gdk_drag_status (context, (!rule || editor->priv->drag_index == -1) ? 0 : GDK_ACTION_MOVE, time);
+	e_gtk_drag_status (context, (!rule || editor->priv->drag_index == -1) ? 0 : GDK_ACTION_MOVE, time);
 
 	return TRUE;
 }
@@ -899,8 +899,8 @@ e_rule_editor_construct (ERuleEditor *editor,
                          const gchar *source,
                          const gchar *label)
 {
-	const GtkTargetEntry row_targets[] = {
-		{ (gchar *) "ERuleEditorRow", GTK_TARGET_SAME_WIDGET, 0 }
+	const EGtkTargetEntry row_targets[] = {
+		{ (gchar *) "ERuleEditorRow", E_GTK_TARGET_SAME_WIDGET, 0 }
 	};
 	GtkWidget *widget;
 	GtkWidget *action_area;
@@ -918,16 +918,16 @@ e_rule_editor_construct (ERuleEditor *editor,
 
 	editor->context = g_object_ref (context);
 
-	action_area = gtk_dialog_get_action_area (GTK_DIALOG (editor));
+	action_area = e_gtk_dialog_get_action_area (GTK_DIALOG (editor));
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (editor));
 
 	gtk_window_set_resizable ((GtkWindow *) editor, TRUE);
 	gtk_window_set_default_size ((GtkWindow *) editor, 350, 400);
 	gtk_widget_realize ((GtkWidget *) editor);
-	gtk_container_set_border_width (GTK_CONTAINER (action_area), 12);
+	e_gtk_widget_set_border_width (action_area, 12);
 
 	widget = e_builder_get_widget (builder, "rule_editor");
-	gtk_box_pack_start (GTK_BOX (content_area), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (content_area), widget, TRUE, TRUE, 0);
 
 	for (i = 0; i < BUTTON_LAST; i++) {
 		widget = e_builder_get_widget (builder, edit_buttons[i].name);
@@ -982,8 +982,8 @@ e_rule_editor_construct (ERuleEditor *editor,
 		_("_OK"), GTK_RESPONSE_OK,
 		NULL);
 
-	gtk_drag_source_set (GTK_WIDGET (editor->list), GDK_BUTTON1_MASK, row_targets, G_N_ELEMENTS (row_targets), GDK_ACTION_MOVE);
-	gtk_drag_dest_set (GTK_WIDGET (editor->list), GTK_DEST_DEFAULT_MOTION, row_targets, G_N_ELEMENTS (row_targets), GDK_ACTION_MOVE);
+	e_gtk_drag_source_set (GTK_WIDGET (editor->list), GDK_BUTTON1_MASK, row_targets, G_N_ELEMENTS (row_targets), GDK_ACTION_MOVE);
+	e_gtk_drag_dest_set (GTK_WIDGET (editor->list), E_GTK_DEST_DEFAULT_MOTION, row_targets, G_N_ELEMENTS (row_targets), GDK_ACTION_MOVE);
 
 	g_signal_connect (editor->list, "drag-begin",
 		G_CALLBACK (editor_tree_drag_begin_cb), editor);

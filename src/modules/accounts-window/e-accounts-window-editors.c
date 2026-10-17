@@ -174,7 +174,7 @@ accounts_window_editors_source_written_cb (GObject *source_object,
 
 		g_clear_error (&error);
 	} else {
-		gtk_widget_destroy (dialog);
+		e_gtk_widget_destroy (dialog);
 	}
 }
 
@@ -196,7 +196,7 @@ accounts_window_editors_collection_editor_response_cb (GtkWidget *dialog,
 
 		collection_extension = e_source_get_extension (ced->source, E_SOURCE_EXTENSION_COLLECTION);
 
-		changed = g_strcmp0 (e_source_get_display_name (ced->source), gtk_entry_get_text (GTK_ENTRY (ced->display_name))) != 0;
+		changed = g_strcmp0 (e_source_get_display_name (ced->source), gtk_editable_get_text (GTK_EDITABLE (ced->display_name))) != 0;
 
 		changed = changed || e_source_collection_get_mail_enabled (collection_extension) !=
 			gtk_switch_get_active (GTK_SWITCH (ced->mail_part));
@@ -210,7 +210,7 @@ accounts_window_editors_collection_editor_response_cb (GtkWidget *dialog,
 		if (changed) {
 			e_alert_bar_clear (E_ALERT_BAR (ced->alert_bar));
 
-			e_source_set_display_name (ced->source, gtk_entry_get_text (GTK_ENTRY (ced->display_name)));
+			e_source_set_display_name (ced->source, gtk_editable_get_text (GTK_EDITABLE (ced->display_name)));
 
 			e_source_collection_set_mail_enabled (collection_extension,
 				gtk_switch_get_active (GTK_SWITCH (ced->mail_part)));
@@ -230,7 +230,7 @@ accounts_window_editors_collection_editor_response_cb (GtkWidget *dialog,
 		}
 	}
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 }
 
 static void
@@ -243,7 +243,7 @@ accounts_window_editors_collection_editor_display_name_changed_cb (GtkEntry *ent
 	g_return_if_fail (GTK_IS_ENTRY (entry));
 	g_return_if_fail (GTK_IS_DIALOG (dialog));
 
-	text = g_strdup (gtk_entry_get_text (entry));
+	text = g_strdup (gtk_editable_get_text (GTK_EDITABLE (entry)));
 
 	if (text)
 		text = g_strstrip (text);
@@ -277,18 +277,18 @@ accounts_window_editors_edit_unmanaged_collection (EAccountsWindow *accounts_win
 		_("_OK"), GTK_RESPONSE_OK,
 		NULL);
 
-	gtk_container_set_border_width (GTK_CONTAINER (dialog), 12);
+	e_gtk_widget_set_border_width (dialog, 12);
 
 	container = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
 
 	gtk_window_set_icon_name (GTK_WINDOW (dialog), "evolution");
 
 	widget = e_alert_bar_new ();
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	ced->alert_bar = widget;
 
 	widget = gtk_grid_new ();
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 
 	grid = GTK_GRID (widget);
 	gtk_grid_set_column_spacing (grid, 6);
@@ -300,7 +300,7 @@ accounts_window_editors_edit_unmanaged_collection (EAccountsWindow *accounts_win
 	gtk_grid_attach (grid, label, 0, 0, 1, 1);
 
 	widget = gtk_entry_new ();
-	gtk_entry_set_text (GTK_ENTRY (widget), e_source_get_display_name (source));
+	gtk_editable_set_text (GTK_EDITABLE (widget), e_source_get_display_name (source));
 	gtk_label_set_mnemonic_widget (GTK_LABEL (label), widget);
 	ced->display_name = widget;
 
@@ -356,7 +356,7 @@ accounts_window_editors_edit_unmanaged_collection (EAccountsWindow *accounts_win
 
 	gtk_grid_attach (grid, widget, 2, 3, 1, 1);
 
-	gtk_widget_show_all (GTK_WIDGET (grid));
+	gtk_widget_set_visible (GTK_WIDGET (grid), TRUE);
 
 	g_object_set_data_full (G_OBJECT (dialog), COLLECTION_EDITOR_DATA_KEY, ced, collection_editor_data_free);
 

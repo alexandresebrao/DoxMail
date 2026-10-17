@@ -111,7 +111,7 @@ popup_cell_action (GalA11yECell *cell)
 	event.key.window = gtk_layout_get_bin_window (layout);
 	event.key.send_event = TRUE;
 	event.key.time = GDK_CURRENT_TIME;
-	event.key.state = GDK_MOD1_MASK;
+	event.key.state = GDK_ALT_MASK;
 	event.key.keyval = GDK_KEY_Down;
 
 	g_signal_emit_by_name (cell->item, "event", &event, &finished);

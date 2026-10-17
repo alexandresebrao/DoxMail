@@ -16,7 +16,7 @@
 
 #include "evolution-config.h"
 
-#include <webkit2/webkit2.h>
+#include <webkit/webkit.h>
 
 #include "e-web-view-jsc-utils.h"
 

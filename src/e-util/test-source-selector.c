@@ -620,7 +620,7 @@ set_tooltip_clicked_cb (GtkWidget *button,
 	source = e_source_selector_ref_primary_selection (selector);
 	if (source)
 		e_source_selector_set_source_tooltip (selector, source,
-			gtk_entry_get_text (entry));
+			gtk_editable_get_text (GTK_EDITABLE (entry)));
 
 	g_clear_object (&source);
 }
@@ -656,11 +656,11 @@ create_page (ESourceRegistry *registry,
 		"show-toggles", FALSE,
 		"show-colors", source_type != E_CAL_CLIENT_SOURCE_TYPE_LAST,
 		NULL);
-	gtk_container_add (GTK_CONTAINER (subwindow), selector);
+	e_gtk_container_add (subwindow, selector);
 
 	gtk_grid_attach (grid, subwindow, 0, 0, 1, 5);
 
-	button_box = gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
+	button_box = e_gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
 	g_object_set (
 		G_OBJECT (button_box),
 		"halign", GTK_ALIGN_START,
@@ -671,7 +671,7 @@ create_page (ESourceRegistry *registry,
 	gtk_grid_attach (grid, button_box, 1, 0, 1, 1);
 
 	widget = gtk_button_new_with_label ("Open selected");
-	gtk_container_add (GTK_CONTAINER (button_box), widget);
+	e_gtk_container_add (button_box, widget);
 
 	g_signal_connect (
 		widget, "clicked",
@@ -681,7 +681,7 @@ create_page (ESourceRegistry *registry,
 		G_CALLBACK (disable_widget_if_opened_cb), widget);
 
 	widget = gtk_button_new_with_label ("Close selected");
-	gtk_container_add (GTK_CONTAINER (button_box), widget);
+	e_gtk_container_add (button_box, widget);
 
 	g_signal_connect (
 		widget, "clicked",
@@ -691,7 +691,7 @@ create_page (ESourceRegistry *registry,
 		G_CALLBACK (enable_widget_if_opened_cb), widget);
 
 	widget = gtk_button_new_with_label ("Refresh selected");
-	gtk_container_add (GTK_CONTAINER (button_box), widget);
+	e_gtk_container_add (button_box, widget);
 
 	g_signal_connect (
 		widget, "clicked",
@@ -701,7 +701,7 @@ create_page (ESourceRegistry *registry,
 		G_CALLBACK (enable_widget_if_opened_cb), widget);
 
 	widget = gtk_button_new_with_label ("Create View");
-	gtk_container_add (GTK_CONTAINER (button_box), widget);
+	e_gtk_container_add (button_box, widget);
 
 	g_signal_connect (
 		widget, "clicked",
@@ -711,7 +711,7 @@ create_page (ESourceRegistry *registry,
 		G_CALLBACK (enable_widget_if_opened_and_no_view_cb), widget);
 
 	widget = gtk_button_new_with_label ("Destroy View");
-	gtk_container_add (GTK_CONTAINER (button_box), widget);
+	e_gtk_container_add (button_box, widget);
 
 	g_signal_connect (
 		widget, "clicked",
@@ -722,7 +722,7 @@ create_page (ESourceRegistry *registry,
 
 	widget = gtk_button_new_with_label ("Flip busy status");
 	gtk_widget_set_margin_top (widget, 10);
-	gtk_container_add (GTK_CONTAINER (button_box), widget);
+	e_gtk_container_add (button_box, widget);
 
 	g_signal_connect (
 		widget, "clicked",
@@ -732,11 +732,11 @@ create_page (ESourceRegistry *registry,
 		G_CALLBACK (enable_widget_if_any_selected), widget);
 
 	entry = gtk_entry_new ();
-	gtk_container_add (GTK_CONTAINER (button_box), entry);
+	e_gtk_container_add (button_box, entry);
 
 	widget = gtk_button_new_with_label ("Set Tooltip");
 	g_object_set_data (G_OBJECT (widget), TOOLTIP_ENTRY_KEY, entry);
-	gtk_container_add (GTK_CONTAINER (button_box), widget);
+	e_gtk_container_add (button_box, widget);
 
 	g_signal_connect (
 		widget, "clicked",
@@ -857,7 +857,7 @@ on_idle_create_widget (ESourceRegistry *registry)
 
 	notebook = gtk_notebook_new ();
 	gtk_notebook_set_show_border (GTK_NOTEBOOK (notebook), FALSE);
-	gtk_container_add (GTK_CONTAINER (window), GTK_WIDGET (notebook));
+	e_gtk_container_add (window, GTK_WIDGET (notebook));
 
 	gtk_notebook_append_page (
 		GTK_NOTEBOOK (notebook),
@@ -891,7 +891,7 @@ on_idle_create_widget (ESourceRegistry *registry)
 			E_CAL_CLIENT_SOURCE_TYPE_LAST),
 		gtk_label_new ("Books"));
 
-	gtk_widget_show_all (window);
+	gtk_widget_set_visible (window, TRUE);
 
 	return FALSE;
 }
@@ -903,7 +903,7 @@ main (gint argc,
 	ESourceRegistry *registry;
 	GError *local_error = NULL;
 
-	gtk_init (&argc, &argv);
+	gtk_init ();
 
 	registry = e_source_registry_new_sync (NULL, &local_error);
 

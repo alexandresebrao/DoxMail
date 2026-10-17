@@ -27,6 +27,7 @@
 #define E_TREE_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 #include <libxml/tree.h>
 #include <libgnomecanvas/libgnomecanvas.h>
 
@@ -113,18 +114,18 @@ struct _ETreeClass {
 						 gint row,
 						 ETreePath path,
 						 gint col,
-						 GdkDragContext *context);
+						 EGtkDragContext *context);
 	void		(*tree_drag_end)	(ETree *tree,
 						 gint row,
 						 ETreePath path,
 						 gint col,
-						 GdkDragContext *context);
+						 EGtkDragContext *context);
 	void		(*tree_drag_data_get)	(ETree *tree,
 						 gint row,
 						 ETreePath path,
 						 gint col,
-						 GdkDragContext *context,
-						 GtkSelectionData *selection_data,
+						 EGtkDragContext *context,
+						 EGtkSelectionData *selection_data,
 						 guint info,
 						 guint time);
 	void		(*tree_drag_data_delete)
@@ -132,20 +133,20 @@ struct _ETreeClass {
 						 gint row,
 						 ETreePath path,
 						 gint col,
-						 GdkDragContext *context);
+						 EGtkDragContext *context);
 
 	/* Target side drag signals */
 	void		(*tree_drag_leave)	(ETree *tree,
 						 gint row,
 						 ETreePath path,
 						 gint col,
-						 GdkDragContext *context,
+						 EGtkDragContext *context,
 						 guint time);
 	gboolean	(*tree_drag_motion)	(ETree *tree,
 						 gint row,
 						 ETreePath path,
 						 gint col,
-						 GdkDragContext *context,
+						 EGtkDragContext *context,
 						 gint x,
 						 gint y,
 						 guint time);
@@ -153,7 +154,7 @@ struct _ETreeClass {
 						 gint row,
 						 ETreePath path,
 						 gint col,
-						 GdkDragContext *context,
+						 EGtkDragContext *context,
 						 gint x,
 						 gint y,
 						 guint time);
@@ -162,10 +163,10 @@ struct _ETreeClass {
 						 gint row,
 						 ETreePath path,
 						 gint col,
-						 GdkDragContext *context,
+						 EGtkDragContext *context,
 						 gint x,
 						 gint y,
-						 GtkSelectionData *selection_data,
+						 EGtkSelectionData *selection_data,
 						 guint info,
 						 guint time);
 };
@@ -222,18 +223,18 @@ ETreeTableAdapter *
 /* Source side */
 void		e_tree_drag_source_set		(ETree *tree,
 						 GdkModifierType start_button_mask,
-						 const GtkTargetEntry *targets,
+						 const EGtkTargetEntry *targets,
 						 gint n_targets,
 						 GdkDragAction actions);
 void		e_tree_drag_source_unset	(ETree *tree);
 
 /* There probably should be functions for setting the targets
- * as a GtkTargetList
+ * as a EGtkTargetList
  */
-GdkDragContext *e_tree_drag_begin		(ETree *tree,
+EGtkDragContext *e_tree_drag_begin		(ETree *tree,
 						 gint row,
 						 gint col,
-						 GtkTargetList *targets,
+						 EGtkTargetList *targets,
 						 GdkDragAction actions,
 						 gint button,
 						 GdkEvent *event);

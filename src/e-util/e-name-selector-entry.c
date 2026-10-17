@@ -231,10 +231,10 @@ name_selector_entry_realize (GtkWidget *widget)
 
 static void
 name_selector_entry_drag_data_received (GtkWidget *widget,
-                                        GdkDragContext *context,
+                                        EGtkDragContext *context,
                                         gint x,
                                         gint y,
-                                        GtkSelectionData *selection_data,
+                                        EGtkSelectionData *selection_data,
                                         guint info,
                                         guint time)
 {
@@ -243,7 +243,7 @@ name_selector_entry_drag_data_received (GtkWidget *widget,
 	gchar *text;
 
 	address = camel_internet_address_new ();
-	text = (gchar *) gtk_selection_data_get_text (selection_data);
+	text = (gchar *) e_gtk_selection_data_get_text (selection_data);
 
 	/* See if Camel can parse a valid email address from the text. */
 	if (text != NULL && *text != '\0') {
@@ -271,9 +271,9 @@ name_selector_entry_drag_data_received (GtkWidget *widget,
 		text = camel_address_format (CAMEL_ADDRESS (address));
 		gtk_editable_insert_text (editable, text, -1, &position);
 
-		action = gdk_drag_context_get_selected_action (context);
+		action = e_gtk_drag_context_get_selected_action (context);
 		delete = (action == GDK_ACTION_MOVE);
-		gtk_drag_finish (context, TRUE, delete, time);
+		e_gtk_drag_finish (context, TRUE, delete, time);
 	}
 
 	g_object_unref (address);
@@ -683,7 +683,7 @@ find_destination_at_position (ENameSelectorEntry *name_selector_entry,
 	const gchar  *text;
 	gint          index;
 
-	text = gtk_entry_get_text (GTK_ENTRY (name_selector_entry));
+	text = gtk_editable_get_text (GTK_EDITABLE (name_selector_entry));
 	index = get_index_at_position (text, pos);
 
 	return find_destination_by_index (name_selector_entry, index);
@@ -815,7 +815,7 @@ get_entry_substring (ENameSelectorEntry *name_selector_entry,
 	const gchar *entry_text;
 	gchar       *p0, *p1;
 
-	entry_text = gtk_entry_get_text (GTK_ENTRY (name_selector_entry));
+	entry_text = gtk_editable_get_text (GTK_EDITABLE (name_selector_entry));
 
 	p0 = g_utf8_offset_to_pointer (entry_text, range_start);
 	p1 = g_utf8_offset_to_pointer (entry_text, range_end);
@@ -1037,7 +1037,7 @@ generate_attribute_list (ENameSelectorEntry *name_selector_entry)
 	const gchar    *text;
 	gint            i;
 
-	text = gtk_entry_get_text (GTK_ENTRY (name_selector_entry));
+	text = gtk_editable_get_text (GTK_EDITABLE (name_selector_entry));
 	layout = gtk_entry_get_layout (GTK_ENTRY (name_selector_entry));
 
 	/* Set up the attribute list */
@@ -1114,7 +1114,7 @@ type_ahead_complete (ENameSelectorEntry *name_selector_entry)
 	if (completion)
 		gtk_entry_completion_complete (completion);
 
-	text = gtk_entry_get_text (GTK_ENTRY (name_selector_entry));
+	text = gtk_editable_get_text (GTK_EDITABLE (name_selector_entry));
 	get_range_at_position (text, cursor_pos, &range_start, &range_end);
 	range_len = range_end - range_start;
 	if (range_len < name_selector_entry->priv->minimum_query_length)
@@ -1205,7 +1205,7 @@ update_completion_model (ENameSelectorEntry *name_selector_entry)
 	gint         range_start = 0;
 	gint         range_end = 0;
 
-	text = gtk_entry_get_text (GTK_ENTRY (name_selector_entry));
+	text = gtk_editable_get_text (GTK_EDITABLE (name_selector_entry));
 	cursor_pos = gtk_editable_get_position (GTK_EDITABLE (name_selector_entry));
 
 	if (cursor_pos >= 0)
@@ -1257,7 +1257,7 @@ insert_destination_at_position (ENameSelectorEntry *name_selector_entry,
 	const gchar  *text;
 	gint          index;
 
-	text = gtk_entry_get_text (GTK_ENTRY (name_selector_entry));
+	text = gtk_editable_get_text (GTK_EDITABLE (name_selector_entry));
 	index = get_index_at_position (text, pos);
 
 	destination = build_destination_at_position (text, pos);
@@ -1288,7 +1288,7 @@ modify_destination_at_position (ENameSelectorEntry *name_selector_entry,
 	if (!destination)
 		return FALSE;
 
-	text = gtk_entry_get_text (GTK_ENTRY (name_selector_entry));
+	text = gtk_editable_get_text (GTK_EDITABLE (name_selector_entry));
 	raw_address = get_address_at_position (text, pos);
 	g_return_val_if_fail (raw_address, FALSE);
 
@@ -1357,7 +1357,7 @@ sync_destination_at_position (ENameSelectorEntry *name_selector_entry,
 	if (!destination)
 		return;
 
-	text = gtk_entry_get_text (GTK_ENTRY (name_selector_entry));
+	text = gtk_editable_get_text (GTK_EDITABLE (name_selector_entry));
 	if (!get_range_at_position (text, range_pos, &range_start, &range_end)) {
 		g_warning ("ENameSelectorEntry is out of sync with model!");
 		return;
@@ -1419,7 +1419,7 @@ post_insert_update (ENameSelectorEntry *name_selector_entry,
 	const gchar *text;
 	glong length;
 
-	text = gtk_entry_get_text (GTK_ENTRY (name_selector_entry));
+	text = gtk_editable_get_text (GTK_EDITABLE (name_selector_entry));
 	length = g_utf8_strlen (text, -1);
 	text = g_utf8_next_char (text);
 
@@ -1449,7 +1449,7 @@ insert_unichar (ENameSelectorEntry *name_selector_entry,
 	gchar        buf[7];
 	gint         len;
 
-	text = gtk_entry_get_text (GTK_ENTRY (name_selector_entry));
+	text = gtk_editable_get_text (GTK_EDITABLE (name_selector_entry));
 	get_utf8_string_context (text, *pos, str_context, 4);
 
 	/* Space is not allowed:
@@ -1747,7 +1747,7 @@ user_delete_text (ENameSelectorEntry *name_selector_entry,
 	if (start_pos == end_pos)
 		return;
 
-	text = gtk_entry_get_text (GTK_ENTRY (name_selector_entry));
+	text = gtk_editable_get_text (GTK_EDITABLE (name_selector_entry));
 	len = g_utf8_strlen (text, -1);
 
 	if (end_pos == -1)
@@ -1901,7 +1901,7 @@ user_delete_text (ENameSelectorEntry *name_selector_entry,
 	}
 
 	/* Let model know about changes */
-	text = gtk_entry_get_text (GTK_ENTRY (name_selector_entry));
+	text = gtk_editable_get_text (GTK_EDITABLE (name_selector_entry));
 	if (!*text || strlen (text) <= 0) {
 		/* If the entry was completely cleared, remove the initial destination too */
 		remove_destination_by_index (name_selector_entry, 0);
@@ -1984,7 +1984,7 @@ entry_activate (ENameSelectorEntry *name_selector_entry)
 	if (cursor_pos < 0)
 		return;
 
-	text = gtk_entry_get_text (GTK_ENTRY (name_selector_entry));
+	text = gtk_editable_get_text (GTK_EDITABLE (name_selector_entry));
 	if (!get_range_at_position (text, cursor_pos, &range_start, &range_end))
 		return;
 
@@ -2008,7 +2008,7 @@ entry_activate (ENameSelectorEntry *name_selector_entry)
 	sync_destination_at_position (name_selector_entry, cursor_pos, &cursor_pos);
 
 	/* Place cursor at end of address */
-	text = gtk_entry_get_text (GTK_ENTRY (name_selector_entry));
+	text = gtk_editable_get_text (GTK_EDITABLE (name_selector_entry));
 	get_range_at_position (text, cursor_pos, &range_start, &range_end);
 
 	if (name_selector_entry->priv->is_completing) {
@@ -2054,7 +2054,7 @@ update_text (ENameSelectorEntry *name_selector_entry,
 
 	gtk_editable_get_selection_bounds (GTK_EDITABLE (name_selector_entry), &start, &end);
 
-	gtk_entry_set_text (GTK_ENTRY (name_selector_entry), text);
+	gtk_editable_set_text (GTK_EDITABLE (name_selector_entry), text);
 
 	if (start >= 0 && end >= 0)
 		gtk_editable_select_region (GTK_EDITABLE (name_selector_entry), start, end);
@@ -2118,7 +2118,7 @@ maybe_block_entry_changed_cb (ENameSelectorEntry *name_selector_entry,
 
 static gboolean
 user_focus_in (ENameSelectorEntry *name_selector_entry,
-               GdkEventFocus *event_focus)
+               GdkEvent *event_focus)
 {
 	gint n;
 	GList *l, *known;
@@ -2162,7 +2162,7 @@ user_focus_in (ENameSelectorEntry *name_selector_entry,
 
 	gtk_editable_get_selection_bounds (GTK_EDITABLE (name_selector_entry), &sel_start_pos, &sel_end_pos);
 
-	gtk_entry_set_text (GTK_ENTRY (name_selector_entry), str->str);
+	gtk_editable_set_text (GTK_EDITABLE (name_selector_entry), str->str);
 
 	if (sel_start_pos >= 0 && sel_end_pos >= 0)
 		gtk_editable_select_region (GTK_EDITABLE (name_selector_entry), sel_start_pos, sel_end_pos);
@@ -2180,7 +2180,7 @@ user_focus_in (ENameSelectorEntry *name_selector_entry,
 
 static gboolean
 user_focus_out (ENameSelectorEntry *name_selector_entry,
-                GdkEventFocus *event_focus)
+                GdkEvent *event_focus)
 {
 	if (!event_focus->in) {
 		entry_activate (name_selector_entry);
@@ -2198,14 +2198,14 @@ user_focus_out (ENameSelectorEntry *name_selector_entry,
 
 static gboolean
 user_key_press_event_cb (ENameSelectorEntry *name_selector_entry,
-			 GdkEventKey *event_key)
+			 GdkEvent *event_key)
 {
 	gint end;
 
 	g_return_val_if_fail (E_IS_NAME_SELECTOR_ENTRY (name_selector_entry), FALSE);
 	g_return_val_if_fail (event_key != NULL, FALSE);
 
-	if ((event_key->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK)) == 0 &&
+	if ((event_key->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_ALT_MASK)) == 0 &&
 	    event_key->keyval == GDK_KEY_comma &&
 	    gtk_editable_get_selection_bounds (GTK_EDITABLE (name_selector_entry), NULL, &end)) {
 		entry_activate (name_selector_entry);
@@ -2580,7 +2580,7 @@ destination_row_changed (ENameSelectorEntry *name_selector_entry,
 
 	g_return_if_fail (n >= 0);
 
-	entry_text = gtk_entry_get_text (GTK_ENTRY (name_selector_entry));
+	entry_text = gtk_editable_get_text (GTK_EDITABLE (name_selector_entry));
 	if (!get_range_by_index (entry_text, n, &range_start, &range_end)) {
 		g_warning ("ENameSelectorEntry is out of sync with model!");
 		return;
@@ -2622,7 +2622,7 @@ destination_row_inserted (ENameSelectorEntry *name_selector_entry,
 	g_return_if_fail (n >= 0);
 	g_return_if_fail (destination != NULL);
 
-	entry_text = gtk_entry_get_text (GTK_ENTRY (name_selector_entry));
+	entry_text = gtk_editable_get_text (GTK_EDITABLE (name_selector_entry));
 
 	if (get_range_by_index (entry_text, n, &range_start, &range_end) && range_start != range_end) {
 		/* Another destination comes after us */
@@ -2671,7 +2671,7 @@ destination_row_deleted (ENameSelectorEntry *name_selector_entry,
 	n = gtk_tree_path_get_indices (path)[0];
 	g_return_if_fail (n >= 0);
 
-	text = gtk_entry_get_text (GTK_ENTRY (name_selector_entry));
+	text = gtk_editable_get_text (GTK_EDITABLE (name_selector_entry));
 
 	if (!get_range_by_index (text, n, &range_start, &range_end)) {
 		g_warning ("ENameSelectorEntry is out of sync with model!");
@@ -2755,7 +2755,7 @@ setup_destination_store (ENameSelectorEntry *name_selector_entry)
 
 static gboolean
 prepare_popup_destination (ENameSelectorEntry *name_selector_entry,
-                           GdkEventButton *event_button)
+                           GdkEvent *event_button)
 {
 	EDestination *destination;
 	PangoLayout  *layout;
@@ -2962,7 +2962,7 @@ popup_activate_inline_expand (ENameSelectorEntry *name_selector_entry,
 		g_free (sanitized);
 	}
 
-	text = gtk_entry_get_text (GTK_ENTRY (name_selector_entry));
+	text = gtk_editable_get_text (GTK_EDITABLE (name_selector_entry));
 	if (get_range_at_position (text, position, &start, &end))
 		gtk_editable_delete_text (GTK_EDITABLE (name_selector_entry), start, end);
 	gtk_editable_insert_text (GTK_EDITABLE (name_selector_entry), sanitized_text->str, -1, &start);
@@ -3061,7 +3061,7 @@ popup_activate_cut (ENameSelectorEntry *name_selector_entry,
 	EDestination *destination;
 	const gchar *contact_email;
 	gchar *pemail = NULL;
-	GtkClipboard *clipboard;
+	GdkClipboard *clipboard;
 
 	destination = name_selector_entry->priv->popup_destination;
 	contact_email =e_destination_get_textrep (destination, TRUE);
@@ -3069,12 +3069,12 @@ popup_activate_cut (ENameSelectorEntry *name_selector_entry,
 	g_signal_handlers_block_by_func (name_selector_entry, user_insert_text, name_selector_entry);
 	g_signal_handlers_block_by_func (name_selector_entry, user_delete_text, name_selector_entry);
 
-	clipboard = gtk_clipboard_get (GDK_SELECTION_PRIMARY);
+	clipboard = e_gtk_clipboard_get (E_GTK_SELECTION_PRIMARY);
 	pemail = g_strconcat (contact_email, ",", NULL);
-	gtk_clipboard_set_text (clipboard, pemail, strlen (pemail));
+	e_gtk_clipboard_set_text (clipboard, pemail, strlen (pemail));
 
-	clipboard = gtk_clipboard_get (GDK_SELECTION_CLIPBOARD);
-	gtk_clipboard_set_text (clipboard, pemail, strlen (pemail));
+	clipboard = e_gtk_clipboard_get (E_GTK_SELECTION_CLIPBOARD);
+	e_gtk_clipboard_set_text (clipboard, pemail, strlen (pemail));
 
 	gtk_editable_delete_text (GTK_EDITABLE (name_selector_entry), 0, 0);
 	e_destination_store_remove_destination (name_selector_entry->priv->destination_store, destination);
@@ -3091,7 +3091,7 @@ popup_activate_copy (ENameSelectorEntry *name_selector_entry,
 	EDestination *destination;
 	const gchar *contact_email;
 	gchar *pemail;
-	GtkClipboard *clipboard;
+	GdkClipboard *clipboard;
 
 	destination = name_selector_entry->priv->popup_destination;
 	contact_email = e_destination_get_textrep (destination, TRUE);
@@ -3099,12 +3099,12 @@ popup_activate_copy (ENameSelectorEntry *name_selector_entry,
 	g_signal_handlers_block_by_func (name_selector_entry, user_insert_text, name_selector_entry);
 	g_signal_handlers_block_by_func (name_selector_entry, user_delete_text, name_selector_entry);
 
-	clipboard = gtk_clipboard_get (GDK_SELECTION_PRIMARY);
+	clipboard = e_gtk_clipboard_get (E_GTK_SELECTION_PRIMARY);
 	pemail = g_strconcat (contact_email, ",", NULL);
-	gtk_clipboard_set_text (clipboard, pemail, strlen (pemail));
+	e_gtk_clipboard_set_text (clipboard, pemail, strlen (pemail));
 
-	clipboard = gtk_clipboard_get (GDK_SELECTION_CLIPBOARD);
-	gtk_clipboard_set_text (clipboard, pemail, strlen (pemail));
+	clipboard = e_gtk_clipboard_get (E_GTK_SELECTION_CLIPBOARD);
+	e_gtk_clipboard_set_text (clipboard, pemail, strlen (pemail));
 	g_free (pemail);
 	g_signal_handlers_unblock_by_func (name_selector_entry, user_delete_text, name_selector_entry);
 	g_signal_handlers_unblock_by_func (name_selector_entry, user_insert_text, name_selector_entry);
@@ -3326,7 +3326,7 @@ static void
 copy_or_cut_clipboard (ENameSelectorEntry *name_selector_entry,
                        gboolean is_cut)
 {
-	GtkClipboard *clipboard;
+	GdkClipboard *clipboard;
 	GtkEditable *editable;
 	const gchar *text, *cp;
 	GHashTable *hash;
@@ -3338,7 +3338,7 @@ copy_or_cut_clipboard (ENameSelectorEntry *name_selector_entry,
 	gunichar uc;
 
 	editable = GTK_EDITABLE (name_selector_entry);
-	text = gtk_entry_get_text (GTK_ENTRY (editable));
+	text = gtk_editable_get_text (GTK_EDITABLE (editable));
 
 	if (!gtk_editable_get_selection_bounds (editable, &start, &end))
 		return;
@@ -3420,8 +3420,8 @@ copy_or_cut_clipboard (ENameSelectorEntry *name_selector_entry,
 	g_hash_table_unref (hash);
 
 	clipboard = gtk_widget_get_clipboard (
-		GTK_WIDGET (name_selector_entry), GDK_SELECTION_CLIPBOARD);
-	gtk_clipboard_set_text (clipboard, addresses->str, -1);
+		GTK_WIDGET (name_selector_entry), E_GTK_SELECTION_CLIPBOARD);
+	e_gtk_clipboard_set_text (clipboard, addresses->str, -1);
 
 	g_string_free (addresses, TRUE);
 }

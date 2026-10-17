@@ -91,9 +91,7 @@ proxy_editor_load (EProxyEditor *editor)
 	g_type_class_unref (enum_class);
 
 	autoconfig_url = e_source_proxy_dup_autoconfig_url (extension);
-	gtk_entry_set_text (
-		GTK_ENTRY (editor->priv->autoconfig_url_entry),
-		(autoconfig_url != NULL) ? autoconfig_url : "");
+	gtk_editable_set_text (GTK_EDITABLE (editor->priv->autoconfig_url_entry), (autoconfig_url != NULL) ? autoconfig_url : "");
 	g_free (autoconfig_url);
 
 	ignore_hosts = e_source_proxy_dup_ignore_hosts (extension);
@@ -101,16 +99,12 @@ proxy_editor_load (EProxyEditor *editor)
 		joined_hosts = g_strjoinv (", ", ignore_hosts);
 	else
 		joined_hosts = NULL;
-	gtk_entry_set_text (
-		GTK_ENTRY (editor->priv->ignore_hosts_entry),
-		(joined_hosts != NULL) ? joined_hosts : "");
+	gtk_editable_set_text (GTK_EDITABLE (editor->priv->ignore_hosts_entry), (joined_hosts != NULL) ? joined_hosts : "");
 	g_strfreev (ignore_hosts);
 	g_free (joined_hosts);
 
 	host = e_source_proxy_dup_http_host (extension);
-	gtk_entry_set_text (
-		GTK_ENTRY (editor->priv->http_host_entry),
-		(host != NULL) ? host : "");
+	gtk_editable_set_text (GTK_EDITABLE (editor->priv->http_host_entry), (host != NULL) ? host : "");
 	g_free (host);
 
 	port = e_source_proxy_get_http_port (extension);
@@ -119,9 +113,7 @@ proxy_editor_load (EProxyEditor *editor)
 		(gdouble) port);
 
 	host = e_source_proxy_dup_https_host (extension);
-	gtk_entry_set_text (
-		GTK_ENTRY (editor->priv->https_host_entry),
-		(host != NULL) ? host : "");
+	gtk_editable_set_text (GTK_EDITABLE (editor->priv->https_host_entry), (host != NULL) ? host : "");
 	g_free (host);
 
 	port = e_source_proxy_get_https_port (extension);
@@ -130,9 +122,7 @@ proxy_editor_load (EProxyEditor *editor)
 		(gdouble) port);
 
 	host = e_source_proxy_dup_socks_host (extension);
-	gtk_entry_set_text (
-		GTK_ENTRY (editor->priv->socks_host_entry),
-		(host != NULL) ? host : "");
+	gtk_editable_set_text (GTK_EDITABLE (editor->priv->socks_host_entry), (host != NULL) ? host : "");
 	g_free (host);
 
 	port = e_source_proxy_get_socks_port (extension);
@@ -310,7 +300,6 @@ proxy_editor_constructed (GObject *object)
 
 	/* This keeps all (visible) mnemonic labels the same width. */
 	size_group = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
-	gtk_size_group_set_ignore_hidden (size_group, TRUE);
 
 	widget = gtk_label_new_with_mnemonic (_("_Method:"));
 	gtk_size_group_add_widget (size_group, widget);
@@ -680,14 +669,12 @@ e_proxy_editor_save (EProxyEditor *editor)
 		e_source_proxy_set_method (extension, enum_value->value);
 	g_type_class_unref (enum_class);
 
-	entry_text = gtk_entry_get_text (
-		GTK_ENTRY (editor->priv->autoconfig_url_entry));
+	entry_text = gtk_editable_get_text (GTK_EDITABLE (editor->priv->autoconfig_url_entry));
 	if (entry_text != NULL && *entry_text == '\0')
 		entry_text = NULL;
 	e_source_proxy_set_autoconfig_url (extension, entry_text);
 
-	entry_text = gtk_entry_get_text (
-		GTK_ENTRY (editor->priv->ignore_hosts_entry));
+	entry_text = gtk_editable_get_text (GTK_EDITABLE (editor->priv->ignore_hosts_entry));
 	strv = g_strsplit (entry_text, ",", -1);
 	if (strv != NULL) {
 		guint length, ii;
@@ -703,8 +690,7 @@ e_proxy_editor_save (EProxyEditor *editor)
 		extension, (const gchar * const *) strv);
 	g_strfreev (strv);
 
-	entry_text = gtk_entry_get_text (
-		GTK_ENTRY (editor->priv->http_host_entry));
+	entry_text = gtk_editable_get_text (GTK_EDITABLE (editor->priv->http_host_entry));
 	if (entry_text != NULL && *entry_text == '\0')
 		entry_text = NULL;
 	e_source_proxy_set_http_host (extension, entry_text);
@@ -713,8 +699,7 @@ e_proxy_editor_save (EProxyEditor *editor)
 		GTK_SPIN_BUTTON (editor->priv->http_port_spin_button));
 	e_source_proxy_set_http_port (extension, (guint16) spin_button_value);
 
-	entry_text = gtk_entry_get_text (
-		GTK_ENTRY (editor->priv->https_host_entry));
+	entry_text = gtk_editable_get_text (GTK_EDITABLE (editor->priv->https_host_entry));
 	if (entry_text != NULL && *entry_text == '\0')
 		entry_text = NULL;
 	e_source_proxy_set_https_host (extension, entry_text);
@@ -723,8 +708,7 @@ e_proxy_editor_save (EProxyEditor *editor)
 		GTK_SPIN_BUTTON (editor->priv->https_port_spin_button));
 	e_source_proxy_set_https_port (extension, (guint16) spin_button_value);
 
-	entry_text = gtk_entry_get_text (
-		GTK_ENTRY (editor->priv->socks_host_entry));
+	entry_text = gtk_editable_get_text (GTK_EDITABLE (editor->priv->socks_host_entry));
 	if (entry_text != NULL && *entry_text == '\0')
 		entry_text = NULL;
 	e_source_proxy_set_socks_host (extension, entry_text);

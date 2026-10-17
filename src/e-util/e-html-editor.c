@@ -694,7 +694,7 @@ html_editor_context_menu_requested_cb (EContentEditor *cnt_editor,
 	cmd->flags = flags;
 	cmd->caret_word = g_strdup (caret_word);
 	cmd->hover_uri = g_strdup (e_content_editor_get_hover_uri (cnt_editor));
-	cmd->event = gdk_event_copy (event);
+	cmd->event = gdk_event_ref (event);
 
 	g_idle_add_full (G_PRIORITY_LOW, html_editor_show_context_menu_idle_cb,
 		cmd, context_menu_data_free);
@@ -736,7 +736,7 @@ html_editor_parent_changed (GtkWidget *widget,
 	EHTMLEditor *editor = E_HTML_EDITOR (widget);
 
 	/* If we now have a window, then install our accelerators to it */
-	top_level = gtk_widget_get_toplevel (widget);
+	top_level = e_gtk_widget_get_toplevel (widget);
 	if (GTK_IS_WINDOW (top_level)) {
 		gtk_window_add_accel_group (
 			GTK_WINDOW (top_level),
@@ -1183,8 +1183,8 @@ e_html_editor_ui_manager_create_item_cb (EUIManager *ui_manager,
 			GtkToolItem *tool_item;
 
 			tool_item = gtk_tool_item_new ();
-			gtk_container_add (GTK_CONTAINER (tool_item), widget);
-			gtk_widget_show_all (GTK_WIDGET (tool_item));
+			e_gtk_container_add (tool_item, widget);
+			gtk_widget_set_visible (GTK_WIDGET (tool_item), TRUE);
 
 			*out_item = G_OBJECT (tool_item);
 		} else if (!claimed) {
@@ -1212,14 +1212,14 @@ e_html_editor_customize_toolbar_activate_cb (GtkWidget *toolbar,
 
 	g_return_if_fail (E_IS_HTML_EDITOR (self));
 
-	toplevel = gtk_widget_get_toplevel (GTK_WIDGET (self));
+	toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (self));
 
 	dialog = e_ui_customize_dialog_new (GTK_IS_WINDOW (toplevel) ? GTK_WINDOW (toplevel) : NULL);
 
 	e_ui_customize_dialog_add_customizer (dialog, e_ui_manager_get_customizer (self->priv->ui_manager));
 	e_ui_customize_dialog_run (dialog, id);
 
-	gtk_widget_destroy (GTK_WIDGET (dialog));
+	e_gtk_widget_destroy (GTK_WIDGET (dialog));
 }
 
 static void
@@ -1804,7 +1804,7 @@ e_html_editor_content_editor_notify_mode_cb (GObject *object,
 
 static gboolean
 html_editor_scroll_event_cb (GtkWidget *widget,
-			     GdkEventScroll *event,
+			     GdkEvent *event,
 			     gpointer user_data)
 {
 	EHTMLEditor *editor = user_data;
@@ -1977,15 +1977,15 @@ e_html_editor_get_content_editor_for_mode (EHTMLEditor *editor,
 			gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled_window),
 				GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
-			gtk_box_pack_start (GTK_BOX (editor->priv->content_editors_box), scrolled_window, TRUE, TRUE, 0);
+			e_gtk_box_pack_start (GTK_BOX (editor->priv->content_editors_box), scrolled_window, TRUE, TRUE, 0);
 
-			gtk_container_add (GTK_CONTAINER (scrolled_window), GTK_WIDGET (cnt_editor));
+			e_gtk_container_add (scrolled_window, GTK_WIDGET (cnt_editor));
 
 			e_binding_bind_property (cnt_editor, "visible",
 				scrolled_window, "visible",
 				G_BINDING_SYNC_CREATE);
 		} else {
-			gtk_box_pack_start (GTK_BOX (editor->priv->content_editors_box), GTK_WIDGET (cnt_editor), TRUE, TRUE, 0);
+			e_gtk_box_pack_start (GTK_BOX (editor->priv->content_editors_box), GTK_WIDGET (cnt_editor), TRUE, TRUE, 0);
 		}
 
 		g_signal_connect (
@@ -2281,8 +2281,8 @@ e_html_editor_set_mode (EHTMLEditor *editor,
 					gtk_widget_set_tooltip_text (widget, _("Editing Mode"));
 
 					tool_item = gtk_tool_item_new ();
-					gtk_container_add (GTK_CONTAINER (tool_item), widget);
-					gtk_widget_show_all (GTK_WIDGET (tool_item));
+					e_gtk_container_add (tool_item, widget);
+					gtk_widget_set_visible (GTK_WIDGET (tool_item), TRUE);
 
 					toolbar = e_markdown_editor_get_action_toolbar (E_MARKDOWN_EDITOR (cnt_editor));
 					gtk_toolbar_insert (toolbar, tool_item, 0);

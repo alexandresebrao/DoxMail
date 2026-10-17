@@ -98,11 +98,11 @@ mail_tag_editor_realize (GtkWidget *widget)
 
 	/* XXX Override GTK's brain-dead border width defaults. */
 
-	action_area = gtk_dialog_get_action_area (GTK_DIALOG (widget));
+	action_area = e_gtk_dialog_get_action_area (GTK_DIALOG (widget));
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (widget));
 
-	gtk_container_set_border_width (GTK_CONTAINER (content_area), 0);
-	gtk_container_set_border_width (GTK_CONTAINER (action_area), 12);
+	e_gtk_widget_set_border_width (content_area, 0);
+	e_gtk_widget_set_border_width (action_area, 12);
 }
 
 static void
@@ -171,7 +171,7 @@ e_mail_tag_editor_init (EMailTagEditor *editor)
 	e_load_ui_builder_definition (builder, "mail-dialogs.ui");
 
 	widget = e_builder_get_widget (builder, "toplevel");
-	gtk_box_pack_start (GTK_BOX (content_area), widget, TRUE, TRUE, 6);
+	e_gtk_box_pack_start (GTK_BOX (content_area), widget, TRUE, TRUE, 6);
 
 	widget = e_builder_get_widget (builder, "pixmap");
 	e_binding_bind_property (
@@ -259,9 +259,9 @@ e_mail_tag_editor_get_tag_list (EMailTagEditor *editor)
 
 	tag_list = camel_name_value_array_new ();
 
-	entry = gtk_bin_get_child (GTK_BIN (editor->priv->combo_entry));
+	entry = e_gtk_bin_get_child (editor->priv->combo_entry);
 	if (entry)
-		text = g_strdup (gtk_entry_get_text (GTK_ENTRY (entry)));
+		text = g_strdup (gtk_editable_get_text (GTK_EDITABLE (entry)));
 	camel_name_value_array_set_named (tag_list, CAMEL_COMPARE_CASE_SENSITIVE, "follow-up", text);
 	g_free (text);
 
@@ -295,7 +295,7 @@ e_mail_tag_editor_set_tag_list (EMailTagEditor *editor,
 	g_return_if_fail (tag_list != NULL);
 
 	/* Extract the GtkEntry from the GtkComboBoxEntry. */
-	child = gtk_bin_get_child (GTK_BIN (editor->priv->combo_entry));
+	child = e_gtk_bin_get_child (editor->priv->combo_entry);
 
 	/* XXX This is kind of cheating.  Since we only store the
 	 *     translated tag there's no sure-fire way to determine
@@ -303,7 +303,7 @@ e_mail_tag_editor_set_tag_list (EMailTagEditor *editor,
 	 *     have been set while running in a different locale). */
 	text = camel_name_value_array_get_named (tag_list, CAMEL_COMPARE_CASE_SENSITIVE, "follow-up");
 	if (text != NULL)
-		gtk_entry_set_text (GTK_ENTRY (child), text);
+		gtk_editable_set_text (GTK_EDITABLE (child), text);
 
 	text = camel_name_value_array_get_named (tag_list, CAMEL_COMPARE_CASE_SENSITIVE, "due-by");
 	if (text != NULL && *text != '\0') {

@@ -195,9 +195,9 @@ gint		e_calendar_view_get_time_divisions
 void		e_calendar_view_set_time_divisions
 						(ECalendarView *cal_view,
 						 gint time_divisions);
-GtkTargetList *	e_calendar_view_get_copy_target_list
+EGtkTargetList *	e_calendar_view_get_copy_target_list
 						(ECalendarView *cal_view);
-GtkTargetList *	e_calendar_view_get_paste_target_list
+EGtkTargetList *	e_calendar_view_get_paste_target_list
 						(ECalendarView *cal_view);
 
 GSList *	e_calendar_view_get_selected_events /* ECalendarViewSelectionData * */

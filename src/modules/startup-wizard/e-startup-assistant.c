@@ -57,7 +57,7 @@ activate_collection_account_link_cb (GtkLabel *label,
 		gtk_window_get_transient_for (GTK_WINDOW (assistant)),
 		e_mail_session_get_registry (session));
 
-	gtk_widget_destroy (GTK_WIDGET (assistant));
+	e_gtk_widget_destroy (GTK_WIDGET (assistant));
 
 	gtk_window_present (window);
 
@@ -178,7 +178,7 @@ startup_assistant_constructed (GObject *object)
 			checkbox, "active",
 			G_SETTINGS_BIND_DEFAULT | G_SETTINGS_BIND_INVERT_BOOLEAN);
 
-		gtk_box_pack_end (main_box, checkbox, FALSE, FALSE, 4);
+		e_gtk_box_pack_end (main_box, checkbox, FALSE, FALSE, 4);
 
 		g_object_unref (settings);
 
@@ -200,7 +200,7 @@ startup_assistant_constructed (GObject *object)
 			"xalign", 0.0,
 			NULL);
 
-		gtk_box_pack_end (main_box, label, FALSE, FALSE, 4);
+		e_gtk_box_pack_end (main_box, label, FALSE, FALSE, 4);
 
 		g_signal_connect (label, "activate-link",
 			G_CALLBACK (activate_collection_account_link_cb), assistant);

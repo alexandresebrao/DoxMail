@@ -274,7 +274,7 @@ folder_selector_search_changed_cb (GtkSearchEntry *search_entry,
 	EMFolderSelector *selector = user_data;
 	gchar *search_casefolded;
 
-	search_casefolded = g_utf8_casefold (gtk_entry_get_text (GTK_ENTRY (search_entry)), -1);
+	search_casefolded = g_utf8_casefold (gtk_editable_get_text (GTK_EDITABLE (search_entry)), -1);
 
 	if (g_strcmp0 (search_casefolded, selector->priv->search_text ? selector->priv->search_text : "") == 0) {
 		g_free (search_casefolded);
@@ -358,10 +358,10 @@ folder_selector_stop_search_cb (GtkSearchEntry *search_entry,
 {
 	EMFolderSelector *selector = user_data;
 
-	if (g_strcmp0 (gtk_entry_get_text (GTK_ENTRY (search_entry)), "") == 0)
+	if (g_strcmp0 (gtk_editable_get_text (GTK_EDITABLE (search_entry)), "") == 0)
 		gtk_dialog_response (GTK_DIALOG (selector), GTK_RESPONSE_CANCEL);
 	else
-		gtk_entry_set_text (GTK_ENTRY (search_entry), "");
+		gtk_editable_set_text (GTK_EDITABLE (search_entry), "");
 }
 
 static void
@@ -592,20 +592,20 @@ folder_selector_constructed (GObject *object)
 	session = em_folder_tree_model_get_session (model);
 
 	gtk_window_set_default_size (GTK_WINDOW (selector), 400, 500);
-	gtk_container_set_border_width (GTK_CONTAINER (selector), 5);
+	e_gtk_widget_set_border_width (selector, 5);
 
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (selector));
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
-	gtk_container_set_border_width (GTK_CONTAINER (widget), 5);
-	gtk_box_pack_start (GTK_BOX (content_area), widget, TRUE, TRUE, 0);
+	e_gtk_widget_set_border_width (widget, 5);
+	e_gtk_box_pack_start (GTK_BOX (content_area), widget, TRUE, TRUE, 0);
 	selector->priv->content_area = g_object_ref (widget);
 	gtk_widget_show (widget);
 
 	container = widget;
 
 	widget = gtk_search_entry_new ();
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_entry_set_placeholder_text (GTK_ENTRY (widget), _("Search for folder…"));
 	gtk_widget_show (widget);
 
@@ -642,17 +642,17 @@ folder_selector_constructed (GObject *object)
 		G_BINDING_DEFAULT);
 
 	widget = e_alert_bar_new ();
-	gtk_box_pack_end (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_end (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	selector->priv->alert_bar = g_object_ref (widget);
 	/* EAlertBar controls its own visibility. */
 
 	widget = e_activity_bar_new ();
-	gtk_box_pack_end (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_end (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	selector->priv->activity_bar = g_object_ref (widget);
 	/* EActivityBar controls its own visibility. */
 
 	widget = e_tree_view_frame_new ();
-	gtk_box_pack_end (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_end (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	selector->priv->tree_view_frame = g_object_ref (widget);
 	gtk_widget_set_size_request (widget, -1, 240);
 	gtk_widget_show (widget);
@@ -695,7 +695,7 @@ folder_selector_constructed (GObject *object)
 	widget = gtk_label_new (NULL);
 	gtk_widget_set_margin_top (widget, 6);
 	gtk_label_set_justify (GTK_LABEL (widget), GTK_JUSTIFY_LEFT);
-	gtk_box_pack_end (GTK_BOX (container), widget, FALSE, TRUE, 0);
+	e_gtk_box_pack_end (GTK_BOX (container), widget, FALSE, TRUE, 0);
 	selector->priv->caption_label = g_object_ref (widget);
 	gtk_widget_hide (widget);
 

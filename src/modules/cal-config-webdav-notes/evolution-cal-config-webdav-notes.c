@@ -20,7 +20,7 @@
 #include <glib/gi18n-lib.h>
 
 #include <libebackend/libebackend.h>
-#include <libedataserverui/libedataserverui.h>
+#include <libedataserverui4/libedataserverui4.h>
 
 #include <e-util/e-util.h>
 
@@ -95,8 +95,8 @@ cal_config_webdav_notes_run_dialog (GtkButton *button,
 	config = e_source_config_backend_get_config (context->backend);
 	registry = e_source_config_get_registry (config);
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (config));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (config));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 	source_type = e_cal_source_config_get_source_type (E_CAL_SOURCE_CONFIG (config));
 
 	switch (source_type) {
@@ -129,7 +129,7 @@ cal_config_webdav_notes_run_dialog (GtkButton *button,
 
 	e_webdav_discover_dialog_refresh (dialog);
 
-	if (gtk_dialog_run (dialog) == GTK_RESPONSE_ACCEPT) {
+	if (e_gtk_dialog_run (dialog) == GTK_RESPONSE_ACCEPT) {
 		gchar *href = NULL, *display_name = NULL, *color = NULL, *email;
 		guint supports = 0, order = 0;
 		GtkWidget *content;
@@ -183,7 +183,7 @@ cal_config_webdav_notes_run_dialog (GtkButton *button,
 
 	g_signal_handler_disconnect (prompter, handler_id);
 
-	gtk_widget_destroy (GTK_WIDGET (dialog));
+	e_gtk_widget_destroy (GTK_WIDGET (dialog));
 
 	g_object_unref (prompter);
 	if (guri)
@@ -296,13 +296,13 @@ cal_config_webdav_notes_insert_widgets (ESourceConfigBackend *backend,
 	container = widget;
 
 	widget = gtk_label_new (_("File extension for new notes:"));
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	widget = gtk_combo_box_text_new ();
 	gtk_combo_box_text_append (GTK_COMBO_BOX_TEXT (widget), ".md", ".md");
 	gtk_combo_box_text_append (GTK_COMBO_BOX_TEXT (widget), ".txt", ".txt");
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	e_binding_bind_property (
@@ -347,7 +347,7 @@ cal_config_webdav_notes_check_complete (ESourceConfigBackend *backend,
 	if (!context->url_entry)
 		return TRUE;
 
-	uri_string = gtk_entry_get_text (GTK_ENTRY (context->url_entry));
+	uri_string = gtk_editable_get_text (GTK_EDITABLE (context->url_entry));
 	guri = g_uri_parse (uri_string, SOUP_HTTP_URI_FLAGS | G_URI_FLAGS_PARSE_RELAXED, NULL);
 
 	if (guri) {

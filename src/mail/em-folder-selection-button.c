@@ -253,8 +253,8 @@ folder_selection_button_clicked (GtkButton *button)
 	gpointer parent;
 	gint response;
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (button));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (button));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	if (self->priv->store != NULL) {
 		model = em_folder_tree_model_new ();
@@ -289,7 +289,7 @@ folder_selection_button_clicked (GtkButton *button)
 
 	em_folder_tree_set_selected (folder_tree, self->priv->folder_uri, FALSE);
 
-	response = gtk_dialog_run (GTK_DIALOG (dialog));
+	response = e_gtk_dialog_run (GTK_DIALOG (dialog));
 
 	if (response == GTK_RESPONSE_OK) {
 		const gchar *uri;
@@ -304,7 +304,7 @@ folder_selection_button_clicked (GtkButton *button)
 		g_signal_emit (button, signals[SELECTED], 0);
 	}
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 }
 
 static void
@@ -406,17 +406,17 @@ em_folder_selection_button_init (EMFolderSelectionButton *emfsb)
 	emfsb->priv = em_folder_selection_button_get_instance_private (emfsb);
 
 	box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 4);
-	gtk_container_add (GTK_CONTAINER (emfsb), box);
+	e_gtk_container_add (emfsb, box);
 	gtk_widget_show (box);
 
 	emfsb->priv->icon = gtk_image_new ();
-	gtk_box_pack_start (GTK_BOX (box), emfsb->priv->icon, FALSE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (box), emfsb->priv->icon, FALSE, TRUE, 0);
 	gtk_widget_show (emfsb->priv->icon);
 
 	emfsb->priv->label = gtk_label_new ("");
 	gtk_label_set_justify (GTK_LABEL (emfsb->priv->label), GTK_JUSTIFY_LEFT);
 	gtk_label_set_xalign (GTK_LABEL (emfsb->priv->label), 0);
-	gtk_box_pack_start (GTK_BOX (box), emfsb->priv->label, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (box), emfsb->priv->label, TRUE, TRUE, 0);
 	gtk_widget_show (emfsb->priv->label);
 
 	folder_selection_button_set_contents (emfsb);

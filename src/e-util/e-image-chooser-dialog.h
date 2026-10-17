@@ -27,47 +27,14 @@
 
 #include <gtk/gtk.h>
 
-/* Standard GObject macros */
-#define E_TYPE_IMAGE_CHOOSER_DIALOG \
-	(e_image_chooser_dialog_get_type ())
-#define E_IMAGE_CHOOSER_DIALOG(obj) \
-	(G_TYPE_CHECK_INSTANCE_CAST \
-	((obj), E_TYPE_IMAGE_CHOOSER_DIALOG, EImageChooserDialog))
-#define E_IMAGE_CHOOSER_DIALOG_CLASS(cls) \
-	(G_TYPE_CHECK_CLASS_CAST \
-	((cls), E_TYPE_IMAGE_CHOOSER_DIALOG, EImageChooserDialogClass))
-#define E_IS_IMAGE_CHOOSER_DIALOG(obj) \
-	(G_TYPE_CHECK_INSTANCE_TYPE \
-	((obj), E_TYPE_IMAGE_CHOOSER_DIALOG))
-#define E_IS_IMAGE_CHOOSER_DIALOG_CLASS(cls) \
-	(G_TYPE_CHECK_CLASS_TYPE \
-	((cls), E_TYPE_IMAGE_CHOOSER_DIALOG))
-#define E_IMAGE_CHOOSER_DIALOG_GET_CLASS(obj) \
-	(G_TYPE_INSTANCE_GET_CLASS \
-	((obj), E_TYPE_IMAGE_CHOOSER_DIALOG, EImageChooserDialogClass))
-
 G_BEGIN_DECLS
 
-typedef struct _EImageChooserDialog EImageChooserDialog;
-typedef struct _EImageChooserDialogClass EImageChooserDialogClass;
-typedef struct _EImageChooserDialogPrivate EImageChooserDialogPrivate;
-
-struct _EImageChooserDialog {
-	GtkFileChooserDialog parent;
-	EImageChooserDialogPrivate *priv;
-};
-
-struct _EImageChooserDialogClass {
-	GtkFileChooserDialogClass parent_class;
-};
-
-GType		e_image_chooser_dialog_get_type
-					(void) G_GNUC_CONST;
-GtkWidget *	e_image_chooser_dialog_new
-					(const gchar *title,
-					 GtkWindow *parent);
-GFile *		e_image_chooser_dialog_run
-					(EImageChooserDialog *dialog);
+/* GTK 4 file choosers have no preview widget, thus this is no longer an own
+ * dialog type, but a GtkFileChooserNative set up for images. */
+GtkFileChooserNative *
+		e_image_chooser_dialog_new	(const gchar *title,
+						 GtkWindow *parent);
+GFile *		e_image_chooser_dialog_run	(GtkFileChooserNative *dialog);
 
 G_END_DECLS
 

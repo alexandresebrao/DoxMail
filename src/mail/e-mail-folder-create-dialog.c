@@ -78,7 +78,7 @@ mail_folder_create_dialog_create_folder_cb (GObject *source_object,
 	alert_sink = e_activity_get_alert_sink (activity);
 
 	/* Set the cursor back to normal. */
-	gdk_window = gtk_widget_get_window (GTK_WIDGET (dialog));
+	gdk_window = e_gtk_widget_get_surface (GTK_WIDGET (dialog));
 	gdk_window_set_cursor (gdk_window, NULL);
 
 	e_mail_store_create_folder_finish (
@@ -96,7 +96,7 @@ mail_folder_create_dialog_create_folder_cb (GObject *source_object,
 		g_error_free (local_error);
 
 	} else {
-		gtk_widget_destroy (GTK_WIDGET (dialog));
+		e_gtk_widget_destroy (GTK_WIDGET (dialog));
 	}
 
 	async_context_free (async_context);
@@ -115,7 +115,7 @@ mail_folder_create_dialog_create_folder (EMailFolderCreateDialog *dialog)
 
 	g_return_if_fail (store != NULL);
 
-	text = gtk_entry_get_text (GTK_ENTRY (dialog->priv->name_entry));
+	text = gtk_editable_get_text (GTK_EDITABLE (dialog->priv->name_entry));
 
 	if (parent_folder_name != NULL) {
 		create_folder_name = g_strconcat (
@@ -134,7 +134,7 @@ mail_folder_create_dialog_create_folder (EMailFolderCreateDialog *dialog)
 		e_filter_rule_set_name (rule, create_folder_name);
 		vfolder_gui_add_rule (EM_VFOLDER_RULE (rule));
 
-		gtk_widget_destroy (GTK_WIDGET (dialog));
+		e_gtk_widget_destroy (GTK_WIDGET (dialog));
 
 	} else {
 		AsyncContext *async_context;
@@ -147,7 +147,7 @@ mail_folder_create_dialog_create_folder (EMailFolderCreateDialog *dialog)
 		if (gdk_cursor) {
 			GdkWindow *gdk_window;
 
-			gdk_window = gtk_widget_get_window (GTK_WIDGET (dialog));
+			gdk_window = e_gtk_widget_get_surface (GTK_WIDGET (dialog));
 			gdk_window_set_cursor (gdk_window, gdk_cursor);
 			g_object_unref (gdk_cursor);
 		}
@@ -187,7 +187,7 @@ mail_folder_create_dialog_inputs_are_valid (EMailFolderCreateDialog *dialog)
 
 	entry = GTK_ENTRY (dialog->priv->name_entry);
 
-	original_text = gtk_entry_get_text (entry);
+	original_text = gtk_editable_get_text (GTK_EDITABLE (entry));
 	stripped_text = e_util_strdup_strip (original_text);
 
 	folder_or_store_is_selected =
@@ -337,20 +337,20 @@ mail_folder_create_dialog_constructed (GObject *object)
 		EM_FOLDER_SELECTOR (dialog));
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
 
 	widget = gtk_label_new_with_mnemonic (_("Folder _name:"));
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	label = GTK_LABEL (widget);
 
 	widget = gtk_entry_new ();
 	gtk_label_set_mnemonic_widget (label, widget);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	dialog->priv->name_entry = g_object_ref (widget);
 	gtk_widget_grab_focus (widget);
 	gtk_widget_show (widget);
@@ -378,7 +378,7 @@ mail_folder_create_dialog_response (GtkDialog *dialog,
 				E_MAIL_FOLDER_CREATE_DIALOG (dialog));
 			break;
 		case GTK_RESPONSE_CANCEL:
-			gtk_widget_destroy (GTK_WIDGET (dialog));
+			e_gtk_widget_destroy (GTK_WIDGET (dialog));
 			break;
 		default:
 			break;

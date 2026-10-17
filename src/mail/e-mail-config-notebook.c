@@ -81,7 +81,7 @@ mail_config_notebook_sort_pages (EMailConfigNotebook *notebook)
 	gint ii = 0;
 
 	list = g_list_sort (
-		gtk_container_get_children (GTK_CONTAINER (notebook)),
+		e_gtk_widget_get_children (notebook),
 		(GCompareFunc) e_mail_config_page_compare);
 
 	for (link = list; link != NULL; link = g_list_next (link))
@@ -713,7 +713,7 @@ e_mail_config_notebook_check_complete (EMailConfigNotebook *notebook)
 
 	g_return_val_if_fail (E_IS_MAIL_CONFIG_NOTEBOOK (notebook), FALSE);
 
-	list = gtk_container_get_children (GTK_CONTAINER (notebook));
+	list = e_gtk_widget_get_children (notebook);
 
 	for (link = list; link != NULL; link = g_list_next (link)) {
 		if (E_IS_MAIL_CONFIG_PAGE (link->data)) {
@@ -863,7 +863,7 @@ e_mail_config_notebook_commit (EMailConfigNotebook *notebook,
 	if (source != NULL && e_source_get_writable (source))
 		g_queue_push_tail (source_queue, g_object_ref (source));
 
-	list = gtk_container_get_children (GTK_CONTAINER (notebook));
+	list = e_gtk_widget_get_children (notebook);
 
 	/* Tell all EMailConfigPages to commit their UI state to their
 	 * scratch ESources and push any additional data sources on to

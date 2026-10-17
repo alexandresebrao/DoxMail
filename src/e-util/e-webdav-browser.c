@@ -29,7 +29,7 @@
 #include <gtk/gtk.h>
 
 #include <libedataserver/libedataserver.h>
-#include <libedataserverui/libedataserverui.h>
+#include <libedataserverui4/libedataserverui4.h>
 
 #include "e-activity.h"
 #include "e-activity-bar.h"
@@ -318,7 +318,7 @@ webdav_browser_manage_login_error_cb (gpointer user_data)
 		GtkWindow *parent;
 		GtkWidget *widget;
 
-		widget = gtk_widget_get_toplevel (GTK_WIDGET (led->webdav_browser));
+		widget = e_gtk_widget_get_toplevel (GTK_WIDGET (led->webdav_browser));
 		parent = widget ? GTK_WINDOW (widget) : NULL;
 
 		e_trust_prompt_run_for_source (parent, source, led->certificate_pem, led->certificate_errors,
@@ -1880,7 +1880,7 @@ webdav_browser_save_clicked (EWebDAVBrowser *webdav_browser,
 
 	g_return_if_fail (E_IS_WEBDAV_BROWSER (webdav_browser));
 
-	text = g_strdup (gtk_entry_get_text (GTK_ENTRY (webdav_browser->priv->create_edit_name_entry)));
+	text = g_strdup (gtk_editable_get_text (GTK_EDITABLE (webdav_browser->priv->create_edit_name_entry)));
 	if (text)
 		text = g_strstrip (text);
 
@@ -2093,7 +2093,7 @@ webdav_browser_prepare_popover (EWebDAVBrowser *webdav_browser,
 	rgba.blue = 0.0;
 	rgba.alpha = 0.001;
 
-	gtk_entry_set_text (GTK_ENTRY (webdav_browser->priv->create_edit_name_entry), "");
+	gtk_editable_set_text (GTK_EDITABLE (webdav_browser->priv->create_edit_name_entry), "");
 	e_color_combo_set_current_color (E_COLOR_COMBO (webdav_browser->priv->create_edit_color_combo), &rgba);
 	gtk_spin_button_set_value (GTK_SPIN_BUTTON (webdav_browser->priv->create_edit_order_spin), -1);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (webdav_browser->priv->create_edit_event_check), FALSE);
@@ -2209,7 +2209,7 @@ webdav_browser_edit_clicked_cb (GtkWidget *button,
 		gtk_widget_set_sensitive (webdav_browser->priv->create_edit_task_check, FALSE);
 	}
 
-	gtk_entry_set_text (GTK_ENTRY (webdav_browser->priv->create_edit_name_entry), display_name);
+	gtk_editable_set_text (GTK_EDITABLE (webdav_browser->priv->create_edit_name_entry), display_name);
 
 	if (description) {
 		gtk_text_buffer_set_text (gtk_text_view_get_buffer (GTK_TEXT_VIEW (webdav_browser->priv->create_edit_description_textview)),
@@ -2375,7 +2375,7 @@ webdav_browser_delete_clicked_cb (GtkWidget *button,
 		error_message = _("Failed to delete collection");
 	}
 
-	parent = gtk_widget_get_toplevel (button);
+	parent = e_gtk_widget_get_toplevel (button);
 	if (!GTK_IS_WINDOW (parent))
 		parent = NULL;
 
@@ -2655,7 +2655,7 @@ webdav_browser_create_popover (EWebDAVBrowser *webdav_browser)
 
 	widget = gtk_scrolled_window_new (NULL, NULL);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (widget), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (widget), GTK_SHADOW_IN);
+	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (widget), TRUE);
 	gtk_grid_attach (grid, widget, 1, 6, 1, 1);
 	webdav_browser->priv->create_edit_description_scrolled_window = widget;
 
@@ -2663,7 +2663,7 @@ webdav_browser_create_popover (EWebDAVBrowser *webdav_browser)
 	gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (widget), GTK_WRAP_WORD);
 	gtk_label_set_mnemonic_widget (GTK_LABEL (label), widget);
 	e_spell_text_view_attach (GTK_TEXT_VIEW (widget));
-	gtk_container_add (GTK_CONTAINER (webdav_browser->priv->create_edit_description_scrolled_window), widget);
+	e_gtk_container_add (webdav_browser->priv->create_edit_description_scrolled_window, widget);
 	webdav_browser->priv->create_edit_description_textview = widget;
 
 	widget = gtk_button_new_with_mnemonic (_("_Save"));
@@ -2671,12 +2671,12 @@ webdav_browser_create_popover (EWebDAVBrowser *webdav_browser)
 	gtk_grid_attach (grid, widget, 0, 7, 2, 1);
 	webdav_browser->priv->create_edit_save_button = widget;
 
-	gtk_widget_show_all (GTK_WIDGET (grid));
+	gtk_widget_set_visible (GTK_WIDGET (grid), TRUE);
 
 	widget = gtk_popover_new (GTK_WIDGET (webdav_browser));
 	gtk_popover_set_position (GTK_POPOVER (widget), GTK_POS_BOTTOM);
-	gtk_container_add (GTK_CONTAINER (widget), GTK_WIDGET (grid));
-	gtk_container_set_border_width (GTK_CONTAINER (widget), 6);
+	e_gtk_container_add (widget, GTK_WIDGET (grid));
+	e_gtk_widget_set_border_width (widget, 6);
 	webdav_browser->priv->create_edit_popover = widget;
 
 	label = gtk_label_new ("");
@@ -2685,9 +2685,9 @@ webdav_browser_create_popover (EWebDAVBrowser *webdav_browser)
 
 	widget = gtk_popover_new (webdav_browser->priv->create_edit_popover);
 	gtk_popover_set_position (GTK_POPOVER (widget), GTK_POS_BOTTOM);
-	gtk_popover_set_modal (GTK_POPOVER (widget), FALSE);
-	gtk_container_add (GTK_CONTAINER (widget), label);
-	gtk_container_set_border_width (GTK_CONTAINER (widget), 6);
+	gtk_popover_set_autohide (GTK_POPOVER (widget), FALSE);
+	e_gtk_container_add (widget, label);
+	e_gtk_widget_set_border_width (widget, 6);
 	webdav_browser->priv->create_edit_hint_popover = widget;
 }
 
@@ -2828,15 +2828,15 @@ webdav_browser_constructed (GObject *object)
 	container = widget;
 
 	widget = gtk_label_new (_("WebDAV server:"));
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 
 	widget = gtk_label_new ("");
 	webdav_browser->priv->url_label = GTK_LABEL (widget);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 
 	widget = gtk_scrolled_window_new (NULL, NULL);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (widget), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (widget), GTK_SHADOW_IN);
+	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (widget), TRUE);
 	gtk_widget_set_hexpand (widget, TRUE);
 	gtk_widget_set_vexpand (widget, TRUE);
 	gtk_grid_attach (grid, widget, 0, 1, 1, 1);
@@ -2844,7 +2844,7 @@ webdav_browser_constructed (GObject *object)
 	container = widget;
 
 	widget = webdav_browser_tree_view_new (webdav_browser);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	webdav_browser->priv->tree_view = widget;
 
 	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (widget));
@@ -2855,60 +2855,59 @@ webdav_browser_constructed (GObject *object)
 	g_signal_connect (widget, "row-expanded",
 		G_CALLBACK (webdav_browser_row_expanded_cb), webdav_browser);
 
-	widget = gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
-	gtk_button_box_set_layout (GTK_BUTTON_BOX (widget), GTK_BUTTONBOX_START);
+	widget = e_gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
 	gtk_box_set_spacing (GTK_BOX (widget), 6);
 	gtk_grid_attach (grid, widget, 1, 1, 1, 1);
 
 	container = widget;
 
 	widget = gtk_button_new_with_mnemonic (_("Create _Book"));
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	webdav_browser->priv->create_book_button = widget;
 
 	g_signal_connect (webdav_browser->priv->create_book_button, "clicked",
 		G_CALLBACK (webdav_browser_create_clicked_cb), webdav_browser);
 
 	widget = gtk_button_new_with_mnemonic (_("Create _Calendar"));
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	webdav_browser->priv->create_calendar_button = widget;
 
 	g_signal_connect (webdav_browser->priv->create_calendar_button, "clicked",
 		G_CALLBACK (webdav_browser_create_clicked_cb), webdav_browser);
 
 	widget = gtk_button_new_with_mnemonic (_("Create Collectio_n"));
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	webdav_browser->priv->create_collection_button = widget;
 
 	g_signal_connect (webdav_browser->priv->create_collection_button, "clicked",
 		G_CALLBACK (webdav_browser_create_clicked_cb), webdav_browser);
 
 	widget = gtk_button_new_with_mnemonic (_("_Edit"));
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	webdav_browser->priv->edit_button = widget;
 
 	g_signal_connect (webdav_browser->priv->edit_button, "clicked",
 		G_CALLBACK (webdav_browser_edit_clicked_cb), webdav_browser);
 
 	widget = gtk_button_new_with_mnemonic (_("_Delete"));
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	webdav_browser->priv->delete_button = widget;
 
 	g_signal_connect (webdav_browser->priv->delete_button, "clicked",
 		G_CALLBACK (webdav_browser_delete_clicked_cb), webdav_browser);
 
 	/* widget = gtk_button_new_with_mnemonic (_("_Permissions"));
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	webdav_browser->priv->permissions_button = widget; */
 
 	widget = gtk_button_new_with_mnemonic (_("_Refresh"));
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	webdav_browser->priv->refresh_button = widget;
 
 	g_signal_connect_swapped (webdav_browser->priv->refresh_button, "clicked",
 		G_CALLBACK (webdav_browser_refresh), webdav_browser);
 
-	gtk_widget_show_all (GTK_WIDGET (grid));
+	gtk_widget_set_visible (GTK_WIDGET (grid), TRUE);
 
 	/* Add the bars after show_all call, because they manage
 	   their visibility on their own */

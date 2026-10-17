@@ -93,8 +93,7 @@ html_editor_dialog_constructed (GObject *object)
 
 	gtk_window_set_transient_for (
 		GTK_WINDOW (dialog),
-		GTK_WINDOW (gtk_widget_get_toplevel (
-				GTK_WIDGET (dialog->priv->editor))));
+		GTK_WINDOW (e_gtk_widget_get_toplevel (GTK_WIDGET (dialog->priv->editor))));
 }
 
 static void
@@ -102,8 +101,8 @@ html_editor_dialog_show (GtkWidget *widget)
 {
 	EHTMLEditorDialog *self = E_HTML_EDITOR_DIALOG (widget);
 
-	gtk_widget_show_all (GTK_WIDGET (self->priv->container));
-	gtk_widget_show_all (GTK_WIDGET (self->priv->button_box));
+	gtk_widget_set_visible (GTK_WIDGET (self->priv->container), TRUE);
+	gtk_widget_set_visible (GTK_WIDGET (self->priv->button_box), TRUE);
 
 	GTK_WIDGET_CLASS (e_html_editor_dialog_parent_class)->show (widget);
 }
@@ -147,7 +146,7 @@ e_html_editor_dialog_class_init (EHTMLEditorDialogClass *class)
 
 static gboolean
 key_press_event_cb (GtkWidget *widget,
-                    GdkEventKey *event,
+                    GdkEvent *event,
                     gpointer user_data)
 {
 	if (event->keyval == GDK_KEY_Escape) {
@@ -168,13 +167,13 @@ e_html_editor_dialog_init (EHTMLEditorDialog *dialog)
 	dialog->priv = e_html_editor_dialog_get_instance_private (dialog);
 
 	main_layout = GTK_BOX (gtk_box_new (GTK_ORIENTATION_VERTICAL, 5));
-	gtk_container_add (GTK_CONTAINER (dialog), GTK_WIDGET (main_layout));
-	gtk_container_set_border_width (GTK_CONTAINER (dialog), 10);
+	e_gtk_container_add (dialog, GTK_WIDGET (main_layout));
+	e_gtk_widget_set_border_width (dialog, 10);
 
 	grid = GTK_GRID (gtk_grid_new ());
 	gtk_grid_set_row_spacing (grid, 10);
 	gtk_grid_set_column_spacing (grid, 10);
-	gtk_box_pack_start (main_layout, GTK_WIDGET (grid), TRUE, TRUE, 5);
+	e_gtk_box_pack_start (main_layout, GTK_WIDGET (grid), TRUE, TRUE, 5);
 	dialog->priv->container = grid;
 
 	/* == Button box == */
@@ -183,14 +182,13 @@ e_html_editor_dialog_init (EHTMLEditorDialog *dialog)
 		widget, "clicked",
 		G_CALLBACK (gtk_widget_hide), dialog);
 
-	button_box = gtk_button_box_new (GTK_ORIENTATION_HORIZONTAL);
-	gtk_button_box_set_layout (GTK_BUTTON_BOX (button_box), GTK_BUTTONBOX_END);
+	button_box = e_gtk_button_box_new (GTK_ORIENTATION_HORIZONTAL);
 	gtk_box_set_spacing (GTK_BOX (button_box), 5);
-	gtk_box_pack_start (main_layout, button_box, TRUE, TRUE, 5);
-	gtk_box_pack_start (GTK_BOX (button_box), widget, FALSE, FALSE, 5);
+	e_gtk_box_pack_start (main_layout, button_box, TRUE, TRUE, 5);
+	e_gtk_box_pack_start (GTK_BOX (button_box), widget, FALSE, FALSE, 5);
 	dialog->priv->button_box = GTK_BOX (button_box);
 
-	gtk_widget_show_all (GTK_WIDGET (main_layout));
+	gtk_widget_set_visible (GTK_WIDGET (main_layout), TRUE);
 
 	g_object_set (
 		G_OBJECT (dialog),

@@ -754,7 +754,7 @@ static void
 edvti_on_select_zone (GtkWidget *item,
                       EDayViewTimeItem *time_item)
 {
-	calendar_config_select_day_second_zone (gtk_widget_get_toplevel (item));
+	calendar_config_select_day_second_zone (e_gtk_widget_get_toplevel (item));
 }
 
 static void
@@ -885,7 +885,7 @@ e_day_view_time_item_show_popup_menu (EDayViewTimeItem *time_item,
 		G_CALLBACK (edvti_on_select_zone), time_item);
 	gtk_menu_shell_append (GTK_MENU_SHELL (submenu), item);
 
-	gtk_widget_show_all (submenu);
+	gtk_widget_set_visible (submenu, TRUE);
 
 	gtk_menu_attach_to_widget (GTK_MENU (menu),
 				   GTK_WIDGET (day_view),

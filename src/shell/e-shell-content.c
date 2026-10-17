@@ -202,14 +202,14 @@ shell_content_get_preferred_width (GtkWidget *widget,
 
 	*minimum = *natural = 0;
 
-	child = gtk_bin_get_child (GTK_BIN (widget));
-	gtk_widget_get_preferred_width (child, minimum, natural);
+	child = e_gtk_bin_get_child (widget);
+	e_gtk_widget_get_preferred_width (child, minimum, natural);
 
 	if (gtk_widget_get_visible (self->priv->alert_bar)) {
 		gint child_minimum;
 		gint child_natural;
 
-		gtk_widget_get_preferred_width (self->priv->alert_bar, &child_minimum, &child_natural);
+		e_gtk_widget_get_preferred_width (self->priv->alert_bar, &child_minimum, &child_natural);
 
 		*minimum = MAX (*minimum, child_minimum);
 		*natural = MAX (*natural, child_natural);
@@ -219,7 +219,7 @@ shell_content_get_preferred_width (GtkWidget *widget,
 		gint child_minimum;
 		gint child_natural;
 
-		gtk_widget_get_preferred_width (self->priv->searchbar, &child_minimum, &child_natural);
+		e_gtk_widget_get_preferred_width (self->priv->searchbar, &child_minimum, &child_natural);
 
 		*minimum = MAX (*minimum, child_minimum);
 		*natural = MAX (*natural, child_natural);
@@ -234,14 +234,14 @@ shell_content_get_preferred_height (GtkWidget *widget,
 	EShellContent *self = E_SHELL_CONTENT (widget);
 	GtkWidget *child;
 
-	child = gtk_bin_get_child (GTK_BIN (widget));
-	gtk_widget_get_preferred_height (child, minimum, natural);
+	child = e_gtk_bin_get_child (widget);
+	e_gtk_widget_get_preferred_height (child, minimum, natural);
 
 	if (gtk_widget_get_visible (self->priv->alert_bar)) {
 		gint child_minimum;
 		gint child_natural;
 
-		gtk_widget_get_preferred_height (self->priv->alert_bar, &child_minimum, &child_natural);
+		e_gtk_widget_get_preferred_height (self->priv->alert_bar, &child_minimum, &child_natural);
 
 		*minimum += child_minimum;
 		*natural += child_natural;
@@ -251,7 +251,7 @@ shell_content_get_preferred_height (GtkWidget *widget,
 		gint child_minimum;
 		gint child_natural;
 
-		gtk_widget_get_preferred_height (self->priv->searchbar, &child_minimum, &child_natural);
+		e_gtk_widget_get_preferred_height (self->priv->searchbar, &child_minimum, &child_natural);
 
 		*minimum += child_minimum;
 		*natural += child_natural;
@@ -283,9 +283,7 @@ shell_content_size_allocate (GtkWidget *widget,
 	child_allocation.y += child_requisition.height;
 
 	if (gtk_widget_get_visible (child))
-		gtk_widget_get_preferred_height_for_width (
-			child, child_allocation.width,
-			&child_requisition.height, NULL);
+		e_gtk_widget_get_preferred_height_for_width (child, child_allocation.width, &child_requisition.height, NULL);
 	else
 		child_requisition.height = 0;
 
@@ -316,7 +314,7 @@ shell_content_size_allocate (GtkWidget *widget,
 	child_allocation.y += child_requisition.height;
 	child_allocation.height = remaining_height;
 
-	child = gtk_bin_get_child (GTK_BIN (widget));
+	child = e_gtk_bin_get_child (widget);
 	if (child != NULL)
 		gtk_widget_size_allocate (child, &child_allocation);
 }
@@ -346,7 +344,7 @@ shell_content_remove (GtkContainer *container,
 static void
 shell_content_forall (GtkContainer *container,
                       gboolean include_internals,
-                      GtkCallback callback,
+                      EGtkCallback callback,
                       gpointer callback_data)
 {
 	EShellContent *self = E_SHELL_CONTENT (container);
@@ -440,7 +438,6 @@ e_shell_content_init (EShellContent *shell_content)
 {
 	shell_content->priv = e_shell_content_get_instance_private (shell_content);
 
-	gtk_widget_set_has_window (GTK_WIDGET (shell_content), FALSE);
 }
 
 /**
@@ -477,9 +474,7 @@ e_shell_content_set_searchbar (EShellContent *shell_content,
 		g_return_if_fail (GTK_IS_WIDGET (searchbar));
 
 	if (shell_content->priv->searchbar != NULL)
-		gtk_container_remove (
-			GTK_CONTAINER (shell_content),
-			shell_content->priv->searchbar);
+		e_gtk_container_remove (shell_content, shell_content->priv->searchbar);
 
 	shell_content->priv->searchbar = searchbar;
 
@@ -611,12 +606,12 @@ e_shell_content_run_advanced_search_dialog (EShellContent *shell_content)
 		_("_Save"), GTK_RESPONSE_APPLY,
 		_("_OK"), GTK_RESPONSE_OK, NULL);
 
-	gtk_container_set_border_width (GTK_CONTAINER (dialog), 7);
-	gtk_container_set_border_width (GTK_CONTAINER (widget), 3);
+	e_gtk_widget_set_border_width (dialog, 7);
+	e_gtk_widget_set_border_width (widget, 3);
 	gtk_window_set_default_size (GTK_WINDOW (dialog), 600, 300);
 
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
-	gtk_box_pack_start (GTK_BOX (content_area), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (content_area), widget, TRUE, TRUE, 0);
 
 	handler_id = g_signal_connect_swapped (
 		rule, "changed", G_CALLBACK (
@@ -625,7 +620,7 @@ e_shell_content_run_advanced_search_dialog (EShellContent *shell_content)
 	shell_content_dialog_rule_changed (dialog, rule);
 
 run:
-	response = gtk_dialog_run (GTK_DIALOG (dialog));
+	response = e_gtk_dialog_run (GTK_DIALOG (dialog));
 
 	if (response != GTK_RESPONSE_OK && response != GTK_RESPONSE_APPLY)
 		goto exit;
@@ -650,7 +645,7 @@ exit:
 	g_signal_handler_disconnect (rule, handler_id);
 
 	g_object_unref (rule);
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 }
 
 void
@@ -671,10 +666,10 @@ e_shell_content_run_edit_searches_dialog (EShellContent *shell_content)
 		context, E_FILTER_SOURCE_INCOMING, _("Searches"));
 	gtk_window_set_title (GTK_WINDOW (editor), _("Searches"));
 
-	if (gtk_dialog_run (GTK_DIALOG (editor)) == GTK_RESPONSE_OK)
+	if (e_gtk_dialog_run (GTK_DIALOG (editor)) == GTK_RESPONSE_OK)
 		e_rule_context_save (context, user_filename);
 
-	gtk_widget_destroy (GTK_WIDGET (editor));
+	e_gtk_widget_destroy (GTK_WIDGET (editor));
 }
 
 void
@@ -717,12 +712,12 @@ e_shell_content_run_save_search_dialog (EShellContent *shell_content)
 		_("_Cancel"), GTK_RESPONSE_CANCEL,
 		_("_OK"), GTK_RESPONSE_OK, NULL);
 
-	gtk_container_set_border_width (GTK_CONTAINER (dialog), 7);
-	gtk_container_set_border_width (GTK_CONTAINER (widget), 3);
+	e_gtk_widget_set_border_width (dialog, 7);
+	e_gtk_widget_set_border_width (widget, 3);
 	gtk_window_set_default_size (GTK_WINDOW (dialog), 500, 300);
 
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
-	gtk_box_pack_start (GTK_BOX (content_area), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (content_area), widget, TRUE, TRUE, 0);
 
 	handler_id = g_signal_connect_swapped (
 		rule, "changed", G_CALLBACK (
@@ -731,7 +726,7 @@ e_shell_content_run_save_search_dialog (EShellContent *shell_content)
 	shell_content_dialog_rule_changed (dialog, rule);
 
 run:
-	response = gtk_dialog_run (GTK_DIALOG (dialog));
+	response = e_gtk_dialog_run (GTK_DIALOG (dialog));
 
 	if (response != GTK_RESPONSE_OK)
 		goto exit;
@@ -753,5 +748,5 @@ exit:
 	g_signal_handler_disconnect (rule, handler_id);
 
 	g_object_unref (rule);
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 }

@@ -54,12 +54,12 @@ mail_config_lookup_page_constructed (GObject *object)
 	gtk_widget_set_halign (widget, GTK_ALIGN_CENTER);
 	gtk_widget_set_valign (widget, GTK_ALIGN_CENTER);
 	e_spinner_start (E_SPINNER (widget));
-	gtk_box_pack_start (GTK_BOX (main_box), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (main_box), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	text = _("Looking up account details…");
 	widget = gtk_label_new (text);
-	gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	e_mail_config_page_set_content (E_MAIL_CONFIG_PAGE (page), main_box);

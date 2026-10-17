@@ -43,6 +43,7 @@
 #define E_TEXT_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 
 #include <e-util/e-canvas.h>
 #include <e-util/e-text-event-processor.h>
@@ -211,7 +212,7 @@ struct _EText {
 
 	gint last_type_request;         /* Last selection type requested. */
 	guint32 last_time_request;      /* The time of the last selection request. */
-	GdkAtom last_selection_request; /* The time of the last selection request. */
+	EGtkAtom last_selection_request; /* The time of the last selection request. */
 	GList *queued_requests;         /* Queued selection requests. */
 
 	GtkIMContext *im_context;

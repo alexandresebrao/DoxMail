@@ -329,7 +329,7 @@ clicked_cb (GtkWidget *w,
 		g_free (email);
 	}
 
-	gtk_widget_destroy (w);
+	e_gtk_widget_destroy (w);
 
 	if (button == GTK_RESPONSE_OK) {
 
@@ -408,10 +408,10 @@ build_quick_add_dialog (QuickAdd *qa)
 		_("_OK"), GTK_RESPONSE_OK,
 		NULL);
 
-	container = gtk_dialog_get_action_area (GTK_DIALOG (dialog));
-	gtk_container_set_border_width (GTK_CONTAINER (container), 12);
+	container = e_gtk_dialog_get_action_area (GTK_DIALOG (dialog));
+	e_gtk_widget_set_border_width (container, 12);
 	container = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
-	gtk_container_set_border_width (GTK_CONTAINER (container), 0);
+	e_gtk_widget_set_border_width (container, 0);
 
 	g_signal_connect (
 		dialog, "response",
@@ -422,11 +422,11 @@ build_quick_add_dialog (QuickAdd *qa)
 	qa->name_entry = gtk_entry_new ();
 	gtk_widget_set_hexpand (qa->name_entry, TRUE);
 	if (qa->name)
-		gtk_entry_set_text (GTK_ENTRY (qa->name_entry), qa->name);
+		gtk_editable_set_text (GTK_EDITABLE (qa->name_entry), qa->name);
 
 	qa->email_entry = gtk_entry_new ();
 	if (qa->email)
-		gtk_entry_set_text (GTK_ENTRY (qa->email_entry), qa->email);
+		gtk_editable_set_text (GTK_EDITABLE (qa->email_entry), qa->email);
 
 	if (qa->vcard) {
 		/* when adding vCard, then do not allow change name or email */
@@ -495,9 +495,8 @@ build_quick_add_dialog (QuickAdd *qa)
 		1, 2, 1, 1);
 
 	container = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
-	gtk_box_pack_start (
-		GTK_BOX (container), grid, FALSE, FALSE, 0);
-	gtk_widget_show_all (grid);
+	e_gtk_box_pack_start (GTK_BOX (container), grid, FALSE, FALSE, 0);
+	gtk_widget_set_visible (grid, TRUE);
 
 	return dialog;
 }
@@ -539,7 +538,7 @@ e_contact_quick_add (EClientCache *client_cache,
 		quick_add_set_email (qa, email);
 
 	dialog = build_quick_add_dialog (qa);
-	gtk_widget_show_all (dialog);
+	gtk_widget_set_visible (dialog, TRUE);
 
 	g_free (name);
 }
@@ -704,5 +703,5 @@ e_contact_quick_add_vcard (EClientCache *client_cache,
 	}
 
 	dialog = build_quick_add_dialog (qa);
-	gtk_widget_show_all (dialog);
+	gtk_widget_set_visible (dialog, TRUE);
 }

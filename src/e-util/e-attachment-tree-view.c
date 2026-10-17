@@ -139,7 +139,6 @@ attachment_tree_view_constructed (GObject *object)
 	/* Chain up to parent's method. */
 	G_OBJECT_CLASS (e_attachment_tree_view_parent_class)->constructed (object);
 
-	gtk_tree_view_set_rules_hint (GTK_TREE_VIEW (tree_view), TRUE);
 
 	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (tree_view));
 	gtk_tree_selection_set_mode (selection, GTK_SELECTION_MULTIPLE);
@@ -239,7 +238,7 @@ attachment_tree_view_finalize (GObject *object)
 
 static gboolean
 attachment_tree_view_button_press_event (GtkWidget *widget,
-                                         GdkEventButton *event)
+                                         GdkEvent *event)
 {
 	EAttachmentView *view = E_ATTACHMENT_VIEW (widget);
 
@@ -255,7 +254,7 @@ attachment_tree_view_button_press_event (GtkWidget *widget,
 
 static gboolean
 attachment_tree_view_button_release_event (GtkWidget *widget,
-                                           GdkEventButton *event)
+                                           GdkEvent *event)
 {
 	EAttachmentView *view = E_ATTACHMENT_VIEW (widget);
 
@@ -271,7 +270,7 @@ attachment_tree_view_button_release_event (GtkWidget *widget,
 
 static gboolean
 attachment_tree_view_motion_notify_event (GtkWidget *widget,
-                                          GdkEventMotion *event)
+                                          GdkEvent *event)
 {
 	EAttachmentView *view = E_ATTACHMENT_VIEW (widget);
 
@@ -287,7 +286,7 @@ attachment_tree_view_motion_notify_event (GtkWidget *widget,
 
 static gboolean
 attachment_tree_view_key_press_event (GtkWidget *widget,
-                                      GdkEventKey *event)
+                                      GdkEvent *event)
 {
 	EAttachmentView *view = E_ATTACHMENT_VIEW (widget);
 
@@ -301,7 +300,7 @@ attachment_tree_view_key_press_event (GtkWidget *widget,
 
 static void
 attachment_tree_view_drag_begin (GtkWidget *widget,
-                                 GdkDragContext *context)
+                                 EGtkDragContext *context)
 {
 	EAttachmentView *view = E_ATTACHMENT_VIEW (widget);
 
@@ -314,7 +313,7 @@ attachment_tree_view_drag_begin (GtkWidget *widget,
 
 static void
 attachment_tree_view_drag_end (GtkWidget *widget,
-                               GdkDragContext *context)
+                               EGtkDragContext *context)
 {
 	EAttachmentView *view = E_ATTACHMENT_VIEW (widget);
 
@@ -327,8 +326,8 @@ attachment_tree_view_drag_end (GtkWidget *widget,
 
 static void
 attachment_tree_view_drag_data_get (GtkWidget *widget,
-                                    GdkDragContext *context,
-                                    GtkSelectionData *selection,
+                                    EGtkDragContext *context,
+                                    EGtkSelectionData *selection,
                                     guint info,
                                     guint time)
 {
@@ -340,7 +339,7 @@ attachment_tree_view_drag_data_get (GtkWidget *widget,
 
 static gboolean
 attachment_tree_view_drag_motion (GtkWidget *widget,
-                                  GdkDragContext *context,
+                                  EGtkDragContext *context,
                                   gint x,
                                   gint y,
                                   guint time)
@@ -352,7 +351,7 @@ attachment_tree_view_drag_motion (GtkWidget *widget,
 
 static gboolean
 attachment_tree_view_drag_drop (GtkWidget *widget,
-                                GdkDragContext *context,
+                                EGtkDragContext *context,
                                 gint x,
                                 gint y,
                                 guint time)
@@ -369,10 +368,10 @@ attachment_tree_view_drag_drop (GtkWidget *widget,
 
 static void
 attachment_tree_view_drag_data_received (GtkWidget *widget,
-                                         GdkDragContext *context,
+                                         EGtkDragContext *context,
                                          gint x,
                                          gint y,
-                                         GtkSelectionData *selection,
+                                         EGtkSelectionData *selection,
                                          guint info,
                                          guint time)
 {
@@ -520,7 +519,7 @@ attachment_tree_view_unselect_all (EAttachmentView *view)
 static void
 attachment_tree_view_drag_source_set (EAttachmentView *view,
                                       GdkModifierType start_button_mask,
-                                      const GtkTargetEntry *targets,
+                                      const EGtkTargetEntry *targets,
                                       gint n_targets,
                                       GdkDragAction actions)
 {
@@ -534,7 +533,7 @@ attachment_tree_view_drag_source_set (EAttachmentView *view,
 
 static void
 attachment_tree_view_drag_dest_set (EAttachmentView *view,
-                                    const GtkTargetEntry *targets,
+                                    const EGtkTargetEntry *targets,
                                     gint n_targets,
                                     GdkDragAction actions)
 {

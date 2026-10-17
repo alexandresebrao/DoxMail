@@ -368,7 +368,7 @@ mail_config_defaults_page_add_real_folder (EMailConfigDefaultsPage *page,
 	check_button = gtk_check_button_new_with_mnemonic (toggle_label);
 	g_object_set (check_button, "xalign", 1.0, NULL);
 	gtk_size_group_add_widget (size_group, check_button);
-	gtk_box_pack_start (GTK_BOX (box), check_button, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (box), check_button, FALSE, FALSE, 0);
 	gtk_widget_show (check_button);
 
 	e_binding_bind_property (
@@ -381,7 +381,7 @@ mail_config_defaults_page_add_real_folder (EMailConfigDefaultsPage *page,
 		session, "", dialog_caption);
 	em_folder_selection_button_set_store (
 		EM_FOLDER_SELECTION_BUTTON (folder_button), store);
-	gtk_box_pack_start (GTK_BOX (box), folder_button, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (box), folder_button, TRUE, TRUE, 0);
 	gtk_widget_show (folder_button);
 
 	/* XXX CamelSettings only stores the folder's path name, but the
@@ -643,7 +643,7 @@ mail_config_defaults_page_constructed (GObject *object)
 	widget = gtk_grid_new ();
 	gtk_grid_set_row_spacing (GTK_GRID (widget), 6);
 	gtk_grid_set_column_spacing (GTK_GRID (widget), 6);
-	gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -813,7 +813,7 @@ mail_config_defaults_page_constructed (GObject *object)
 
 	widget = gtk_button_new_with_mnemonic (_("_Restore Defaults"));
 	gtk_widget_set_halign (widget, GTK_ALIGN_START);
-	gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	g_signal_connect_swapped (
@@ -830,7 +830,7 @@ mail_config_defaults_page_constructed (GObject *object)
 		    (camel_store_get_flags (CAMEL_STORE (service)) & CAMEL_STORE_SUPPORTS_INITIAL_SETUP) != 0) {
 			widget = gtk_button_new_with_mnemonic (_("_Lookup Folders"));
 			gtk_widget_set_halign (widget, GTK_ALIGN_START);
-			gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+			e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 			gtk_widget_show (widget);
 
 			g_signal_connect_swapped (

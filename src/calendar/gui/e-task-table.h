@@ -81,9 +81,9 @@ GtkWidget *	e_task_table_new		(EShellView *shell_view,
 ECalModel *	e_task_table_get_model		(ETaskTable *task_table);
 EShellView *	e_task_table_get_shell_view	(ETaskTable *task_table);
 GSList *	e_task_table_get_selected	(ETaskTable *task_table);
-GtkTargetList *	e_task_table_get_copy_target_list
+EGtkTargetList *	e_task_table_get_copy_target_list
 						(ETaskTable *task_table);
-GtkTargetList *	e_task_table_get_paste_target_list
+EGtkTargetList *	e_task_table_get_paste_target_list
 						(ETaskTable *task_table);
 ECalModelComponent *
 		e_task_table_get_selected_comp

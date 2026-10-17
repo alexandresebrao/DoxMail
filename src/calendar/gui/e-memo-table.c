@@ -50,8 +50,8 @@ struct _EMemoTablePrivate {
 	/* Fields used for cut/copy/paste */
 	ICalComponent *tmp_vcal;
 
-	GtkTargetList *copy_target_list;
-	GtkTargetList *paste_target_list;
+	EGtkTargetList *copy_target_list;
+	EGtkTargetList *paste_target_list;
 };
 
 enum {
@@ -584,7 +584,7 @@ memo_table_key_press (ETable *table,
 {
 	if (event && event->type == GDK_KEY_PRESS &&
 	    (event->key.keyval == GDK_KEY_Return || event->key.keyval == GDK_KEY_KP_Enter) &&
-	    (event->key.state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK)) == 0 &&
+	    (event->key.state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_ALT_MASK)) == 0 &&
 	    !e_table_is_editing (table)) {
 		memo_table_open_at_row (table, row);
 		return TRUE;
@@ -603,7 +603,7 @@ memo_table_white_space_event (ETable *table,
 	g_return_val_if_fail (event != NULL, FALSE);
 
 	if (event->type == GDK_BUTTON_PRESS &&
-	    gdk_event_get_button (event, &event_button) &&
+	    e_gdk_event_get_button (event, &event_button) &&
 	    event_button == 3) {
 		GtkWidget *table_canvas;
 
@@ -623,12 +623,12 @@ memo_table_white_space_event (ETable *table,
 static void
 memo_table_update_actions (ESelectable *selectable,
                            EFocusTracker *focus_tracker,
-                           GdkAtom *clipboard_targets,
+                           EGtkAtom *clipboard_targets,
                            gint n_clipboard_targets)
 {
 	EMemoTable *memo_table;
 	EUIAction *action;
-	GtkTargetList *target_list;
+	EGtkTargetList *target_list;
 	GSList *list, *iter;
 	gboolean can_paste = FALSE;
 	gboolean sources_are_editable = TRUE;
@@ -653,7 +653,7 @@ memo_table_update_actions (ESelectable *selectable,
 
 	target_list = e_selectable_get_paste_target_list (selectable);
 	for (ii = 0; ii < n_clipboard_targets && !can_paste; ii++)
-		can_paste = gtk_target_list_find (
+		can_paste = e_gtk_target_list_find (
 			target_list, clipboard_targets[ii], NULL);
 
 	action = e_focus_tracker_get_cut_clipboard_action (focus_tracker);
@@ -731,7 +731,7 @@ static void
 memo_table_copy_clipboard (ESelectable *selectable)
 {
 	EMemoTable *memo_table;
-	GtkClipboard *clipboard;
+	GdkClipboard *clipboard;
 	gchar *comp_str;
 
 	memo_table = E_MEMO_TABLE (selectable);
@@ -743,9 +743,9 @@ memo_table_copy_clipboard (ESelectable *selectable)
 		E_TABLE (memo_table), copy_row_cb, memo_table);
 	comp_str = i_cal_component_as_ical_string (memo_table->priv->tmp_vcal);
 
-	clipboard = gtk_clipboard_get (GDK_SELECTION_CLIPBOARD);
+	clipboard = e_gtk_clipboard_get (E_GTK_SELECTION_CLIPBOARD);
 	e_clipboard_set_calendar (clipboard, comp_str, -1);
-	gtk_clipboard_store (clipboard);
+	e_gtk_clipboard_store (clipboard);
 
 	g_free (comp_str);
 
@@ -756,13 +756,13 @@ static void
 memo_table_paste_clipboard (ESelectable *selectable)
 {
 	EMemoTable *memo_table;
-	GtkClipboard *clipboard;
+	GdkClipboard *clipboard;
 	GnomeCanvasItem *item;
 	GnomeCanvas *table_canvas;
 
 	memo_table = E_MEMO_TABLE (selectable);
 
-	clipboard = gtk_clipboard_get (GDK_SELECTION_CLIPBOARD);
+	clipboard = e_gtk_clipboard_get (E_GTK_SELECTION_CLIPBOARD);
 
 	table_canvas = E_TABLE (memo_table)->table_canvas;
 	item = table_canvas->focused_item;
@@ -770,7 +770,7 @@ memo_table_paste_clipboard (ESelectable *selectable)
 	/* XXX Should ECellText implement GtkEditable? */
 
 	/* Paste text into a cell being edited. */
-	if (gtk_clipboard_wait_is_text_available (clipboard) &&
+	if (e_gtk_clipboard_wait_is_text_available (clipboard) &&
 		gtk_widget_has_focus (GTK_WIDGET (table_canvas)) &&
 		E_IS_TABLE_ITEM (item) &&
 		E_TABLE_ITEM (item)->editing_col >= 0 &&
@@ -962,15 +962,15 @@ e_memo_table_class_init (EMemoTableClass *class)
 static void
 e_memo_table_init (EMemoTable *memo_table)
 {
-	GtkTargetList *target_list;
+	EGtkTargetList *target_list;
 
 	memo_table->priv = e_memo_table_get_instance_private (memo_table);
 
-	target_list = gtk_target_list_new (NULL, 0);
+	target_list = e_gtk_target_list_new (NULL, 0);
 	e_target_list_add_calendar_targets (target_list, 0);
 	memo_table->priv->copy_target_list = target_list;
 
-	target_list = gtk_target_list_new (NULL, 0);
+	target_list = e_gtk_target_list_new (NULL, 0);
 	e_target_list_add_calendar_targets (target_list, 0);
 	memo_table->priv->paste_target_list = target_list;
 }
@@ -1077,7 +1077,7 @@ e_memo_table_get_selected (EMemoTable *memo_table)
 	return closure.objects;
 }
 
-GtkTargetList *
+EGtkTargetList *
 e_memo_table_get_copy_target_list (EMemoTable *memo_table)
 {
 	g_return_val_if_fail (E_IS_MEMO_TABLE (memo_table), NULL);
@@ -1085,7 +1085,7 @@ e_memo_table_get_copy_target_list (EMemoTable *memo_table)
 	return memo_table->priv->copy_target_list;
 }
 
-GtkTargetList *
+EGtkTargetList *
 e_memo_table_get_paste_target_list (EMemoTable *memo_table)
 {
 	g_return_val_if_fail (E_IS_MEMO_TABLE (memo_table), NULL);

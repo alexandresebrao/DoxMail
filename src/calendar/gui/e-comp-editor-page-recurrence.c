@@ -294,7 +294,7 @@ ecep_recurrence_create_exception_dialog (ECompEditorPageRecurrence *page_recurre
 	GtkWidget *container;
 	EDateEdit *date_edit;
 
-	toplevel = gtk_widget_get_toplevel (page_recurrence->priv->recr_check_box);
+	toplevel = e_gtk_widget_get_toplevel (page_recurrence->priv->recr_check_box);
 
 	if (!GTK_IS_WINDOW (toplevel))
 		toplevel = NULL;
@@ -313,7 +313,7 @@ ecep_recurrence_create_exception_dialog (ECompEditorPageRecurrence *page_recurre
 
 	gtk_widget_show (*out_date_edit);
 	container = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
-	gtk_box_pack_start (GTK_BOX (container), *out_date_edit, FALSE, TRUE, 6);
+	e_gtk_box_pack_start (GTK_BOX (container), *out_date_edit, FALSE, TRUE, 6);
 
 	return dialog;
 }
@@ -328,7 +328,7 @@ ecep_recurrence_exceptions_add_clicked_cb (GtkButton *button,
 
 	dialog = ecep_recurrence_create_exception_dialog (page_recurrence, _("Add exception"), &date_edit);
 
-	if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT) {
+	if (e_gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT) {
 		gint year, month, day;
 
 		if (e_date_edit_get_date (E_DATE_EDIT (date_edit), &year, &month, &day)) {
@@ -347,7 +347,7 @@ ecep_recurrence_exceptions_add_clicked_cb (GtkButton *button,
 		}
 	}
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 }
 
 static void
@@ -371,7 +371,7 @@ ecep_recurrence_exceptions_edit_clicked_cb (GtkButton *button,
 	e_date_edit_set_date (E_DATE_EDIT (date_edit),
 		i_cal_time_get_year (current_itt), i_cal_time_get_month (current_itt), i_cal_time_get_day (current_itt));
 
-	if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT) {
+	if (e_gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT) {
 		gint year, month, day;
 
 		if (e_date_edit_get_date (E_DATE_EDIT (date_edit), &year, &month, &day)) {
@@ -390,7 +390,7 @@ ecep_recurrence_exceptions_edit_clicked_cb (GtkButton *button,
 		}
 	}
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 }
 
 static void
@@ -472,7 +472,7 @@ ecep_recurrence_get_box_first_child (GtkWidget *box)
 
 	g_return_val_if_fail (GTK_IS_BOX (box), NULL);
 
-	children = gtk_container_get_children (GTK_CONTAINER (box));
+	children = e_gtk_widget_get_children (box);
 	if (!children)
 		return NULL;
 
@@ -499,19 +499,19 @@ ecep_recurrence_make_weekly_special (ECompEditorPageRecurrence *page_recurrence)
 	/* Create the widgets */
 
 	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 2);
-	gtk_container_add (GTK_CONTAINER (page_recurrence->priv->recr_interval_special_box), hbox);
+	e_gtk_container_add (page_recurrence->priv->recr_interval_special_box, hbox);
 
 	/* TRANSLATORS: Entire string is for example: This appointment recurs/Every [x] week(s) on [Wednesday] [forever]'
 	 * (dropdown menu options are in [square brackets]). This means that after the 'on', name of a week day always follows. */
 	label = gtk_label_new (_("on"));
-	gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 6);
+	e_gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 6);
 
 	page_recurrence->priv->weekday_chooser = e_weekday_chooser_new ();
 	chooser = E_WEEKDAY_CHOOSER (page_recurrence->priv->weekday_chooser);
 
-	gtk_box_pack_start (GTK_BOX (hbox), GTK_WIDGET (chooser), FALSE, FALSE, 6);
+	e_gtk_box_pack_start (GTK_BOX (hbox), GTK_WIDGET (chooser), FALSE, FALSE, 6);
 
-	gtk_widget_show_all (hbox);
+	gtk_widget_set_visible (hbox, TRUE);
 
 	/* Set the weekdays */
 
@@ -812,27 +812,23 @@ ecep_recurrence_make_monthly_special (ECompEditorPageRecurrence *page_recurrence
 	/* Create the widgets */
 
 	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 2);
-	gtk_container_add (GTK_CONTAINER (page_recurrence->priv->recr_interval_special_box), hbox);
+	e_gtk_container_add (page_recurrence->priv->recr_interval_special_box, hbox);
 
 	/* TRANSLATORS: Entire string is for example: 'This appointment recurs/Every [x] month(s) on the [second] [Tuesday] [forever]'
 	 * (dropdown menu options are in [square brackets])."
 	 */
 	label = gtk_label_new (C_("ECompEditorPageRecur", "on the"));
-	gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 6);
+	e_gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 6);
 
 	adj = GTK_ADJUSTMENT (gtk_adjustment_new (1, 1, 31, 1, 10, 10));
 
 	page_recurrence->priv->month_num_combo = ecep_recurrence_make_recur_month_num_combo (page_recurrence->priv->month_index);
-	gtk_box_pack_start (
-		GTK_BOX (hbox), page_recurrence->priv->month_num_combo,
-		FALSE, FALSE, 6);
+	e_gtk_box_pack_start (GTK_BOX (hbox), page_recurrence->priv->month_num_combo, FALSE, FALSE, 6);
 
 	page_recurrence->priv->month_day_combo = ecep_recurrence_make_recur_month_combobox ();
-	gtk_box_pack_start (
-		GTK_BOX (hbox), page_recurrence->priv->month_day_combo,
-		FALSE, FALSE, 6);
+	e_gtk_box_pack_start (GTK_BOX (hbox), page_recurrence->priv->month_day_combo, FALSE, FALSE, 6);
 
-	gtk_widget_show_all (hbox);
+	gtk_widget_set_visible (hbox, TRUE);
 
 	/* Set the options */
 	e_dialog_combo_box_set (
@@ -957,7 +953,7 @@ ecep_recurrence_make_recurrence_special (ECompEditorPageRecurrence *page_recurre
 
 	child = ecep_recurrence_get_box_first_child (page_recurrence->priv->recr_interval_special_box);
 	if (child != NULL) {
-		gtk_widget_destroy (child);
+		e_gtk_widget_destroy (child);
 
 		page_recurrence->priv->weekday_chooser = NULL;
 		page_recurrence->priv->month_day_combo = NULL;
@@ -1034,9 +1030,7 @@ ecep_recurrence_make_ending_until_special (ECompEditorPageRecurrence *page_recur
 	e_date_edit_set_show_date (date_edit, TRUE);
 	e_date_edit_set_show_time (date_edit, FALSE);
 
-	gtk_container_add (
-		GTK_CONTAINER (page_recurrence->priv->recr_ending_special_box),
-		page_recurrence->priv->ending_date_edit);
+	e_gtk_container_add (page_recurrence->priv->recr_ending_special_box, page_recurrence->priv->ending_date_edit);
 	gtk_widget_show (page_recurrence->priv->ending_date_edit);
 
 	/* Set the value */
@@ -1084,19 +1078,17 @@ ecep_recurrence_make_ending_count_special (ECompEditorPageRecurrence *page_recur
 	/* Create the widgets */
 
 	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 2);
-	gtk_container_add (GTK_CONTAINER (page_recurrence->priv->recr_ending_special_box), hbox);
+	e_gtk_container_add (page_recurrence->priv->recr_ending_special_box, hbox);
 
 	adj = GTK_ADJUSTMENT (gtk_adjustment_new (1, 1, 10000, 1, 10, 0));
 	page_recurrence->priv->ending_count_spin = gtk_spin_button_new (adj, 1, 0);
 	gtk_spin_button_set_numeric ((GtkSpinButton *) page_recurrence->priv->ending_count_spin, TRUE);
-	gtk_box_pack_start (
-		GTK_BOX (hbox), page_recurrence->priv->ending_count_spin,
-		FALSE, FALSE, 6);
+	e_gtk_box_pack_start (GTK_BOX (hbox), page_recurrence->priv->ending_count_spin, FALSE, FALSE, 6);
 
 	label = gtk_label_new (C_("ECompEditorPageRecur", "occurrences"));
-	gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 6);
+	e_gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 6);
 
-	gtk_widget_show_all (hbox);
+	gtk_widget_set_visible (hbox, TRUE);
 
 	/* Set the values */
 
@@ -1125,7 +1117,7 @@ ecep_recurrence_make_ending_special (ECompEditorPageRecurrence *page_recurrence)
 
 	child = ecep_recurrence_get_box_first_child (page_recurrence->priv->recr_ending_special_box);
 	if (child != NULL) {
-		gtk_widget_destroy (child);
+		e_gtk_widget_destroy (child);
 
 		page_recurrence->priv->ending_date_edit = NULL;
 		page_recurrence->priv->ending_count_spin = NULL;
@@ -2278,7 +2270,7 @@ ecep_recurrence_constructed (GObject *object)
 		"valign", GTK_ALIGN_CENTER,
 		NULL);
 	gtk_widget_show (widget);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 
 	widget = gtk_spin_button_new_with_range (1, 999, 1);
 	g_object_set (G_OBJECT (widget),
@@ -2289,7 +2281,7 @@ ecep_recurrence_constructed (GObject *object)
 		"digits", 0,
 		NULL);
 	gtk_widget_show (widget);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	page_recurrence->priv->recr_interval_value_spin = widget;
 
 	widget = gtk_combo_box_text_new ();
@@ -2300,7 +2292,7 @@ ecep_recurrence_constructed (GObject *object)
 		"valign", GTK_ALIGN_CENTER,
 		NULL);
 	gtk_widget_show (widget);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	page_recurrence->priv->recr_interval_unit_combo = widget;
 
 	text_combo = GTK_COMBO_BOX_TEXT (widget);
@@ -2324,7 +2316,7 @@ ecep_recurrence_constructed (GObject *object)
 		"valign", GTK_ALIGN_CENTER,
 		NULL);
 	gtk_widget_show (widget);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	page_recurrence->priv->recr_interval_special_box = widget;
 
 	widget = gtk_combo_box_text_new ();
@@ -2335,7 +2327,7 @@ ecep_recurrence_constructed (GObject *object)
 		"valign", GTK_ALIGN_CENTER,
 		NULL);
 	gtk_widget_show (widget);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	page_recurrence->priv->recr_ending_combo = widget;
 
 	text_combo = GTK_COMBO_BOX_TEXT (widget);
@@ -2357,7 +2349,7 @@ ecep_recurrence_constructed (GObject *object)
 		"valign", GTK_ALIGN_CENTER,
 		NULL);
 	gtk_widget_show (widget);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	page_recurrence->priv->recr_ending_special_box = widget;
 
 	widget = gtk_label_new (_("This appointment contains recurrences that Evolution cannot edit."));
@@ -2414,7 +2406,7 @@ ecep_recurrence_constructed (GObject *object)
 		NULL);
 	gtk_widget_show (widget);
 
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	page_recurrence->priv->exceptions_tree_view = widget;
 
 	column = gtk_tree_view_column_new ();
@@ -2427,7 +2419,7 @@ ecep_recurrence_constructed (GObject *object)
 	g_signal_connect (gtk_tree_view_get_selection (GTK_TREE_VIEW (page_recurrence->priv->exceptions_tree_view)),
 		"changed", G_CALLBACK (ecep_recurrence_exceptions_selection_changed_cb), page_recurrence);
 
-	widget = gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
+	widget = e_gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
 	g_object_set (G_OBJECT (widget),
 		"hexpand", FALSE,
 		"halign", GTK_ALIGN_START,
@@ -2439,7 +2431,7 @@ ecep_recurrence_constructed (GObject *object)
 	page_recurrence->priv->exceptions_button_box = widget;
 
 	widget = gtk_button_new_with_mnemonic (_("A_dd"));
-	gtk_box_pack_start (GTK_BOX (page_recurrence->priv->exceptions_button_box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (page_recurrence->priv->exceptions_button_box), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 	page_recurrence->priv->exceptions_add_button = widget;
 
@@ -2447,7 +2439,7 @@ ecep_recurrence_constructed (GObject *object)
 		G_CALLBACK (ecep_recurrence_exceptions_add_clicked_cb), page_recurrence);
 
 	widget = gtk_button_new_with_mnemonic (_("_Edit"));
-	gtk_box_pack_start (GTK_BOX (page_recurrence->priv->exceptions_button_box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (page_recurrence->priv->exceptions_button_box), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 	page_recurrence->priv->exceptions_edit_button = widget;
 
@@ -2455,7 +2447,7 @@ ecep_recurrence_constructed (GObject *object)
 		G_CALLBACK (ecep_recurrence_exceptions_edit_clicked_cb), page_recurrence);
 
 	widget = gtk_button_new_with_mnemonic (_("Re_move"));
-	gtk_box_pack_start (GTK_BOX (page_recurrence->priv->exceptions_button_box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (page_recurrence->priv->exceptions_button_box), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 	page_recurrence->priv->exceptions_remove_button = widget;
 

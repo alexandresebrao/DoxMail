@@ -40,6 +40,7 @@
 #ifndef E_WEB_VIEW_PREVIEW_H
 #define E_WEB_VIEW_PREVIEW_H
 
+#include <e-util/e-paned.h>
 #include <e-util/e-web-view.h>
 
 /* Standard GObject macros */
@@ -68,12 +69,12 @@ typedef struct _EWebViewPreviewClass EWebViewPreviewClass;
 typedef struct _EWebViewPreviewPrivate EWebViewPreviewPrivate;
 
 struct _EWebViewPreview {
-	GtkVPaned parent;
+	EPaned parent;
 	EWebViewPreviewPrivate *priv;
 };
 
 struct _EWebViewPreviewClass {
-	GtkVPanedClass parent_class;
+	EPanedClass parent_class;
 };
 
 GType		e_web_view_preview_get_type	(void) G_GNUC_CONST;

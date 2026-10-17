@@ -225,8 +225,7 @@ html_editor_page_dialog_set_background_from_template (EHTMLEditorPageDialog *dia
 
 	/* Special case - 'none' template */
 	if (tmplt->filename == NULL) {
-		gtk_file_chooser_unselect_all (
-			GTK_FILE_CHOOSER (dialog->priv->background_image_filechooser));
+		e_gtk_file_chooser_unselect_all (dialog->priv->background_image_filechooser);
 	} else {
 		gchar *filename;
 
@@ -242,9 +241,7 @@ html_editor_page_dialog_set_background_from_template (EHTMLEditorPageDialog *dia
 
 		filename = g_build_filename (EVOLUTION_IMAGESDIR, tmplt->filename, NULL);
 
-		gtk_file_chooser_set_filename (
-			GTK_FILE_CHOOSER (dialog->priv->background_image_filechooser),
-			filename);
+		e_gtk_file_chooser_set_filename (dialog->priv->background_image_filechooser, filename);
 		g_free (filename);
 	}
 
@@ -260,8 +257,7 @@ html_editor_page_dialog_set_background_image (EHTMLEditorPageDialog *dialog)
 	editor = e_html_editor_dialog_get_editor (E_HTML_EDITOR_DIALOG (dialog));
 	cnt_editor = e_html_editor_get_content_editor (editor);
 
-	uri = gtk_file_chooser_get_uri (
-		GTK_FILE_CHOOSER (dialog->priv->background_image_filechooser));
+	uri = e_gtk_file_chooser_get_uri (dialog->priv->background_image_filechooser);
 
 	e_content_editor_page_set_background_image_uri (cnt_editor, uri);
 
@@ -281,8 +277,7 @@ html_editor_page_dialog_remove_image (EHTMLEditorPageDialog *dialog)
 
 	e_content_editor_page_set_background_image_uri (cnt_editor, NULL);
 
-	gtk_file_chooser_unselect_all (
-		GTK_FILE_CHOOSER (dialog->priv->background_image_filechooser));
+	e_gtk_file_chooser_unselect_all (dialog->priv->background_image_filechooser);
 
 	gtk_widget_set_sensitive (dialog->priv->remove_image_button, FALSE);
 }
@@ -518,8 +513,7 @@ e_html_editor_page_dialog_init (EHTMLEditorPageDialog *dialog)
 	gtk_grid_attach (grid, widget, 0, 0, 1, 1);
 
 	/* Custom image */
-	widget = gtk_file_chooser_button_new (
-		_("Select a file"), GTK_FILE_CHOOSER_ACTION_OPEN);
+	widget = e_gtk_file_chooser_button_new (_("Select a file"), GTK_FILE_CHOOSER_ACTION_OPEN);
 	g_signal_connect_swapped (
 		widget, "selection-changed",
 		G_CALLBACK (html_editor_page_dialog_set_background_image), dialog);
@@ -540,10 +534,10 @@ e_html_editor_page_dialog_init (EHTMLEditorPageDialog *dialog)
 	dialog->priv->remove_image_button = widget;
 
 	gtk_widget_set_sensitive (dialog->priv->remove_image_button, FALSE);
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 5);
-	gtk_box_reorder_child (box, widget, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 5);
+	e_gtk_box_reorder_child (box, widget, 0);
 
-	gtk_widget_show_all (GTK_WIDGET (main_layout));
+	gtk_widget_set_visible (GTK_WIDGET (main_layout), TRUE);
 
 	pango_attr_list_unref (bold);
 }

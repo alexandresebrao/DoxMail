@@ -17,7 +17,7 @@
 
 #include <glib/gi18n-lib.h>
 
-#include <libedataserverui/libedataserverui.h>
+#include <libedataserverui4/libedataserverui4.h>
 
 #include "e-google-book-chooser-button.h"
 
@@ -133,7 +133,7 @@ google_book_chooser_button_constructed (GObject *object)
 
 	widget = gtk_label_new (_("Default User Address Book"));
 	gtk_label_set_xalign (GTK_LABEL (widget), 0);
-	gtk_container_add (GTK_CONTAINER (button), widget);
+	e_gtk_container_add (button, widget);
 	button->priv->label = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -176,8 +176,8 @@ google_book_chooser_button_clicked (GtkButton *btn)
 
 	button = E_GOOGLE_BOOK_CHOOSER_BUTTON (btn);
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (button));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (button));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	registry = e_source_config_get_registry (button->priv->config);
 
@@ -220,7 +220,7 @@ google_book_chooser_button_clicked (GtkButton *btn)
 
 	e_webdav_discover_dialog_refresh (dialog);
 
-	if (gtk_dialog_run (dialog) == GTK_RESPONSE_ACCEPT) {
+	if (e_gtk_dialog_run (dialog) == GTK_RESPONSE_ACCEPT) {
 		gchar *href = NULL, *display_name = NULL, *color = NULL, *email;
 		guint supports = 0, order = 0;
 		GtkWidget *content;
@@ -258,7 +258,7 @@ google_book_chooser_button_clicked (GtkButton *btn)
 
 	g_signal_handler_disconnect (prompter, handler_id);
 
-	gtk_widget_destroy (GTK_WIDGET (dialog));
+	e_gtk_widget_destroy (GTK_WIDGET (dialog));
 
 	g_object_unref (prompter);
 	if (guri)

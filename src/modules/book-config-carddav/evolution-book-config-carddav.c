@@ -20,7 +20,7 @@
 #include <glib/gi18n-lib.h>
 
 #include <libebackend/libebackend.h>
-#include <libedataserverui/libedataserverui.h>
+#include <libedataserverui4/libedataserverui4.h>
 
 #include <e-util/e-util.h>
 
@@ -86,8 +86,8 @@ book_config_carddav_run_dialog (GtkButton *button,
 	config = e_source_config_backend_get_config (context->backend);
 	registry = e_source_config_get_registry (config);
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (config));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (config));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	supports_filter = E_WEBDAV_DISCOVER_SUPPORTS_CONTACTS;
 	title = _("Choose an Address Book");
@@ -113,7 +113,7 @@ book_config_carddav_run_dialog (GtkButton *button,
 
 	e_webdav_discover_dialog_refresh (dialog);
 
-	if (gtk_dialog_run (dialog) == GTK_RESPONSE_ACCEPT) {
+	if (e_gtk_dialog_run (dialog) == GTK_RESPONSE_ACCEPT) {
 		gchar *href = NULL, *display_name = NULL, *color = NULL, *email;
 		guint supports = 0, order = 0;
 		GtkWidget *content;
@@ -155,7 +155,7 @@ book_config_carddav_run_dialog (GtkButton *button,
 
 	g_signal_handler_disconnect (prompter, handler_id);
 
-	gtk_widget_destroy (GTK_WIDGET (dialog));
+	e_gtk_widget_destroy (GTK_WIDGET (dialog));
 
 	g_object_unref (prompter);
 	if (guri)
@@ -278,7 +278,7 @@ book_config_carddav_check_complete (ESourceConfigBackend *backend,
 		return TRUE;
 
 	entry = GTK_ENTRY (context->url_entry);
-	uri_string = gtk_entry_get_text (entry);
+	uri_string = gtk_editable_get_text (GTK_EDITABLE (entry));
 
 	guri = g_uri_parse (uri_string, SOUP_HTTP_URI_FLAGS | G_URI_FLAGS_PARSE_RELAXED, NULL);
 	complete = guri && (g_strcmp0 (g_uri_get_scheme (guri), "http") == 0 ||

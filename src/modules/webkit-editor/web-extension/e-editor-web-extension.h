@@ -20,7 +20,7 @@
 #define E_EDITOR_WEB_EXTENSION_H
 
 #include <glib-object.h>
-#include <webkit2/webkit-web-extension.h>
+#include <webkit/webkit-web-process-extension.h>
 
 /* Standard GObject macros */
 #define E_TYPE_EDITOR_WEB_EXTENSION \

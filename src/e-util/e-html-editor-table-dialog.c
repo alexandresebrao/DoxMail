@@ -339,8 +339,7 @@ html_editor_table_dialog_set_background_image (EHTMLEditorTableDialog *dialog)
 	editor = e_html_editor_dialog_get_editor (E_HTML_EDITOR_DIALOG (dialog));
 	cnt_editor = e_html_editor_get_content_editor (editor);
 
-	uri = gtk_file_chooser_get_uri (
-		GTK_FILE_CHOOSER (dialog->priv->background_image_chooser));
+	uri = e_gtk_file_chooser_get_uri (dialog->priv->background_image_chooser);
 
 	e_content_editor_table_set_background_image_uri (cnt_editor, uri);
 
@@ -361,11 +360,9 @@ html_editor_table_dialog_get_background_image (EHTMLEditorTableDialog *dialog)
 
 	uri = e_content_editor_table_get_background_image_uri (cnt_editor);
 	if (uri && *uri)
-		gtk_file_chooser_set_uri (
-			GTK_FILE_CHOOSER (dialog->priv->background_image_chooser), uri);
+		e_gtk_file_chooser_set_uri (dialog->priv->background_image_chooser, uri);
 	else
-		gtk_file_chooser_unselect_all (
-			GTK_FILE_CHOOSER (dialog->priv->background_image_chooser));
+		e_gtk_file_chooser_unselect_all (dialog->priv->background_image_chooser);
 
 	g_free (uri);
 }
@@ -401,7 +398,7 @@ html_editor_table_dialog_reset_values (EHTMLEditorTableDialog *dialog)
 
 	e_color_combo_set_current_color (E_COLOR_COMBO (dialog->priv->background_color_picker), &transparent);
 
-	gtk_file_chooser_unselect_all (GTK_FILE_CHOOSER (dialog->priv->background_image_chooser));
+	e_gtk_file_chooser_unselect_all (dialog->priv->background_image_chooser);
 
 	html_editor_table_dialog_set_row_count (dialog);
 	html_editor_table_dialog_set_column_count (dialog);
@@ -447,8 +444,7 @@ html_editor_table_dialog_remove_image (EHTMLEditorTableDialog *dialog)
 
 	e_content_editor_table_set_background_image_uri (cnt_editor, NULL);
 
-	gtk_file_chooser_unselect_all (
-		GTK_FILE_CHOOSER (dialog->priv->background_image_chooser));
+	e_gtk_file_chooser_unselect_all (dialog->priv->background_image_chooser);
 
 	gtk_widget_set_sensitive (dialog->priv->remove_image_button, FALSE);
 }
@@ -669,19 +665,10 @@ e_html_editor_table_dialog_init (EHTMLEditorTableDialog *dialog)
 	gtk_file_filter_add_mime_type (file_filter, "image/*");
 
 	/* Image */
-	if (e_util_is_running_flatpak ()) {
-		widget = gtk_file_chooser_button_new (_("Choose Background Image"), GTK_FILE_CHOOSER_ACTION_OPEN);
-	} else {
-		GtkWidget *image_chooser_dialog;
+	widget = e_gtk_file_chooser_button_new_with_dialog (
+		e_image_chooser_dialog_new (_("Choose Background Image"), GTK_WINDOW (dialog)));
 
-		image_chooser_dialog = e_image_chooser_dialog_new (
-				_("Choose Background Image"),
-				GTK_WINDOW (dialog));
-
-		widget = gtk_file_chooser_button_new_with_dialog (image_chooser_dialog);
-	}
-
-	gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (widget), file_filter);
+	e_gtk_file_chooser_add_filter (widget, file_filter);
 	gtk_widget_set_hexpand (widget, TRUE);
 	gtk_grid_attach (grid, widget, 1, 1, 1, 1);
 	g_signal_connect_swapped (
@@ -703,10 +690,10 @@ e_html_editor_table_dialog_init (EHTMLEditorTableDialog *dialog)
 	dialog->priv->remove_image_button = widget;
 
 	gtk_widget_set_sensitive (dialog->priv->remove_image_button, FALSE);
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 5);
-	gtk_box_reorder_child (box, widget, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 5);
+	e_gtk_box_reorder_child (box, widget, 0);
 
-	gtk_widget_show_all (GTK_WIDGET (main_layout));
+	gtk_widget_set_visible (GTK_WIDGET (main_layout), TRUE);
 }
 
 GtkWidget *

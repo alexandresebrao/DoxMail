@@ -392,11 +392,11 @@ ecep_reminders_reset_alarm_widget (ECompEditorPageReminders *page_reminders)
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (page_reminders->priv->custom_message_check), FALSE);
 	ecep_reminders_set_text_view_text (page_reminders->priv->custom_message_text_view, NULL);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (page_reminders->priv->custom_sound_check), FALSE);
-	gtk_file_chooser_unselect_all (GTK_FILE_CHOOSER (page_reminders->priv->custom_sound_chooser));
-	gtk_entry_set_text (GTK_ENTRY (page_reminders->priv->custom_app_path_entry), "");
-	gtk_entry_set_text (GTK_ENTRY (page_reminders->priv->custom_app_args_entry), "");
+	e_gtk_file_chooser_unselect_all (page_reminders->priv->custom_sound_chooser);
+	gtk_editable_set_text (GTK_EDITABLE (page_reminders->priv->custom_app_path_entry), "");
+	gtk_editable_set_text (GTK_EDITABLE (page_reminders->priv->custom_app_args_entry), "");
 	if (page_reminders->priv->custom_email_entry)
-		gtk_entry_set_text (GTK_ENTRY (page_reminders->priv->custom_email_entry), "");
+		gtk_editable_set_text (GTK_EDITABLE (page_reminders->priv->custom_email_entry), "");
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (page_reminders->priv->custom_email_message_check), FALSE);
 	ecep_reminders_set_text_view_text (page_reminders->priv->custom_email_message_text_view, NULL);
 
@@ -547,10 +547,10 @@ ecep_reminders_selected_to_widgets (ECompEditorPageReminders *page_reminders)
 
 		if (url && *url) {
 			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (page_reminders->priv->custom_sound_check), TRUE);
-			gtk_file_chooser_set_uri (GTK_FILE_CHOOSER (page_reminders->priv->custom_sound_chooser), url);
+			e_gtk_file_chooser_set_uri (page_reminders->priv->custom_sound_chooser, url);
 		} else {
 			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (page_reminders->priv->custom_sound_check), FALSE);
-			gtk_file_chooser_unselect_all (GTK_FILE_CHOOSER (page_reminders->priv->custom_sound_chooser));
+			e_gtk_file_chooser_unselect_all (page_reminders->priv->custom_sound_chooser);
 		}
 		} break;
 
@@ -629,12 +629,11 @@ ecep_reminders_selected_to_widgets (ECompEditorPageReminders *page_reminders)
 
 			description = e_cal_component_alarm_get_description (alarm);
 
-			gtk_entry_set_text (GTK_ENTRY (page_reminders->priv->custom_app_path_entry), url);
-			gtk_entry_set_text (GTK_ENTRY (page_reminders->priv->custom_app_args_entry),
-				(description && e_cal_component_text_get_value (description)) ? e_cal_component_text_get_value (description) : "");
+			gtk_editable_set_text (GTK_EDITABLE (page_reminders->priv->custom_app_path_entry), url);
+			gtk_editable_set_text (GTK_EDITABLE (page_reminders->priv->custom_app_args_entry), (description && e_cal_component_text_get_value (description)) ? e_cal_component_text_get_value (description) : "");
 		} else {
-			gtk_entry_set_text (GTK_ENTRY (page_reminders->priv->custom_app_path_entry), "");
-			gtk_entry_set_text (GTK_ENTRY (page_reminders->priv->custom_app_args_entry), "");
+			gtk_editable_set_text (GTK_EDITABLE (page_reminders->priv->custom_app_path_entry), "");
+			gtk_editable_set_text (GTK_EDITABLE (page_reminders->priv->custom_app_args_entry), "");
 		}
 		} break;
 	default:
@@ -746,7 +745,7 @@ ecep_reminders_widgets_to_selected (ECompEditorPageReminders *page_reminders)
 		if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (page_reminders->priv->custom_sound_check))) {
 			gchar *url;
 
-			url = gtk_file_chooser_get_uri (GTK_FILE_CHOOSER (page_reminders->priv->custom_sound_chooser));
+			url = e_gtk_file_chooser_get_uri (page_reminders->priv->custom_sound_chooser);
 
 			if (url && *url) {
 				ICalAttach *attach;
@@ -759,7 +758,7 @@ ecep_reminders_widgets_to_selected (ECompEditorPageReminders *page_reminders)
 
 			g_free (url);
 
-			url = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (page_reminders->priv->custom_sound_chooser));
+			url = e_gtk_file_chooser_get_filename (page_reminders->priv->custom_sound_chooser);
 			if (url && *url) {
 				gchar *path;
 
@@ -857,12 +856,12 @@ ecep_reminders_widgets_to_selected (ECompEditorPageReminders *page_reminders)
 		GSList *attachments;
 		const gchar *text;
 
-		text = gtk_entry_get_text (GTK_ENTRY (page_reminders->priv->custom_app_path_entry));
+		text = gtk_editable_get_text (GTK_EDITABLE (page_reminders->priv->custom_app_path_entry));
 
 		attachments = g_slist_prepend (NULL, i_cal_attach_new_from_url (text ? text : ""));
 		e_cal_component_alarm_take_attachments (alarm, attachments);
 
-		text = gtk_entry_get_text (GTK_ENTRY (page_reminders->priv->custom_app_args_entry));
+		text = gtk_editable_get_text (GTK_EDITABLE (page_reminders->priv->custom_app_args_entry));
 
 		description = e_cal_component_text_new (text, NULL);
 
@@ -1230,7 +1229,7 @@ ecep_reminders_send_to_clicked_cb (GtkWidget *button,
 	g_return_if_fail (E_IS_COMP_EDITOR_PAGE_REMINDERS (page_reminders));
 	g_return_if_fail (page_reminders->priv->name_selector != NULL);
 
-	toplevel = gtk_widget_get_toplevel (button);
+	toplevel = e_gtk_widget_get_toplevel (button);
 	if (!GTK_IS_WINDOW (toplevel))
 		toplevel = NULL;
 
@@ -1984,7 +1983,7 @@ ecep_reminders_add_custom_time_clicked (ECompEditorPageReminders *page_reminders
 		vbox = GTK_BOX (gtk_box_new (GTK_ORIENTATION_VERTICAL, 2));
 
 		widget = gtk_label_new (_("Set a custom predefined time to"));
-		gtk_box_pack_start (vbox, widget, FALSE, FALSE, 0);
+		e_gtk_box_pack_start (vbox, widget, FALSE, FALSE, 0);
 
 		box = GTK_BOX (gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 2));
 		g_object_set (G_OBJECT (box),
@@ -1994,13 +1993,13 @@ ecep_reminders_add_custom_time_clicked (ECompEditorPageReminders *page_reminders
 			"vexpand", FALSE,
 			NULL);
 
-		gtk_box_pack_start (box, page_reminders->priv->add_custom_time_days_spin, FALSE, FALSE, 4);
+		e_gtk_box_pack_start (box, page_reminders->priv->add_custom_time_days_spin, FALSE, FALSE, 4);
 		/* Translators: this is part of: "Set a custom predefined time to [nnn] days [nnn] hours [nnn] minutes", where the text in "[]" means a separate widget */
 		widget = gtk_label_new_with_mnemonic (C_("cal-reminders", "da_ys"));
 		gtk_label_set_mnemonic_widget (GTK_LABEL (widget), page_reminders->priv->add_custom_time_days_spin);
-		gtk_box_pack_start (box, widget, FALSE, FALSE, 4);
+		e_gtk_box_pack_start (box, widget, FALSE, FALSE, 4);
 
-		gtk_box_pack_start (vbox, GTK_WIDGET (box), FALSE, FALSE, 0);
+		e_gtk_box_pack_start (vbox, GTK_WIDGET (box), FALSE, FALSE, 0);
 
 		box = GTK_BOX (gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 2));
 		g_object_set (G_OBJECT (box),
@@ -2010,13 +2009,13 @@ ecep_reminders_add_custom_time_clicked (ECompEditorPageReminders *page_reminders
 			"vexpand", FALSE,
 			NULL);
 
-		gtk_box_pack_start (box, page_reminders->priv->add_custom_time_hours_spin, FALSE, FALSE, 4);
+		e_gtk_box_pack_start (box, page_reminders->priv->add_custom_time_hours_spin, FALSE, FALSE, 4);
 		/* Translators: this is part of: "Set a custom predefined time to [nnn] days [nnn] hours [nnn] minutes", where the text in "[]" means a separate widget */
 		widget = gtk_label_new_with_mnemonic (C_("cal-reminders", "_hours"));
 		gtk_label_set_mnemonic_widget (GTK_LABEL (widget), page_reminders->priv->add_custom_time_hours_spin);
-		gtk_box_pack_start (box, widget, FALSE, FALSE, 4);
+		e_gtk_box_pack_start (box, widget, FALSE, FALSE, 4);
 
-		gtk_box_pack_start (vbox, GTK_WIDGET (box), FALSE, FALSE, 0);
+		e_gtk_box_pack_start (vbox, GTK_WIDGET (box), FALSE, FALSE, 0);
 
 		box = GTK_BOX (gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 2));
 		g_object_set (G_OBJECT (box),
@@ -2026,27 +2025,27 @@ ecep_reminders_add_custom_time_clicked (ECompEditorPageReminders *page_reminders
 			"vexpand", FALSE,
 			NULL);
 
-		gtk_box_pack_start (box, page_reminders->priv->add_custom_time_minutes_spin, FALSE, FALSE, 4);
+		e_gtk_box_pack_start (box, page_reminders->priv->add_custom_time_minutes_spin, FALSE, FALSE, 4);
 		/* Translators: this is part of: "Set a custom predefined time to [nnn] days [nnn] hours [nnn] minutes", where the text in "[]" means a separate widget */
 		widget = gtk_label_new_with_mnemonic (C_("cal-reminders", "_minutes"));
 		gtk_label_set_mnemonic_widget (GTK_LABEL (widget), page_reminders->priv->add_custom_time_minutes_spin);
-		gtk_box_pack_start (box, widget, FALSE, FALSE, 4);
+		e_gtk_box_pack_start (box, widget, FALSE, FALSE, 4);
 
-		gtk_box_pack_start (vbox, GTK_WIDGET (box), FALSE, FALSE, 0);
+		e_gtk_box_pack_start (vbox, GTK_WIDGET (box), FALSE, FALSE, 0);
 
 		page_reminders->priv->add_custom_time_add_button = gtk_button_new_with_mnemonic (_("_Add time"));
 		g_object_set (G_OBJECT (page_reminders->priv->add_custom_time_add_button),
 			"halign", GTK_ALIGN_CENTER,
 			NULL);
 
-		gtk_box_pack_start (vbox, page_reminders->priv->add_custom_time_add_button, FALSE, FALSE, 0);
+		e_gtk_box_pack_start (vbox, page_reminders->priv->add_custom_time_add_button, FALSE, FALSE, 0);
 
-		gtk_widget_show_all (GTK_WIDGET (vbox));
+		gtk_widget_set_visible (GTK_WIDGET (vbox), TRUE);
 
 		page_reminders->priv->add_custom_time_popover = gtk_popover_new (GTK_WIDGET (page_reminders));
 		gtk_popover_set_position (GTK_POPOVER (page_reminders->priv->add_custom_time_popover), GTK_POS_BOTTOM);
-		gtk_container_add (GTK_CONTAINER (page_reminders->priv->add_custom_time_popover), GTK_WIDGET (vbox));
-		gtk_container_set_border_width (GTK_CONTAINER (page_reminders->priv->add_custom_time_popover), 6);
+		e_gtk_container_add (page_reminders->priv->add_custom_time_popover, GTK_WIDGET (vbox));
+		e_gtk_widget_set_border_width (page_reminders->priv->add_custom_time_popover, 6);
 
 		g_signal_connect (page_reminders->priv->add_custom_time_add_button, "clicked",
 			G_CALLBACK (ecep_reminders_add_custom_time_add_button_clicked_cb), page_reminders);
@@ -2163,7 +2162,7 @@ ecep_reminders_constructed (GObject *object)
 		"valign", GTK_ALIGN_CENTER,
 		NULL);
 	gtk_widget_show (widget);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	label = widget;
 
 	widget = gtk_combo_box_text_new ();
@@ -2174,7 +2173,7 @@ ecep_reminders_constructed (GObject *object)
 		"valign", GTK_ALIGN_CENTER,
 		NULL);
 	gtk_widget_show (widget);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	page_reminders->priv->alarms_combo = widget;
 
 	gtk_combo_box_set_row_separator_func (GTK_COMBO_BOX (widget),
@@ -2248,7 +2247,7 @@ ecep_reminders_constructed (GObject *object)
 		NULL);
 	gtk_widget_show (widget);
 
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	page_reminders->priv->alarms_tree_view = widget;
 
 	column = gtk_tree_view_column_new ();
@@ -2261,7 +2260,7 @@ ecep_reminders_constructed (GObject *object)
 	g_signal_connect (gtk_tree_view_get_selection (GTK_TREE_VIEW (page_reminders->priv->alarms_tree_view)),
 		"changed", G_CALLBACK (ecep_reminders_alarms_selection_changed_cb), page_reminders);
 
-	widget = gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
+	widget = e_gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
 	g_object_set (G_OBJECT (widget),
 		"hexpand", FALSE,
 		"halign", GTK_ALIGN_START,
@@ -2273,7 +2272,7 @@ ecep_reminders_constructed (GObject *object)
 	page_reminders->priv->alarms_button_box = widget;
 
 	widget = gtk_button_new_with_mnemonic (_("A_dd"));
-	gtk_box_pack_start (GTK_BOX (page_reminders->priv->alarms_button_box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (page_reminders->priv->alarms_button_box), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 	page_reminders->priv->alarms_add_button = widget;
 
@@ -2281,7 +2280,7 @@ ecep_reminders_constructed (GObject *object)
 		G_CALLBACK (ecep_reminders_alarms_add_clicked_cb), page_reminders);
 
 	widget = gtk_button_new_with_mnemonic (_("Re_move"));
-	gtk_box_pack_start (GTK_BOX (page_reminders->priv->alarms_button_box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (page_reminders->priv->alarms_button_box), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 	page_reminders->priv->alarms_remove_button = widget;
 
@@ -2311,7 +2310,7 @@ ecep_reminders_constructed (GObject *object)
 		"valign", GTK_ALIGN_CENTER,
 		NULL);
 	gtk_widget_show (widget);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	page_reminders->priv->kind_combo = widget;
 
 	ecep_reminders_init_sensitable_combo_box (GTK_COMBO_BOX (widget),
@@ -2337,7 +2336,7 @@ ecep_reminders_constructed (GObject *object)
 		"digits", 0,
 		NULL);
 	gtk_widget_show (widget);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	page_reminders->priv->time_spin = widget;
 
 	widget = gtk_combo_box_text_new ();
@@ -2348,7 +2347,7 @@ ecep_reminders_constructed (GObject *object)
 		"valign", GTK_ALIGN_CENTER,
 		NULL);
 	gtk_widget_show (widget);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	page_reminders->priv->unit_combo = widget;
 
 	text_combo = GTK_COMBO_BOX_TEXT (widget);
@@ -2369,7 +2368,7 @@ ecep_reminders_constructed (GObject *object)
 		"valign", GTK_ALIGN_CENTER,
 		NULL);
 	gtk_widget_show (widget);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	page_reminders->priv->relative_time_combo = widget;
 
 	ecep_reminders_init_sensitable_combo_box (GTK_COMBO_BOX (widget),
@@ -2387,7 +2386,7 @@ ecep_reminders_constructed (GObject *object)
 		"valign", GTK_ALIGN_CENTER,
 		NULL);
 	gtk_widget_show (widget);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	page_reminders->priv->relative_to_combo = widget;
 
 	ecep_reminders_init_sensitable_combo_box (GTK_COMBO_BOX (widget),
@@ -2421,7 +2420,7 @@ ecep_reminders_constructed (GObject *object)
 		"valign", GTK_ALIGN_CENTER,
 		NULL);
 	gtk_widget_show (widget);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 
 	page_reminders->priv->repeat_check = widget;
 
@@ -2434,7 +2433,7 @@ ecep_reminders_constructed (GObject *object)
 		"digits", 0,
 		NULL);
 	gtk_widget_show (widget);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	page_reminders->priv->repeat_times_spin = widget;
 
 	/* Translators: Part of: Repeat the reminder [ x ] extra times every [ y ] [ minutes ] */
@@ -2446,7 +2445,7 @@ ecep_reminders_constructed (GObject *object)
 		"valign", GTK_ALIGN_CENTER,
 		NULL);
 	gtk_widget_show (widget);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 
 	page_reminders->priv->repeat_every_label = widget;
 
@@ -2459,7 +2458,7 @@ ecep_reminders_constructed (GObject *object)
 		"digits", 0,
 		NULL);
 	gtk_widget_show (widget);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	page_reminders->priv->repeat_every_spin = widget;
 
 	widget = gtk_combo_box_text_new ();
@@ -2470,7 +2469,7 @@ ecep_reminders_constructed (GObject *object)
 		"valign", GTK_ALIGN_CENTER,
 		NULL);
 	gtk_widget_show (widget);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	page_reminders->priv->repeat_unit_combo = widget;
 
 	text_combo = GTK_COMBO_BOX_TEXT (widget);
@@ -2551,7 +2550,7 @@ ecep_reminders_constructed (GObject *object)
 		"valign", GTK_ALIGN_FILL,
 		NULL);
 	gtk_widget_show (widget);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	page_reminders->priv->custom_message_text_view = widget;
 
 	gtk_notebook_append_page (GTK_NOTEBOOK (page_reminders->priv->options_notebook), option_grid, NULL);
@@ -2572,7 +2571,7 @@ ecep_reminders_constructed (GObject *object)
 	gtk_grid_attach (GTK_GRID (option_grid), widget, 0, 0, 1, 1);
 	page_reminders->priv->custom_sound_check = widget;
 
-	widget = gtk_file_chooser_button_new (_("Select a sound file"), GTK_FILE_CHOOSER_ACTION_OPEN);
+	widget = e_gtk_file_chooser_button_new (_("Select a sound file"), GTK_FILE_CHOOSER_ACTION_OPEN);
 	g_object_set (G_OBJECT (widget),
 		"hexpand", TRUE,
 		"halign", GTK_ALIGN_FILL,
@@ -2584,7 +2583,7 @@ ecep_reminders_constructed (GObject *object)
 
 	config_dir = calendar_config_get_dir_path ();
 	if (config_dir && *config_dir)
-		gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (widget), config_dir);
+		e_gtk_file_chooser_set_current_folder (widget, config_dir);
 	g_free (config_dir);
 
 	page_reminders->priv->custom_sound_chooser = widget;
@@ -2708,7 +2707,7 @@ ecep_reminders_constructed (GObject *object)
 		"valign", GTK_ALIGN_FILL,
 		NULL);
 	gtk_widget_show (widget);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	page_reminders->priv->custom_email_message_text_view = widget;
 
 	gtk_notebook_append_page (GTK_NOTEBOOK (page_reminders->priv->options_notebook), option_grid, NULL);

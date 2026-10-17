@@ -494,12 +494,12 @@ e_cal_day_column_bag_notify_n_items_cb (ECalComponentBag *bag,
 		GtkContainer *container = GTK_CONTAINER (self);
 		GList *children, *link;
 
-		children = gtk_container_get_children (container);
+		children = e_gtk_widget_get_children (container);
 
 		for (link = children; link; link = g_list_next (link)) {
 			GtkWidget *child = link->data;
 
-			gtk_widget_destroy (child);
+			e_gtk_widget_destroy (child);
 		}
 
 		g_list_free (children);

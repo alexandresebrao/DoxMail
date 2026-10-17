@@ -44,7 +44,7 @@ mail_label_dialog_entry_changed_cb (EMailLabelDialog *dialog)
 	const gchar *text;
 	gboolean sensitive;
 
-	text = gtk_entry_get_text (GTK_ENTRY (dialog->priv->entry));
+	text = gtk_editable_get_text (GTK_EDITABLE (dialog->priv->entry));
 	sensitive = (text != NULL && *text != '\0');
 
 	gtk_dialog_set_response_sensitive (
@@ -120,13 +120,13 @@ mail_label_dialog_constructed (GObject *object)
 	/* XXX Override GTK's style property defaults for GtkDialog.
 	 *     Hopefully GTK+ 3.0 will fix the broken defaults. */
 
-	action_area = gtk_dialog_get_action_area (GTK_DIALOG (object));
+	action_area = e_gtk_dialog_get_action_area (GTK_DIALOG (object));
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (object));
 
 	gtk_box_set_spacing (GTK_BOX (content_area), 12);
-	gtk_container_set_border_width (GTK_CONTAINER (object), 12);
-	gtk_container_set_border_width (GTK_CONTAINER (action_area), 0);
-	gtk_container_set_border_width (GTK_CONTAINER (content_area), 0);
+	e_gtk_widget_set_border_width (object, 12);
+	e_gtk_widget_set_border_width (action_area, 0);
+	e_gtk_widget_set_border_width (content_area, 0);
 
 	/* Chain up to parent's constructed() method. */
 	G_OBJECT_CLASS (e_mail_label_dialog_parent_class)->constructed (object);
@@ -188,14 +188,14 @@ e_mail_label_dialog_init (EMailLabelDialog *dialog)
 	container = content_area;
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
 
 	widget = gtk_entry_new ();
 	gtk_entry_set_activates_default (GTK_ENTRY (widget), TRUE);
-	gtk_box_pack_end (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_end (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	dialog->priv->entry = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -208,13 +208,13 @@ e_mail_label_dialog_init (EMailLabelDialog *dialog)
 	widget = gtk_label_new_with_mnemonic (_("_Label name:"));
 	gtk_label_set_mnemonic_widget (
 		GTK_LABEL (widget), dialog->priv->entry);
-	gtk_box_pack_end (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_end (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	container = content_area;
 
 	widget = gtk_color_selection_new ();
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	dialog->priv->colorsel = g_object_ref (widget);
 	gtk_widget_show (widget);
 }
@@ -238,7 +238,7 @@ e_mail_label_dialog_get_label_name (EMailLabelDialog *dialog)
 
 	entry = GTK_ENTRY (dialog->priv->entry);
 
-	return gtk_entry_get_text (entry);
+	return gtk_editable_get_text (GTK_EDITABLE (entry));
 }
 
 void
@@ -251,10 +251,10 @@ e_mail_label_dialog_set_label_name (EMailLabelDialog *dialog,
 
 	entry = GTK_ENTRY (dialog->priv->entry);
 
-	if (g_strcmp0 (gtk_entry_get_text (entry), label_name) == 0)
+	if (g_strcmp0 (gtk_editable_get_text (GTK_EDITABLE (entry)), label_name) == 0)
 		return;
 
-	gtk_entry_set_text (entry, label_name);
+	gtk_editable_set_text (GTK_EDITABLE (entry), label_name);
 
 	g_object_notify (G_OBJECT (dialog), "label-name");
 }

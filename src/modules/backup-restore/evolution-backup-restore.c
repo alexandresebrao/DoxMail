@@ -151,17 +151,17 @@ dialog_prompt_user (GtkWindow *parent,
 
 	check = gtk_check_button_new_with_mnemonic (string);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (check), TRUE);
-	gtk_box_pack_start (GTK_BOX (container), check, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), check, FALSE, FALSE, 0);
 	gtk_widget_show (check);
 
-	button = gtk_dialog_run (GTK_DIALOG (dialog));
+	button = e_gtk_dialog_run (GTK_DIALOG (dialog));
 
 	if (button == GTK_RESPONSE_YES)
 		mask |= BR_OK;
 	if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (check)))
 		mask |= BR_START;
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 
 	return mask;
 }
@@ -177,7 +177,7 @@ file_chooser_filter_changed_cb (GtkFileChooser *file_chooser,
 
 	g_return_if_fail (GTK_IS_FILE_CHOOSER (file_chooser));
 
-	filter = gtk_file_chooser_get_filter (file_chooser);
+	filter = e_gtk_file_chooser_get_filter (file_chooser);
 	if (!filter)
 		return;
 
@@ -219,19 +219,18 @@ set_local_only (GtkFileChooserNative *file_chooser_native,
 
 	/* XXX Has to be a local file, since the backup utility
 	 *     takes a filename argument, not a URI. */
-	gtk_file_chooser_set_local_only (file_chooser, TRUE);
 
 	/* Not NULL when saving file, contains the suggested file name. */
 	if (user_data) {
 		GSList *filters;
 
-		filters = gtk_file_chooser_list_filters (file_chooser);
+		filters = e_gtk_file_chooser_list_filters (file_chooser);
 
 		if (g_slist_length (filters) > 2) {
 			if (g_str_has_suffix (user_data, ".xz"))
-				gtk_file_chooser_set_filter (file_chooser, filters->data);
+				e_gtk_file_chooser_set_filter (file_chooser, filters->data);
 			else
-				gtk_file_chooser_set_filter (file_chooser, filters->next->data);
+				e_gtk_file_chooser_set_filter (file_chooser, filters->next->data);
 		}
 
 		g_slist_free (filters);

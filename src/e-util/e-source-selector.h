@@ -26,6 +26,7 @@
 #define E_SOURCE_SELECTOR_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 #include <libedataserver/libedataserver.h>
 
 /* Standard GObject macros */
@@ -95,9 +96,9 @@ struct _ESourceSelectorClass {
 						(ESourceSelector *selector);
 	gboolean	(*popup_event)		(ESourceSelector *selector,
 						 ESource *primary,
-						 GdkEventButton *event);
+						 GdkEvent *event);
 	gboolean	(*data_dropped)		(ESourceSelector *selector,
-						 GtkSelectionData *data,
+						 EGtkSelectionData *data,
 						 ESource *destination,
 						 GdkDragAction action,
 						 guint target_info);

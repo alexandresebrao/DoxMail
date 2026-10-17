@@ -101,14 +101,14 @@ struct _EContactCardBoxClass {
 	gboolean(* card_popup_menu)		(EContactCardBox *box,
 						 guint child_index);
 	void	(* card_drag_begin)		(EContactCardBox *box,
-						 GdkDragContext *context);
+						 EGtkDragContext *context);
 	void	(* card_drag_data_get)		(EContactCardBox *box,
-						 GdkDragContext *context,
-						 GtkSelectionData *selection_data,
+						 EGtkDragContext *context,
+						 EGtkSelectionData *selection_data,
 						 guint info,
 						 guint time);
 	void	(* card_drag_end)		(EContactCardBox *box,
-						 GdkDragContext *context);
+						 EGtkDragContext *context);
 	void	(* count_changed)		(EContactCardBox *box);
 
 	/* Padding for future expansion */

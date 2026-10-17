@@ -167,15 +167,15 @@ ask_for_missing_attachment (EPlugin *ep,
 	/*Check buttons*/
 	check = gtk_check_button_new_with_mnemonic (
 		_("_Do not show this message again."));
-	gtk_box_pack_start (GTK_BOX (container), check, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), check, FALSE, FALSE, 0);
 	gtk_widget_show (check);
 
-	response = gtk_dialog_run (GTK_DIALOG (dialog));
+	response = e_gtk_dialog_run (GTK_DIALOG (dialog));
 
 	if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (check)))
 		e_plugin_enable (ep, FALSE);
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 
 	if (response == GTK_RESPONSE_OK)
 		g_action_activate (G_ACTION (E_COMPOSER_ACTION_ATTACH (window)), NULL);
@@ -534,42 +534,36 @@ e_plugin_lib_get_configure_widget (EPlugin *plugin)
 
 	clue_container = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 12);
 	gtk_widget_show (clue_container);
-	gtk_box_pack_start (
-		GTK_BOX (reminder_configuration_box),
-		clue_container, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (reminder_configuration_box), clue_container, TRUE, TRUE, 0);
 
 	scrolledwindow1 = gtk_scrolled_window_new (NULL, NULL);
 	gtk_widget_show (scrolledwindow1);
-	gtk_box_pack_start (GTK_BOX (clue_container), scrolledwindow1, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (clue_container), scrolledwindow1, TRUE, TRUE, 0);
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (scrolledwindow1),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
 	clue_treeview = gtk_tree_view_new ();
 	gtk_widget_show (clue_treeview);
-	gtk_container_add (GTK_CONTAINER (scrolledwindow1), clue_treeview);
-	gtk_container_set_border_width (GTK_CONTAINER (clue_treeview), 1);
+	e_gtk_container_add (scrolledwindow1, clue_treeview);
+	e_gtk_widget_set_border_width (clue_treeview, 1);
 
-	vbuttonbox2 = gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
+	vbuttonbox2 = e_gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
 	gtk_widget_show (vbuttonbox2);
-	gtk_box_pack_start (GTK_BOX (clue_container), vbuttonbox2, FALSE, TRUE, 0);
-	gtk_button_box_set_layout (GTK_BUTTON_BOX (vbuttonbox2), GTK_BUTTONBOX_START);
+	e_gtk_box_pack_start (GTK_BOX (clue_container), vbuttonbox2, FALSE, TRUE, 0);
 	gtk_box_set_spacing (GTK_BOX (vbuttonbox2), 6);
 
 	clue_add = e_dialog_button_new_with_icon ("list-add", _("_Add"));
 	gtk_widget_show (clue_add);
-	gtk_container_add (GTK_CONTAINER (vbuttonbox2), clue_add);
-	gtk_widget_set_can_default (clue_add, TRUE);
+	e_gtk_container_add (vbuttonbox2, clue_add);
 
 	clue_edit = gtk_button_new_with_mnemonic (_("_Edit"));
 	gtk_widget_show (clue_edit);
-	gtk_container_add (GTK_CONTAINER (vbuttonbox2), clue_edit);
-	gtk_widget_set_can_default (clue_edit, TRUE);
+	e_gtk_container_add (vbuttonbox2, clue_edit);
 
 	clue_remove = e_dialog_button_new_with_icon ("list-remove", _("_Remove"));
 	gtk_widget_show (clue_remove);
-	gtk_container_add (GTK_CONTAINER (vbuttonbox2), clue_remove);
-	gtk_widget_set_can_default (clue_remove, TRUE);
+	e_gtk_container_add (vbuttonbox2, clue_remove);
 
 	ui->settings = e_util_ref_settings ("org.gnome.evolution.plugin.attachment-reminder");
 
@@ -631,7 +625,7 @@ e_plugin_lib_get_configure_widget (EPlugin *plugin)
 
 	hbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
 
-	gtk_box_pack_start (GTK_BOX (hbox), reminder_configuration_box, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), reminder_configuration_box, TRUE, TRUE, 0);
 
 	/* to let free data properly on destroy of configuration widget */
 	g_object_set_data_full (G_OBJECT (hbox), "myui-data", ui, destroy_ui_data);

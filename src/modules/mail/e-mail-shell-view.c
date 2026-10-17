@@ -657,7 +657,7 @@ mail_shell_view_constructed (GObject *object)
 	customizer = e_ui_manager_get_customizer (ui_manager);
 
 	ui_item = e_ui_manager_create_item (ui_manager, "mail-preview-toolbar");
-	e_util_setup_toolbar_icon_size (GTK_TOOLBAR (ui_item), GTK_ICON_SIZE_SMALL_TOOLBAR);
+	e_util_setup_toolbar_icon_size (ui_item, E_GTK_ICON_SIZE_SMALL_TOOLBAR);
 	e_mail_paned_view_take_preview_toolbar (E_MAIL_PANED_VIEW (e_mail_shell_content_get_mail_view (self->priv->mail_shell_content)), GTK_WIDGET (ui_item));
 
 	e_ui_customizer_util_attach_toolbar_context_menu (GTK_WIDGET (ui_item), "mail-preview-toolbar",

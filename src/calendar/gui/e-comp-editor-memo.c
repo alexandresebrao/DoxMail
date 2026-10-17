@@ -109,7 +109,7 @@ ece_memo_description_changed_cb (GtkTextBuffer *text_buffer,
 
 	summary = ece_memo_construct_summary (value);
 	entry = e_comp_editor_property_part_get_edit_widget (memo_editor->priv->summary);
-	gtk_entry_set_text (GTK_ENTRY (entry), summary);
+	gtk_editable_set_text (GTK_EDITABLE (entry), summary);
 
 	g_free (summary);
 	g_free (value);

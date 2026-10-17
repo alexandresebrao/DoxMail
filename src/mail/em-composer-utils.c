@@ -4523,12 +4523,12 @@ em_utils_reply_alternative (GtkWindow *parent,
 	gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_OK);
 
 	vbox = GTK_BOX (gtk_dialog_get_content_area (GTK_DIALOG (dialog)));
-	gtk_container_set_border_width (GTK_CONTAINER (vbox), 12);
+	e_gtk_widget_set_border_width (vbox, 12);
 
 	grid = GTK_GRID (gtk_grid_new ());
 	gtk_grid_set_column_spacing (grid, 2);
 	gtk_grid_set_row_spacing (grid, 2);
-	gtk_box_pack_start (vbox, GTK_WIDGET (grid), TRUE, TRUE, 0);
+	e_gtk_box_pack_start (vbox, GTK_WIDGET (grid), TRUE, TRUE, 0);
 
 	#define add_with_indent(x, _cols) \
 		gtk_widget_set_margin_start (GTK_WIDGET (x), 12); \
@@ -4550,9 +4550,9 @@ em_utils_reply_alternative (GtkWindow *parent,
 		GtkWidget *divider_label = gtk_label_new (":"); \
 		gtk_label_set_attributes (GTK_LABEL (lbl), attr_list); \
 		hbox = GTK_BOX (gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6)); \
-		gtk_box_pack_start (hbox, GTK_WIDGET (wgt), FALSE, FALSE, 0); \
-		gtk_box_pack_start (hbox, GTK_WIDGET (divider_label), FALSE, FALSE, 0); \
-		gtk_box_pack_start (hbox, GTK_WIDGET (lbl), FALSE, FALSE, 0); \
+		e_gtk_box_pack_start (hbox, GTK_WIDGET (wgt), FALSE, FALSE, 0); \
+		e_gtk_box_pack_start (hbox, GTK_WIDGET (divider_label), FALSE, FALSE, 0); \
+		e_gtk_box_pack_start (hbox, GTK_WIDGET (lbl), FALSE, FALSE, 0); \
 		e_binding_bind_property ( \
 			wgt, "sensitive", \
 			divider_label, "visible", \
@@ -4634,11 +4634,11 @@ em_utils_reply_alternative (GtkWindow *parent,
 
 	/* Translators: The text is followed by the format combo with values like 'Plain Text', 'HTML' and so on */
 	widget = gtk_label_new_with_mnemonic (_("_Format message in"));
-	gtk_box_pack_start (hbox, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (hbox, widget, FALSE, FALSE, 0);
 
 	mode_combo = e_html_editor_util_new_mode_combobox ();
 	gtk_label_set_mnemonic_widget (GTK_LABEL (widget), GTK_WIDGET (mode_combo));
-	gtk_box_pack_start (hbox, GTK_WIDGET (mode_combo), FALSE, FALSE, 0);
+	e_gtk_box_pack_start (hbox, GTK_WIDGET (mode_combo), FALSE, FALSE, 0);
 
 	e_binding_bind_property (
 		mode_combo, "sensitive",
@@ -4671,7 +4671,7 @@ em_utils_reply_alternative (GtkWindow *parent,
 
 	#undef add_with_indent
 
-	gtk_widget_show_all (GTK_WIDGET (vbox));
+	gtk_widget_set_visible (GTK_WIDGET (vbox), TRUE);
 
 	#define populate_label_with_text(lbl, txt) \
 		g_object_set (G_OBJECT (lbl), \
@@ -4850,7 +4850,7 @@ em_utils_reply_alternative (GtkWindow *parent,
 		top_signature, "sensitive",
 		G_BINDING_SYNC_CREATE | G_BINDING_INVERT_BOOLEAN);
 
-	if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
+	if (e_gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
 		GtkTreeIter iter;
 		AltReplyContext *context;
 		EContentEditorMode mode;
@@ -4970,7 +4970,7 @@ em_utils_reply_alternative (GtkWindow *parent,
 		g_free (template_message_uid);
 	}
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 	g_clear_object (&settings);
 }
 
@@ -5265,7 +5265,7 @@ post_header_clicked_cb (EComposerPostHeader *header,
 	g_list_foreach (list, (GFunc) g_free, NULL);
 	g_list_free (list);
 
-	if (gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_OK) {
+	if (e_gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_OK) {
 		/* Prevent the header's "custom" flag from being reset,
 		 * which is what the default method will do next. */
 		g_signal_stop_emission_by_name (header, "clicked");
@@ -5278,7 +5278,7 @@ post_header_clicked_cb (EComposerPostHeader *header,
 	g_list_free (list);
 
 exit:
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 }
 
 /**

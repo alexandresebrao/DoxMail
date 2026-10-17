@@ -23,6 +23,7 @@
 #define E_MAIL_SIGNATURE_MANAGER_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-paned.h>
 
 #include <e-util/e-util-enumtypes.h>
 #include <e-util/e-mail-signature-editor.h>
@@ -54,12 +55,12 @@ typedef struct _EMailSignatureManagerClass EMailSignatureManagerClass;
 typedef struct _EMailSignatureManagerPrivate EMailSignatureManagerPrivate;
 
 struct _EMailSignatureManager {
-	GtkPaned parent;
+	EPaned parent;
 	EMailSignatureManagerPrivate *priv;
 };
 
 struct _EMailSignatureManagerClass {
-	GtkPanedClass parent_class;
+	EPanedClass parent_class;
 
 	void	(*add_signature)	(EMailSignatureManager *manager);
 	void	(*add_signature_script)	(EMailSignatureManager *manager);

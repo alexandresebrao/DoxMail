@@ -37,8 +37,8 @@ display_error_message (GtkWidget *parent,
 		GTK_WINDOW (parent), 0,
 		GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
 		"%s", message);
-	gtk_dialog_run (GTK_DIALOG (dialog));
-	gtk_widget_destroy (dialog);
+	e_gtk_dialog_run (GTK_DIALOG (dialog));
+	e_gtk_widget_destroy (dialog);
 }
 
 typedef struct {
@@ -112,7 +112,7 @@ do_save_calendar_ical (FormatHandler *handler,
 
 	if (error != NULL) {
 		display_error_message (
-			gtk_widget_get_toplevel (GTK_WIDGET (selector)),
+			e_gtk_widget_get_toplevel (GTK_WIDGET (selector)),
 			error->message);
 		g_error_free (error);
 		return;
@@ -145,7 +145,7 @@ do_save_calendar_ical (FormatHandler *handler,
 		tdata.zones = NULL;
 
 		/* save the file */
-		stream = open_for_writing (GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (selector))), dest_uri, &error);
+		stream = open_for_writing (GTK_WINDOW (e_gtk_widget_get_toplevel (GTK_WIDGET (selector))), dest_uri, &error);
 
 		if (stream) {
 			gchar *ical_str = i_cal_component_as_ical_string (top_level);
@@ -162,7 +162,7 @@ do_save_calendar_ical (FormatHandler *handler,
 
 	if (error != NULL) {
 		display_error_message (
-			gtk_widget_get_toplevel (GTK_WIDGET (selector)),
+			e_gtk_widget_get_toplevel (GTK_WIDGET (selector)),
 			error->message);
 		g_error_free (error);
 	}

@@ -54,12 +54,12 @@ typedef struct _ECategoryCompletionPrivate ECategoryCompletionPrivate;
  * Since: 2.26
  **/
 struct _ECategoryCompletion {
-	GtkEntryCompletion parent;
+	GObject parent;
 	ECategoryCompletionPrivate *priv;
 };
 
 struct _ECategoryCompletionClass {
-	GtkEntryCompletionClass parent_class;
+	GObjectClass parent_class;
 };
 
 GType		e_category_completion_get_type	(void) G_GNUC_CONST;

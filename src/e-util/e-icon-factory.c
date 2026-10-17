@@ -75,7 +75,7 @@ e_icon_factory_get_icon_filename (const gchar *icon_name,
 
 	g_return_val_if_fail (icon_name != NULL, NULL);
 
-	icon_theme = gtk_icon_theme_get_default ();
+	icon_theme = e_gtk_icon_theme_get_default ();
 
 	if (!gtk_icon_size_lookup (icon_size, &width, &height))
 		return NULL;
@@ -114,7 +114,7 @@ e_icon_factory_get_icon (const gchar *icon_name,
 
 	g_return_val_if_fail (icon_name != NULL, NULL);
 
-	icon_theme = gtk_icon_theme_get_default ();
+	icon_theme = e_gtk_icon_theme_get_default ();
 
 	if (!gtk_icon_size_lookup (icon_size, &width, &height))
 		width = height = 16;

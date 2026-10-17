@@ -237,7 +237,7 @@ test_utils_web_process_terminated_cb (WebKitWebView *web_view,
 
 static gboolean
 wk_editor_key_press_event_cb (WebKitWebView *web_view,
-			      GdkEventKey *event)
+			      GdkEvent *event)
 {
 	WebKitWebInspector *inspector;
 	gboolean handled = FALSE;
@@ -292,7 +292,7 @@ test_utils_html_editor_created_cb (GObject *source_object,
 		"vexpand", TRUE,
 		NULL);
 	gtk_widget_show (GTK_WIDGET (fixture->editor));
-	gtk_container_add (GTK_CONTAINER (fixture->window), GTK_WIDGET (fixture->editor));
+	e_gtk_container_add (fixture->window, GTK_WIDGET (fixture->editor));
 
 	fixture->focus_tracker = e_focus_tracker_new (GTK_WINDOW (fixture->window));
 
@@ -407,7 +407,7 @@ test_utils_fixture_tear_down (TestFixture *fixture,
 {
 	g_clear_object (&fixture->focus_tracker);
 
-	gtk_widget_destroy (GTK_WIDGET (fixture->window));
+	e_gtk_widget_destroy (GTK_WIDGET (fixture->window));
 	fixture->editor = NULL;
 
 	g_slist_free_full (fixture->settings, free_old_settings);
@@ -605,7 +605,7 @@ test_utils_send_key_event (GtkWidget *widget,
 		keyval == GDK_KEY_Alt_R;
 	event->key.keyval = keyval;
 	event->key.state = state;
-	event->key.window = g_object_ref (gtk_widget_get_window (widget));
+	event->key.window = g_object_ref (e_gtk_widget_get_surface (widget));
 	event->key.send_event = TRUE;
 	event->key.length = 0;
 	event->key.string = NULL;
@@ -629,7 +629,7 @@ test_utils_send_key_event (GtkWidget *widget,
 
 	test_utils_wait_milliseconds (event_processing_delay_ms);
 
-	gdk_event_free (event);
+	gdk_event_unref (event);
 }
 
 gboolean
@@ -842,22 +842,22 @@ test_utils_process_sequence (TestFixture *fixture,
 		case 'A': /* Alt key press */
 			keyval = GDK_KEY_Alt_L;
 
-			if ((fixture->key_state & GDK_MOD1_MASK) != 0) {
+			if ((fixture->key_state & GDK_ALT_MASK) != 0) {
 				success = FALSE;
 				g_warning ("%s: Alt is already pressed", G_STRFUNC);
 			} else {
-				change_state |= GDK_MOD1_MASK;
+				change_state |= GDK_ALT_MASK;
 			}
 			call_release = FALSE;
 			break;
 		case 'a': /* Alt key release */
 			keyval = GDK_KEY_Alt_L;
 
-			if ((fixture->key_state & GDK_MOD1_MASK) == 0) {
+			if ((fixture->key_state & GDK_ALT_MASK) == 0) {
 				success = FALSE;
 				g_warning ("%s: Alt is already released", G_STRFUNC);
 			} else {
-				change_state &= ~GDK_MOD1_MASK;
+				change_state &= ~GDK_ALT_MASK;
 			}
 			call_press = FALSE;
 			break;
@@ -1242,37 +1242,37 @@ void
 test_utils_set_clipboard_text (const gchar *text,
 			       gboolean is_html)
 {
-	GtkClipboard *clipboard;
+	GdkClipboard *clipboard;
 
 	g_return_if_fail (text != NULL);
 
-	clipboard = gtk_clipboard_get (GDK_SELECTION_CLIPBOARD);
+	clipboard = e_gtk_clipboard_get (E_GTK_SELECTION_CLIPBOARD);
 	g_return_if_fail (clipboard != NULL);
 
-	gtk_clipboard_clear (clipboard);
+	e_gtk_clipboard_clear (clipboard);
 
 	if (is_html) {
 		e_clipboard_set_html (clipboard, text, -1);
 	} else {
-		gtk_clipboard_set_text (clipboard, text, -1);
+		e_gtk_clipboard_set_text (clipboard, text, -1);
 	}
 }
 
 gchar *
 test_utils_get_clipboard_text (gboolean request_html)
 {
-	GtkClipboard *clipboard;
+	GdkClipboard *clipboard;
 	gchar *text;
 
-	clipboard = gtk_clipboard_get (GDK_SELECTION_CLIPBOARD);
+	clipboard = e_gtk_clipboard_get (E_GTK_SELECTION_CLIPBOARD);
 	g_return_val_if_fail (clipboard != NULL, NULL);
 
 	if (request_html) {
 		g_return_val_if_fail (e_clipboard_wait_is_html_available (clipboard), NULL);
 		text = e_clipboard_wait_for_html (clipboard);
 	} else {
-		g_return_val_if_fail (gtk_clipboard_wait_is_text_available (clipboard), NULL);
-		text = gtk_clipboard_wait_for_text (clipboard);
+		g_return_val_if_fail (e_gtk_clipboard_wait_is_text_available (clipboard), NULL);
+		text = e_gtk_clipboard_wait_for_text (clipboard);
 	}
 
 	g_return_val_if_fail (text != NULL, NULL);

@@ -262,8 +262,8 @@ e_cal_component_widget_constructed (GObject *object)
 	gtk_style_context_add_provider (style_context,
 		GTK_STYLE_PROVIDER (self->css_provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 
-	gtk_box_pack_start (GTK_BOX (self), self->time_label, FALSE, FALSE, 0);
-	gtk_box_pack_start (GTK_BOX (self), self->text_label, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (self), self->time_label, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (self), self->text_label, TRUE, TRUE, 0);
 
 	e_cal_component_widget_update (self);
 }
@@ -600,7 +600,7 @@ e_cal_component_widget_update (ECalComponentWidget *self)
 	g_free (str);
 
 	if (self->with_transparency && e_cal_component_get_transparency (self->component) == E_CAL_COMPONENT_TRANSP_TRANSPARENT)
-		gtk_style_context_add_class (gtk_widget_get_style_context (GTK_WIDGET (self)), "transparent");
+		gtk_widget_add_css_class (GTK_WIDGET (self), "transparent");
 	else
-		gtk_style_context_remove_class (gtk_widget_get_style_context (GTK_WIDGET (self)), "transparent");
+		gtk_widget_remove_css_class (GTK_WIDGET (self), "transparent");
 }

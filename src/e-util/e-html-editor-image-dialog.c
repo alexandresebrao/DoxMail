@@ -67,8 +67,7 @@ html_editor_image_dialog_set_src (EHTMLEditorImageDialog *dialog)
 	editor = e_html_editor_dialog_get_editor (E_HTML_EDITOR_DIALOG (dialog));
 	cnt_editor = e_html_editor_get_content_editor (editor);
 
-	uri = gtk_file_chooser_get_uri (
-		GTK_FILE_CHOOSER (dialog->priv->file_chooser));
+	uri = e_gtk_file_chooser_get_uri (dialog->priv->file_chooser);
 
 	e_content_editor_image_set_src (cnt_editor, uri);
 
@@ -88,7 +87,7 @@ html_editor_image_dialog_set_alt (EHTMLEditorImageDialog *dialog)
 	editor = e_html_editor_dialog_get_editor (E_HTML_EDITOR_DIALOG (dialog));
 	cnt_editor = e_html_editor_get_content_editor (editor);
 
-	value = gtk_entry_get_text (GTK_ENTRY (dialog->priv->description_edit));
+	value = gtk_editable_get_text (GTK_EDITABLE (dialog->priv->description_edit));
 
 	e_content_editor_image_set_alt (cnt_editor, value);
 }
@@ -400,7 +399,7 @@ html_editor_image_dialog_set_url (EHTMLEditorImageDialog *dialog)
 	editor = e_html_editor_dialog_get_editor (E_HTML_EDITOR_DIALOG (dialog));
 	cnt_editor = e_html_editor_get_content_editor (editor);
 
-	value = gtk_entry_get_text (GTK_ENTRY (dialog->priv->url_edit));
+	value = gtk_editable_get_text (GTK_EDITABLE (dialog->priv->url_edit));
 
 	e_content_editor_image_set_url (cnt_editor, value);
 }
@@ -410,7 +409,7 @@ html_editor_image_dialog_test_url (EHTMLEditorImageDialog *dialog)
 {
 	e_show_uri (
 		GTK_WINDOW (dialog),
-		gtk_entry_get_text (GTK_ENTRY (dialog->priv->url_edit)));
+		gtk_editable_get_text (GTK_EDITABLE (dialog->priv->url_edit)));
 }
 
 static void
@@ -429,21 +428,18 @@ html_editor_image_dialog_show (GtkWidget *widget)
 
 	value = e_content_editor_image_get_src (cnt_editor);
 	if (value && *value) {
-		gtk_file_chooser_set_uri (
-			GTK_FILE_CHOOSER (dialog->priv->file_chooser), value);
+		e_gtk_file_chooser_set_uri (dialog->priv->file_chooser, value);
 		gtk_widget_set_sensitive (
 			GTK_WIDGET (dialog->priv->file_chooser), TRUE);
 	} else {
-		gtk_file_chooser_set_uri (
-			GTK_FILE_CHOOSER (dialog->priv->file_chooser), "");
+		e_gtk_file_chooser_set_uri (dialog->priv->file_chooser, "");
 		gtk_widget_set_sensitive (
 			GTK_WIDGET (dialog->priv->file_chooser), FALSE);
 	}
 	g_free (value);
 
 	value = e_content_editor_image_get_alt (cnt_editor);
-	gtk_entry_set_text (
-		GTK_ENTRY (dialog->priv->description_edit), value ? value : "");
+	gtk_editable_set_text (GTK_EDITABLE (dialog->priv->description_edit), value ? value : "");
 	g_free (value);
 
 	gtk_spin_button_set_value (
@@ -477,7 +473,7 @@ html_editor_image_dialog_show (GtkWidget *widget)
 
 	value = e_content_editor_image_get_url (cnt_editor);
 	if (value && *value)
-		gtk_entry_set_text (GTK_ENTRY (dialog->priv->url_edit), value);
+		gtk_editable_set_text (GTK_EDITABLE (dialog->priv->url_edit), value);
 	g_free (value);
 
 	/* Chain up to parent implementation */
@@ -498,7 +494,7 @@ aspect_ration_clicked_cb (GtkButton *button,
 	else
 		icon_name = "aspect-ratio-unlock";
 
-	gtk_button_set_image (button, gtk_image_new_from_icon_name (icon_name, GTK_ICON_SIZE_BUTTON));
+	e_gtk_button_set_image (button, gtk_image_new_from_icon_name (icon_name));
 
 	maybe_sync_aspect_ration (dialog, E_SYNC_ASPECT_RATIO_BY_WIDTH);
 }
@@ -557,17 +553,8 @@ e_html_editor_image_dialog_init (EHTMLEditorImageDialog *dialog)
 	gtk_file_filter_add_mime_type (file_filter, "image/*");
 
 	/* Source */
-	if (e_util_is_running_flatpak ()) {
-		widget = gtk_file_chooser_button_new (_("Choose Background Image"), GTK_FILE_CHOOSER_ACTION_OPEN);
-	} else {
-		widget = e_image_chooser_dialog_new (
-				_("Choose Background Image"),
-				GTK_WINDOW (dialog));
-		gtk_file_chooser_set_action (
-			GTK_FILE_CHOOSER (widget), GTK_FILE_CHOOSER_ACTION_OPEN);
-
-		widget = gtk_file_chooser_button_new_with_dialog (widget);
-	}
+	widget = e_gtk_file_chooser_button_new_with_dialog (
+		e_image_chooser_dialog_new (_("Choose Background Image"), GTK_WINDOW (dialog)));
 
 	gtk_widget_set_hexpand (widget, TRUE);
 	gtk_grid_attach (grid, widget, 1, 0, 1, 1);
@@ -645,8 +632,7 @@ e_html_editor_image_dialog_init (EHTMLEditorImageDialog *dialog)
 	dialog->priv->size_units = widget;
 
 	widget = gtk_button_new ();
-	gtk_button_set_always_show_image (GTK_BUTTON (widget), TRUE);
-	gtk_button_set_image (GTK_BUTTON (widget), gtk_image_new_from_icon_name ("aspect-ratio-lock", GTK_ICON_SIZE_BUTTON));
+	e_gtk_button_set_image (GTK_BUTTON (widget), gtk_image_new_from_icon_name ("aspect-ratio-lock"));
 	gtk_widget_set_tooltip_text (widget, _("Preserve aspect ratio"));
 	gtk_grid_attach (grid, widget, 3, 0, 1, 2);
 	dialog->priv->preserve_aspect_ratio = TRUE;
@@ -751,7 +737,7 @@ e_html_editor_image_dialog_init (EHTMLEditorImageDialog *dialog)
 		G_CALLBACK (html_editor_image_dialog_test_url), dialog);
 	dialog->priv->test_url_button = widget;
 
-	gtk_widget_show_all (GTK_WIDGET (main_layout));
+	gtk_widget_set_visible (GTK_WIDGET (main_layout), TRUE);
 }
 
 GtkWidget *

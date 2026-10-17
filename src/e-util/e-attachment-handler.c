@@ -34,8 +34,8 @@ attachment_handler_constructed (GObject *object)
 	EAttachmentView *view;
 	EAttachmentHandler *handler;
 	GdkDragAction drag_actions;
-	GtkTargetList *target_list;
-	const GtkTargetEntry *targets;
+	EGtkTargetList *target_list;
+	const EGtkTargetEntry *targets;
 	guint n_targets;
 
 	handler = E_ATTACHMENT_HANDLER (object);
@@ -45,7 +45,7 @@ attachment_handler_constructed (GObject *object)
 	view = e_attachment_handler_get_view (handler);
 
 	target_list = e_attachment_view_get_target_list (view);
-	gtk_target_list_add_table (target_list, targets, n_targets);
+	e_gtk_target_list_add_table (target_list, targets, n_targets);
 
 	e_attachment_view_add_drag_actions (view, drag_actions);
 
@@ -102,7 +102,7 @@ e_attachment_handler_get_drag_actions (EAttachmentHandler *handler)
 	return 0;
 }
 
-const GtkTargetEntry *
+const EGtkTargetEntry *
 e_attachment_handler_get_target_table (EAttachmentHandler *handler,
                                        guint *n_targets)
 {

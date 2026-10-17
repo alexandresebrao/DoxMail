@@ -172,11 +172,11 @@ mail_config_import_progress_page_constructed (GObject *object)
 	/* Just a spacer. */
 	widget = gtk_grid_new ();
 	gtk_size_group_add_widget (size_group, widget);
-	gtk_box_pack_start (GTK_BOX (main_box), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (main_box), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	widget = gtk_progress_bar_new ();
-	gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	e_binding_bind_object_text_property (
@@ -194,14 +194,14 @@ mail_config_import_progress_page_constructed (GObject *object)
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 12);
 	gtk_size_group_add_widget (size_group, widget);
-	gtk_box_pack_start (GTK_BOX (main_box), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (main_box), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
 	gtk_widget_set_halign (widget, GTK_ALIGN_CENTER);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	completed_msg = widget;
@@ -216,7 +216,7 @@ mail_config_import_progress_page_constructed (GObject *object)
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
 	gtk_widget_set_halign (widget, GTK_ALIGN_CENTER);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	e_binding_bind_property_full (
@@ -229,23 +229,22 @@ mail_config_import_progress_page_constructed (GObject *object)
 
 	container = widget;
 
-	widget = gtk_image_new_from_icon_name ("process-stop", GTK_ICON_SIZE_MENU);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	widget = gtk_image_new_from_icon_name ("process-stop");
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	widget = gtk_label_new (_("Import cancelled."));
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	container = completed_msg;
 
-	widget = gtk_image_new_from_icon_name (
-		"emblem-default", GTK_ICON_SIZE_MENU);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	widget = gtk_image_new_from_icon_name ("emblem-default");
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	widget = gtk_label_new _("Import complete.");
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	g_object_unref (size_group);

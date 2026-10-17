@@ -167,14 +167,10 @@ activity_proxy_update_in_main (EActivityProxy *proxy)
 		icon_name = COMPLETED_ICON_NAME;
 
 	if (state == E_ACTIVITY_CANCELLED) {
-		gtk_image_set_from_icon_name (
-			GTK_IMAGE (proxy->priv->image),
-			"process-stop", GTK_ICON_SIZE_BUTTON);
+		gtk_image_set_from_icon_name (GTK_IMAGE (proxy->priv->image), "process-stop");
 		gtk_widget_show (proxy->priv->image);
 	} else if (icon_name != NULL) {
-		gtk_image_set_from_icon_name (
-			GTK_IMAGE (proxy->priv->image),
-			icon_name, GTK_ICON_SIZE_MENU);
+		gtk_image_set_from_icon_name (GTK_IMAGE (proxy->priv->image), icon_name);
 		gtk_widget_show (proxy->priv->image);
 	} else {
 		gtk_widget_hide (proxy->priv->image);
@@ -344,23 +340,22 @@ e_activity_proxy_init (EActivityProxy *proxy)
 
 	proxy->priv = e_activity_proxy_get_instance_private (proxy);
 
-	gtk_frame_set_shadow_type (GTK_FRAME (proxy), GTK_SHADOW_IN);
 
 	container = GTK_WIDGET (proxy);
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 3);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	gtk_widget_show (widget);
 
 	container = widget;
 
 	widget = gtk_image_new ();
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	proxy->priv->image = widget;
 
 	widget = e_spinner_new ();
 	e_spinner_start (E_SPINNER (widget));
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 3);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 3);
 	proxy->priv->spinner = widget;
 
 	/* The spinner is only visible when the image is not. */
@@ -374,14 +369,14 @@ e_activity_proxy_init (EActivityProxy *proxy)
 	widget = gtk_label_new (NULL);
 	gtk_label_set_xalign (GTK_LABEL (widget), 0);
 	gtk_label_set_ellipsize (GTK_LABEL (widget), PANGO_ELLIPSIZE_END);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	proxy->priv->label = widget;
 	gtk_widget_show (widget);
 
 	/* This is only shown if the EActivity has a GCancellable. */
 	widget = e_dialog_button_new_with_icon ("process-stop", NULL);
-	gtk_button_set_relief (GTK_BUTTON (widget), GTK_RELIEF_NONE);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	gtk_button_set_has_frame (GTK_BUTTON (widget), FALSE);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_set_tooltip_text (widget, _("Cancel"));
 	proxy->priv->cancel = widget;
 	gtk_widget_show (widget);

@@ -28,7 +28,8 @@
 #ifndef E_WEB_VIEW_H
 #define E_WEB_VIEW_H
 
-#include <webkit2/webkit2.h>
+#include <webkit/webkit.h>
+#include <e-util/e-gtk4-compat.h>
 #include <e-util/e-activity.h>
 #include <e-util/e-content-request.h>
 #include <e-util/e-ui-action.h>
@@ -156,7 +157,7 @@ void		e_web_view_reload		(EWebView *web_view);
 gboolean	e_web_view_get_caret_mode	(EWebView *web_view);
 void		e_web_view_set_caret_mode	(EWebView *web_view,
 						 gboolean caret_mode);
-GtkTargetList *	e_web_view_get_copy_target_list	(EWebView *web_view);
+EGtkTargetList *	e_web_view_get_copy_target_list	(EWebView *web_view);
 gboolean	e_web_view_get_disable_printing	(EWebView *web_view);
 void		e_web_view_set_disable_printing	(EWebView *web_view,
 						 gboolean disable_printing);
@@ -187,7 +188,7 @@ void		e_web_view_set_cursor_image_src	(EWebView *web_view,
 EUIAction *	e_web_view_get_open_proxy	(EWebView *web_view);
 void		e_web_view_set_open_proxy	(EWebView *web_view,
 						 EUIAction *open_proxy);
-GtkTargetList *	e_web_view_get_paste_target_list
+EGtkTargetList *	e_web_view_get_paste_target_list
 						(EWebView *web_view);
 EUIAction *	e_web_view_get_print_proxy	(EWebView *web_view);
 void		e_web_view_set_print_proxy	(EWebView *web_view,

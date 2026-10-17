@@ -365,7 +365,7 @@ on_select_day_second_zone (GtkWidget *item,
 {
 	g_return_if_fail (prefs != NULL);
 
-	calendar_config_select_day_second_zone (gtk_widget_get_toplevel (item));
+	calendar_config_select_day_second_zone (e_gtk_widget_get_toplevel (item));
 	update_day_second_zone_caption (prefs);
 }
 
@@ -423,7 +423,7 @@ day_second_zone_clicked (GtkWidget *widget,
 		G_CALLBACK (on_select_day_second_zone), prefs);
 	gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
 
-	gtk_widget_show_all (menu);
+	gtk_widget_set_visible (menu, TRUE);
 
 	gtk_menu_attach_to_widget (GTK_MENU (menu), widget, NULL);
 	g_signal_connect (menu, "deactivate", G_CALLBACK (gtk_menu_detach), NULL);
@@ -547,14 +547,14 @@ show_alarms_config (ECalendarPreferences *prefs)
 	atk_object_set_name (
 		gtk_widget_get_accessible (widget),
 		_("Selected Calendars for Notifications of Reminders"));
-	gtk_container_add (GTK_CONTAINER (prefs->priv->reminder_calendars_scrolled_window), widget);
+	e_gtk_container_add (prefs->priv->reminder_calendars_scrolled_window, widget);
 	gtk_widget_show (widget);
 
 	widget = e_alarm_selector_new (prefs->priv->registry, E_SOURCE_EXTENSION_TASK_LIST);
 	atk_object_set_name (
 		gtk_widget_get_accessible (widget),
 		_("Selected Task Lists for Notifications of Reminders"));
-	gtk_container_add (GTK_CONTAINER (prefs->priv->reminder_tasks_scrolled_window), widget);
+	e_gtk_container_add (prefs->priv->reminder_tasks_scrolled_window, widget);
 	gtk_widget_show (widget);
 }
 
@@ -637,13 +637,13 @@ calendar_preferences_add_itip_formatter_page (EShell *shell,
 
 	/* Create a new notebook page */
 	page = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-	gtk_container_set_border_width (GTK_CONTAINER (page), 12);
+	e_gtk_widget_set_border_width (page, 12);
 	tab_label = gtk_label_new (_("Meeting Invitations"));
 	gtk_notebook_append_page (GTK_NOTEBOOK (notebook), page, tab_label);
 
 	/* Frame */
 	frame = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
-	gtk_box_pack_start (GTK_BOX (page), frame, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (page), frame, FALSE, FALSE, 0);
 
 	/* "General" */
 	frame_label = gtk_label_new ("");
@@ -651,52 +651,52 @@ calendar_preferences_add_itip_formatter_page (EShell *shell,
 	gtk_label_set_markup (GTK_LABEL (frame_label), str);
 	g_free (str);
 	gtk_label_set_xalign (GTK_LABEL (frame_label), 0);
-	gtk_box_pack_start (GTK_BOX (frame), frame_label, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (frame), frame_label, FALSE, FALSE, 0);
 
 	/* Indent/padding */
 	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 12);
-	gtk_box_pack_start (GTK_BOX (frame), hbox, FALSE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (frame), hbox, FALSE, TRUE, 0);
 	padding_label = gtk_label_new ("");
-	gtk_box_pack_start (GTK_BOX (hbox), padding_label, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), padding_label, FALSE, FALSE, 0);
 	inner_vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
-	gtk_box_pack_start (GTK_BOX (hbox), inner_vbox, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), inner_vbox, FALSE, FALSE, 0);
 
 	/* Delete message after acting */
 	settings = e_util_ref_settings ("org.gnome.evolution.plugin.itip");
 
 	check = gtk_check_button_new_with_mnemonic (_("_Delete message after acting"));
-	gtk_box_pack_start (GTK_BOX (inner_vbox), check, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (inner_vbox), check, FALSE, FALSE, 0);
 
 	g_settings_bind (settings, "delete-processed",
 		check, "active",
 		G_SETTINGS_BIND_DEFAULT);
 
 	check_delete_on_decline = gtk_check_button_new_with_mnemonic (_("Delete _meeting from calendar on Decline"));
-	gtk_box_pack_start (GTK_BOX (inner_vbox), check_delete_on_decline, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (inner_vbox), check_delete_on_decline, FALSE, FALSE, 0);
 
 	check = gtk_check_button_new_with_mnemonic (_("_Preserve existing reminder by default"));
-	gtk_box_pack_start (GTK_BOX (inner_vbox), check, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (inner_vbox), check, FALSE, FALSE, 0);
 
 	g_settings_bind (settings, "preserve-reminder",
 		check, "active",
 		G_SETTINGS_BIND_DEFAULT);
 
 	check = gtk_check_button_new_with_mnemonic (_("_Show invitation description provided by the sender"));
-	gtk_box_pack_start (GTK_BOX (inner_vbox), check, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (inner_vbox), check, FALSE, FALSE, 0);
 
 	g_settings_bind (settings, "show-message-description",
 		check, "active",
 		G_SETTINGS_BIND_DEFAULT);
 
 	check = gtk_check_button_new_with_mnemonic (_("Sh_ow day agenda at meeting start time"));
-	gtk_box_pack_start (GTK_BOX (inner_vbox), check, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (inner_vbox), check, FALSE, FALSE, 0);
 
 	g_settings_bind (settings, "show-day-agenda",
 		check, "active",
 		G_SETTINGS_BIND_DEFAULT);
 
 	check = gtk_check_button_new_with_mnemonic (_("_Always attach components in mail messages"));
-	gtk_box_pack_start (GTK_BOX (inner_vbox), check, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (inner_vbox), check, FALSE, FALSE, 0);
 
 	g_settings_bind (settings, "attach-components",
 		check, "active",
@@ -714,27 +714,27 @@ calendar_preferences_add_itip_formatter_page (EShell *shell,
 
 	/* "Conflict searching" */
 	frame = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
-	gtk_box_pack_start (GTK_BOX (page), frame, TRUE, TRUE, 24);
+	e_gtk_box_pack_start (GTK_BOX (page), frame, TRUE, TRUE, 24);
 
 	frame_label = gtk_label_new ("");
 	str = g_strdup_printf ("<span weight=\"bold\">%s</span>", _("Search for Meetings"));
 	gtk_label_set_markup (GTK_LABEL (frame_label), str);
 	g_free (str);
 	gtk_label_set_xalign (GTK_LABEL (frame_label), 0);
-	gtk_box_pack_start (GTK_BOX (frame), frame_label, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (frame), frame_label, FALSE, FALSE, 0);
 
 	/* Indent/padding */
 	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 12);
-	gtk_box_pack_start (GTK_BOX (frame), hbox, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (frame), hbox, TRUE, TRUE, 0);
 	padding_label = gtk_label_new ("");
-	gtk_box_pack_start (GTK_BOX (hbox), padding_label, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), padding_label, FALSE, FALSE, 0);
 	inner_vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
-	gtk_box_pack_start (GTK_BOX (hbox), inner_vbox, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), inner_vbox, TRUE, TRUE, 0);
 
 	/* Source selector */
 	label = gtk_label_new (_("Select the calendars to search for the meetings and the conflicts"));
 	gtk_label_set_xalign (GTK_LABEL (label), 0);
-	gtk_box_pack_start (GTK_BOX (inner_vbox), label, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (inner_vbox), label, FALSE, FALSE, 0);
 
 	scrolledwin = gtk_scrolled_window_new (NULL, NULL);
 
@@ -742,16 +742,14 @@ calendar_preferences_add_itip_formatter_page (EShell *shell,
 		GTK_SCROLLED_WINDOW (scrolledwin),
 		GTK_POLICY_AUTOMATIC,
 		GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_set_shadow_type (
-		GTK_SCROLLED_WINDOW (scrolledwin),
-		GTK_SHADOW_IN);
-	gtk_box_pack_start (GTK_BOX (inner_vbox), scrolledwin, TRUE, TRUE, 0);
+	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (scrolledwin), TRUE);
+	e_gtk_box_pack_start (GTK_BOX (inner_vbox), scrolledwin, TRUE, TRUE, 0);
 
 	ess = e_conflict_search_selector_new (registry);
 	atk_object_set_name (gtk_widget_get_accessible (ess), _("Search for Meetings"));
-	gtk_container_add (GTK_CONTAINER (scrolledwin), ess);
+	e_gtk_container_add (scrolledwin, ess);
 
-	gtk_widget_show_all (page);
+	gtk_widget_set_visible (page, TRUE);
 }
 
 #ifdef HAVE_G_DESKTOP_WEEKDAY
@@ -1362,7 +1360,7 @@ calendar_preferences_construct (ECalendarPreferences *prefs,
 	target = e_cal_config_target_new_prefs (ec);
 	e_config_set_target ((EConfig *) ec, (EConfigTarget *) target);
 	toplevel = e_config_create_widget ((EConfig *) ec);
-	gtk_box_pack_start (GTK_BOX (prefs), toplevel, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (prefs), toplevel, TRUE, TRUE, 0);
 
 	show_config (prefs);
 	/* FIXME: weakref? */

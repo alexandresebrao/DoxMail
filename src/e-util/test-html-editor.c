@@ -78,29 +78,25 @@ save_dialog (EHTMLEditor *editor)
 
 	native = gtk_file_chooser_native_new (
 		_("Save As"),
-		GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (editor))),
+		GTK_WINDOW (e_gtk_widget_get_toplevel (GTK_WIDGET (editor))),
 		GTK_FILE_CHOOSER_ACTION_SAVE,
 		_("_Save"), _("_Cancel"));
 
-	gtk_file_chooser_set_do_overwrite_confirmation (
-		GTK_FILE_CHOOSER (native), TRUE);
 
 	filename = e_html_editor_get_filename (editor);
 
 	if (filename != NULL)
-		gtk_file_chooser_set_filename (
-			GTK_FILE_CHOOSER (native), filename);
+		e_gtk_file_chooser_set_filename (native, filename);
 	else
 		gtk_file_chooser_set_current_name (
 			GTK_FILE_CHOOSER (native), _("Untitled document"));
 
-	response = gtk_native_dialog_run (GTK_NATIVE_DIALOG (native));
+	response = e_gtk_native_dialog_run (GTK_NATIVE_DIALOG (native));
 
 	if (response == GTK_RESPONSE_ACCEPT) {
 		gchar *new_filename;
 
-		new_filename = gtk_file_chooser_get_filename (
-			GTK_FILE_CHOOSER (native));
+		new_filename = e_gtk_file_chooser_get_filename (native);
 		e_html_editor_set_filename (editor, new_filename);
 		g_free (new_filename);
 	}
@@ -124,7 +120,7 @@ view_source_dialog_show (EHTMLEditor *editor,
 
 	dialog = gtk_dialog_new_with_buttons (
 		title,
-		GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (editor))),
+		GTK_WINDOW (e_gtk_widget_get_toplevel (GTK_WIDGET (editor))),
 		GTK_DIALOG_DESTROY_WITH_PARENT,
 		_("_Close"), GTK_RESPONSE_CLOSE,
 		NULL);
@@ -135,14 +131,11 @@ view_source_dialog_show (EHTMLEditor *editor,
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (scrolled_window),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_set_shadow_type (
-		GTK_SCROLLED_WINDOW (scrolled_window), GTK_SHADOW_IN);
-	gtk_box_pack_start (
-		GTK_BOX (content_area),
-		scrolled_window, TRUE, TRUE, 0);
+	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (scrolled_window), TRUE);
+	e_gtk_box_pack_start (GTK_BOX (content_area), scrolled_window, TRUE, TRUE, 0);
 
-	gtk_container_set_border_width (GTK_CONTAINER (dialog), 6);
-	gtk_container_set_border_width (GTK_CONTAINER (scrolled_window), 6);
+	e_gtk_widget_set_border_width (dialog, 6);
+	e_gtk_widget_set_border_width (scrolled_window, 6);
 	gtk_window_set_default_size (GTK_WINDOW (dialog), 400, 300);
 
 	if (show_source || plain_text) {
@@ -160,11 +153,11 @@ view_source_dialog_show (EHTMLEditor *editor,
 		webkit_web_view_load_html (WEBKIT_WEB_VIEW (content), content_text ? content_text : "", "evo-file://");
 	}
 
-	gtk_container_add (GTK_CONTAINER (scrolled_window), content);
-	gtk_widget_show_all (scrolled_window);
+	e_gtk_container_add (scrolled_window, content);
+	gtk_widget_set_visible (scrolled_window, TRUE);
 
-	gtk_dialog_run (GTK_DIALOG (dialog));
-	gtk_widget_destroy (dialog);
+	e_gtk_dialog_run (GTK_DIALOG (dialog));
+	e_gtk_widget_destroy (dialog);
 }
 
 typedef struct _ViewSourceData {
@@ -659,23 +652,23 @@ create_new_editor_cb (GObject *source_object,
 	container = widget;
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	gtk_widget_show (widget);
 
 	container = widget;
 
 	ui_object = e_html_editor_get_ui_object (editor, E_HTML_EDITOR_UI_OBJECT_MAIN_MENU);
 	widget = gtk_menu_bar_new_from_model (G_MENU_MODEL (ui_object));
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	ui_object = e_html_editor_get_ui_object (editor, E_HTML_EDITOR_UI_OBJECT_MAIN_TOOLBAR);
 	widget = GTK_WIDGET (ui_object);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	widget = GTK_WIDGET (editor);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	gtk_widget_grab_focus (GTK_WIDGET (cnt_editor));
@@ -714,7 +707,7 @@ main (gint argc,
 	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
 	textdomain (GETTEXT_PACKAGE);
 
-	gtk_init (&argc, &argv);
+	gtk_init ();
 
 	e_util_init_main_thread (NULL);
 	e_passwords_init ();
@@ -724,8 +717,8 @@ main (gint argc,
 	g_setenv ("E_HTML_EDITOR_TEST_SOURCES", "1", FALSE);
 	g_setenv ("EVOLUTION_SOURCE_WEBKITDATADIR", EVOLUTION_SOURCE_WEBKITDATADIR, FALSE);
 
-	gtk_icon_theme_append_search_path (gtk_icon_theme_get_default (), EVOLUTION_ICONDIR);
-	gtk_icon_theme_append_search_path (gtk_icon_theme_get_default (), E_DATA_SERVER_ICONDIR);
+	gtk_icon_theme_append_search_path (e_gtk_icon_theme_get_default (), EVOLUTION_ICONDIR);
+	gtk_icon_theme_append_search_path (e_gtk_icon_theme_get_default (), E_DATA_SERVER_ICONDIR);
 
 	modules = e_module_load_all_in_directory (EVOLUTION_MODULEDIR);
 	g_list_free_full (modules, (GDestroyNotify) g_type_module_unuse);

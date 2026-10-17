@@ -104,8 +104,8 @@ struct _MessageListPrivate {
 	gboolean any_row_changed; /* save state before regen list when this is set to true */
 	gboolean regen_selects_unread;
 
-	GtkTargetList *copy_target_list;
-	GtkTargetList *paste_target_list;
+	EGtkTargetList *copy_target_list;
+	EGtkTargetList *paste_target_list;
 
 	/* XXX Not sure if we really need a separate frozen counter
 	 *     for the tree model but the old ETreeMemory class had
@@ -212,7 +212,7 @@ G_DEFINE_TYPE_WITH_CODE (MessageList, message_list, E_TYPE_TREE,
 
 static struct {
 	const gchar *target;
-	GdkAtom atom;
+	EGtkAtom atom;
 	guint32 actions;
 } ml_drag_info[] = {
 	{ "x-uid-list", NULL, GDK_ACTION_MOVE | GDK_ACTION_COPY },
@@ -227,13 +227,13 @@ enum {
 };
 
 /* What we send */
-static GtkTargetEntry ml_drag_types[] = {
+static EGtkTargetEntry ml_drag_types[] = {
 	{ (gchar *) "x-uid-list", 0, DND_X_UID_LIST },
 	{ (gchar *) "text/uri-list", 0, DND_TEXT_URI_LIST },
 };
 
 /* What we accept */
-static GtkTargetEntry ml_drop_types[] = {
+static EGtkTargetEntry ml_drop_types[] = {
 	{ (gchar *) "x-uid-list", 0, DND_X_UID_LIST },
 	{ (gchar *) "message/rfc822", 0, DND_MESSAGE_RFC822 },
 	{ (gchar *) "text/uri-list", 0, DND_TEXT_URI_LIST },
@@ -1456,12 +1456,12 @@ message_list_copy (MessageList *message_list,
 
 		gtk_selection_owner_set (
 			priv->invisible,
-			GDK_SELECTION_CLIPBOARD,
-			gtk_get_current_event_time ());
+			E_GTK_SELECTION_CLIPBOARD,
+			e_gtk_get_current_event_time ());
 	} else {
 		gtk_selection_owner_set (
-			NULL, GDK_SELECTION_CLIPBOARD,
-			gtk_get_current_event_time ());
+			NULL, E_GTK_SELECTION_CLIPBOARD,
+			e_gtk_get_current_event_time ());
 	}
 
 	g_ptr_array_unref (uids);
@@ -1474,8 +1474,8 @@ message_list_paste (MessageList *message_list)
 
 	gtk_selection_convert (
 		message_list->priv->invisible,
-		GDK_SELECTION_CLIPBOARD,
-		gdk_atom_intern ("x-uid-list", FALSE),
+		E_GTK_SELECTION_CLIPBOARD,
+		e_gtk_atom_intern ("x-uid-list", FALSE),
 		GDK_CURRENT_TIME);
 }
 
@@ -2542,7 +2542,7 @@ message_list_setup_etree (MessageList *message_list)
 
 static void
 ml_selection_get (GtkWidget *widget,
-                  GtkSelectionData *data,
+                  EGtkSelectionData *data,
                   guint info,
                   guint time_stamp,
                   MessageList *message_list)
@@ -2579,17 +2579,17 @@ ml_selection_clear_event (GtkWidget *widget,
 
 static void
 ml_selection_received (GtkWidget *widget,
-                       GtkSelectionData *selection_data,
+                       EGtkSelectionData *selection_data,
                        guint time,
                        MessageList *message_list)
 {
 	EMailSession *session;
 	CamelFolder *folder;
-	GdkAtom target;
+	EGtkAtom target;
 
-	target = gtk_selection_data_get_target (selection_data);
+	target = e_gtk_selection_data_get_target (selection_data);
 
-	if (target != gdk_atom_intern ("x-uid-list", FALSE)) {
+	if (target != e_gtk_atom_intern ("x-uid-list", FALSE)) {
 		d (printf ("Unknown selection received by message-list\n"));
 		return;
 	}
@@ -2609,8 +2609,8 @@ ml_tree_drag_data_get (ETree *tree,
                        gint row,
                        GNode *node,
                        gint col,
-                       GdkDragContext *context,
-                       GtkSelectionData *data,
+                       EGtkDragContext *context,
+                       EGtkSelectionData *data,
                        guint info,
                        guint time,
                        MessageList *message_list)
@@ -2641,10 +2641,10 @@ ml_tree_drag_data_get (ETree *tree,
 struct _drop_msg {
 	MailMsg base;
 
-	GdkDragContext *context;
+	EGtkDragContext *context;
 
 	/* Only selection->data and selection->length are valid */
-	GtkSelectionData *selection;
+	EGtkSelectionData *selection;
 
 	CamelFolder *folder;
 	MessageList *message_list;
@@ -2709,7 +2709,7 @@ ml_drop_async_done (struct _drop_msg *m)
 		delete = success && m->move && !m->moved;
 	}
 
-	gtk_drag_finish (m->context, success, delete, GDK_CURRENT_TIME);
+	e_gtk_drag_finish (m->context, success, delete, GDK_CURRENT_TIME);
 }
 
 static void
@@ -2718,7 +2718,7 @@ ml_drop_async_free (struct _drop_msg *m)
 	g_object_unref (m->context);
 	g_object_unref (m->folder);
 	g_object_unref (m->message_list);
-	gtk_selection_data_free (m->selection);
+	e_gtk_selection_data_free (m->selection);
 }
 
 static MailMsgInfo ml_drop_async_info = {
@@ -2741,10 +2741,10 @@ ml_tree_drag_data_received (ETree *tree,
                             gint row,
                             GNode *node,
                             gint col,
-                            GdkDragContext *context,
+                            EGtkDragContext *context,
                             gint x,
                             gint y,
-                            GtkSelectionData *selection_data,
+                            EGtkSelectionData *selection_data,
                             guint info,
                             guint time,
                             MessageList *message_list)
@@ -2752,10 +2752,10 @@ ml_tree_drag_data_received (ETree *tree,
 	CamelFolder *folder;
 	struct _drop_msg *m;
 
-	if (gtk_selection_data_get_data (selection_data) == NULL)
+	if (e_gtk_selection_data_get_data (selection_data) == NULL)
 		return;
 
-	if (gtk_selection_data_get_length (selection_data) == -1)
+	if (e_gtk_selection_data_get_length (selection_data) == -1)
 		return;
 
 	folder = message_list_ref_folder (message_list);
@@ -2766,11 +2766,11 @@ ml_tree_drag_data_received (ETree *tree,
 	m->context = g_object_ref (context);
 	m->folder = g_object_ref (folder);
 	m->message_list = g_object_ref (message_list);
-	m->action = gdk_drag_context_get_selected_action (context);
+	m->action = e_gtk_drag_context_get_selected_action (context);
 	m->info = info;
 
 	/* need to copy, goes away once we exit */
-	m->selection = gtk_selection_data_copy (selection_data);
+	m->selection = e_gtk_selection_data_copy (selection_data);
 
 	ml_drop_action (m);
 
@@ -2800,14 +2800,14 @@ is_tree_widget_children (ETree *tree,
 	search.found = FALSE;
 	search.looking_for = widget;
 
-	gtk_container_foreach (GTK_CONTAINER (tree), search_child_cb, &search);
+	e_gtk_container_foreach (tree, search_child_cb, &search);
 
 	return search.found;
 }
 
 static gboolean
 ml_tree_drag_motion (ETree *tree,
-                     GdkDragContext *context,
+                     EGtkDragContext *context,
                      gint x,
                      gint y,
                      guint time,
@@ -2820,15 +2820,15 @@ ml_tree_drag_motion (ETree *tree,
 	/* If drop target is name of the account/store
 	 * and not actual folder, don't allow any action. */
 	if (message_list->priv->folder == NULL) {
-		gdk_drag_status (context, 0, time);
+		e_gtk_drag_status (context, 0, time);
 		return TRUE;
 	}
 
-	source_widget = gtk_drag_get_source_widget (context);
+	source_widget = e_gtk_drag_get_source_widget (context);
 
 	/* If source widget is packed under 'tree', don't allow any action */
 	if (is_tree_widget_children (tree, source_widget)) {
-		gdk_drag_status (context, 0, time);
+		e_gtk_drag_status (context, 0, time);
 		return TRUE;
 	}
 
@@ -2861,16 +2861,16 @@ ml_tree_drag_motion (ETree *tree,
 		}
 
 		if (selected_folder == message_list->priv->folder) {
-			gdk_drag_status (context, 0, time);
+			e_gtk_drag_status (context, 0, time);
 			return TRUE;
 		}
 	}
 
-	targets = gdk_drag_context_list_targets (context);
+	targets = e_gtk_drag_context_list_targets (context);
 	while (targets != NULL) {
 		gint i;
 
-		d (printf ("atom drop '%s'\n", gdk_atom_name (targets->data)));
+		d (printf ("atom drop '%s'\n", e_gtk_atom_name (targets->data)));
 		for (i = 0; i < G_N_ELEMENTS (ml_drag_info); i++)
 			if (targets->data == (gpointer) ml_drag_info[i].atom)
 				actions |= ml_drag_info[i].actions;
@@ -2879,12 +2879,12 @@ ml_tree_drag_motion (ETree *tree,
 	}
 	d (printf ("\n"));
 
-	actions &= gdk_drag_context_get_actions (context);
-	action = gdk_drag_context_get_suggested_action (context);
+	actions &= e_gtk_drag_context_get_actions (context);
+	action = e_gtk_drag_context_get_suggested_action (context);
 	if (action == GDK_ACTION_COPY && (actions & GDK_ACTION_MOVE))
 		action = GDK_ACTION_MOVE;
 
-	gdk_drag_status (context, action, time);
+	e_gtk_drag_status (context, action, time);
 
 	return action != 0;
 }
@@ -3232,7 +3232,7 @@ message_list_header_click_can_sort_cb (ETree *tree,
 		gpointer parent;
 		gint response;
 
-		parent = gtk_widget_get_toplevel (GTK_WIDGET (message_list));
+		parent = e_gtk_widget_get_toplevel (GTK_WIDGET (message_list));
 		if (!GTK_IS_WINDOW (parent))
 			parent = NULL;
 
@@ -3544,7 +3544,7 @@ message_list_constructed (GObject *object)
 static void
 message_list_selectable_update_actions (ESelectable *selectable,
                                         EFocusTracker *focus_tracker,
-                                        GdkAtom *clipboard_targets,
+                                        EGtkAtom *clipboard_targets,
                                         gint n_clipboard_targets)
 {
 	ETreeTableAdapter *adapter;
@@ -4055,7 +4055,7 @@ message_list_class_init (MessageListClass *class)
 		gint ii;
 
 		for (ii = 0; ii < G_N_ELEMENTS (ml_drag_info); ii++) {
-			ml_drag_info[ii].atom = gdk_atom_intern (ml_drag_info[ii].target, FALSE);
+			ml_drag_info[ii].atom = e_gtk_atom_intern (ml_drag_info[ii].target, FALSE);
 		}
 
 		for (ii = 0; ii < G_N_ELEMENTS (status_map); ii++) {
@@ -4286,8 +4286,8 @@ static void
 message_list_init (MessageList *message_list)
 {
 	MessageListPrivate *p;
-	GtkTargetList *target_list;
-	GdkAtom matom;
+	EGtkTargetList *target_list;
+	EGtkAtom matom;
 
 	message_list->priv = message_list_get_instance_private (message_list);
 
@@ -4311,9 +4311,9 @@ message_list_init (MessageList *message_list)
 	g_object_ref_sink (p->invisible);
 	p->any_row_changed = FALSE;
 
-	matom = gdk_atom_intern ("x-uid-list", FALSE);
-	gtk_selection_add_target (p->invisible, GDK_SELECTION_CLIPBOARD, matom, 0);
-	gtk_selection_add_target (p->invisible, GDK_SELECTION_CLIPBOARD, GDK_SELECTION_TYPE_STRING, 2);
+	matom = e_gtk_atom_intern ("x-uid-list", FALSE);
+	gtk_selection_add_target (p->invisible, E_GTK_SELECTION_CLIPBOARD, matom, 0);
+	gtk_selection_add_target (p->invisible, E_GTK_SELECTION_CLIPBOARD, E_GTK_SELECTION_TYPE_STRING, 2);
 
 	g_signal_connect (
 		p->invisible, "selection_get",
@@ -4326,11 +4326,11 @@ message_list_init (MessageList *message_list)
 		G_CALLBACK (ml_selection_received), message_list);
 
 	/* FIXME This is currently unused. */
-	target_list = gtk_target_list_new (NULL, 0);
+	target_list = e_gtk_target_list_new (NULL, 0);
 	message_list->priv->copy_target_list = target_list;
 
 	/* FIXME This is currently unused. */
-	target_list = gtk_target_list_new (NULL, 0);
+	target_list = e_gtk_target_list_new (NULL, 0);
 	message_list->priv->paste_target_list = target_list;
 
 	message_list->priv->mail_settings = e_util_ref_settings ("org.gnome.evolution.mail");
@@ -4426,9 +4426,9 @@ message_list_construct (MessageList *message_list)
 		message_list, "tree_drag_data_get",
 		G_CALLBACK (ml_tree_drag_data_get), message_list);
 
-	gtk_drag_dest_set (
+	e_gtk_drag_dest_set (
 		GTK_WIDGET (message_list),
-		GTK_DEST_DEFAULT_ALL,
+		E_GTK_DEST_DEFAULT_ALL,
 		ml_drop_types,
 		G_N_ELEMENTS (ml_drop_types),
 		GDK_ACTION_MOVE |
@@ -5410,7 +5410,7 @@ message_list_set_folder (MessageList *message_list,
 	}
 }
 
-GtkTargetList *
+EGtkTargetList *
 message_list_get_copy_target_list (MessageList *message_list)
 {
 	g_return_val_if_fail (IS_MESSAGE_LIST (message_list), NULL);
@@ -5418,7 +5418,7 @@ message_list_get_copy_target_list (MessageList *message_list)
 	return message_list->priv->copy_target_list;
 }
 
-GtkTargetList *
+EGtkTargetList *
 message_list_get_paste_target_list (MessageList *message_list)
 {
 	g_return_val_if_fail (IS_MESSAGE_LIST (message_list), NULL);

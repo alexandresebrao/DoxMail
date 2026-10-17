@@ -87,7 +87,7 @@ cal_config_local_active_to_custom_file (GBinding *binding,
 	file_chooser = GTK_FILE_CHOOSER (context->custom_file_chooser);
 
 	if (g_value_get_boolean (source_value))
-		file = gtk_file_chooser_get_file (file_chooser);
+		file = e_gtk_file_chooser_get_file (file_chooser);
 
 	g_value_take_object (target_value, file);
 
@@ -114,7 +114,7 @@ cal_config_local_custom_file_to_active (GBinding *binding,
 		return TRUE;
 	}
 
-	success = gtk_file_chooser_set_file (file_chooser, file, NULL);
+	success = e_gtk_file_chooser_set_file (file_chooser, file, NULL);
 	g_value_set_boolean (target_value, success);
 
 	return success;
@@ -192,7 +192,7 @@ cal_config_local_insert_widgets (ESourceConfigBackend *backend,
 		gtk_widget_set_margin_bottom (widget, 6);
 		gtk_label_set_use_markup (GTK_LABEL (widget), TRUE);
 		gtk_label_set_xalign (GTK_LABEL (widget), 0);
-		gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+		e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 		gtk_widget_show (widget);
 		g_free (markup);
 
@@ -204,9 +204,8 @@ cal_config_local_insert_widgets (ESourceConfigBackend *backend,
 		filter = gtk_file_filter_new ();
 		gtk_file_filter_add_mime_type (filter, "text/calendar");
 
-		widget = gtk_file_chooser_button_new (
-			_("Choose an iCalendar file"), GTK_FILE_CHOOSER_ACTION_OPEN);
-		gtk_file_chooser_set_filter (GTK_FILE_CHOOSER (widget), filter);
+		widget = e_gtk_file_chooser_button_new (_("Choose an iCalendar file"), GTK_FILE_CHOOSER_ACTION_OPEN);
+		e_gtk_file_chooser_set_filter (widget, filter);
 		e_source_config_insert_widget (
 			config, scratch_source, _("File:"), widget);
 		context->custom_file_chooser = g_object_ref (widget);
@@ -256,7 +255,7 @@ cal_config_local_insert_widgets (ESourceConfigBackend *backend,
 
 	e_binding_bind_object_text_property (
 		extension, "email-address",
-		gtk_bin_get_child (GTK_BIN (widget)), "text",
+		e_gtk_bin_get_child (widget), "text",
 		G_BINDING_BIDIRECTIONAL |
 		G_BINDING_SYNC_CREATE);
 }

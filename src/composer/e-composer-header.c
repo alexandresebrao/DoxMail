@@ -193,12 +193,12 @@ composer_header_constructed (GObject *object)
 
 	if (header->priv->button) {
 		widget = gtk_button_new_with_mnemonic (header->priv->label);
-		gtk_widget_set_can_focus (widget, FALSE);
+		gtk_widget_set_focusable (widget, FALSE);
 		g_signal_connect (
 			widget, "clicked",
 			G_CALLBACK (composer_header_button_clicked_cb),
 			header);
-		label = gtk_bin_get_child (GTK_BIN (widget));
+		label = e_gtk_bin_get_child (widget);
 	} else {
 		widget = gtk_label_new_with_mnemonic (header->priv->label);
 		gtk_label_set_mnemonic_widget (

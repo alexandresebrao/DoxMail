@@ -116,7 +116,7 @@ mail_signature_script_dialog_file_set_cb (GtkFileChooserButton *button,
 	gchar *filename;
 
 	file_chooser = GTK_FILE_CHOOSER (button);
-	filename = gtk_file_chooser_get_filename (file_chooser);
+	filename = e_gtk_file_chooser_get_filename (file_chooser);
 
 	g_free (dialog->priv->symlink_target);
 	dialog->priv->symlink_target = filename;  /* takes ownership */
@@ -333,7 +333,7 @@ mail_signature_script_dialog_constructed (GObject *object)
 	extension = e_source_get_extension (source, E_SOURCE_EXTENSION_MAIL_SIGNATURE);
 	display_name = e_source_get_display_name (source);
 
-	gtk_container_set_border_width (GTK_CONTAINER (dialog), 5);
+	e_gtk_widget_set_border_width (dialog, 5);
 
 	gtk_dialog_add_button (
 		GTK_DIALOG (dialog),
@@ -358,11 +358,11 @@ mail_signature_script_dialog_constructed (GObject *object)
 		"row-spacing", 6,
 		"border-width", 6,
 		NULL);
-	gtk_box_pack_start (GTK_BOX (content_area), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (content_area), widget, FALSE, FALSE, 0);
 
 	grid = GTK_GRID (widget);
 
-	widget = gtk_image_new_from_icon_name ("dialog-information", GTK_ICON_SIZE_DIALOG);
+	widget = gtk_image_new_from_icon_name ("dialog-information");
 	gtk_widget_set_visible (widget, TRUE);
 	gtk_grid_attach (grid, widget, 0, row, 1, 1);
 
@@ -423,7 +423,7 @@ mail_signature_script_dialog_constructed (GObject *object)
 
 	label = GTK_LABEL (widget);
 
-	widget = gtk_file_chooser_button_new (NULL, GTK_FILE_CHOOSER_ACTION_OPEN);
+	widget = e_gtk_file_chooser_button_new (NULL, GTK_FILE_CHOOSER_ACTION_OPEN);
 	g_object_set (widget,
 		"visible", TRUE,
 		"halign", GTK_ALIGN_FILL,
@@ -449,11 +449,10 @@ mail_signature_script_dialog_constructed (GObject *object)
 			NULL, NULL);
 	}
 
-	gtk_file_chooser_set_filter (GTK_FILE_CHOOSER (widget), filter);
+	e_gtk_file_chooser_set_filter (widget, filter);
 
 	/* We create symbolic links to script files from the "signatures"
 	 * directory, so restrict the selection to local files only. */
-	gtk_file_chooser_set_local_only (GTK_FILE_CHOOSER (widget), TRUE);
 
 	widget = gtk_label_new_with_mnemonic (_("_MIME Type:"));
 	g_object_set (widget,
@@ -483,8 +482,8 @@ mail_signature_script_dialog_constructed (GObject *object)
 	gtk_grid_attach (grid, widget, 1, row, 1, 1);
 	row++;
 
-	widget = gtk_bin_get_child (GTK_BIN (widget));
-	gtk_entry_set_text (GTK_ENTRY (widget), e_source_mail_signature_get_mime_type (extension) ?
+	widget = e_gtk_bin_get_child (widget);
+	gtk_editable_set_text (GTK_EDITABLE (widget), e_source_mail_signature_get_mime_type (extension) ?
 		e_source_mail_signature_get_mime_type (extension) : "");
 	gtk_entry_set_placeholder_text (GTK_ENTRY (widget), _("Auto-detect"));
 
@@ -509,8 +508,8 @@ mail_signature_script_dialog_constructed (GObject *object)
 	gtk_grid_attach (grid, widget, 1, row, 1, 1);
 	row++;
 
-	widget = gtk_image_new_from_icon_name ("dialog-warning", GTK_ICON_SIZE_MENU);
-	gtk_box_pack_start (GTK_BOX (dialog->priv->alert), widget, FALSE, FALSE, 0);
+	widget = gtk_image_new_from_icon_name ("dialog-warning");
+	e_gtk_box_pack_start (GTK_BOX (dialog->priv->alert), widget, FALSE, FALSE, 0);
 	gtk_widget_set_visible (widget, TRUE);
 
 	markup = g_markup_printf_escaped (
@@ -519,7 +518,7 @@ mail_signature_script_dialog_constructed (GObject *object)
 	widget = gtk_label_new (markup);
 	gtk_label_set_use_markup (GTK_LABEL (widget), TRUE);
 	gtk_label_set_xalign (GTK_LABEL (widget), 0);
-	gtk_box_pack_start (GTK_BOX (dialog->priv->alert), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (dialog->priv->alert), widget, TRUE, TRUE, 0);
 	gtk_widget_set_visible (widget, TRUE);
 	g_free (markup);
 
@@ -646,7 +645,7 @@ e_mail_signature_script_dialog_set_symlink_target (EMailSignatureScriptDialog *d
 	dialog->priv->symlink_target = g_strdup (symlink_target);
 
 	file_chooser = GTK_FILE_CHOOSER (dialog->priv->file_chooser);
-	gtk_file_chooser_set_filename (file_chooser, symlink_target);
+	e_gtk_file_chooser_set_filename (file_chooser, symlink_target);
 
 	g_object_notify (G_OBJECT (dialog), "symlink-target");
 

@@ -51,12 +51,12 @@ typedef struct _EActivityBarClass EActivityBarClass;
 typedef struct _EActivityBarPrivate EActivityBarPrivate;
 
 struct _EActivityBar {
-	GtkInfoBar parent;
+	GtkBox parent;
 	EActivityBarPrivate *priv;
 };
 
 struct _EActivityBarClass {
-	GtkInfoBarClass parent_class;
+	GtkBoxClass parent_class;
 };
 
 GType		e_activity_bar_get_type		(void) G_GNUC_CONST;

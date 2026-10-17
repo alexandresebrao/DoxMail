@@ -101,7 +101,7 @@ e_contact_editor_fullname_set_property (GObject *object,
 			} else if (GTK_IS_COMBO_BOX (widget)) {
 				GtkWidget *child;
 
-				child = gtk_bin_get_child (GTK_BIN (widget));
+				child = e_gtk_bin_get_child (widget);
 
 				gtk_editable_set_editable (
 					GTK_EDITABLE (child), editable);
@@ -201,11 +201,11 @@ e_contact_editor_fullname_init (EContactEditorFullname *e_contact_editor_fullnam
 	const gchar *title;
 
 	dialog = GTK_DIALOG (e_contact_editor_fullname);
-	action_area = gtk_dialog_get_action_area (dialog);
+	action_area = e_gtk_dialog_get_action_area (dialog);
 	content_area = gtk_dialog_get_content_area (dialog);
 
-	gtk_container_set_border_width (GTK_CONTAINER (action_area), 12);
-	gtk_container_set_border_width (GTK_CONTAINER (content_area), 0);
+	e_gtk_widget_set_border_width (action_area, 12);
+	e_gtk_widget_set_border_width (content_area, 0);
 
 	gtk_dialog_add_buttons (
 		dialog,
@@ -228,8 +228,8 @@ e_contact_editor_fullname_init (EContactEditorFullname *e_contact_editor_fullnam
 	widget = e_builder_get_widget (builder, "grid-checkfullname");
 	parent = gtk_widget_get_parent (widget);
 	g_object_ref (widget);
-	gtk_container_remove (GTK_CONTAINER (parent), widget);
-	gtk_box_pack_start (GTK_BOX (content_area), widget, TRUE, TRUE, 0);
+	e_gtk_container_remove (parent, widget);
+	e_gtk_box_pack_start (GTK_BOX (content_area), widget, TRUE, TRUE, 0);
 	g_object_unref (widget);
 
 	gtk_dialog_set_default_response (dialog, GTK_RESPONSE_OK);
@@ -265,13 +265,13 @@ fill_in_field (EContactEditorFullname *editor,
 	if (GTK_IS_ENTRY (widget))
 		entry = GTK_ENTRY (widget);
 	else if (GTK_IS_COMBO_BOX (widget))
-		entry = GTK_ENTRY (gtk_bin_get_child (GTK_BIN (widget)));
+		entry = GTK_ENTRY (e_gtk_bin_get_child (widget));
 
 	if (entry) {
 		if (string)
-			gtk_entry_set_text (entry, string);
+			gtk_editable_set_text (GTK_EDITABLE (entry), string);
 		else
-			gtk_entry_set_text (entry, "");
+			gtk_editable_set_text (GTK_EDITABLE (entry), "");
 	}
 }
 
@@ -298,10 +298,10 @@ extract_field (EContactEditorFullname *editor,
 	if (GTK_IS_ENTRY (widget))
 		entry = GTK_ENTRY (widget);
 	else if (GTK_IS_COMBO_BOX (widget))
-		entry = GTK_ENTRY (gtk_bin_get_child (GTK_BIN (widget)));
+		entry = GTK_ENTRY (e_gtk_bin_get_child (widget));
 
 	if (entry)
-		return g_strdup (gtk_entry_get_text (entry));
+		return g_strdup (gtk_editable_get_text (GTK_EDITABLE (entry)));
 	else
 		return NULL;
 }

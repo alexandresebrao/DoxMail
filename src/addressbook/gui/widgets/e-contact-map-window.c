@@ -301,7 +301,7 @@ contact_map_window_find_contact_cb (GtkButton *button,
 
 	marker = g_hash_table_lookup (
 		priv->hash_table,
-		gtk_entry_get_text (GTK_ENTRY (priv->search_entry)));
+		gtk_editable_get_text (GTK_EDITABLE (priv->search_entry)));
 
 	if (marker)
 		e_contact_map_zoom_on_marker (priv->map, marker);
@@ -309,7 +309,7 @@ contact_map_window_find_contact_cb (GtkButton *button,
 
 static gboolean
 contact_map_window_entry_key_pressed_cb (GtkWidget *entry,
-                                         GdkEventKey *event,
+                                         GdkEvent *event,
                                          gpointer user_data)
 {
 	if (event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter)
@@ -332,7 +332,7 @@ entry_completion_match_selected_cb (GtkEntryCompletion *widget,
 	g_return_val_if_fail (G_VALUE_HOLDS_STRING (&name_val), FALSE);
 
 	name = g_value_get_string (&name_val);
-	gtk_entry_set_text (GTK_ENTRY (priv->search_entry), name);
+	gtk_editable_set_text (GTK_EDITABLE (priv->search_entry), name);
 
 	contact_map_window_find_contact_cb (NULL, user_data);
 
@@ -345,7 +345,7 @@ contact_map_window_dispose (GObject *object)
 	EContactMapWindow *self = E_CONTACT_MAP_WINDOW (object);
 
 	if (self->priv->map != NULL) {
-		gtk_widget_destroy (GTK_WIDGET (self->priv->map));
+		e_gtk_widget_destroy (GTK_WIDGET (self->priv->map));
 		self->priv->map = NULL;
 	}
 
@@ -416,7 +416,7 @@ e_contact_map_window_init (EContactMapWindow *window)
 	window->priv->hash_table = hash_table;
 
 	gtk_window_set_title (GTK_WINDOW (window), _("Contacts Map"));
-	gtk_container_set_border_width (GTK_CONTAINER (window), 12);
+	e_gtk_widget_set_border_width (window, 12);
 	gtk_widget_set_size_request (GTK_WIDGET (window), 800, 600);
 
 	/* The map view itself */
@@ -445,7 +445,7 @@ e_contact_map_window_init (EContactMapWindow *window)
 
 	/* Spinner */
 	button = e_spinner_new ();
-	gtk_container_add (GTK_CONTAINER (hbox), button);
+	e_gtk_container_add (hbox, button);
 	gtk_widget_hide (button);
 	window->priv->spinner = button;
 
@@ -455,7 +455,7 @@ e_contact_map_window_init (EContactMapWindow *window)
 		button, "clicked",
 		G_CALLBACK (contact_map_window_zoom_in_cb), window);
 	window->priv->zoom_in_btn = button;
-	gtk_container_add (GTK_CONTAINER (hbox), button);
+	e_gtk_container_add (hbox, button);
 
 	/* Zoom-out button */
 	button = e_dialog_button_new_with_icon ("zoom-out", _("Zoom _Out"));
@@ -463,7 +463,7 @@ e_contact_map_window_init (EContactMapWindow *window)
 		button, "clicked",
 		G_CALLBACK (contact_map_window_zoom_out_cb), window);
 	window->priv->zoom_out_btn = button;
-	gtk_container_add (GTK_CONTAINER (hbox), button);
+	e_gtk_container_add (hbox, button);
 
 	/* Completion model */
 	completion_model = gtk_list_store_new (1, G_TYPE_STRING);
@@ -485,25 +485,25 @@ e_contact_map_window_init (EContactMapWindow *window)
 		entry, "key-press-event",
 		G_CALLBACK (contact_map_window_entry_key_pressed_cb), window);
 	window->priv->search_entry = entry;
-	gtk_container_add (GTK_CONTAINER (hbox), entry);
+	e_gtk_container_add (hbox, entry);
 
 	/* Search button */
 	button = e_dialog_button_new_with_icon ("edit-find", _("_Find"));
 	g_signal_connect (
 		button, "clicked",
 		G_CALLBACK (contact_map_window_find_contact_cb), window);
-	gtk_container_add (GTK_CONTAINER (hbox), button);
+	e_gtk_container_add (hbox, button);
 
 	viewport = gtk_frame_new (NULL);
-	gtk_container_add (GTK_CONTAINER (viewport), map);
+	e_gtk_container_add (viewport, map);
 
 	vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
-	gtk_container_add (GTK_CONTAINER (vbox), viewport);
-	gtk_box_pack_end (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
+	e_gtk_container_add (vbox, viewport);
+	e_gtk_box_pack_end (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
 
-	gtk_container_add (GTK_CONTAINER (window), vbox);
+	e_gtk_container_add (window, vbox);
 
-	gtk_widget_show_all (vbox);
+	gtk_widget_set_visible (vbox, TRUE);
 	gtk_widget_hide (window->priv->spinner);
 }
 

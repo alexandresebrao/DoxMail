@@ -104,7 +104,7 @@ e_message_popover_closed_cb (GtkWidget *popover,
 		}
 	}
 
-	gtk_widget_destroy (popover);
+	e_gtk_widget_destroy (popover);
 }
 
 static void
@@ -168,7 +168,7 @@ e_message_popover_constructed (GObject *object)
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 4);
 
-	gtk_container_add (GTK_CONTAINER (self), widget);
+	e_gtk_container_add (self, widget);
 
 	box = GTK_BOX (widget);
 
@@ -187,7 +187,7 @@ e_message_popover_constructed (GObject *object)
 		"modal", TRUE,
 		NULL);
 
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 
 	self->label = GTK_LABEL (widget);
 
@@ -389,5 +389,5 @@ e_message_popover_show (EMessagePopover *self)
 {
 	g_return_if_fail (E_IS_MESSAGE_POPOVER (self));
 
-	gtk_widget_show_all (GTK_WIDGET (self));
+	gtk_widget_set_visible (GTK_WIDGET (self), TRUE);
 }

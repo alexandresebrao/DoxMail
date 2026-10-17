@@ -77,8 +77,8 @@ show_percent_warning (void)
 		NULL, 0,
 		GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
 		"%s", _("The percent value must be between 0 and 100, inclusive"));
-	gtk_dialog_run (GTK_DIALOG (dialog));
-	gtk_widget_destroy (dialog);
+	e_gtk_dialog_run (GTK_DIALOG (dialog));
+	e_gtk_widget_destroy (dialog);
 }
 
 static void

@@ -7661,7 +7661,7 @@ main (gint argc,
 	if (keep_going)
 		g_test_set_nonfatal_assertions ();
 
-	gtk_init (&argc, &argv);
+	gtk_init ();
 
 	context = g_option_context_new (NULL);
 	g_option_context_add_main_entries (context, entries, GETTEXT_PACKAGE);
@@ -7685,8 +7685,8 @@ main (gint argc,
 
 	application = g_application_new ("org.gnome.Evolution.test-html-editor-units", G_APPLICATION_FLAGS_NONE);
 
-	gtk_icon_theme_append_search_path (gtk_icon_theme_get_default (), EVOLUTION_ICONDIR);
-	gtk_icon_theme_append_search_path (gtk_icon_theme_get_default (), E_DATA_SERVER_ICONDIR);
+	gtk_icon_theme_append_search_path (e_gtk_icon_theme_get_default (), EVOLUTION_ICONDIR);
+	gtk_icon_theme_append_search_path (e_gtk_icon_theme_get_default (), E_DATA_SERVER_ICONDIR);
 
 	modules = e_module_load_all_in_directory (EVOLUTION_MODULEDIR);
 	g_list_free_full (modules, (GDestroyNotify) g_type_module_unuse);

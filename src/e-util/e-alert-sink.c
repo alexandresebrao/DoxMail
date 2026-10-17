@@ -46,12 +46,12 @@ alert_sink_fallback (GtkWidget *widget,
 	GtkWidget *dialog;
 	gpointer parent;
 
-	parent = gtk_widget_get_toplevel (widget);
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (widget);
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	dialog = e_alert_dialog_new (parent, alert);
-	gtk_dialog_run (GTK_DIALOG (dialog));
-	gtk_widget_destroy (dialog);
+	e_gtk_dialog_run (GTK_DIALOG (dialog));
+	e_gtk_widget_destroy (dialog);
 }
 
 static void

@@ -23,7 +23,7 @@ main (gint argc,
 	GtkWidget *dialog;
 	GError *error = NULL;
 
-	gtk_init (&argc, &argv);
+	gtk_init ();
 
 	registry = e_source_registry_new_sync (NULL, &error);
 

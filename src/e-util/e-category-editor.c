@@ -49,7 +49,6 @@ update_preview (GtkFileChooser *chooser,
 	filename = gtk_file_chooser_get_preview_filename (chooser);
 
 	gtk_image_set_from_file (image, filename);
-	gtk_file_chooser_set_preview_widget_active (chooser, filename != NULL);
 
 	g_free (filename);
 }
@@ -62,7 +61,7 @@ file_chooser_response (GtkDialog *dialog,
 	g_return_if_fail (button != NULL);
 
 	if (response_id == GTK_RESPONSE_NO)
-		gtk_file_chooser_unselect_all (button);
+		e_gtk_file_chooser_unselect_all (button);
 }
 
 static void
@@ -73,7 +72,7 @@ unset_icon_clicked_cb (GtkWidget *button,
 
 	g_return_if_fail (GTK_IS_FILE_CHOOSER (file_chooser));
 
-	gtk_file_chooser_unselect_all (file_chooser);
+	e_gtk_file_chooser_unselect_all (file_chooser);
 	gtk_widget_set_sensitive (button, FALSE);
 }
 
@@ -86,7 +85,7 @@ chooser_button_file_set_cb (GtkFileChooser *chooser_button,
 
 	g_return_if_fail (GTK_IS_WIDGET (unset_button));
 
-	uris = gtk_file_chooser_get_uris (chooser_button);
+	uris = e_gtk_file_chooser_get_uris (chooser_button);
 
 	gtk_widget_set_sensitive (unset_button, uris != NULL);
 
@@ -102,7 +101,7 @@ category_editor_category_name_changed (GtkEntry *category_name_entry,
 	g_return_if_fail (editor != NULL);
 	g_return_if_fail (category_name_entry != NULL);
 
-	name = g_strdup (gtk_entry_get_text (category_name_entry));
+	name = g_strdup (gtk_editable_get_text (GTK_EDITABLE (category_name_entry)));
 	if (name != NULL)
 		name = g_strstrip (name);
 
@@ -153,7 +152,7 @@ e_category_editor_init (ECategoryEditor *editor)
 	editor->priv = e_category_editor_get_instance_private (editor);
 
 	gtk_window_set_resizable (GTK_WINDOW (editor), FALSE);
-	gtk_container_set_border_width (GTK_CONTAINER (editor), 6);
+	e_gtk_widget_set_border_width (editor, 6);
 
 	if (!e_util_is_running_flatpak ()) {
 		chooser_dialog = gtk_file_chooser_dialog_new (
@@ -168,8 +167,6 @@ e_category_editor_init (ECategoryEditor *editor)
 		gtk_dialog_add_button (
 			GTK_DIALOG (chooser_dialog),
 			_("_Open"), GTK_RESPONSE_ACCEPT);
-		gtk_file_chooser_set_local_only (
-			GTK_FILE_CHOOSER (chooser_dialog), TRUE);
 		gtk_widget_show (no_image_button);
 
 		g_signal_connect (
@@ -177,21 +174,14 @@ e_category_editor_init (ECategoryEditor *editor)
 			G_CALLBACK (update_preview), NULL);
 
 		preview = gtk_image_new ();
-		gtk_file_chooser_set_preview_widget (
-			GTK_FILE_CHOOSER (chooser_dialog), preview);
-		gtk_file_chooser_set_preview_widget_active (
-			GTK_FILE_CHOOSER (chooser_dialog), TRUE);
-		gtk_widget_show_all (preview);
+		gtk_widget_set_visible (preview, TRUE);
 	}
 
 	dialog_content = gtk_dialog_get_content_area (GTK_DIALOG (editor));
 
 	grid_category_properties = GTK_GRID (gtk_grid_new ());
-	gtk_box_pack_start (
-		GTK_BOX (dialog_content),
-		GTK_WIDGET (grid_category_properties), TRUE, TRUE, 0);
-	gtk_container_set_border_width (
-		GTK_CONTAINER (grid_category_properties), 12);
+	e_gtk_box_pack_start (GTK_BOX (dialog_content), GTK_WIDGET (grid_category_properties), TRUE, TRUE, 0);
+	e_gtk_widget_set_border_width (grid_category_properties, 12);
 	gtk_grid_set_row_spacing (grid_category_properties, 6);
 	gtk_grid_set_column_spacing (grid_category_properties, 6);
 
@@ -214,7 +204,7 @@ e_category_editor_init (ECategoryEditor *editor)
 	gtk_grid_attach (grid_category_properties, label_icon, 0, 1, 1, 1);
 
 	if (chooser_dialog) {
-		chooser_button = gtk_file_chooser_button_new_with_dialog (chooser_dialog);
+		chooser_button = e_gtk_file_chooser_button_new_with_dialog (chooser_dialog);
 
 		g_signal_connect (
 			chooser_dialog, "response",
@@ -222,7 +212,7 @@ e_category_editor_init (ECategoryEditor *editor)
 	} else {
 		GtkWidget *unset_button;
 
-		chooser_button = gtk_file_chooser_button_new (_("Category Icon"), GTK_FILE_CHOOSER_ACTION_OPEN);
+		chooser_button = e_gtk_file_chooser_button_new (_("Category Icon"), GTK_FILE_CHOOSER_ACTION_OPEN);
 
 		unset_button = gtk_button_new_with_mnemonic (_("_Unset icon"));
 		gtk_widget_set_sensitive (unset_button, FALSE);
@@ -247,10 +237,8 @@ e_category_editor_init (ECategoryEditor *editor)
 		_("_OK"), GTK_RESPONSE_OK, NULL);
 	gtk_dialog_set_default_response (GTK_DIALOG (editor), GTK_RESPONSE_OK);
 	gtk_window_set_title (GTK_WINDOW (editor), _("Category Properties"));
-	gtk_window_set_type_hint (
-		GTK_WINDOW (editor), GDK_WINDOW_TYPE_HINT_DIALOG);
 
-	gtk_widget_show_all (dialog_content);
+	gtk_widget_set_visible (dialog_content, TRUE);
 
 	g_signal_connect (
 		category_name, "changed",
@@ -297,10 +285,10 @@ e_category_editor_create_category (ECategoryEditor *editor)
 		const gchar *category_name;
 		const gchar *correct_category_name;
 
-		if (gtk_dialog_run (GTK_DIALOG (editor)) != GTK_RESPONSE_OK)
+		if (e_gtk_dialog_run (GTK_DIALOG (editor)) != GTK_RESPONSE_OK)
 			return NULL;
 
-		category_name = gtk_entry_get_text (entry);
+		category_name = gtk_editable_get_text (GTK_EDITABLE (entry));
 		correct_category_name = check_category_name (category_name);
 
 		if (e_categories_exist (correct_category_name)) {
@@ -313,8 +301,8 @@ e_category_editor_create_category (ECategoryEditor *editor)
 				"configuration. Please use another name"),
 				category_name);
 
-			gtk_dialog_run (GTK_DIALOG (error_dialog));
-			gtk_widget_destroy (error_dialog);
+			e_gtk_dialog_run (GTK_DIALOG (error_dialog));
+			e_gtk_widget_destroy (error_dialog);
 
 			/* Now we loop and run the dialog again. */
 
@@ -322,7 +310,7 @@ e_category_editor_create_category (ECategoryEditor *editor)
 			gchar *category_icon;
 
 			category_icon =
-				gtk_file_chooser_get_filename (file_chooser);
+				e_gtk_file_chooser_get_filename (file_chooser);
 			e_categories_add (
 				correct_category_name, NULL,
 				category_icon, TRUE);
@@ -351,12 +339,12 @@ e_category_editor_edit_category (ECategoryEditor *editor,
 
 	file_chooser = GTK_FILE_CHOOSER (editor->priv->category_icon);
 
-	gtk_entry_set_text (GTK_ENTRY (editor->priv->category_name), category);
+	gtk_editable_set_text (GTK_EDITABLE (editor->priv->category_name), category);
 	gtk_widget_set_sensitive (editor->priv->category_name, FALSE);
 
 	icon_file = e_categories_dup_icon_file_for (category);
 	if (icon_file) {
-		gtk_file_chooser_set_filename (file_chooser, icon_file);
+		e_gtk_file_chooser_set_filename (file_chooser, icon_file);
 		update_preview (file_chooser, NULL);
 
 		if (e_util_is_running_flatpak ())
@@ -364,10 +352,10 @@ e_category_editor_edit_category (ECategoryEditor *editor,
 	}
 	g_free (icon_file);
 
-	if (gtk_dialog_run (GTK_DIALOG (editor)) == GTK_RESPONSE_OK) {
+	if (e_gtk_dialog_run (GTK_DIALOG (editor)) == GTK_RESPONSE_OK) {
 		gchar *category_icon;
 
-		category_icon = gtk_file_chooser_get_filename (file_chooser);
+		category_icon = e_gtk_file_chooser_get_filename (file_chooser);
 		e_categories_set_icon_file_for (category, category_icon);
 
 		gtk_dialog_set_response_sensitive (

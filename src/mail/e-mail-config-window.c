@@ -136,7 +136,7 @@ mail_config_window_commit_cb (GObject *object,
 	notebook = E_MAIL_CONFIG_NOTEBOOK (object);
 
 	/* Set the cursor back to normal. */
-	gdk_window = gtk_widget_get_window (GTK_WIDGET (window));
+	gdk_window = e_gtk_widget_get_surface (GTK_WIDGET (window));
 	gdk_window_set_cursor (gdk_window, NULL);
 
 	/* Allow user interaction with window content. */
@@ -159,7 +159,7 @@ mail_config_window_commit_cb (GObject *object,
 
 	} else {
 		g_signal_emit (window, signals[CHANGES_COMMITTED], 0);
-		gtk_widget_destroy (GTK_WIDGET (window));
+		e_gtk_widget_destroy (GTK_WIDGET (window));
 	}
 }
 
@@ -179,7 +179,7 @@ mail_config_window_commit (EMailConfigWindow *window)
 	if (gdk_cursor) {
 		GdkWindow *gdk_window;
 
-		gdk_window = gtk_widget_get_window (GTK_WIDGET (window));
+		gdk_window = e_gtk_widget_get_surface (GTK_WIDGET (window));
 		gdk_window_set_cursor (gdk_window, gdk_cursor);
 		g_object_unref (gdk_cursor);
 	}
@@ -295,9 +295,8 @@ mail_config_window_constructed (GObject *object)
 
 	mail_config_window_setup_scratch_sources (window);
 
-	gtk_container_set_border_width (GTK_CONTAINER (window), 5);
+	e_gtk_widget_set_border_width (window, 5);
 	gtk_window_set_title (GTK_WINDOW (window), _("Account Editor"));
-	gtk_window_set_position (GTK_WINDOW (window), GTK_WIN_POS_CENTER);
 
 	gtk_dialog_add_buttons (
 		GTK_DIALOG (window),
@@ -309,8 +308,8 @@ mail_config_window_constructed (GObject *object)
 
 	widget = gtk_grid_new ();
 	gtk_grid_set_column_spacing (GTK_GRID (widget), 12);
-	gtk_container_set_border_width (GTK_CONTAINER (widget), 5);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_widget_set_border_width (widget, 5);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -393,7 +392,7 @@ mail_config_window_response (GtkDialog *dialog,
 				E_MAIL_CONFIG_WINDOW (dialog));
 			break;
 		case GTK_RESPONSE_CANCEL:
-			gtk_widget_destroy (GTK_WIDGET (dialog));
+			e_gtk_widget_destroy (GTK_WIDGET (dialog));
 			break;
 		default:
 			break;

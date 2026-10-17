@@ -404,7 +404,7 @@ e_card_view_dnd_contacts_received_cb (GObject *source_object,
 
 static void
 e_card_view_card_drag_begin_cb (GtkWidget *widget,
-				GdkDragContext *context,
+				EGtkDragContext *context,
 				gpointer user_data)
 {
 	ECardView *self = E_CARD_VIEW (user_data);
@@ -414,7 +414,7 @@ e_card_view_card_drag_begin_cb (GtkWidget *widget,
 
 	self->priv->dnd_indexes = e_contact_card_box_dup_selected_indexes (self->priv->card_box);
 	if (!self->priv->dnd_indexes) {
-		gtk_drag_cancel (context);
+		e_gtk_drag_cancel (context);
 		return;
 	}
 
@@ -428,13 +428,13 @@ e_card_view_card_drag_begin_cb (GtkWidget *widget,
 			e_card_view_dnd_contacts_received_cb, self);
 	}
 
-	gtk_drag_set_icon_default (context);
+	e_gtk_drag_set_icon_default (context);
 }
 
 static void
 e_card_view_card_drag_data_get_cb (GtkWidget *widget,
-				   GdkDragContext *context,
-				   GtkSelectionData *selection_data,
+				   EGtkDragContext *context,
+				   EGtkSelectionData *selection_data,
 				   guint info,
 				   guint time,
 				   gpointer user_data)
@@ -444,7 +444,7 @@ e_card_view_card_drag_data_get_cb (GtkWidget *widget,
 
 	if (!self->priv->dnd_contacts) {
 		g_warning ("%s: Failed to read contacts before the drag operation finished; repeat the action later", G_STRFUNC);
-		gtk_drag_cancel (context);
+		e_gtk_drag_cancel (context);
 		return;
 	}
 
@@ -458,11 +458,11 @@ e_card_view_card_drag_data_get_cb (GtkWidget *widget,
 	}
 
 	if (value) {
-		GdkAtom target;
+		EGtkAtom target;
 
-		target = gtk_selection_data_get_target (selection_data);
+		target = e_gtk_selection_data_get_target (selection_data);
 
-		gtk_selection_data_set (selection_data, target, 8, (guchar *) value, strlen (value));
+		e_gtk_selection_data_set (selection_data, target, 8, (guchar *) value, strlen (value));
 
 		g_free (value);
 	}
@@ -470,7 +470,7 @@ e_card_view_card_drag_data_get_cb (GtkWidget *widget,
 
 static void
 e_card_view_card_drag_end_cb (GtkWidget *widget,
-			      GdkDragContext *context,
+			      EGtkDragContext *context,
 			      gpointer user_data)
 {
 	ECardView *self = E_CARD_VIEW (user_data);
@@ -489,7 +489,7 @@ e_card_view_constructed (GObject *object)
 	/* Chain up to parent's method. */
 	G_OBJECT_CLASS (e_card_view_parent_class)->constructed (object);
 
-	gtk_style_context_add_class (gtk_widget_get_style_context (GTK_WIDGET (self)), GTK_STYLE_CLASS_VIEW);
+	gtk_widget_add_css_class (GTK_WIDGET (self), GTK_STYLE_CLASS_VIEW);
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
 	g_object_set (widget,
@@ -499,7 +499,7 @@ e_card_view_constructed (GObject *object)
 		"valign", GTK_ALIGN_FILL,
 		"vexpand", TRUE,
 		NULL);
-	gtk_container_add (GTK_CONTAINER (self), widget);
+	e_gtk_container_add (self, widget);
 
 	box = GTK_BOX (widget);
 
@@ -511,7 +511,7 @@ e_card_view_constructed (GObject *object)
 		"valign", GTK_ALIGN_FILL,
 		"vexpand", TRUE,
 		NULL);
-	gtk_box_pack_start (box, widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (box, widget, TRUE, TRUE, 0);
 
 	self->priv->card_box = E_CONTACT_CARD_BOX (widget);
 
@@ -528,9 +528,9 @@ e_card_view_constructed (GObject *object)
 		"overlay-scrolling", FALSE,
 		"vexpand", TRUE,
 		NULL);
-	gtk_container_add (GTK_CONTAINER (scrolled), widget);
+	e_gtk_container_add (scrolled, widget);
 
-	gtk_box_pack_start (box, scrolled, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, scrolled, FALSE, FALSE, 0);
 
 	self->priv->alphabet_box = E_ALPHABET_BOX (widget);
 
@@ -546,7 +546,7 @@ e_card_view_constructed (GObject *object)
 		"vexpand", TRUE,
 		"margin", 24,
 		NULL);
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 
 	self->priv->empty_label = GTK_LABEL (widget);
 

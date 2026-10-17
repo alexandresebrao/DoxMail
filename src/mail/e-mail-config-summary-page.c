@@ -287,7 +287,7 @@ mail_config_summary_page_constructed (GObject *object)
 		 "to access your mail.");
 	widget = gtk_label_new (text);
 	gtk_label_set_xalign (GTK_LABEL (widget), 0);
-	gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	/*** Account Information ***/
@@ -295,7 +295,7 @@ mail_config_summary_page_constructed (GObject *object)
 	widget = gtk_grid_new ();
 	gtk_grid_set_row_spacing (GTK_GRID (widget), 6);
 	gtk_grid_set_column_spacing (GTK_GRID (widget), 6);
-	gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -342,7 +342,7 @@ mail_config_summary_page_constructed (GObject *object)
 	widget = gtk_grid_new ();
 	gtk_grid_set_row_spacing (GTK_GRID (widget), 6);
 	gtk_grid_set_column_spacing (GTK_GRID (widget), 12);
-	gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -607,7 +607,7 @@ mail_config_summary_page_check_complete (EMailConfigPage *page)
 
 	/* Strip the account name of leading and trailing
 	 * whitespace as e_source_set_display_name() does. */
-	text = gtk_entry_get_text (self->priv->account_name_entry);
+	text = gtk_editable_get_text (GTK_EDITABLE (self->priv->account_name_entry));
 	stripped_text = g_strstrip (g_strdup ((text != NULL) ? text : ""));
 	complete = (*stripped_text != '\0');
 	g_free (stripped_text);
@@ -666,7 +666,7 @@ mail_config_summary_page_commit_changes (EMailConfigPage *page,
 		E_MAIL_CONFIG_SUMMARY_PAGE (page));
 
 	/* This should propagate to the other sources through bindings. */
-	text = gtk_entry_get_text (self->priv->account_name_entry);
+	text = gtk_editable_get_text (GTK_EDITABLE (self->priv->account_name_entry));
 	e_source_set_display_name (identity_source, text);
 
 	/* Setup parent/child relationships and cross-references. */
@@ -810,7 +810,7 @@ e_mail_config_summary_page_get_account_name (EMailConfigSummaryPage *page)
 {
 	g_return_val_if_fail (E_IS_MAIL_CONFIG_SUMMARY_PAGE (page), NULL);
 
-	return gtk_entry_get_text (page->priv->account_name_entry);
+	return gtk_editable_get_text (GTK_EDITABLE (page->priv->account_name_entry));
 }
 
 void

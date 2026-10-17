@@ -161,9 +161,7 @@ e_dialog_button_new_with_icon (const gchar *icon_name,
 	}
 
 	if (icon_name)
-		gtk_button_set_image (
-			GTK_BUTTON (button),
-			gtk_image_new_from_icon_name (icon_name, icon_size));
+		e_gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_icon_name (icon_name));
 
 	gtk_widget_show (button);
 
@@ -243,7 +241,7 @@ e_dialog_offline_settings_new_limit_box (CamelOfflineSettings *offline_settings)
 
 	/* Translators: This is part of: "Do not synchronize locally mails older than [ xxx ] [ days ]" */
 	prefix = gtk_check_button_new_with_mnemonic (_("Do not synchronize locally mails older than"));
-	gtk_box_pack_start (GTK_BOX (hbox), prefix, FALSE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), prefix, FALSE, TRUE, 0);
 	gtk_widget_show (prefix);
 
 	e_binding_bind_property (
@@ -255,7 +253,7 @@ e_dialog_offline_settings_new_limit_box (CamelOfflineSettings *offline_settings)
 	adjustment = gtk_adjustment_new (1.0, 1.0, 999.0, 1.0, 1.0, 0.0);
 
 	spin = gtk_spin_button_new (adjustment, 1.0, 0);
-	gtk_box_pack_start (GTK_BOX (hbox), spin, FALSE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), spin, FALSE, TRUE, 0);
 	gtk_widget_show (spin);
 
 	e_binding_bind_property (
@@ -270,7 +268,7 @@ e_dialog_offline_settings_new_limit_box (CamelOfflineSettings *offline_settings)
 		G_BINDING_SYNC_CREATE);
 
 	combo = dialog_widgets_construct_time_units_combo ();
-	gtk_box_pack_start (GTK_BOX (hbox), combo, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), combo, FALSE, FALSE, 0);
 	gtk_widget_show (combo);
 
 	e_binding_bind_property_full (
@@ -487,7 +485,7 @@ e_dialog_new_mark_seen_box (gpointer object)
 
 	gtk_widget_show (widget);
 
-	gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 
 	widget = gtk_spin_button_new_with_range (0.0, 10.0, 1.0);
 	gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (widget), TRUE);
@@ -505,12 +503,12 @@ e_dialog_new_mark_seen_box (gpointer object)
 		NULL, NULL);
 	gtk_widget_show (widget);
 
-	gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 
 	widget = gtk_label_new (strv && strv[0] && strv[1] ? strv[1] : " seconds");
 	gtk_widget_show (widget);
 
-	gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 
 	g_strfreev (strv);
 

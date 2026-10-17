@@ -180,9 +180,9 @@ handle_error (GtkPrintOperation *operation)
 	if (error != NULL)
 		g_error_free (error);
 
-	gtk_dialog_run (GTK_DIALOG (dialog));
+	e_gtk_dialog_run (GTK_DIALOG (dialog));
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 }
 
 static void

@@ -326,9 +326,9 @@ remove_empty_entries (EContactEditorDynTable *dyntable, gboolean fillup)
 		if (w != NULL && class->widget_is_empty (dyntable, w)) {
 			guint pos2, next_col, next_row;
 
-			gtk_widget_destroy (w);
+			e_gtk_widget_destroy (w);
 			w = gtk_grid_get_child_at (grid, col, row);
-			gtk_widget_destroy (w);
+			e_gtk_widget_destroy (w);
 
 			/* now fill gap */
 			for (pos2 = pos + 1; pos2 < dyntable->priv->curr_entries; pos2++) {
@@ -535,9 +535,9 @@ e_contact_editor_dyntable_fill_in_data (EContactEditorDynTable *dyntable)
 		if (int_data < 0 && sel_text) {
 			GtkWidget *child;
 
-			child = gtk_bin_get_child (GTK_BIN (w));
+			child = e_gtk_bin_get_child (w);
 			if (GTK_IS_ENTRY (child))
-				gtk_entry_set_text (GTK_ENTRY (child), sel_text);
+				gtk_editable_set_text (GTK_EDITABLE (child), sel_text);
 		}
 		w = gtk_grid_get_child_at (grid, col + 1, row);
 		class->widget_fill (dyntable, w, str_data);
@@ -596,9 +596,9 @@ e_contact_editor_dyntable_extract_data (EContactEditorDynTable *dyntable)
 			if (dyntable->priv->combo_with_entry && combo_item < 0) {
 				GtkWidget *child;
 
-				child = gtk_bin_get_child (GTK_BIN (w));
+				child = e_gtk_bin_get_child (w);
 				if (GTK_IS_ENTRY (child))
-					combo_entry_text = gtk_entry_get_text (GTK_ENTRY (child));
+					combo_entry_text = gtk_editable_get_text (GTK_EDITABLE (child));
 			}
 
 			dup = g_strdup (data);
@@ -675,7 +675,7 @@ default_impl_widget_clear (EContactEditorDynTable *dyntable,
 {
 	GtkEntry *e;
 	e = GTK_ENTRY(w);
-	gtk_entry_set_text (e, "");
+	gtk_editable_set_text (GTK_EDITABLE (e), "");
 }
 
 static const gchar*
@@ -685,7 +685,7 @@ default_impl_widget_extract (EContactEditorDynTable *dyntable,
 	GtkEntry *e;
 
 	e = GTK_ENTRY(w);
-	return gtk_entry_get_text (e);
+	return gtk_editable_get_text (GTK_EDITABLE (e));
 }
 
 static void
@@ -696,7 +696,7 @@ default_impl_widget_fill (EContactEditorDynTable *dyntable,
 	GtkEntry *e;
 
 	e = GTK_ENTRY(w);
-	gtk_entry_set_text (e, value);
+	gtk_editable_set_text (GTK_EDITABLE (e), value);
 }
 
 static gboolean
@@ -709,7 +709,7 @@ default_impl_widget_is_empty (EContactEditorDynTable *dyntable,
 	if (0 == gtk_entry_get_text_length (e))
 		return TRUE;
 
-	return e_str_is_empty (gtk_entry_get_text (e));
+	return e_str_is_empty (gtk_editable_get_text (GTK_EDITABLE (e)));
 }
 
 static void

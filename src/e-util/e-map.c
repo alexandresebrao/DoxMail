@@ -666,7 +666,7 @@ e_map_size_allocate (GtkWidget *widget,
 	if (gtk_widget_get_realized (widget)) {
 		GdkWindow *window;
 
-		window = gtk_widget_get_window (widget);
+		window = e_gtk_widget_get_surface (widget);
 
 		gdk_window_move_resize (
 			window, allocation->x, allocation->y,
@@ -705,7 +705,7 @@ e_map_draw (GtkWidget *widget,
 
 static gint
 e_map_button_press (GtkWidget *widget,
-                    GdkEventButton *event)
+                    GdkEvent *event)
 {
 	if (!gtk_widget_has_focus (widget))
 		gtk_widget_grab_focus (widget);
@@ -715,7 +715,7 @@ e_map_button_press (GtkWidget *widget,
 
 static gint
 e_map_button_release (GtkWidget *widget,
-                      GdkEventButton *event)
+                      GdkEvent *event)
 {
 	if (event->button != 1)
 		return FALSE;
@@ -726,14 +726,14 @@ e_map_button_release (GtkWidget *widget,
 
 static gint
 e_map_motion (GtkWidget *widget,
-              GdkEventMotion *event)
+              GdkEvent *event)
 {
 	return FALSE;
 }
 
 static gint
 e_map_key_press (GtkWidget *widget,
-                 GdkEventKey *event)
+                 GdkEvent *event)
 {
 	EMap *map;
 	gboolean do_scroll;
@@ -847,8 +847,7 @@ e_map_init (EMap *map)
 	map->priv->zoom_state = E_MAP_ZOOMED_OUT;
 	map->priv->points = g_ptr_array_new ();
 
-	gtk_widget_set_can_focus (widget, TRUE);
-	gtk_widget_set_has_window (widget, TRUE);
+	gtk_widget_set_focusable (widget, TRUE);
 }
 
 /* ---------------- *
@@ -1231,7 +1230,7 @@ update_render_surface (EMap *map,
 	if (map->priv->map_render_surface)
 		cairo_surface_destroy (map->priv->map_render_surface);
 	map->priv->map_render_surface = gdk_window_create_similar_surface (
-		gtk_widget_get_window (GTK_WIDGET (map)),
+		e_gtk_widget_get_surface (GTK_WIDGET (map)),
 		CAIRO_CONTENT_COLOR, width, height);
 
 	/* Scale the original map into the rendering pixbuf */

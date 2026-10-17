@@ -620,9 +620,9 @@ do_ask (const gchar *text,
 			NULL);
 	}
 
-	res = gtk_dialog_run (GTK_DIALOG (dialog));
+	res = e_gtk_dialog_run (GTK_DIALOG (dialog));
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 
 	return res;
 }
@@ -1297,11 +1297,11 @@ mail_to_event (ECalClientSourceType source_type,
 		e_source_selector_set_primary_selection (
 			selector, default_source);
 
-		if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK)
+		if (e_gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK)
 			source = e_source_selector_dialog_peek_primary_selection (
 				E_SOURCE_SELECTOR_DIALOG (dialog));
 
-		gtk_widget_destroy (dialog);
+		e_gtk_widget_destroy (dialog);
 	}
 
 	if (source) {

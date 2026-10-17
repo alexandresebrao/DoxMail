@@ -68,7 +68,7 @@ enum {
 static void	e_attachment_paned_interface_init
 					(EAttachmentViewInterface *iface);
 
-G_DEFINE_TYPE_WITH_CODE (EAttachmentPaned, e_attachment_paned, GTK_TYPE_PANED,
+G_DEFINE_TYPE_WITH_CODE (EAttachmentPaned, e_attachment_paned, E_TYPE_PANED,
 	G_ADD_PRIVATE (EAttachmentPaned)
 	G_IMPLEMENT_INTERFACE (E_TYPE_ATTACHMENT_VIEW, e_attachment_paned_interface_init))
 
@@ -109,8 +109,8 @@ attachment_paned_notify_cb (EAttachmentPaned *paned,
 	if (!gtk_widget_get_realized (GTK_WIDGET (paned)))
 		return;
 
-	child = gtk_paned_get_child2 (GTK_PANED (paned));
-	toplevel = gtk_widget_get_toplevel (GTK_WIDGET (paned));
+	child = e_gtk_paned_get_child2 (paned);
+	toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (paned));
 
 	if (toplevel == NULL)
 		return;
@@ -135,10 +135,7 @@ attachment_paned_notify_cb (EAttachmentPaned *paned,
 		toplevel_allocation.height -= child_allocation.height;
 	}
 
-	gtk_window_resize (
-		GTK_WINDOW (toplevel),
-		toplevel_allocation.width,
-		toplevel_allocation.height);
+	gtk_window_set_default_size (GTK_WINDOW (toplevel), toplevel_allocation.width, toplevel_allocation.height);
 }
 
 static void
@@ -572,7 +569,7 @@ e_attachment_paned_init (EAttachmentPaned *paned)
 	gtk_widget_set_size_request (widget, -1, initial_height);
 	gtk_notebook_set_show_tabs (GTK_NOTEBOOK (widget), FALSE);
 	gtk_notebook_set_show_border (GTK_NOTEBOOK (widget), FALSE);
-	gtk_paned_pack2 (GTK_PANED (container), widget, FALSE, FALSE);
+	e_gtk_paned_pack2 (container, widget, FALSE, FALSE);
 	paned->priv->notebook = g_object_ref (widget);
 	gtk_widget_hide (widget);
 
@@ -588,9 +585,9 @@ e_attachment_paned_init (EAttachmentPaned *paned)
 	container = widget;
 
 	widget = e_attachment_icon_view_new ();
-	gtk_widget_set_can_focus (widget, TRUE);
+	gtk_widget_set_focusable (widget, TRUE);
 	gtk_icon_view_set_model (GTK_ICON_VIEW (widget), paned->priv->model);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	paned->priv->icon_view = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -600,17 +597,16 @@ e_attachment_paned_init (EAttachmentPaned *paned)
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_set_shadow_type (
-		GTK_SCROLLED_WINDOW (widget), GTK_SHADOW_IN);
+	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (widget), TRUE);
 	gtk_notebook_append_page (GTK_NOTEBOOK (container), widget, NULL);
 	gtk_widget_show (widget);
 
 	container = widget;
 
 	widget = e_attachment_tree_view_new ();
-	gtk_widget_set_can_focus (widget, TRUE);
+	gtk_widget_set_focusable (widget, TRUE);
 	gtk_tree_view_set_model (GTK_TREE_VIEW (widget), paned->priv->model);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	paned->priv->tree_view = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -619,7 +615,7 @@ e_attachment_paned_init (EAttachmentPaned *paned)
 	container = GTK_WIDGET (paned);
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
-	gtk_paned_pack1 (GTK_PANED (container), widget, TRUE, FALSE);
+	e_gtk_paned_pack1 (container, widget, TRUE, FALSE);
 	paned->priv->content_area = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -636,16 +632,14 @@ e_attachment_paned_init (EAttachmentPaned *paned)
 	gtk_widget_set_margin_end (widget, 6);
 	gtk_widget_set_margin_start (widget, 6);
 	gtk_widget_set_margin_bottom (widget, 6);
-	gtk_box_pack_end (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_end (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	paned->priv->controls_container = widget;
 	gtk_widget_show (widget);
 
 	container = widget;
 
 	widget = gtk_expander_new (NULL);
-	gtk_expander_set_spacing (GTK_EXPANDER (widget), 0);
-	gtk_expander_set_label_fill (GTK_EXPANDER (widget), TRUE);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	paned->priv->expander = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -656,9 +650,9 @@ e_attachment_paned_init (EAttachmentPaned *paned)
 
 	widget = gtk_button_new_with_mnemonic (e_ui_action_get_label (action));
 	if (e_ui_action_get_icon_name (action))
-		gtk_button_set_image (GTK_BUTTON (widget), gtk_image_new_from_icon_name (e_ui_action_get_icon_name (action), GTK_ICON_SIZE_BUTTON));
+		e_gtk_button_set_image (GTK_BUTTON (widget), gtk_image_new_from_icon_name (e_ui_action_get_icon_name (action)));
 	e_ui_action_util_assign_to_widget (action, widget);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	/* needed to be able to click the button */
@@ -671,7 +665,7 @@ e_attachment_paned_init (EAttachmentPaned *paned)
 		GTK_COMBO_BOX_TEXT (widget), _("Icon View"));
 	gtk_combo_box_text_append_text (
 		GTK_COMBO_BOX_TEXT (widget), _("List View"));
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	paned->priv->combo_box = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -685,27 +679,26 @@ e_attachment_paned_init (EAttachmentPaned *paned)
 	container = widget;
 
 	widget = gtk_label_new_with_mnemonic (_("Show Attachment _Bar"));
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	paned->priv->show_hide_label = g_object_ref (widget);
 	gtk_widget_show (widget);
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
 	gtk_widget_set_halign (widget, GTK_ALIGN_CENTER);
 	gtk_widget_set_valign (widget, GTK_ALIGN_CENTER);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
 
-	widget = gtk_image_new_from_icon_name (
-		"mail-attachment", GTK_ICON_SIZE_MENU);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	widget = gtk_image_new_from_icon_name ("mail-attachment");
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	paned->priv->status_icon = g_object_ref (widget);
 	gtk_widget_hide (widget);
 
 	widget = gtk_label_new (NULL);
 	gtk_label_set_use_markup (GTK_LABEL (widget), TRUE);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	paned->priv->status_label = g_object_ref (widget);
 	gtk_widget_hide (widget);
 
@@ -841,10 +834,10 @@ e_attachment_paned_set_resize_toplevel (EAttachmentPaned *paned,
 
 void
 e_attachment_paned_drag_data_received (EAttachmentPaned *paned,
-                                       GdkDragContext *context,
+                                       EGtkDragContext *context,
                                        gint x,
                                        gint y,
-                                       GtkSelectionData *selection,
+                                       EGtkSelectionData *selection,
                                        guint info,
                                        guint time)
 {

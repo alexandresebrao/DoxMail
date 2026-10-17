@@ -190,7 +190,7 @@ categories_selector_listener_cb (gpointer useless_pointer,
 
 static gboolean
 categories_selector_key_press_event (ECategoriesSelector *selector,
-                                     GdkEventKey *event)
+                                     GdkEvent *event)
 {
 	if (event->keyval == GDK_KEY_Delete) {
 		e_categories_selector_delete_selection (selector);

@@ -26,6 +26,7 @@
 #define E_SELECTABLE_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 
 #include <e-util/e-focus-tracker.h>
 
@@ -53,7 +54,7 @@ struct _ESelectableInterface {
 	/* Required Methods */
 	void		(*update_actions)	(ESelectable *selectable,
 						 EFocusTracker *focus_tracker,
-						 GdkAtom *clipboard_targets,
+						 EGtkAtom *clipboard_targets,
 						 gint n_clipboard_targets);
 
 	/* Optional Methods */
@@ -69,7 +70,7 @@ struct _ESelectableInterface {
 GType		e_selectable_get_type		(void) G_GNUC_CONST;
 void		e_selectable_update_actions	(ESelectable *selectable,
 						 EFocusTracker *focus_tracker,
-						 GdkAtom *clipboard_targets,
+						 EGtkAtom *clipboard_targets,
 						 gint n_clipboard_targets);
 void		e_selectable_cut_clipboard	(ESelectable *selectable);
 void		e_selectable_copy_clipboard	(ESelectable *selectable);
@@ -78,9 +79,9 @@ void		e_selectable_delete_selection	(ESelectable *selectable);
 void		e_selectable_select_all		(ESelectable *selectable);
 void		e_selectable_undo		(ESelectable *selectable);
 void		e_selectable_redo		(ESelectable *selectable);
-GtkTargetList *	e_selectable_get_copy_target_list
+EGtkTargetList *	e_selectable_get_copy_target_list
 						(ESelectable *selectable);
-GtkTargetList *	e_selectable_get_paste_target_list
+EGtkTargetList *	e_selectable_get_paste_target_list
 						(ESelectable *selectable);
 
 G_END_DECLS

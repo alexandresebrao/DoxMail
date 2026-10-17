@@ -70,7 +70,7 @@ replace_occurance (EHTMLEditorReplaceDialog *dialog)
 
 	e_content_editor_replace (
 		dialog->priv->cnt_editor,
-		gtk_entry_get_text (GTK_ENTRY (dialog->priv->replace_entry)));
+		gtk_editable_get_text (GTK_EDITABLE (dialog->priv->replace_entry)));
 }
 
 static void
@@ -114,7 +114,7 @@ search (EHTMLEditorReplaceDialog *dialog)
 	e_content_editor_find (
 		dialog->priv->cnt_editor,
 		replace_dialog_get_find_flags (dialog),
-		gtk_entry_get_text (GTK_ENTRY (dialog->priv->search_entry)));
+		gtk_editable_get_text (GTK_EDITABLE (dialog->priv->search_entry)));
 }
 
 static void
@@ -138,8 +138,8 @@ html_editor_replace_dialog_replace_all_cb (EHTMLEditorReplaceDialog *dialog)
 	e_content_editor_replace_all (
 		dialog->priv->cnt_editor,
 		replace_dialog_get_find_flags (dialog),
-		gtk_entry_get_text (GTK_ENTRY (dialog->priv->search_entry)),
-		gtk_entry_get_text (GTK_ENTRY (dialog->priv->replace_entry)));
+		gtk_editable_get_text (GTK_EDITABLE (dialog->priv->search_entry)),
+		gtk_editable_get_text (GTK_EDITABLE (dialog->priv->replace_entry)));
 }
 
 static void
@@ -290,15 +290,15 @@ e_html_editor_replace_dialog_init (EHTMLEditorReplaceDialog *dialog)
 	gtk_grid_attach (main_layout, layout, 1, 2, 2, 1);
 
 	widget = gtk_check_button_new_with_mnemonic (_("Search _backwards"));
-	gtk_box_pack_start (GTK_BOX (layout), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (layout), widget, FALSE, FALSE, 0);
 	dialog->priv->backwards = widget;
 
 	widget = gtk_check_button_new_with_mnemonic (_("_Case sensitive"));
-	gtk_box_pack_start (GTK_BOX (layout), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (layout), widget, FALSE, FALSE, 0);
 	dialog->priv->case_sensitive = widget;
 
 	widget = gtk_check_button_new_with_mnemonic (_("Wra_p search"));
-	gtk_box_pack_start (GTK_BOX (layout), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (layout), widget, FALSE, FALSE, 0);
 	dialog->priv->wrap = widget;
 
 	widget = gtk_label_new ("");
@@ -308,7 +308,7 @@ e_html_editor_replace_dialog_init (EHTMLEditorReplaceDialog *dialog)
 	button_box = e_html_editor_dialog_get_button_box (E_HTML_EDITOR_DIALOG (dialog));
 
 	widget = gtk_button_new_with_mnemonic (_("_Skip"));
-	gtk_box_pack_start (button_box, widget, FALSE, FALSE, 5);
+	e_gtk_box_pack_start (button_box, widget, FALSE, FALSE, 5);
 	gtk_widget_set_sensitive (widget, FALSE);
 	dialog->priv->skip_button = widget;
 	g_signal_connect_swapped (
@@ -316,7 +316,7 @@ e_html_editor_replace_dialog_init (EHTMLEditorReplaceDialog *dialog)
 		G_CALLBACK (html_editor_replace_dialog_skip_cb), dialog);
 
 	widget = gtk_button_new_with_mnemonic (_("_Replace"));
-	gtk_box_pack_start (button_box, widget, FALSE, FALSE, 5);
+	e_gtk_box_pack_start (button_box, widget, FALSE, FALSE, 5);
 	gtk_widget_set_sensitive (widget, FALSE);
 	dialog->priv->replace_button = widget;
 	g_signal_connect_swapped (
@@ -324,14 +324,14 @@ e_html_editor_replace_dialog_init (EHTMLEditorReplaceDialog *dialog)
 		G_CALLBACK (html_editor_replace_dialog_replace_cb), dialog);
 
 	widget = gtk_button_new_with_mnemonic (_("Replace _All"));
-	gtk_box_pack_start (button_box, widget, FALSE, FALSE, 5);
+	e_gtk_box_pack_start (button_box, widget, FALSE, FALSE, 5);
 	gtk_widget_set_sensitive (widget, FALSE);
 	dialog->priv->replace_all_button = widget;
 	g_signal_connect_swapped (
 		widget, "clicked",
 		G_CALLBACK (html_editor_replace_dialog_replace_all_cb), dialog);
 
-	gtk_widget_show_all (GTK_WIDGET (main_layout));
+	gtk_widget_set_visible (GTK_WIDGET (main_layout), TRUE);
 }
 
 GtkWidget *
@@ -344,7 +344,7 @@ e_html_editor_replace_dialog_new (EHTMLEditor *editor)
 			"icon-name", "edit-find-replace",
 			"resizable", FALSE,
 			"title", C_("dialog-title", "Replace"),
-			"transient-for", gtk_widget_get_toplevel (GTK_WIDGET (editor)),
+			"transient-for", e_gtk_widget_get_toplevel (GTK_WIDGET (editor)),
 			"type", GTK_WINDOW_TOPLEVEL,
 			"window-position", GTK_WIN_POS_CENTER_ON_PARENT,
 			NULL));

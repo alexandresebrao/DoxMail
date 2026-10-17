@@ -18,7 +18,7 @@
 
 #include <glib/gi18n-lib.h>
 #include <libedataserver/libedataserver.h>
-#include <libedataserverui/libedataserverui.h>
+#include <libedataserverui4/libedataserverui4.h>
 
 #include "e-util/e-util.h"
 

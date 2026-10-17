@@ -449,13 +449,12 @@ make_shaped_window_from_svg (const gchar *image_name)
 	gchar *resource_path;
 
 	win = gtk_window_new (GTK_WINDOW_POPUP);
-	gtk_window_set_type_hint (GTK_WINDOW (win), GDK_WINDOW_TYPE_HINT_NOTIFICATION);
 	gtk_window_set_resizable (GTK_WINDOW (win), FALSE);
 
 	resource_path = g_strconcat ("/org.gnome.Evolution/", image_name, NULL);
 	pix = gtk_image_new_from_resource (resource_path);
 	g_clear_pointer (&resource_path, g_free);
-	gtk_container_add (GTK_CONTAINER (win), pix);
+	e_gtk_container_add (win, pix);
 
 	return win;
 }
@@ -487,13 +486,13 @@ ethi_add_drop_marker (ETableHeaderItem *ethi,
 	}
 
 	canvas = GNOME_CANVAS_ITEM (ethi)->canvas;
-	toplevel = gtk_widget_get_toplevel (GTK_WIDGET (canvas));
+	toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (canvas));
 	if (GTK_IS_WINDOW (toplevel)) {
 		gtk_window_set_transient_for (GTK_WINDOW (arrow_up), GTK_WINDOW (toplevel));
 		gtk_window_set_transient_for (GTK_WINDOW (arrow_down), GTK_WINDOW (toplevel));
 	}
 
-	window = gtk_widget_get_window (GTK_WIDGET (canvas));
+	window = e_gtk_widget_get_surface (GTK_WIDGET (canvas));
 	gdk_window_get_origin (window, &rx, &ry);
 
 	adjustment = gtk_scrollable_get_hadjustment (GTK_SCROLLABLE (canvas));
@@ -502,17 +501,9 @@ ethi_add_drop_marker (ETableHeaderItem *ethi,
 	adjustment = gtk_scrollable_get_vadjustment (GTK_SCROLLABLE (canvas));
 	ry -= gtk_adjustment_get_value (adjustment);
 
-	gtk_window_move (
-		GTK_WINDOW (arrow_down),
-		rx + x - ARROW_PTR,
-		ry - ARROW_DOWN_HEIGHT);
-	gtk_widget_show_all (arrow_down);
+	gtk_widget_set_visible (arrow_down, TRUE);
 
-	gtk_window_move (
-		GTK_WINDOW (arrow_up),
-		rx + x - ARROW_PTR,
-		ry + ethi->height);
-	gtk_widget_show_all (arrow_up);
+	gtk_widget_set_visible (arrow_up, TRUE);
 }
 
 static void
@@ -557,7 +548,7 @@ ethi_remove_destroy_marker (ETableHeaderItem *ethi)
 
 static void
 do_drag_motion (ETableHeaderItem *ethi,
-                GdkDragContext *context,
+                EGtkDragContext *context,
                 gint x,
                 gint y,
                 guint time,
@@ -570,18 +561,18 @@ do_drag_motion (ETableHeaderItem *ethi,
 		d (g_print ("In header\n"));
 
 		col = ethi_find_col_by_x_nearest (ethi, x);
-		suggested_action = gdk_drag_context_get_suggested_action (context);
+		suggested_action = e_gtk_drag_context_get_suggested_action (context);
 
 		if (ethi->drag_col != -1 && (col == ethi->drag_col || col == ethi->drag_col + 1)) {
 			ethi_remove_destroy_marker (ethi);
 			ethi_remove_drop_marker (ethi);
-			gdk_drag_status (context, suggested_action, time);
+			e_gtk_drag_status (context, suggested_action, time);
 		} else if (col != -1) {
 			if (ethi->drag_col != -1)
 				ethi_remove_destroy_marker (ethi);
 
 			ethi_add_drop_marker (ethi, col, recreate);
-			gdk_drag_status (context, suggested_action, time);
+			e_gtk_drag_status (context, suggested_action, time);
 		} else {
 			ethi_remove_drop_marker (ethi);
 			if (ethi->drag_col != -1)
@@ -684,7 +675,7 @@ context_destroyed (gpointer data)
 
 static void
 context_connect (ETableHeaderItem *ethi,
-                 GdkDragContext *context)
+                 EGtkDragContext *context)
 {
 	if (g_dataset_get_data (context, "e-table-header-item") == NULL)
 		g_dataset_set_data_full (
@@ -694,7 +685,7 @@ context_connect (ETableHeaderItem *ethi,
 
 static gboolean
 ethi_drag_motion (GtkWidget *widget,
-                  GdkDragContext *context,
+                  EGtkDragContext *context,
                   gint x,
                   gint y,
                   guint time,
@@ -708,14 +699,14 @@ ethi_drag_motion (GtkWidget *widget,
 	gchar *headertype;
 	guint direction = 0;
 
-	gdk_drag_status (context, 0, time);
+	e_gtk_drag_status (context, 0, time);
 
 	headertype = g_strdup_printf ("%s-%s", TARGET_ETABLE_COL_TYPE, ethi->dnd_code);
-	targets = gdk_drag_context_list_targets (context);
+	targets = e_gtk_drag_context_list_targets (context);
 	for (link = targets; link; link = g_list_next (link)) {
 		gchar *droptype;
 
-		droptype = gdk_atom_name (GDK_POINTER_TO_ATOM (link->data));
+		droptype = e_gtk_atom_name (GDK_POINTER_TO_ATOM (link->data));
 		if (g_strcmp0 (droptype, headertype) == 0) {
 			g_free (droptype);
 			break;
@@ -766,7 +757,7 @@ ethi_drag_motion (GtkWidget *widget,
 
 static void
 ethi_drag_end (GtkWidget *canvas,
-               GdkDragContext *context,
+               EGtkDragContext *context,
                ETableHeaderItem *ethi)
 {
 	ethi_remove_drop_marker (ethi);
@@ -777,10 +768,10 @@ ethi_drag_end (GtkWidget *canvas,
 
 static void
 ethi_drag_data_received (GtkWidget *canvas,
-                         GdkDragContext *drag_context,
+                         EGtkDragContext *drag_context,
                          gint x,
                          gint y,
-                         GtkSelectionData *selection_data,
+                         EGtkSelectionData *selection_data,
                          guint info,
                          guint time,
                          ETableHeaderItem *ethi)
@@ -792,7 +783,7 @@ ethi_drag_data_received (GtkWidget *canvas,
 	gint drop_col;
 	gint i;
 
-	data = gtk_selection_data_get_data (selection_data);
+	data = e_gtk_selection_data_get_data (selection_data);
 
 	if (data != NULL) {
 		count = e_table_header_count (ethi->eth);
@@ -833,8 +824,8 @@ ethi_drag_data_received (GtkWidget *canvas,
 
 static void
 ethi_drag_data_get (GtkWidget *canvas,
-                    GdkDragContext *context,
-                    GtkSelectionData *selection_data,
+                    EGtkDragContext *context,
+                    EGtkSelectionData *selection_data,
                     guint info,
                     guint time,
                     ETableHeaderItem *ethi)
@@ -843,9 +834,9 @@ ethi_drag_data_get (GtkWidget *canvas,
 		ETableCol *ecol = e_table_header_get_column (ethi->eth, ethi->drag_col);
 
 		gchar *string = g_strdup_printf ("%d", ecol->spec->model_col);
-		gtk_selection_data_set (
+		e_gtk_selection_data_set (
 			selection_data,
-			GDK_SELECTION_TYPE_STRING,
+			E_GTK_SELECTION_TYPE_STRING,
 			sizeof (string[0]),
 			(guchar *) string,
 			strlen (string));
@@ -855,7 +846,7 @@ ethi_drag_data_get (GtkWidget *canvas,
 
 static gboolean
 ethi_drag_drop (GtkWidget *canvas,
-                GdkDragContext *context,
+                EGtkDragContext *context,
                 gint x,
                 gint y,
                 guint time,
@@ -877,21 +868,21 @@ ethi_drag_drop (GtkWidget *canvas,
 			gchar *target = g_strdup_printf (
 				"%s-%s", TARGET_ETABLE_COL_TYPE, ethi->dnd_code);
 			d (g_print ("ethi -  %s\n", target));
-			gtk_drag_get_data (
+			e_gtk_drag_get_data (
 				canvas, context,
-				gdk_atom_intern (target, FALSE),
+				e_gtk_atom_intern (target, FALSE),
 				time);
 			g_free (target);
 		}
 	}
-	gtk_drag_finish (context, successful, successful, time);
+	e_gtk_drag_finish (context, successful, successful, time);
 	scroll_off (ethi);
 	return successful;
 }
 
 static void
 ethi_drag_leave (GtkWidget *widget,
-                 GdkDragContext *context,
+                 EGtkDragContext *context,
                  guint time,
                  ETableHeaderItem *ethi)
 {
@@ -918,7 +909,7 @@ static void
 ethi_realize (GnomeCanvasItem *item)
 {
 	ETableHeaderItem *ethi = E_TABLE_HEADER_ITEM (item);
-	GtkTargetEntry  ethi_drop_types[] = {
+	EGtkTargetEntry  ethi_drop_types[] = {
 		{ (gchar *) TARGET_ETABLE_COL_TYPE, 0, TARGET_ETABLE_COL_HEADER },
 	};
 
@@ -942,7 +933,7 @@ ethi_realize (GnomeCanvasItem *item)
 	 */
 	ethi_drop_types[0].target = g_strdup_printf (
 		"%s-%s", ethi_drop_types[0].target, ethi->dnd_code);
-	gtk_drag_dest_set (
+	e_gtk_drag_dest_set (
 		GTK_WIDGET (item->canvas), 0, ethi_drop_types,
 		G_N_ELEMENTS (ethi_drop_types), GDK_ACTION_MOVE);
 	g_free ((gpointer) ethi_drop_types[0].target);
@@ -988,7 +979,7 @@ ethi_unrealize (GnomeCanvasItem *item)
 	g_signal_handler_disconnect (item->canvas, ethi->drag_end_id);
 	g_signal_handler_disconnect (item->canvas, ethi->drag_data_get_id);
 
-	gtk_drag_dest_unset (GTK_WIDGET (item->canvas));
+	e_gtk_drag_dest_unset (GTK_WIDGET (item->canvas));
 
 	if (GNOME_CANVAS_ITEM_CLASS (ethi_parent_class)->unrealize)
 		(*GNOME_CANVAS_ITEM_CLASS (ethi_parent_class)->unrealize)(item);
@@ -1155,7 +1146,7 @@ set_cursor (ETableHeaderItem *ethi,
 	gint col;
 
 	canvas = GNOME_CANVAS_ITEM (ethi)->canvas;
-	window = gtk_widget_get_window (GTK_WIDGET (canvas));
+	window = e_gtk_widget_get_surface (GTK_WIDGET (canvas));
 
 	/* We might be invoked before we are realized */
 	if (window == NULL)
@@ -1205,7 +1196,7 @@ ethi_end_resize (ETableHeaderItem *ethi)
 
 static gboolean
 ethi_maybe_start_drag (ETableHeaderItem *ethi,
-                       GdkEventMotion *event)
+                       GdkEvent *event)
 {
 	GnomeCanvasItem *item;
 
@@ -1227,8 +1218,8 @@ ethi_start_drag (ETableHeaderItem *ethi,
                  GdkEvent *event)
 {
 	GtkWidget *widget;
-	GtkTargetList *list;
-	GdkDragContext *context;
+	EGtkTargetList *list;
+	EGtkDragContext *context;
 	ETableCol *ecol;
 	gint col_width;
 	cairo_surface_t *s;
@@ -1237,7 +1228,7 @@ ethi_start_drag (ETableHeaderItem *ethi,
 	gint group_indent = 0;
 	GHashTable *arrows;
 
-	GtkTargetEntry  ethi_drag_types[] = {
+	EGtkTargetEntry  ethi_drag_types[] = {
 		{ (gchar *) TARGET_ETABLE_COL_TYPE, 0, TARGET_ETABLE_COL_HEADER },
 	};
 
@@ -1289,9 +1280,9 @@ ethi_start_drag (ETableHeaderItem *ethi,
 
 	ethi_drag_types[0].target = g_strdup_printf (
 		"%s-%s", ethi_drag_types[0].target, ethi->dnd_code);
-	list = gtk_target_list_new (
+	list = e_gtk_target_list_new (
 		ethi_drag_types, G_N_ELEMENTS (ethi_drag_types));
-	context = gtk_drag_begin (widget, list, GDK_ACTION_MOVE, 1, event);
+	context = e_gtk_drag_begin (widget, list, GDK_ACTION_MOVE, 1, event);
 	g_free ((gpointer) ethi_drag_types[0].target);
 
 	ecol = e_table_header_get_column (ethi->eth, ethi->drag_col);
@@ -1306,7 +1297,7 @@ ethi_start_drag (ETableHeaderItem *ethi,
 		col_width, ethi->height,
 		(ETableColArrow) GPOINTER_TO_INT (g_hash_table_lookup (
 			arrows, GINT_TO_POINTER (ecol->spec->model_col))));
-	gtk_drag_set_icon_surface (context, s);
+	e_gtk_drag_set_icon_surface (context, s);
 	cairo_surface_destroy (s);
 
 	ethi->maybe_drag = FALSE;
@@ -1490,7 +1481,7 @@ ethi_popup_field_chooser (GtkWidget *widget,
 	info->ethi->etfcd.widget = e_table_field_chooser_dialog_new ();
 	etfcd = info->ethi->etfcd.widget;
 
-	toplevel = gtk_widget_get_toplevel (widget);
+	toplevel = e_gtk_widget_get_toplevel (widget);
 	if (GTK_IS_WINDOW (toplevel))
 		gtk_window_set_transient_for (GTK_WINDOW (etfcd), GTK_WINDOW (toplevel));
 
@@ -1592,7 +1583,7 @@ e_table_header_item_customize_view (ETableHeaderItem *ethi)
 
 		ethi->config = e_table_config_new (
 				_("Customize Current View"),
-				spec, state, GTK_WINDOW (gtk_widget_get_toplevel (widget)));
+				spec, state, GTK_WINDOW (e_gtk_widget_get_toplevel (widget)));
 		g_object_weak_ref (
 			G_OBJECT (ethi->config),
 			config_destroyed, ethi);
@@ -1710,7 +1701,7 @@ ethi_header_context_menu (ETableHeaderItem *ethi,
 
 	d (g_print ("ethi_header_context_menu: \n"));
 
-	gdk_event_get_coords (button_event, &event_x_win, &event_y_win);
+	e_gdk_event_get_coords (button_event, &event_x_win, &event_y_win);
 
 	info->ethi = ethi;
 	info->col = ethi_find_col_by_x (ethi, event_x_win);
@@ -1934,10 +1925,10 @@ ethi_event (GnomeCanvasItem *item,
 	/* Don't fetch the device here.  GnomeCanvas frequently emits
 	 * synthesized events, and calling gdk_event_get_device() on them
 	 * will trigger a runtime warning.  Fetch the device where needed. */
-	gdk_event_get_button (event, &event_button);
-	gdk_event_get_coords (event, &event_x_win, &event_y_win);
-	gdk_event_get_keyval (event, &event_keyval);
-	gdk_event_get_state (event, &event_state);
+	e_gdk_event_get_button (event, &event_button);
+	e_gdk_event_get_coords (event, &event_x_win, &event_y_win);
+	e_gdk_event_get_keyval (event, &event_keyval);
+	e_gdk_event_get_state (event, &event_state);
 	event_time = gdk_event_get_time (event);
 
 	if ((event_state & GDK_CONTROL_MASK) != 0) {
@@ -1954,7 +1945,7 @@ ethi_event (GnomeCanvasItem *item,
 		break;
 
 	case GDK_LEAVE_NOTIFY:
-		window = gtk_widget_get_window (GTK_WIDGET (canvas));
+		window = e_gtk_widget_get_surface (GTK_WIDGET (canvas));
 		gdk_window_set_cursor (window, NULL);
 		break;
 
@@ -2032,7 +2023,7 @@ ethi_event (GnomeCanvasItem *item,
 				is_pointer_on_division (ethi, x, &start, &col);
 				if (col != -1)
 					ethi->selected_col = col;
-				if (gtk_widget_get_can_focus (GTK_WIDGET (item->canvas)))
+				if (gtk_widget_get_focusable (GTK_WIDGET (item->canvas)))
 					e_canvas_item_grab_focus (item, TRUE);
 			} else if (event_button == 3) {
 				ethi_header_context_menu (ethi, event);

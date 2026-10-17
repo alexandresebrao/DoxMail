@@ -319,7 +319,7 @@ e_html_editor_hrule_dialog_init (EHTMLEditorHRuleDialog *dialog)
 	dialog->priv->shaded_check = widget;
 	gtk_grid_attach (grid, widget, 0, 1, 2, 1);
 
-	gtk_widget_show_all (GTK_WIDGET (main_layout));
+	gtk_widget_set_visible (GTK_WIDGET (main_layout), TRUE);
 }
 
 GtkWidget *

@@ -61,7 +61,7 @@ source_config_dialog_commit_cb (GObject *object,
 	dialog = E_SOURCE_CONFIG_DIALOG (user_data);
 
 	/* Set the cursor back to normal. */
-	gdk_window = gtk_widget_get_window (GTK_WIDGET (dialog));
+	gdk_window = e_gtk_widget_get_surface (GTK_WIDGET (dialog));
 	gdk_window_set_cursor (gdk_window, NULL);
 
 	/* Allow user interaction with window content. */
@@ -83,7 +83,7 @@ source_config_dialog_commit_cb (GObject *object,
 		g_error_free (error);
 
 	} else {
-		gtk_widget_destroy (GTK_WIDGET (dialog));
+		e_gtk_widget_destroy (GTK_WIDGET (dialog));
 	}
 }
 
@@ -103,7 +103,7 @@ source_config_dialog_commit (ESourceConfigDialog *dialog)
 	if (gdk_cursor) {
 		GdkWindow *gdk_window;
 
-		gdk_window = gtk_widget_get_window (GTK_WIDGET (dialog));
+		gdk_window = e_gtk_widget_get_surface (GTK_WIDGET (dialog));
 		gdk_window_set_cursor (gdk_window, gdk_cursor);
 		g_object_unref (gdk_cursor);
 	}
@@ -244,11 +244,11 @@ source_config_dialog_constructed (GObject *object)
 	widget = gtk_dialog_get_widget_for_response (
 		GTK_DIALOG (object), GTK_RESPONSE_OK);
 
-	gtk_container_set_border_width (GTK_CONTAINER (object), 5);
-	gtk_container_set_border_width (GTK_CONTAINER (config), 5);
+	e_gtk_widget_set_border_width (object, 5);
+	e_gtk_widget_set_border_width (config, 5);
 
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (object));
-	gtk_box_pack_start (GTK_BOX (content_area), config, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (content_area), config, TRUE, TRUE, 0);
 	gtk_widget_show (config);
 
 	/* Don't use G_BINDING_SYNC_CREATE here.  The ESourceConfig widget
@@ -259,7 +259,7 @@ source_config_dialog_constructed (GObject *object)
 		G_BINDING_DEFAULT);
 
 	widget = e_alert_bar_new ();
-	gtk_box_pack_start (GTK_BOX (content_area), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (content_area), widget, FALSE, FALSE, 0);
 	self->priv->alert_bar = g_object_ref (widget);
 	/* EAlertBar controls its own visibility. */
 
@@ -282,7 +282,7 @@ source_config_dialog_response (GtkDialog *dialog,
 				E_SOURCE_CONFIG_DIALOG (dialog));
 			break;
 		case GTK_RESPONSE_CANCEL:
-			gtk_widget_destroy (GTK_WIDGET (dialog));
+			e_gtk_widget_destroy (GTK_WIDGET (dialog));
 			break;
 		default:
 			break;

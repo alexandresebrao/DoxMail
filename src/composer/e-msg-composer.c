@@ -113,7 +113,7 @@ enum {
 	LAST_SIGNAL
 };
 
-static GtkTargetEntry drag_dest_targets[] = {
+static EGtkTargetEntry drag_dest_targets[] = {
 	{ (gchar *) "text/uri-list", 0, E_DND_TARGET_TYPE_TEXT_URI_LIST },
 	{ (gchar *) "_NETSCAPE_URL", 0, E_DND_TARGET_TYPE_MOZILLA_URL },
 	{ (gchar *) "text/x-moz-url", 0, E_DND_TARGET_TYPE_TEXT_X_MOZ_URL },
@@ -2279,8 +2279,8 @@ msg_composer_mail_identity_changed_cb (EMsgComposer *composer)
 
 static gboolean
 msg_composer_paste_clipboard_targets (EMsgComposer *composer,
-				      GtkClipboard *clipboard,
-				      GdkAtom *targets,
+				      GdkClipboard *clipboard,
+				      EGtkAtom *targets,
 				      gint n_targets)
 {
 	EHTMLEditor *editor;
@@ -2306,16 +2306,16 @@ msg_composer_paste_clipboard_targets (EMsgComposer *composer,
 
 static gboolean
 msg_composer_paste_clipboard (EMsgComposer *composer,
-			      GdkAtom selection)
+			      EGtkAtom selection)
 {
-	GtkClipboard *clipboard;
-	GdkAtom *targets = NULL;
+	GdkClipboard *clipboard;
+	EGtkAtom *targets = NULL;
 	gint n_targets;
 	gboolean handled = FALSE;
 
-	clipboard = gtk_clipboard_get (selection);
+	clipboard = e_gtk_clipboard_get (selection);
 
-	if (gtk_clipboard_wait_for_targets (clipboard, &targets, &n_targets)) {
+	if (e_gtk_clipboard_wait_for_targets (clipboard, &targets, &n_targets)) {
 		handled = msg_composer_paste_clipboard_targets (composer, clipboard, targets, n_targets);
 		g_free (targets);
 	}
@@ -2327,22 +2327,22 @@ static gboolean
 msg_composer_paste_primary_clipboard_cb (EContentEditor *cnt_editor,
                                          EMsgComposer *composer)
 {
-	return msg_composer_paste_clipboard (composer, GDK_SELECTION_PRIMARY);
+	return msg_composer_paste_clipboard (composer, E_GTK_SELECTION_PRIMARY);
 }
 
 static gboolean
 msg_composer_paste_clipboard_cb (EContentEditor *cnt_editor,
                                  EMsgComposer *composer)
 {
-	return msg_composer_paste_clipboard (composer, GDK_SELECTION_CLIPBOARD);
+	return msg_composer_paste_clipboard (composer, E_GTK_SELECTION_CLIPBOARD);
 }
 
 static void
 msg_composer_drag_data_received_cb (GtkWidget *widget,
-                                    GdkDragContext *context,
+                                    EGtkDragContext *context,
                                     gint x,
                                     gint y,
-                                    GtkSelectionData *selection,
+                                    EGtkSelectionData *selection,
                                     guint info,
                                     guint time,
                                     EMsgComposer *composer)
@@ -2359,7 +2359,7 @@ msg_composer_drag_data_received_cb (GtkWidget *widget,
 	g_signal_handler_disconnect (cnt_editor, composer->priv->drag_data_received_handler_id);
 	composer->priv->drag_data_received_handler_id = 0;
 
-	is_move = gdk_drag_context_get_selected_action (context) == GDK_ACTION_MOVE;
+	is_move = e_gtk_drag_context_get_selected_action (context) == GDK_ACTION_MOVE;
 
 	/* HTML mode has a few special cases for drops... */
 	/* If we're receiving URIs and -all- the URIs point to
@@ -2373,11 +2373,11 @@ msg_composer_drag_data_received_cb (GtkWidget *widget,
 		gint list_len, len;
 		gchar *uri;
 
-		data = gtk_selection_data_get_data (selection);
-		length = gtk_selection_data_get_length (selection);
+		data = e_gtk_selection_data_get_data (selection);
+		length = e_gtk_selection_data_get_length (selection);
 
 		if (!data || length < 0) {
-			gtk_drag_finish (context, FALSE, FALSE, time);
+			e_gtk_drag_finish (context, FALSE, FALSE, time);
 			return;
 		}
 
@@ -2390,14 +2390,14 @@ msg_composer_drag_data_received_cb (GtkWidget *widget,
 			g_free (uri);
 		} while (list_len);
 
-		gtk_drag_finish (context, TRUE, is_move, time);
+		e_gtk_drag_finish (context, TRUE, is_move, time);
 	} else if (html_mode && e_composer_selection_is_moz_url_image (composer, selection, &moz_url)) {
 		e_content_editor_move_caret_on_coordinates (cnt_editor, x, y, FALSE);
 		e_content_editor_insert_image (cnt_editor, moz_url);
 
 		g_free (moz_url);
 
-		gtk_drag_finish (context, TRUE, is_move, time);
+		e_gtk_drag_finish (context, TRUE, is_move, time);
 	} else {
 		EAttachmentView *attachment_view =
 			e_msg_composer_get_attachment_view (composer);
@@ -2413,22 +2413,22 @@ msg_composer_drag_data_received_cb (GtkWidget *widget,
 
 static gboolean
 msg_composer_drag_drop_cb (GtkWidget *widget,
-                           GdkDragContext *context,
+                           EGtkDragContext *context,
                            gint x,
                            gint y,
                            guint time,
                            EMsgComposer *composer)
 {
-	GdkAtom target = gtk_drag_dest_find_target (widget, context, NULL);
+	EGtkAtom target = e_gtk_drag_dest_find_target (widget, context, NULL);
 
-	if (target == GDK_NONE) {
-		gdk_drag_status (context, 0, time);
+	if (target == E_GTK_ATOM_NONE) {
+		e_gtk_drag_status (context, 0, time);
 	} else {
 		composer->priv->drag_data_received_handler_id = g_signal_connect (
 			E_CONTENT_EDITOR (widget), "drag-data-received",
 			G_CALLBACK (msg_composer_drag_data_received_cb), composer);
 
-		gtk_drag_get_data (widget, context, target, time);
+		e_gtk_drag_get_data (widget, context, target, time);
 
 		return TRUE;
 	}
@@ -2448,7 +2448,7 @@ msg_composer_drop_handled_cb (EContentEditor *cnt_editor,
 
 static void
 msg_composer_drag_begin_cb (GtkWidget *widget,
-                            GdkDragContext *context,
+                            EGtkDragContext *context,
                             EMsgComposer *composer)
 {
 	if (composer->priv->drag_data_received_handler_id != 0) {
@@ -2699,8 +2699,8 @@ msg_composer_finalize (GObject *object)
 
 static void
 msg_composer_gallery_drag_data_get (GtkIconView *icon_view,
-                                    GdkDragContext *context,
-                                    GtkSelectionData *selection_data,
+                                    EGtkDragContext *context,
+                                    EGtkSelectionData *selection_data,
                                     guint target_type,
                                     guint time)
 {
@@ -2708,13 +2708,13 @@ msg_composer_gallery_drag_data_get (GtkIconView *icon_view,
 	GtkCellRenderer *cell;
 	GtkTreeModel *model;
 	GtkTreeIter iter;
-	GdkAtom target;
+	EGtkAtom target;
 	gchar *str_data;
 
 	if (!gtk_icon_view_get_cursor (icon_view, &path, &cell))
 		return;
 
-	target = gtk_selection_data_get_target (selection_data);
+	target = e_gtk_selection_data_get_target (selection_data);
 
 	model = gtk_icon_view_get_model (icon_view);
 	gtk_tree_model_get_iter (model, &iter, path);
@@ -2722,7 +2722,7 @@ msg_composer_gallery_drag_data_get (GtkIconView *icon_view,
 	gtk_tree_path_free (path);
 
 	/* only supports "text/uri-list" */
-	gtk_selection_data_set (
+	e_gtk_selection_data_set (
 		selection_data, target, 8,
 		(guchar *) str_data, strlen (str_data));
 	g_free (str_data);
@@ -2801,8 +2801,8 @@ msg_composer_constructed (GObject *object)
 	EContentEditor *cnt_editor;
 	EUIManager *ui_manager;
 	EUIAction *action;
-	GtkTargetList *target_list;
-	GtkTargetEntry *targets;
+	EGtkTargetList *target_list;
+	EGtkTargetEntry *targets;
 	gint n_targets;
 	GSettings *settings;
 	gboolean active;
@@ -2829,7 +2829,6 @@ msg_composer_constructed (GObject *object)
 	gtk_window_set_title (GTK_WINDOW (composer), _("Compose Message"));
 	gtk_window_set_icon_name (GTK_WINDOW (composer), "mail-message-new");
 	gtk_window_set_default_size (GTK_WINDOW (composer), 600, 500);
-	gtk_window_set_position (GTK_WINDOW (composer), GTK_WIN_POS_CENTER);
 
 	g_signal_connect (
 		object, "delete-event",
@@ -2962,22 +2961,22 @@ msg_composer_constructed (GObject *object)
 	e_content_editor_set_changed (cnt_editor, FALSE);
 
 	target_list = e_attachment_view_get_target_list (attachment_view);
-	targets = gtk_target_table_new_from_list (target_list, &n_targets);
+	targets = e_gtk_target_table_new_from_list (target_list, &n_targets);
 
-	target_list = gtk_drag_dest_get_target_list (GTK_WIDGET (cnt_editor));
+	target_list = e_gtk_drag_dest_get_target_list (GTK_WIDGET (cnt_editor));
 	if (target_list) {
-		gtk_target_list_add_table (target_list, drag_dest_targets, G_N_ELEMENTS (drag_dest_targets));
-		gtk_target_list_add_table (target_list, targets, n_targets);
+		e_gtk_target_list_add_table (target_list, drag_dest_targets, G_N_ELEMENTS (drag_dest_targets));
+		e_gtk_target_list_add_table (target_list, targets, n_targets);
 	} else {
-		gtk_drag_dest_set (GTK_WIDGET (cnt_editor), 0, NULL, 0, GDK_ACTION_COPY | GDK_ACTION_MOVE | GDK_ACTION_LINK);
+		e_gtk_drag_dest_set (GTK_WIDGET (cnt_editor), 0, NULL, 0, GDK_ACTION_COPY | GDK_ACTION_MOVE | GDK_ACTION_LINK);
 
-		target_list = gtk_target_list_new (drag_dest_targets, G_N_ELEMENTS (drag_dest_targets));
-		gtk_target_list_add_table (target_list, targets, n_targets);
-		gtk_drag_dest_set_target_list (GTK_WIDGET (cnt_editor), target_list);
-		gtk_target_list_unref (target_list);
+		target_list = e_gtk_target_list_new (drag_dest_targets, G_N_ELEMENTS (drag_dest_targets));
+		e_gtk_target_list_add_table (target_list, targets, n_targets);
+		e_gtk_drag_dest_set_target_list (GTK_WIDGET (cnt_editor), target_list);
+		e_gtk_target_list_unref (target_list);
 	}
 
-	gtk_target_table_free (targets, n_targets);
+	e_gtk_target_table_free (targets, n_targets);
 
 	e_plugin_ui_register_manager (ui_manager, "org.gnome.evolution.composer", composer);
 
@@ -3047,7 +3046,7 @@ msg_composer_map (GtkWidget *widget)
 	input_widget =
 		e_composer_header_table_get_header (
 		table, E_COMPOSER_HEADER_TO)->input_widget;
-	text = gtk_entry_get_text (GTK_ENTRY (input_widget));
+	text = gtk_editable_get_text (GTK_EDITABLE (input_widget));
 	if (gtk_widget_is_visible (input_widget) && (text == NULL || *text == '\0')) {
 		gtk_widget_grab_focus (input_widget);
 		return;
@@ -3057,7 +3056,7 @@ msg_composer_map (GtkWidget *widget)
 	input_widget =
 		e_composer_header_table_get_header (
 		table, E_COMPOSER_HEADER_SUBJECT)->input_widget;
-	text = gtk_entry_get_text (GTK_ENTRY (input_widget));
+	text = gtk_editable_get_text (GTK_EDITABLE (input_widget));
 	if (gtk_widget_is_visible (input_widget) && (text == NULL || *text == '\0')) {
 		gtk_widget_grab_focus (input_widget);
 		return;
@@ -3070,7 +3069,7 @@ msg_composer_map (GtkWidget *widget)
 
 static gboolean
 msg_composer_key_press_event (GtkWidget *widget,
-                              GdkEventKey *event)
+                              GdkEvent *event)
 {
 	EMsgComposer *composer;
 	GtkWidget *input_widget;
@@ -5257,7 +5256,7 @@ msg_composer_save_to_drafts_done_cb (gpointer user_data,
 	if (e_msg_composer_is_exiting (composer) &&
 	    !e_content_editor_get_changed (cnt_editor)) {
 		e_composer_emit_before_destroy (composer);
-		gtk_widget_destroy (GTK_WIDGET (composer));
+		e_gtk_widget_destroy (GTK_WIDGET (composer));
 	} else if (e_msg_composer_is_exiting (composer)) {
 		gtk_widget_set_sensitive (GTK_WIDGET (composer), TRUE);
 		gtk_window_present (GTK_WINDOW (composer));
@@ -6770,7 +6769,7 @@ e_msg_composer_can_close (EMsgComposer *composer,
 	    e_content_editor_is_malfunction (cnt_editor))
 		return TRUE;
 
-	window = gtk_widget_get_window (widget);
+	window = e_gtk_widget_get_surface (widget);
 	gdk_window_raise (window);
 
 	table = e_msg_composer_get_header_table (composer);

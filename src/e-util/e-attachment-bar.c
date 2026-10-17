@@ -72,7 +72,7 @@ enum {
 static void	e_attachment_bar_interface_init
 				(EAttachmentViewInterface *iface);
 
-G_DEFINE_TYPE_WITH_CODE (EAttachmentBar, e_attachment_bar, GTK_TYPE_PANED,
+G_DEFINE_TYPE_WITH_CODE (EAttachmentBar, e_attachment_bar, E_TYPE_PANED,
 	G_ADD_PRIVATE (EAttachmentBar)
 	G_IMPLEMENT_INTERFACE (E_TYPE_ATTACHMENT_VIEW, e_attachment_bar_interface_init))
 
@@ -582,7 +582,7 @@ attachment_bar_update_actions (EAttachmentView *view)
 
 static gboolean
 attachment_bar_button_press_event (GtkWidget *widget,
-				   GdkEventButton *event)
+				   GdkEvent *event)
 {
 	/* Chain up to parent's button_press_event() method. */
 	GTK_WIDGET_CLASS (e_attachment_bar_parent_class)->button_press_event (widget, event);
@@ -593,7 +593,7 @@ attachment_bar_button_press_event (GtkWidget *widget,
 
 static gboolean
 attachment_bar_button_release_event (GtkWidget *widget,
-				     GdkEventButton *event)
+				     GdkEvent *event)
 {
 	/* Chain up to parent's button_release_event() method. */
 	GTK_WIDGET_CLASS (e_attachment_bar_parent_class)->button_release_event (widget, event);
@@ -604,7 +604,7 @@ attachment_bar_button_release_event (GtkWidget *widget,
 
 static gboolean
 attachment_bar_motion_notify_event (GtkWidget *widget,
-				    GdkEventMotion *event)
+				    GdkEvent *event)
 {
 	/* Chain up to parent's motion_notify_event() method. */
 	GTK_WIDGET_CLASS (e_attachment_bar_parent_class)->motion_notify_event (widget, event);
@@ -764,15 +764,14 @@ e_attachment_bar_init (EAttachmentBar *bar)
 	container = GTK_WIDGET (bar);
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-	gtk_paned_pack2 (GTK_PANED (container), widget, FALSE, FALSE);
+	e_gtk_paned_pack2 (container, widget, FALSE, FALSE);
 	bar->priv->attachments_area = g_object_ref (widget);
 	gtk_widget_show (widget);
 
 	container = bar->priv->attachments_area;
 
 	widget = gtk_frame_new (NULL);
-	gtk_frame_set_shadow_type (GTK_FRAME (widget), GTK_SHADOW_NONE);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	bar->priv->icon_frame = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -780,22 +779,21 @@ e_attachment_bar_init (EAttachmentBar *bar)
 
 	widget = gtk_scrolled_window_new (NULL, NULL);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (widget), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	bar->priv->icon_scrolled_window = widget;
 	gtk_widget_show (widget);
 
 	widget = e_attachment_icon_view_new ();
-	gtk_widget_set_can_focus (widget, TRUE);
+	gtk_widget_set_focusable (widget, TRUE);
 	gtk_icon_view_set_model (GTK_ICON_VIEW (widget), bar->priv->model);
-	gtk_container_add (GTK_CONTAINER (bar->priv->icon_scrolled_window), widget);
+	e_gtk_container_add (bar->priv->icon_scrolled_window, widget);
 	bar->priv->icon_view = g_object_ref (widget);
 	gtk_widget_show (widget);
 
 	container = bar->priv->attachments_area;
 
 	widget = gtk_frame_new (NULL);
-	gtk_frame_set_shadow_type (GTK_FRAME (widget), GTK_SHADOW_NONE);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	bar->priv->tree_frame = g_object_ref (widget);
 	gtk_widget_hide (widget);
 
@@ -803,14 +801,14 @@ e_attachment_bar_init (EAttachmentBar *bar)
 
 	widget = gtk_scrolled_window_new (NULL, NULL);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (widget), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	bar->priv->tree_scrolled_window = widget;
 	gtk_widget_show (widget);
 
 	widget = e_attachment_tree_view_new ();
-	gtk_widget_set_can_focus (widget, TRUE);
+	gtk_widget_set_focusable (widget, TRUE);
 	gtk_tree_view_set_model (GTK_TREE_VIEW (widget), bar->priv->model);
-	gtk_container_add (GTK_CONTAINER (bar->priv->tree_scrolled_window), widget);
+	e_gtk_container_add (bar->priv->tree_scrolled_window, widget);
 	bar->priv->tree_view = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -819,24 +817,23 @@ e_attachment_bar_init (EAttachmentBar *bar)
 	container = GTK_WIDGET (bar);
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-	gtk_paned_pack1 (GTK_PANED (container), widget, TRUE, FALSE);
+	e_gtk_paned_pack1 (container, widget, TRUE, FALSE);
 	bar->priv->content_area = g_object_ref (widget);
 	gtk_widget_show (widget);
 
 	container = bar->priv->content_area;
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 12);
-	gtk_container_set_border_width (GTK_CONTAINER (widget), 6);
-	gtk_box_pack_end (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_widget_set_border_width (widget, 6);
+	e_gtk_box_pack_end (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	bar->priv->info_vbox = g_object_ref (widget);
 	gtk_widget_show (widget);
 
 	container = widget;
 
 	widget = gtk_expander_new (NULL);
-	gtk_expander_set_spacing (GTK_EXPANDER (widget), 0);
 	gtk_widget_set_valign (widget, GTK_ALIGN_CENTER);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	bar->priv->expander = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -847,9 +844,9 @@ e_attachment_bar_init (EAttachmentBar *bar)
 
 	widget = gtk_button_new_with_mnemonic (e_ui_action_get_label (action));
 	if (e_ui_action_get_icon_name (action))
-		gtk_button_set_image (GTK_BUTTON (widget), gtk_image_new_from_icon_name (e_ui_action_get_icon_name (action), GTK_ICON_SIZE_BUTTON));
+		e_gtk_button_set_image (GTK_BUTTON (widget), gtk_image_new_from_icon_name (e_ui_action_get_icon_name (action)));
 	e_ui_action_util_assign_to_widget (action, widget);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	bar->priv->save_all_button = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -859,9 +856,9 @@ e_attachment_bar_init (EAttachmentBar *bar)
 
 	widget = gtk_button_new_with_mnemonic (e_ui_action_get_label (action));
 	if (e_ui_action_get_icon_name (action))
-		gtk_button_set_image (GTK_BUTTON (widget), gtk_image_new_from_icon_name (e_ui_action_get_icon_name (action), GTK_ICON_SIZE_BUTTON));
+		e_gtk_button_set_image (GTK_BUTTON (widget), gtk_image_new_from_icon_name (e_ui_action_get_icon_name (action)));
 	e_ui_action_util_assign_to_widget (action, widget);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	bar->priv->save_one_button = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -875,9 +872,8 @@ e_attachment_bar_init (EAttachmentBar *bar)
 	bar->priv->hide_possible_action = g_object_ref (e_ui_manager_get_action (ui_manager, "attach-bar-hide-possible"));
 
 	widget = gtk_menu_button_new ();
-	gtk_menu_button_set_use_popover (GTK_MENU_BUTTON (widget), FALSE);
 	gtk_menu_button_set_direction (GTK_MENU_BUTTON (widget), GTK_ARROW_NONE);
-	gtk_box_pack_end (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_end (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	bar->priv->menu_button = g_object_ref (widget);
 	/* no possible attachments after create */
 	gtk_widget_set_visible (widget, FALSE);
@@ -894,7 +890,7 @@ e_attachment_bar_init (EAttachmentBar *bar)
 		GTK_COMBO_BOX_TEXT (widget), _("Icon View"));
 	gtk_combo_box_text_append_text (
 		GTK_COMBO_BOX_TEXT (widget), _("List View"));
-	gtk_box_pack_end (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_end (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	bar->priv->combo_box = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -907,15 +903,14 @@ e_attachment_bar_init (EAttachmentBar *bar)
 
 	container = widget;
 
-	widget = gtk_image_new_from_icon_name (
-		"mail-attachment", GTK_ICON_SIZE_MENU);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	widget = gtk_image_new_from_icon_name ("mail-attachment");
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	bar->priv->status_icon = g_object_ref (widget);
 	gtk_widget_show (widget);
 
 	widget = gtk_label_new (NULL);
 	gtk_label_set_use_markup (GTK_LABEL (widget), TRUE);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	bar->priv->status_label = g_object_ref (widget);
 	gtk_widget_show (widget);
 

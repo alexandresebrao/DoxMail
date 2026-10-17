@@ -54,7 +54,7 @@ month_widget_montion_notify_event_cb (EMonthWidget *month_widget,
 {
 	gdouble x_win = -1, y_win = -1;
 
-	if (gdk_event_get_coords (event, &x_win, &y_win)) {
+	if (e_gdk_event_get_coords (event, &x_win, &y_win)) {
 		guint select_day;
 
 		select_day = e_month_widget_get_day_at_position (month_widget, x_win, y_win);
@@ -119,7 +119,7 @@ clear_marks_clicked_cb (GtkToggleButton *toggle_button,
 
 static void
 month_widget_day_clicked_cb (EMonthWidget *widget,
-			     GdkEventButton *event,
+			     GdkEvent *event,
 			     guint year,
 			     gint month,
 			     guint day,
@@ -184,7 +184,7 @@ on_idle_create_widget (ESourceRegistry *registry)
 
 	notebook = gtk_notebook_new ();
 	gtk_notebook_set_show_border (GTK_NOTEBOOK (notebook), FALSE);
-	gtk_container_add (GTK_CONTAINER (window), GTK_WIDGET (notebook));
+	e_gtk_container_add (window, GTK_WIDGET (notebook));
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 2);
 
@@ -208,27 +208,27 @@ on_idle_create_widget (ESourceRegistry *registry)
 		G_CALLBACK (month_widget_day_clicked_cb), &set_mark);
 
 	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 2);
-	gtk_box_pack_start (GTK_BOX (container), hbox, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), hbox, FALSE, FALSE, 0);
 
 	widget = gtk_label_new ("Month:");
-	gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 
 	widget = gtk_spin_button_new_with_range (1, 12, 1);
 	gtk_spin_button_set_value (GTK_SPIN_BUTTON (widget), 3);
-	gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 
 	g_signal_connect (widget, "value-changed",
 		G_CALLBACK (month_changed_cb), month_widget);
 
 	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 2);
-	gtk_box_pack_start (GTK_BOX (container), hbox, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), hbox, FALSE, FALSE, 0);
 
 	widget = gtk_label_new ("Year:");
-	gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 
 	widget = gtk_spin_button_new_with_range (1, 3000, 1);
 	gtk_spin_button_set_value (GTK_SPIN_BUTTON (widget), 2022);
-	gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 
 	e_month_widget_set_month (E_MONTH_WIDGET (month_widget), 3, 2022);
 
@@ -236,13 +236,13 @@ on_idle_create_widget (ESourceRegistry *registry)
 		G_CALLBACK (year_changed_cb), month_widget);
 
 	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 2);
-	gtk_box_pack_start (GTK_BOX (container), hbox, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), hbox, FALSE, FALSE, 0);
 
 	widget = gtk_label_new ("Week start day:");
-	gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 
 	widget = gtk_combo_box_text_new ();
-	gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 
 	gtk_combo_box_text_append (GTK_COMBO_BOX_TEXT (widget), "1", "Mo");
 	gtk_combo_box_text_append (GTK_COMBO_BOX_TEXT (widget), "2", "Tu");
@@ -258,12 +258,12 @@ on_idle_create_widget (ESourceRegistry *registry)
 	g_signal_connect (widget, "changed", G_CALLBACK (week_start_day_changed_cb), month_widget);
 
 	widget = gtk_check_button_new_with_label ("Show week numbers");
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 
 	e_binding_bind_property (widget, "active", month_widget, "show-week-numbers", G_BINDING_SYNC_CREATE);
 
 	widget = gtk_check_button_new_with_label ("Show day names");
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 
 	e_binding_bind_property (widget, "active", month_widget, "show-day-names", G_BINDING_SYNC_CREATE);
 
@@ -271,32 +271,32 @@ on_idle_create_widget (ESourceRegistry *registry)
 	g_object_set (G_OBJECT (widget),
 		"halign", GTK_ALIGN_START,
 		NULL);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 
 	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 2);
-	gtk_box_pack_start (GTK_BOX (container), hbox, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), hbox, FALSE, FALSE, 0);
 
 	widget = gtk_check_button_new_with_label ("B");
-	gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 	g_signal_connect (widget, "toggled", G_CALLBACK (bold_toggled_cb), &set_mark);
 
 	widget = gtk_check_button_new_with_label ("I");
-	gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 	g_signal_connect (widget, "toggled", G_CALLBACK (italic_toggled_cb), &set_mark);
 
 	widget = gtk_check_button_new_with_label ("U");
-	gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 	g_signal_connect (widget, "toggled", G_CALLBACK (underline_toggled_cb), &set_mark);
 
 	widget = gtk_check_button_new_with_label ("H");
-	gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 	g_signal_connect (widget, "toggled", G_CALLBACK (highlight_toggled_cb), &set_mark);
 
 	widget = gtk_button_new_with_label ("Clear Marks");
-	gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 	g_signal_connect (widget, "clicked", G_CALLBACK (clear_marks_clicked_cb), month_widget);
 
-	gtk_box_pack_start (GTK_BOX (container), month_widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), month_widget, TRUE, TRUE, 0);
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 2);
 
@@ -322,7 +322,7 @@ on_idle_create_widget (ESourceRegistry *registry)
 		"vscrollbar-policy", GTK_POLICY_AUTOMATIC,
 		NULL);
 
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	container = widget;
 
 	widget = gtk_flow_box_new ();
@@ -340,9 +340,9 @@ on_idle_create_widget (ESourceRegistry *registry)
 		"selection-mode", GTK_SELECTION_NONE,
 		NULL);
 
-	gtk_style_context_add_class (gtk_widget_get_style_context (widget), GTK_STYLE_CLASS_VIEW);
+	gtk_widget_add_css_class (widget, GTK_STYLE_CLASS_VIEW);
 
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	container = widget;
 
 	e_month_widget_get_month (E_MONTH_WIDGET (month_widget), NULL, &year);
@@ -368,7 +368,7 @@ on_idle_create_widget (ESourceRegistry *registry)
 			"yalign", 0.5,
 			NULL);
 
-		gtk_box_pack_start (GTK_BOX (vbox), widget, FALSE, FALSE, 0);
+		e_gtk_box_pack_start (GTK_BOX (vbox), widget, FALSE, FALSE, 0);
 
 		widget = e_month_widget_new ();
 
@@ -377,7 +377,7 @@ on_idle_create_widget (ESourceRegistry *registry)
 			"valign", GTK_ALIGN_CENTER,
 			NULL);
 
-		gtk_box_pack_start (GTK_BOX (vbox), widget, FALSE, FALSE, 0);
+		e_gtk_box_pack_start (GTK_BOX (vbox), widget, FALSE, FALSE, 0);
 
 		g_signal_connect (month_widget, "changed",
 			G_CALLBACK (sync_year_on_change_cb), widget);
@@ -391,7 +391,7 @@ on_idle_create_widget (ESourceRegistry *registry)
 
 		e_month_widget_set_month (E_MONTH_WIDGET (widget), ii + 1, year);
 
-		gtk_container_add (GTK_CONTAINER (container), vbox);
+		e_gtk_container_add (container, vbox);
 
 		child = gtk_flow_box_get_child_at_index (GTK_FLOW_BOX (container), ii);
 
@@ -403,7 +403,7 @@ on_idle_create_widget (ESourceRegistry *registry)
 
 	g_date_free (date);
 
-	gtk_widget_show_all (window);
+	gtk_widget_set_visible (window, TRUE);
 
 	return FALSE;
 }
@@ -415,7 +415,7 @@ main (gint argc,
 	ESourceRegistry *registry;
 	GError *local_error = NULL;
 
-	gtk_init (&argc, &argv);
+	gtk_init ();
 
 	registry = e_source_registry_new_sync (NULL, &local_error);
 

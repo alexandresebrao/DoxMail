@@ -404,7 +404,7 @@ do_sort_and_group_config_dialog (ETableConfig *config,
 		GTK_WINDOW (dialog), GTK_WINDOW (config->dialog_toplevel));
 
 	do {
-		response = gtk_dialog_run (dialog);
+		response = e_gtk_dialog_run (dialog);
 		switch (response) {
 		case 0: /* clear fields */
 			if (is_sort) {
@@ -459,7 +459,7 @@ do_fields_config_dialog (ETableConfig *config)
 		_("_OK"), GTK_RESPONSE_OK,
 		NULL);
 
-	gtk_container_set_border_width (GTK_CONTAINER (dialog), 5);
+	e_gtk_widget_set_border_width (dialog, 5);
 	gtk_window_set_default_size (GTK_WINDOW (dialog), 300, 400);
 
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
@@ -468,16 +468,16 @@ do_fields_config_dialog (ETableConfig *config)
 	label = gtk_label_new (
 		_("Choose the order of information "
 		"to appear in the message list."));
-	gtk_box_pack_start (GTK_BOX (content_area), label, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (content_area), label, FALSE, FALSE, 0);
 	gtk_widget_show (label);
 
 	selector = e_table_column_selector_new (config->state);
-	gtk_container_set_border_width (GTK_CONTAINER (selector), 5);
-	gtk_box_pack_start (GTK_BOX (content_area), selector, TRUE, TRUE, 0);
+	e_gtk_widget_set_border_width (selector, 5);
+	e_gtk_box_pack_start (GTK_BOX (content_area), selector, TRUE, TRUE, 0);
 	gtk_widget_show (selector);
 
 	do {
-		response = gtk_dialog_run (GTK_DIALOG (dialog));
+		response = e_gtk_dialog_run (GTK_DIALOG (dialog));
 		switch (response) {
 		case GTK_RESPONSE_OK:
 			e_table_column_selector_apply (
@@ -494,7 +494,7 @@ do_fields_config_dialog (ETableConfig *config)
 
 	} while (running);
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 
 	config_fields_info_update (config);
 }
@@ -540,7 +540,7 @@ dialog_response (GtkWidget *dialog,
 
 	if (response_id == GTK_RESPONSE_CANCEL
 	    || response_id == GTK_RESPONSE_OK) {
-		gtk_widget_destroy (dialog);
+		e_gtk_widget_destroy (dialog);
 	}
 }
 
@@ -960,10 +960,10 @@ e_table_config_new (const gchar *header,
 	dialog = GTK_DIALOG (config->dialog_toplevel);
 
 	widget = gtk_dialog_get_content_area (dialog);
-	gtk_container_set_border_width (GTK_CONTAINER (widget), 0);
+	e_gtk_widget_set_border_width (widget, 0);
 
-	widget = gtk_dialog_get_action_area (dialog);
-	gtk_container_set_border_width (GTK_CONTAINER (widget), 12);
+	widget = e_gtk_dialog_get_action_area (dialog);
+	e_gtk_widget_set_border_width (widget, 12);
 
 	gtk_dialog_set_response_sensitive (
 		GTK_DIALOG (config->dialog_toplevel),
@@ -984,7 +984,7 @@ e_table_config_raise (ETableConfig *config)
 {
 	GdkWindow *window;
 
-	window = gtk_widget_get_window (GTK_WIDGET (config->dialog_toplevel));
+	window = e_gtk_widget_get_surface (GTK_WIDGET (config->dialog_toplevel));
 	gdk_window_raise (window);
 }
 

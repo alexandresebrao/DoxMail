@@ -245,7 +245,7 @@ e_web_view_search_web_get_selection_cb (GObject *source,
 		if (uri && g_ascii_strncasecmp (uri, "https://", 8) == 0) {
 			GtkWidget *toplevel;
 
-			toplevel = gtk_widget_get_toplevel (GTK_WIDGET (source));
+			toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (source));
 
 			e_show_uri (GTK_IS_WINDOW (toplevel) ? GTK_WINDOW (toplevel) : NULL, uri);
 		} else {
@@ -281,8 +281,8 @@ action_http_open_cb (EUIAction *action,
 	const gchar *uri;
 	gpointer parent;
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (web_view));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (web_view));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	uri = e_web_view_get_selected_uri (web_view);
 	g_return_if_fail (uri != NULL);
@@ -296,7 +296,7 @@ webview_mailto_copy (EWebView *web_view,
 {
 	CamelURL *curl;
 	CamelInternetAddress *inet_addr;
-	GtkClipboard *clipboard;
+	GdkClipboard *clipboard;
 	const gchar *uri, *name = NULL, *email = NULL;
 	gchar *text;
 
@@ -322,13 +322,13 @@ webview_mailto_copy (EWebView *web_view,
 	g_object_unref (inet_addr);
 	camel_url_free (curl);
 
-	clipboard = gtk_clipboard_get (GDK_SELECTION_PRIMARY);
-	gtk_clipboard_set_text (clipboard, text, -1);
-	gtk_clipboard_store (clipboard);
+	clipboard = e_gtk_clipboard_get (E_GTK_SELECTION_PRIMARY);
+	e_gtk_clipboard_set_text (clipboard, text, -1);
+	e_gtk_clipboard_store (clipboard);
 
-	clipboard = gtk_clipboard_get (GDK_SELECTION_CLIPBOARD);
-	gtk_clipboard_set_text (clipboard, text, -1);
-	gtk_clipboard_store (clipboard);
+	clipboard = e_gtk_clipboard_get (E_GTK_SELECTION_CLIPBOARD);
+	e_gtk_clipboard_set_text (clipboard, text, -1);
+	e_gtk_clipboard_store (clipboard);
 
 	g_free (text);
 }
@@ -373,8 +373,8 @@ action_send_message_cb (EUIAction *action,
 	gpointer parent;
 	gboolean handled;
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (web_view));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (web_view));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	uri = e_web_view_get_selected_uri (web_view);
 	g_return_if_fail (uri != NULL);
@@ -392,19 +392,19 @@ action_uri_copy_cb (EUIAction *action,
 		    gpointer user_data)
 {
 	EWebView *web_view = user_data;
-	GtkClipboard *clipboard;
+	GdkClipboard *clipboard;
 	const gchar *uri;
 
 	uri = e_web_view_get_selected_uri (web_view);
 	g_return_if_fail (uri != NULL);
 
-	clipboard = gtk_clipboard_get (GDK_SELECTION_PRIMARY);
-	gtk_clipboard_set_text (clipboard, uri, -1);
-	gtk_clipboard_store (clipboard);
+	clipboard = e_gtk_clipboard_get (E_GTK_SELECTION_PRIMARY);
+	e_gtk_clipboard_set_text (clipboard, uri, -1);
+	e_gtk_clipboard_store (clipboard);
 
-	clipboard = gtk_clipboard_get (GDK_SELECTION_CLIPBOARD);
-	gtk_clipboard_set_text (clipboard, uri, -1);
-	gtk_clipboard_store (clipboard);
+	clipboard = e_gtk_clipboard_get (E_GTK_SELECTION_CLIPBOARD);
+	e_gtk_clipboard_set_text (clipboard, uri, -1);
+	e_gtk_clipboard_store (clipboard);
 }
 
 static void
@@ -546,7 +546,7 @@ web_view_got_elem_from_point_for_popup_event_cb (GObject *source_object,
 	}
 
 	if (event)
-		gdk_event_free (event);
+		gdk_event_unref (event);
 	g_clear_error (&error);
 }
 
@@ -592,13 +592,13 @@ web_view_context_menu_cb (WebKitWebView *webkit_web_view,
 
 	web_view->priv->last_popup_link_uri = link_uri;
 
-	if (!gdk_event_get_coords (event, &xx, &yy)) {
+	if (!e_gdk_event_get_coords (event, &xx, &yy)) {
 		xx = 1;
 		yy = 1;
 	}
 
 	e_web_view_jsc_get_element_from_point (WEBKIT_WEB_VIEW (web_view), xx, yy, web_view->priv->cancellable,
-		web_view_got_elem_from_point_for_popup_event_cb, event ? gdk_event_copy (event) : NULL);
+		web_view_got_elem_from_point_for_popup_event_cb, event ? gdk_event_ref (event) : NULL);
 
 	return TRUE;
 }
@@ -1885,7 +1885,7 @@ e_web_view_replace_load_cancellable (EWebView *web_view,
 
 static gboolean
 web_view_scroll_event (GtkWidget *widget,
-                       GdkEventScroll *event)
+                       GdkEvent *event)
 {
 	if (event->state & GDK_CONTROL_MASK) {
 		GdkScrollDirection direction = event->direction;
@@ -1926,7 +1926,7 @@ web_view_scroll_event (GtkWidget *widget,
 
 static gboolean
 web_view_drag_motion (GtkWidget *widget,
-                      GdkDragContext *context,
+                      EGtkDragContext *context,
                       gint x,
                       gint y,
                       guint time_)
@@ -1934,14 +1934,14 @@ web_view_drag_motion (GtkWidget *widget,
 	/* Made this way to not pretend that this is a drop zone,
 	   when only FALSE had been returned, even it is supposed
 	   to be enough. Remove web_view_drag_leave() once fixed. */
-	gdk_drag_status (context, 0, time_);
+	e_gtk_drag_status (context, 0, time_);
 
 	return TRUE;
 }
 
 static gboolean
 web_view_drag_drop (GtkWidget *widget,
-		    GdkDragContext *context,
+		    EGtkDragContext *context,
 		    gint x,
 		    gint y,
 		    guint time_)
@@ -1952,7 +1952,7 @@ web_view_drag_drop (GtkWidget *widget,
 
 static void
 web_view_drag_leave (GtkWidget *widget,
-		     GdkDragContext *context,
+		     EGtkDragContext *context,
 		     guint time_)
 {
 	/* Defined to avoid crash in WebKit, when the web_view_drag_motion()
@@ -1987,8 +1987,8 @@ web_view_link_clicked (EWebView *web_view,
 			return;
 	}
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (web_view));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (web_view));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	if (g_ascii_strncasecmp (uri, "open-map:", 9) == 0) {
 		GUri *guri;
@@ -2199,8 +2199,8 @@ web_view_submit_alert (EAlertSink *alert_sink,
 
 	web_view = E_WEB_VIEW (alert_sink);
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (web_view));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (web_view));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	switch (e_alert_get_message_type (alert)) {
 		case GTK_MESSAGE_INFO:
@@ -2217,8 +2217,8 @@ web_view_submit_alert (EAlertSink *alert_sink,
 
 		default:
 			dialog = e_alert_dialog_new (parent, alert);
-			gtk_dialog_run (GTK_DIALOG (dialog));
-			gtk_widget_destroy (dialog);
+			e_gtk_dialog_run (GTK_DIALOG (dialog));
+			e_gtk_widget_destroy (dialog);
 			return;
 	}
 
@@ -2305,7 +2305,7 @@ web_view_can_execute_editing_command_cb (WebKitWebView *webkit_web_view,
 static void
 web_view_selectable_update_actions (ESelectable *selectable,
                                     EFocusTracker *focus_tracker,
-                                    GdkAtom *clipboard_targets,
+                                    EGtkAtom *clipboard_targets,
                                     gint n_clipboard_targets)
 {
 	EWebView *web_view;
@@ -2373,7 +2373,7 @@ web_view_toplevel_event_after_cb (GtkWidget *widget,
 				  EWebView *web_view)
 {
 	if (event && event->type == GDK_MOTION_NOTIFY && web_view->priv->has_hover_link &&
-	    gdk_event_get_window (event) != gtk_widget_get_window (GTK_WIDGET (web_view))) {
+	    gdk_event_get_window (event) != e_gtk_widget_get_surface (GTK_WIDGET (web_view))) {
 		/* This won't reset WebKitGTK's cached link the cursor stays on, but do this,
 		   instead of sending a fake signal to the WebKitGTK. */
 		e_web_view_status_message (web_view, NULL);
@@ -2387,7 +2387,7 @@ web_view_map (GtkWidget *widget)
 {
 	GtkWidget *toplevel;
 
-	toplevel = gtk_widget_get_toplevel (widget);
+	toplevel = e_gtk_widget_get_toplevel (widget);
 
 	g_signal_connect (toplevel, "event-after", G_CALLBACK (web_view_toplevel_event_after_cb), widget);
 
@@ -2399,7 +2399,7 @@ web_view_unmap (GtkWidget *widget)
 {
 	GtkWidget *toplevel;
 
-	toplevel = gtk_widget_get_toplevel (widget);
+	toplevel = e_gtk_widget_get_toplevel (widget);
 
 	g_signal_handlers_disconnect_by_func (toplevel, G_CALLBACK (web_view_toplevel_event_after_cb), widget);
 
@@ -2849,7 +2849,7 @@ e_web_view_set_caret_mode (EWebView *web_view,
 	g_object_notify (G_OBJECT (web_view), "caret-mode");
 }
 
-GtkTargetList *
+EGtkTargetList *
 e_web_view_get_copy_target_list (EWebView *web_view)
 {
 	g_return_val_if_fail (E_IS_WEB_VIEW (web_view), NULL);
@@ -3005,7 +3005,7 @@ e_web_view_set_open_proxy (EWebView *web_view,
 	g_object_notify (G_OBJECT (web_view), "open-proxy");
 }
 
-GtkTargetList *
+EGtkTargetList *
 e_web_view_get_paste_target_list (EWebView *web_view)
 {
 	g_return_val_if_fail (E_IS_WEB_VIEW (web_view), NULL);
@@ -3812,11 +3812,11 @@ web_view_cursor_image_copy_pixbuf_cb (GObject *source_object,
 		g_error_free (local_error);
 
 	} else {
-		GtkClipboard *clipboard;
+		GdkClipboard *clipboard;
 
-		clipboard = gtk_clipboard_get (GDK_SELECTION_CLIPBOARD);
-		gtk_clipboard_set_image (clipboard, pixbuf);
-		gtk_clipboard_store (clipboard);
+		clipboard = e_gtk_clipboard_get (E_GTK_SELECTION_CLIPBOARD);
+		e_gtk_clipboard_set_image (clipboard, pixbuf);
+		e_gtk_clipboard_store (clipboard);
 
 		e_activity_set_state (activity, E_ACTIVITY_COMPLETED);
 	}
@@ -4076,8 +4076,8 @@ e_web_view_cursor_image_save (EWebView *web_view)
 	if (web_view->priv->cursor_image_src == NULL)
 		return;
 
-	toplevel = gtk_widget_get_toplevel (GTK_WIDGET (web_view));
-	toplevel = gtk_widget_is_toplevel (toplevel) ? toplevel : NULL;
+	toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (web_view));
+	toplevel = e_gtk_widget_is_toplevel (toplevel) ? toplevel : NULL;
 
 	native = gtk_file_chooser_native_new (
 		_("Save Image"), toplevel,
@@ -4085,8 +4085,6 @@ e_web_view_cursor_image_save (EWebView *web_view)
 		_("_Save"), _("_Cancel"));
 
 	file_chooser = GTK_FILE_CHOOSER (native);
-	gtk_file_chooser_set_local_only (file_chooser, FALSE);
-	gtk_file_chooser_set_do_overwrite_confirmation (file_chooser, TRUE);
 
 	suggestion = e_web_view_suggest_filename (
 		web_view, web_view->priv->cursor_image_src);
@@ -4098,10 +4096,10 @@ e_web_view_cursor_image_save (EWebView *web_view)
 
 	e_util_load_file_chooser_folder (file_chooser);
 
-	if (gtk_native_dialog_run (GTK_NATIVE_DIALOG (native)) == GTK_RESPONSE_ACCEPT) {
+	if (e_gtk_native_dialog_run (GTK_NATIVE_DIALOG (native)) == GTK_RESPONSE_ACCEPT) {
 		e_util_save_file_chooser_folder (file_chooser);
 
-		destination = gtk_file_chooser_get_file (file_chooser);
+		destination = e_gtk_file_chooser_get_file (file_chooser);
 	}
 
 	g_object_unref (native);

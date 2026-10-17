@@ -292,7 +292,7 @@ sort_order_tree_autoscroll (gpointer user_data)
 
 static void
 sort_order_tree_drag_begin_cb (GtkWidget *widget,
-			       GdkDragContext *context,
+			       EGtkDragContext *context,
 			       gpointer user_data)
 {
 	EMailFolderSortOrderDialog *dialog = user_data;
@@ -326,7 +326,7 @@ sort_order_tree_drag_begin_cb (GtkWidget *widget,
 	dialog->priv->drag_changed = FALSE;
 
 	surface = gtk_tree_view_create_row_drag_icon (tree_view, path);
-	gtk_drag_set_icon_surface (context, surface);
+	e_gtk_drag_set_icon_surface (context, surface);
 	cairo_surface_destroy (surface);
 
 	gtk_tree_path_free (path);
@@ -369,7 +369,7 @@ sort_order_tree_drag_begin_cb (GtkWidget *widget,
 
 static gboolean
 sort_order_tree_drag_motion_cb (GtkWidget *widget,
-				GdkDragContext *context,
+				EGtkDragContext *context,
 				gint x,
 				gint y,
 				guint time,
@@ -388,7 +388,7 @@ sort_order_tree_drag_motion_cb (GtkWidget *widget,
 
 	if (!dialog->priv->drag_row ||
 	    !gtk_tree_view_get_dest_row_at_pos (tree_view, x, y, &path, NULL)) {
-		gdk_drag_status (context, 0, time);
+		e_gtk_drag_status (context, 0, time);
 		return FALSE;
 	}
 
@@ -490,14 +490,14 @@ sort_order_tree_drag_motion_cb (GtkWidget *widget,
 		dialog->priv->drag_changed = TRUE;
 	}
 
-	gdk_drag_status (context, (can || dialog->priv->drag_changed) ? GDK_ACTION_MOVE : 0, time);
+	e_gtk_drag_status (context, (can || dialog->priv->drag_changed) ? GDK_ACTION_MOVE : 0, time);
 
 	return TRUE;
 }
 
 static void
 sort_order_tree_drag_leave_cb (GtkWidget *widget,
-			       GdkDragContext *context,
+			       EGtkDragContext *context,
 			       guint time,
 			       gpointer user_data)
 {
@@ -516,7 +516,7 @@ sort_order_tree_drag_leave_cb (GtkWidget *widget,
 
 static gboolean
 sort_order_tree_drag_drop_cb (GtkWidget *widget,
-			      GdkDragContext *context,
+			      EGtkDragContext *context,
 			      gint x,
 			      gint y,
 			      guint time,
@@ -533,7 +533,7 @@ sort_order_tree_drag_drop_cb (GtkWidget *widget,
 
 static void
 sort_order_tree_drag_end_cb (GtkWidget *widget,
-			     GdkDragContext *context,
+			     EGtkDragContext *context,
 			     gpointer user_data)
 {
 	EMailFolderSortOrderDialog *dialog = user_data;
@@ -668,8 +668,8 @@ e_mail_folder_sort_order_dialog_get_property (GObject *object,
 static void
 e_mail_folder_sort_order_dialog_constructed (GObject *object)
 {
-	const GtkTargetEntry row_targets[] = {
-		{ (gchar *) "EMailFolderSortOrderDialog", GTK_TARGET_SAME_WIDGET, 0 }
+	const EGtkTargetEntry row_targets[] = {
+		{ (gchar *) "EMailFolderSortOrderDialog", E_GTK_TARGET_SAME_WIDGET, 0 }
 	};
 	EMailFolderSortOrderDialog *dialog = E_MAIL_FOLDER_SORT_ORDER_DIALOG (object);
 	GtkWidget *folder_tree, *vbox, *widget;
@@ -689,11 +689,11 @@ e_mail_folder_sort_order_dialog_constructed (GObject *object)
 
 	gtk_window_set_default_size (GTK_WINDOW (dialog), 400, 500);
 	gtk_window_set_title (GTK_WINDOW (dialog), _("Folder Sort Order"));
-	gtk_container_set_border_width (GTK_CONTAINER (dialog), 5);
+	e_gtk_widget_set_border_width (dialog, 5);
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
-	gtk_container_set_border_width (GTK_CONTAINER (widget), 5);
-	gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area (GTK_DIALOG (dialog))), widget, TRUE, TRUE, 0);
+	e_gtk_widget_set_border_width (widget, 5);
+	e_gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area (GTK_DIALOG (dialog))), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	vbox = widget;
@@ -713,7 +713,7 @@ e_mail_folder_sort_order_dialog_constructed (GObject *object)
 		G_CALLBACK (sort_order_dialog_selection_changed_cb), dialog);
 
 	widget = e_tree_view_frame_new ();
-	gtk_box_pack_start (GTK_BOX (vbox), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), widget, TRUE, TRUE, 0);
 	gtk_widget_set_size_request (widget, -1, 240);
 	gtk_widget_show (widget);
 
@@ -754,8 +754,8 @@ e_mail_folder_sort_order_dialog_constructed (GObject *object)
 	if (!e_util_get_use_header_bar ())
 		gtk_dialog_add_buttons (GTK_DIALOG (dialog), _("_Close"), GTK_RESPONSE_CANCEL, NULL);
 
-	gtk_drag_source_set (dialog->priv->folder_tree, GDK_BUTTON1_MASK, row_targets, G_N_ELEMENTS (row_targets), GDK_ACTION_MOVE);
-	gtk_drag_dest_set (dialog->priv->folder_tree, GTK_DEST_DEFAULT_MOTION, row_targets, G_N_ELEMENTS (row_targets), GDK_ACTION_MOVE);
+	e_gtk_drag_source_set (dialog->priv->folder_tree, GDK_BUTTON1_MASK, row_targets, G_N_ELEMENTS (row_targets), GDK_ACTION_MOVE);
+	e_gtk_drag_dest_set (dialog->priv->folder_tree, E_GTK_DEST_DEFAULT_MOTION, row_targets, G_N_ELEMENTS (row_targets), GDK_ACTION_MOVE);
 
 	g_signal_connect (dialog->priv->folder_tree, "drag-begin",
 		G_CALLBACK (sort_order_tree_drag_begin_cb), dialog);

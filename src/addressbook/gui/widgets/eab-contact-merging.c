@@ -94,7 +94,7 @@ merge_dialog_data_free (MergeDialogData *mdd)
 	if (!mdd)
 		return;
 
-	gtk_widget_destroy (mdd->dialog);
+	e_gtk_widget_destroy (mdd->dialog);
 
 	g_list_free (mdd->match_email_attr_list);
 	g_list_free (mdd->contact_email_attr_list);
@@ -595,7 +595,7 @@ merge_dialog_data_create (EContactMergingLookup *lookup,
 
 	mdd->dialog = gtk_dialog_new ();
 	gtk_window_set_title (GTK_WINDOW (mdd->dialog), _("Merge Contact"));
-	gtk_container_set_border_width (GTK_CONTAINER (mdd->dialog), 5);
+	e_gtk_widget_set_border_width (mdd->dialog, 5);
 	if (GTK_IS_WINDOW (parent))
 		gtk_window_set_transient_for (GTK_WINDOW (mdd->dialog), GTK_WINDOW (parent));
 
@@ -703,13 +703,13 @@ merge_dialog_data_create (EContactMergingLookup *lookup,
 					   &(mdd->use_im_list), &(mdd->row), grid, get_impp_label_text);
 
 	gtk_window_set_default_size (GTK_WINDOW (mdd->dialog), 420, 300);
-	gtk_container_add (GTK_CONTAINER (scrolled_window), GTK_WIDGET (grid));
-	gtk_box_pack_start (GTK_BOX (content_area), GTK_WIDGET (scrolled_window), TRUE, TRUE, 0);
+	e_gtk_container_add (scrolled_window, GTK_WIDGET (grid));
+	e_gtk_box_pack_start (GTK_BOX (content_area), GTK_WIDGET (scrolled_window), TRUE, TRUE, 0);
 	gtk_widget_show (scrolled_window);
 	g_signal_connect (
 		mdd->dialog, "map-event",
 		G_CALLBACK (dialog_map), grid);
-	gtk_widget_show_all (GTK_WIDGET (grid));
+	gtk_widget_set_visible (GTK_WIDGET (grid), TRUE);
 
 	return mdd;
 }
@@ -747,7 +747,7 @@ mergeit (EContactMergingLookup *lookup,
 	if (lookup->merge_dialog_data->row == -1)
 		result = GTK_RESPONSE_OK;
 	else
-		result = gtk_dialog_run (GTK_DIALOG (lookup->merge_dialog_data->dialog));
+		result = e_gtk_dialog_run (GTK_DIALOG (lookup->merge_dialog_data->dialog));
 
 	switch (result) {
 	case GTK_RESPONSE_OK:
@@ -908,10 +908,10 @@ create_duplicate_contact_detected_dialog (EContact *old_contact,
 		"margin", 12,
 		NULL);
 
-	gtk_container_add (container, widget);
+	e_gtk_container_add (container, widget);
 	container = GTK_CONTAINER (widget);
 
-	widget = gtk_image_new_from_icon_name ("avatar-default", GTK_ICON_SIZE_BUTTON);
+	widget = gtk_image_new_from_icon_name ("avatar-default");
 	g_object_set (
 		G_OBJECT (widget),
 		"hexpand", FALSE,
@@ -920,7 +920,7 @@ create_duplicate_contact_detected_dialog (EContact *old_contact,
 		"valign", GTK_ALIGN_START,
 		"margin-end", 12,
 		NULL);
-	gtk_container_add (container, widget);
+	e_gtk_container_add (container, widget);
 
 	widget = gtk_grid_new ();
 	g_object_set (
@@ -932,7 +932,7 @@ create_duplicate_contact_detected_dialog (EContact *old_contact,
 		"valign", GTK_ALIGN_FILL,
 		NULL);
 
-	gtk_container_add (container, widget);
+	e_gtk_container_add (container, widget);
 	container = GTK_CONTAINER (widget);
 
 	if (is_for_commit)
@@ -951,7 +951,7 @@ create_duplicate_contact_detected_dialog (EContact *old_contact,
 		"valign", GTK_ALIGN_START,
 		"margin-bottom", 6,
 		NULL);
-	gtk_container_add (container, widget);
+	e_gtk_container_add (container, widget);
 
 	if (is_for_commit)
 		text = _("Changed Contact:");
@@ -967,7 +967,7 @@ create_duplicate_contact_detected_dialog (EContact *old_contact,
 		"valign", GTK_ALIGN_START,
 		"margin-bottom", 6,
 		NULL);
-	gtk_container_add (container, widget);
+	e_gtk_container_add (container, widget);
 
 	scrolled = gtk_scrolled_window_new (NULL, NULL);
 	g_object_set (
@@ -980,7 +980,7 @@ create_duplicate_contact_detected_dialog (EContact *old_contact,
 		"vscrollbar-policy", GTK_POLICY_AUTOMATIC,
 		"margin-bottom", 6,
 		NULL);
-	gtk_container_add (container, scrolled);
+	e_gtk_container_add (container, scrolled);
 
 	widget = eab_contact_display_new ();
 	g_object_set (
@@ -992,7 +992,7 @@ create_duplicate_contact_detected_dialog (EContact *old_contact,
 		"contact", new_contact,
 		"mode", EAB_CONTACT_DISPLAY_RENDER_COMPACT,
 		NULL);
-	gtk_container_add (GTK_CONTAINER (scrolled), widget);
+	e_gtk_container_add (scrolled, widget);
 
 	if (is_for_commit)
 		text = _("Conflicting Contact:");
@@ -1008,7 +1008,7 @@ create_duplicate_contact_detected_dialog (EContact *old_contact,
 		"valign", GTK_ALIGN_START,
 		"margin-bottom", 6,
 		NULL);
-	gtk_container_add (container, widget);
+	e_gtk_container_add (container, widget);
 
 	scrolled = gtk_scrolled_window_new (NULL, NULL);
 	g_object_set (
@@ -1020,7 +1020,7 @@ create_duplicate_contact_detected_dialog (EContact *old_contact,
 		"valign", GTK_ALIGN_FILL,
 		"vscrollbar-policy", GTK_POLICY_AUTOMATIC,
 		NULL);
-	gtk_container_add (container, scrolled);
+	e_gtk_container_add (container, scrolled);
 
 	widget = eab_contact_display_new ();
 	g_object_set (
@@ -1032,9 +1032,9 @@ create_duplicate_contact_detected_dialog (EContact *old_contact,
 		"contact", old_contact,
 		"mode", EAB_CONTACT_DISPLAY_RENDER_COMPACT,
 		NULL);
-	gtk_container_add (GTK_CONTAINER (scrolled), widget);
+	e_gtk_container_add (scrolled, widget);
 
-	gtk_widget_show_all (gtk_dialog_get_content_area (dialog));
+	gtk_widget_set_visible (gtk_dialog_get_content_area (dialog), TRUE);
 
 	return GTK_WIDGET (dialog);
 }
@@ -1063,7 +1063,7 @@ response (GtkWidget *dialog,
 		break;
 	}
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 }
 
 static void
@@ -1116,7 +1116,7 @@ match_query_callback (EContact *contact,
 			dialog, "response",
 			G_CALLBACK (response), lookup);
 
-		gtk_widget_show_all (dialog);
+		gtk_widget_set_visible (dialog, TRUE);
 	}
 }
 

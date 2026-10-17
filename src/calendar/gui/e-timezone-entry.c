@@ -93,7 +93,7 @@ timezone_entry_update_entry (ETimezoneEntry *timezone_entry)
 
 	name_buffer = g_strdup (display_name);
 
-	gtk_entry_set_text (GTK_ENTRY (timezone_entry->priv->entry), name_buffer);
+	gtk_editable_set_text (GTK_EDITABLE (timezone_entry->priv->entry), name_buffer);
 
 	/* XXX Do we need to hide the timezone entry at all?  I know
 	 *     this overrules the previous case of hiding the timezone
@@ -172,11 +172,11 @@ timezone_entry_button_clicked_cb (ETimezoneEntry *timezone_entry)
 
 	dialog = e_timezone_dialog_get_toplevel (timezone_dialog);
 
-	toplevel = gtk_widget_get_toplevel (GTK_WIDGET (timezone_entry));
+	toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (timezone_entry));
 	if (GTK_IS_WINDOW (toplevel))
 		gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (toplevel));
 
-	if (gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_ACCEPT)
+	if (e_gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_ACCEPT)
 		goto exit;
 
 	timezone = e_timezone_dialog_get_timezone (timezone_dialog);
@@ -238,7 +238,7 @@ timezone_entry_mnemonic_activate (GtkWidget *widget,
 {
 	ETimezoneEntry *self = E_TIMEZONE_ENTRY (widget);
 
-	if (gtk_widget_get_can_focus (widget)) {
+	if (gtk_widget_get_focusable (widget)) {
 		if (self->priv->button != NULL)
 			gtk_widget_grab_focus (self->priv->button);
 	}
@@ -475,12 +475,12 @@ e_timezone_entry_init (ETimezoneEntry *timezone_entry)
 	timezone_entry->priv = e_timezone_entry_get_instance_private (timezone_entry);
 	timezone_entry->priv->allow_none = FALSE;
 
-	gtk_widget_set_can_focus (GTK_WIDGET (timezone_entry), TRUE);
+	gtk_widget_set_focusable (GTK_WIDGET (timezone_entry), TRUE);
 	gtk_orientable_set_orientation (GTK_ORIENTABLE (timezone_entry), GTK_ORIENTATION_HORIZONTAL);
 
 	widget = gtk_entry_new ();
 	gtk_editable_set_editable (GTK_EDITABLE (widget), TRUE);
-	gtk_box_pack_start (GTK_BOX (timezone_entry), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (timezone_entry), widget, TRUE, TRUE, 0);
 	timezone_entry->priv->entry = widget;
 	gtk_widget_show (widget);
 
@@ -492,7 +492,7 @@ e_timezone_entry_init (ETimezoneEntry *timezone_entry)
 		G_CALLBACK (timezone_entry_focus_out_event_cb), timezone_entry, G_CONNECT_AFTER);
 
 	widget = gtk_button_new_with_label (_("Select…"));
-	gtk_box_pack_start (GTK_BOX (timezone_entry), widget, FALSE, FALSE, 6);
+	e_gtk_box_pack_start (GTK_BOX (timezone_entry), widget, FALSE, FALSE, 6);
 	timezone_entry->priv->button = widget;
 	gtk_widget_show (widget);
 

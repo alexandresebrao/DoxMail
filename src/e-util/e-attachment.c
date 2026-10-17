@@ -2759,9 +2759,9 @@ e_attachment_load_handle_error (EAttachment *attachment,
 	gtk_message_dialog_format_secondary_text (
 		GTK_MESSAGE_DIALOG (dialog), "%s", error->message);
 
-	gtk_dialog_run (GTK_DIALOG (dialog));
+	e_gtk_dialog_run (GTK_DIALOG (dialog));
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 	g_error_free (error);
 }
 
@@ -2995,9 +2995,9 @@ e_attachment_open_handle_error (EAttachment *attachment,
 	gtk_message_dialog_format_secondary_text (
 		GTK_MESSAGE_DIALOG (dialog), "%s", error->message);
 
-	gtk_dialog_run (GTK_DIALOG (dialog));
+	e_gtk_dialog_run (GTK_DIALOG (dialog));
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 	g_error_free (error);
 }
 
@@ -3880,9 +3880,9 @@ e_attachment_save_handle_error (EAttachment *attachment,
 	gtk_message_dialog_format_secondary_text (
 		GTK_MESSAGE_DIALOG (dialog), "%s", error->message);
 
-	gtk_dialog_run (GTK_DIALOG (dialog));
+	e_gtk_dialog_run (GTK_DIALOG (dialog));
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 	g_error_free (error);
 }
 

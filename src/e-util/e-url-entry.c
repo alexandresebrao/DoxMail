@@ -79,10 +79,10 @@ url_entry_icon_release_cb (GtkEntry *entry,
 	if (icon_position != ICON_POSITION)
 		return;
 
-	toplevel = gtk_widget_get_toplevel (GTK_WIDGET (entry));
-	toplevel = gtk_widget_is_toplevel (toplevel) ? toplevel : NULL;
+	toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (entry));
+	toplevel = e_gtk_widget_is_toplevel (toplevel) ? toplevel : NULL;
 
-	text = gtk_entry_get_text (entry);
+	text = gtk_editable_get_text (GTK_EDITABLE (entry));
 	g_return_if_fail (text != NULL);
 
 	/* Skip leading whitespace. */

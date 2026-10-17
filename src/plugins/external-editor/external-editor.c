@@ -53,7 +53,7 @@ static void	ee_editor_immediate_launch_changed
 						(GtkWidget *checkbox);
 static gboolean	editor_running			(void);
 static gboolean	key_press_cb			(GtkWidget *widget,
-						 GdkEventKey *event,
+						 GdkEvent *event,
 						 EMsgComposer *composer);
 
 gint e_plugin_lib_enable (EPlugin *ep, gint enable);
@@ -71,7 +71,7 @@ ee_editor_command_changed (GtkWidget *textbox)
 	const gchar *editor;
 	GSettings *settings;
 
-	editor = gtk_entry_get_text (GTK_ENTRY (textbox));
+	editor = gtk_editable_get_text (GTK_EDITABLE (textbox));
 	d (printf ("\n\aeditor is : [%s] \n\a", editor));
 
 	/* GSettings access for every key-press. Sucky ? */
@@ -111,7 +111,7 @@ e_plugin_lib_get_configure_widget (EPlugin *epl)
 
 	editor = g_settings_get_string (settings, "command");
 	if (editor) {
-		gtk_entry_set_text (GTK_ENTRY (textbox), editor);
+		gtk_editable_set_text (GTK_EDITABLE (textbox), editor);
 		g_free (editor);
 	}
 
@@ -122,10 +122,10 @@ e_plugin_lib_get_configure_widget (EPlugin *epl)
 		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (checkbox), TRUE);
 	g_object_unref (settings);
 
-	gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
-	gtk_box_pack_start (GTK_BOX (vbox), textbox, FALSE, FALSE, 0);
-	gtk_box_pack_start (GTK_BOX (vbox), help, FALSE, FALSE, 0);
-	gtk_box_pack_start (GTK_BOX (vbox), checkbox, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), textbox, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), help, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), checkbox, FALSE, FALSE, 0);
 
 	g_signal_connect (
 		textbox, "changed",
@@ -135,7 +135,7 @@ e_plugin_lib_get_configure_widget (EPlugin *epl)
 		checkbox, "toggled",
 		G_CALLBACK (ee_editor_immediate_launch_changed), checkbox);
 
-	gtk_widget_show_all (vbox);
+	gtk_widget_set_visible (vbox, TRUE);
 
 	return vbox;
 }
@@ -487,7 +487,7 @@ launch_editor_cb (EUIAction *action,
 
 static gboolean
 key_press_cb (GtkWidget *widget,
-              GdkEventKey *event,
+              GdkEvent *event,
               EMsgComposer *composer)
 {
 	GSettings *settings;

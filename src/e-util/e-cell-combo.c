@@ -129,13 +129,10 @@ e_cell_combo_init (ECellCombo *ecc)
 	 * ever be one popup in use at a time. */
 	ecc->popup_window = gtk_window_new (GTK_WINDOW_POPUP);
 
-	gtk_window_set_type_hint (
-		GTK_WINDOW (ecc->popup_window), GDK_WINDOW_TYPE_HINT_COMBO);
 	gtk_window_set_resizable (GTK_WINDOW (ecc->popup_window), TRUE);
 
 	frame = gtk_frame_new (NULL);
-	gtk_container_add (GTK_CONTAINER (ecc->popup_window), frame);
-	gtk_frame_set_shadow_type (GTK_FRAME (frame), GTK_SHADOW_OUT);
+	e_gtk_container_add (ecc->popup_window, frame);
 	gtk_widget_show (frame);
 
 	ecc->popup_scrolled_window = gtk_scrolled_window_new (NULL, NULL);
@@ -143,11 +140,9 @@ e_cell_combo_init (ECellCombo *ecc)
 
 	gtk_scrolled_window_set_policy (
 		scrolled_window, GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_widget_set_can_focus (
-		gtk_scrolled_window_get_hscrollbar (scrolled_window), FALSE);
-	gtk_widget_set_can_focus (
-		gtk_scrolled_window_get_vscrollbar (scrolled_window), FALSE);
-	gtk_container_add (GTK_CONTAINER (frame), ecc->popup_scrolled_window);
+	gtk_widget_set_focusable (gtk_scrolled_window_get_hscrollbar (scrolled_window), FALSE);
+	gtk_widget_set_focusable (gtk_scrolled_window_get_vscrollbar (scrolled_window), FALSE);
+	e_gtk_container_add (frame, ecc->popup_scrolled_window);
 	gtk_widget_show (ecc->popup_scrolled_window);
 
 	store = gtk_list_store_new (1, G_TYPE_STRING);
@@ -169,17 +164,7 @@ e_cell_combo_init (ECellCombo *ecc)
 	selection = gtk_tree_view_get_selection (
 		GTK_TREE_VIEW (ecc->popup_tree_view));
 	gtk_tree_selection_set_mode (selection, GTK_SELECTION_SINGLE);
-	gtk_container_add (
-		GTK_CONTAINER (ecc->popup_scrolled_window),
-		ecc->popup_tree_view);
-	gtk_container_set_focus_vadjustment (
-		GTK_CONTAINER (ecc->popup_tree_view),
-		gtk_scrolled_window_get_vadjustment (
-		GTK_SCROLLED_WINDOW (ecc->popup_scrolled_window)));
-	gtk_container_set_focus_hadjustment (
-		GTK_CONTAINER (ecc->popup_tree_view),
-		gtk_scrolled_window_get_hadjustment (
-		GTK_SCROLLED_WINDOW (ecc->popup_scrolled_window)));
+	e_gtk_container_add (ecc->popup_scrolled_window, ecc->popup_tree_view);
 	gtk_widget_show (ecc->popup_tree_view);
 
 	a11y = gtk_widget_get_accessible (ecc->popup_tree_view);
@@ -301,7 +286,7 @@ e_cell_combo_do_popup (ECellPopup *ecp,
 	g_signal_handlers_unblock_by_func (
 		selection, e_cell_combo_selection_changed, ecc);
 
-	window = gtk_widget_get_window (ecc->popup_tree_view);
+	window = e_gtk_widget_get_surface (ecc->popup_tree_view);
 
 	event_device = gdk_event_get_device (event);
 	event_time = gdk_event_get_time (event);
@@ -449,17 +434,16 @@ e_cell_combo_show_popup (ECellCombo *ecc,
 
 	eti = E_TABLE_ITEM (E_CELL_POPUP (ecc)->popup_cell_view->cell_view.e_table_item_view);
 	if (eti) {
-		toplevel = gtk_widget_get_toplevel (GTK_WIDGET (GNOME_CANVAS_ITEM (eti)->canvas));
+		toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (GNOME_CANVAS_ITEM (eti)->canvas));
 		if (!GTK_IS_WINDOW (toplevel))
 			toplevel = NULL;
 	}
 
 	gtk_window_set_transient_for (GTK_WINDOW (ecc->popup_window), toplevel ? GTK_WINDOW (toplevel) : NULL);
 
-	gtk_window_move (GTK_WINDOW (ecc->popup_window), x, y);
 	gtk_widget_set_size_request (ecc->popup_window, width, height);
 	gtk_widget_realize (ecc->popup_window);
-	window = gtk_widget_get_window (ecc->popup_window);
+	window = e_gtk_widget_get_surface (ecc->popup_window);
 	gdk_window_resize (window, width, height);
 	gtk_widget_show (ecc->popup_window);
 
@@ -504,7 +488,7 @@ e_cell_combo_get_popup_pos (ECellCombo *ecc,
 	popup = GTK_SCROLLED_WINDOW (ecc->popup_scrolled_window);
 	popwin = GTK_BIN (ecc->popup_window);
 
-	window = gtk_widget_get_window (canvas);
+	window = e_gtk_widget_get_surface (canvas);
 	gdk_window_get_origin (window, x, y);
 
 	x1 = e_table_header_col_diff (eti->header, 0, view_col + 1);
@@ -552,11 +536,11 @@ e_cell_combo_get_popup_pos (ECellCombo *ecc,
 			GTK_TREE_VIEW (ecc->popup_tree_view)), NULL))
 		list_requisition.height += E_CELL_COMBO_LIST_EMPTY_HEIGHT;
 
-	popwin_child = gtk_bin_get_child (popwin);
+	popwin_child = e_gtk_bin_get_child (popwin);
 	style_context = gtk_widget_get_style_context (popwin_child);
 	gtk_style_context_get_padding (style_context, gtk_style_context_get_state (style_context), &popwin_padding);
 
-	popup_child = gtk_bin_get_child (GTK_BIN (popup));
+	popup_child = e_gtk_bin_get_child (popup);
 	style_context = gtk_widget_get_style_context (popup_child);
 	gtk_style_context_get_padding (style_context, gtk_style_context_get_state (style_context), &popup_padding);
 
@@ -764,7 +748,7 @@ e_cell_combo_key_press (GtkWidget *popup_window,
 	guint event_keyval = 0;
 	guint32 event_time;
 
-	gdk_event_get_keyval (key_event, &event_keyval);
+	e_gdk_event_get_keyval (key_event, &event_keyval);
 	event_time = gdk_event_get_time (key_event);
 
 	/* If the Escape key is pressed we hide the popup. */

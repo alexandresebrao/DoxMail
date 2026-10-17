@@ -138,14 +138,14 @@ book_shell_sidebar_constructed (GObject *object)
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_container_add (container, widget);
+	e_gtk_container_add (container, widget);
 	gtk_widget_show (widget);
 
 	container = GTK_CONTAINER (widget);
 
 	client_cache = e_shell_get_client_cache (shell);
 	widget = e_addressbook_selector_new (client_cache);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	self->priv->selector = g_object_ref (widget);
 	gtk_widget_show (widget);
 

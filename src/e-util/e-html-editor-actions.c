@@ -46,8 +46,8 @@ e_html_editor_action_can_run (GtkWidget *widget)
 	if (gtk_widget_has_focus (widget))
 		return TRUE;
 
-	toplevel = gtk_widget_get_toplevel (widget);
-	if (!toplevel || !gtk_widget_is_toplevel (toplevel) || !GTK_IS_WINDOW (toplevel))
+	toplevel = e_gtk_widget_get_toplevel (widget);
+	if (!toplevel || !e_gtk_widget_is_toplevel (toplevel) || !GTK_IS_WINDOW (toplevel))
 		return TRUE;
 
 	focused = gtk_window_get_focus (GTK_WINDOW (toplevel));
@@ -75,13 +75,13 @@ insert_html_file_ready_cb (GFile *file,
 		GtkWidget *dialog;
 
 		dialog = gtk_message_dialog_new (
-			GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (editor))),
+			GTK_WINDOW (e_gtk_widget_get_toplevel (GTK_WIDGET (editor))),
 			0, GTK_MESSAGE_ERROR,
 			GTK_BUTTONS_CLOSE, _("Failed to insert HTML file."));
 		gtk_message_dialog_format_secondary_text (
 			GTK_MESSAGE_DIALOG (dialog), "%s.", error->message);
-		gtk_dialog_run (GTK_DIALOG (dialog));
-		gtk_widget_destroy (dialog);
+		e_gtk_dialog_run (GTK_DIALOG (dialog));
+		e_gtk_widget_destroy (dialog);
 
 		g_clear_error (&error);
 		g_object_unref (editor);
@@ -113,13 +113,13 @@ insert_text_file_ready_cb (GFile *file,
 		GtkWidget *dialog;
 
 		dialog = gtk_message_dialog_new (
-			GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (editor))),
+			GTK_WINDOW (e_gtk_widget_get_toplevel (GTK_WIDGET (editor))),
 			0, GTK_MESSAGE_ERROR,
 			GTK_BUTTONS_CLOSE, _("Failed to insert text file."));
 		gtk_message_dialog_format_secondary_text (
 			GTK_MESSAGE_DIALOG (dialog), "%s.", error->message);
-		gtk_dialog_run (GTK_DIALOG (dialog));
-		gtk_widget_destroy (dialog);
+		e_gtk_dialog_run (GTK_DIALOG (dialog));
+		e_gtk_widget_destroy (dialog);
 
 		g_clear_error (&error);
 		g_object_unref (editor);
@@ -145,18 +145,18 @@ action_copy_link_cb (EUIAction *action,
 		     gpointer user_data)
 {
 	EHTMLEditor *editor = user_data;
-	GtkClipboard *clipboard;
+	GdkClipboard *clipboard;
 
 	if (!editor->priv->context_hover_uri)
 		return;
 
-	clipboard = gtk_clipboard_get (GDK_SELECTION_PRIMARY);
-	gtk_clipboard_set_text (clipboard, editor->priv->context_hover_uri, -1);
-	gtk_clipboard_store (clipboard);
+	clipboard = e_gtk_clipboard_get (E_GTK_SELECTION_PRIMARY);
+	e_gtk_clipboard_set_text (clipboard, editor->priv->context_hover_uri, -1);
+	e_gtk_clipboard_store (clipboard);
 
-	clipboard = gtk_clipboard_get (GDK_SELECTION_CLIPBOARD);
-	gtk_clipboard_set_text (clipboard, editor->priv->context_hover_uri, -1);
-	gtk_clipboard_store (clipboard);
+	clipboard = e_gtk_clipboard_get (E_GTK_SELECTION_CLIPBOARD);
+	e_gtk_clipboard_set_text (clipboard, editor->priv->context_hover_uri, -1);
+	e_gtk_clipboard_store (clipboard);
 }
 
 static void
@@ -170,8 +170,8 @@ action_open_link_cb (EUIAction *action,
 	if (!editor->priv->context_hover_uri)
 		return;
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (editor));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (editor));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	e_show_uri (parent, editor->priv->context_hover_uri);
 }
@@ -426,7 +426,7 @@ action_insert_emoji_cb (EUIAction *action,
 		popover = GTK_POPOVER (e_gtk_emoji_chooser_new ());
 
 		gtk_popover_set_position (GTK_POPOVER (popover), GTK_POS_BOTTOM);
-		gtk_popover_set_modal (GTK_POPOVER (popover), TRUE);
+		gtk_popover_set_autohide (GTK_POPOVER (popover), TRUE);
 
 		g_signal_connect_object (popover, "emoji-picked",
 			G_CALLBACK (emoji_chooser_emoji_picked_cb), editor, G_CONNECT_SWAPPED);
@@ -485,7 +485,7 @@ action_insert_html_file_cb (EUIAction *action,
 	GtkFileFilter *filter;
 	GtkWidget *toplevel;
 
-	toplevel = gtk_widget_get_toplevel (GTK_WIDGET (editor));
+	toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (editor));
 
 	native = gtk_file_chooser_native_new (
 		_("Insert HTML File"), GTK_IS_WINDOW (toplevel) ? GTK_WINDOW (toplevel) : NULL,
@@ -495,15 +495,15 @@ action_insert_html_file_cb (EUIAction *action,
 	filter = gtk_file_filter_new ();
 	gtk_file_filter_set_name (filter, _("HTML file"));
 	gtk_file_filter_add_mime_type (filter, "text/html");
-	gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (native), filter);
+	e_gtk_file_chooser_add_filter (native, filter);
 
 	e_util_load_file_chooser_folder (GTK_FILE_CHOOSER (native));
 
-	if (gtk_native_dialog_run (GTK_NATIVE_DIALOG (native)) == GTK_RESPONSE_ACCEPT) {
+	if (e_gtk_native_dialog_run (GTK_NATIVE_DIALOG (native)) == GTK_RESPONSE_ACCEPT) {
 		GFile *file;
 
 		e_util_save_file_chooser_folder (GTK_FILE_CHOOSER (native));
-		file = gtk_file_chooser_get_file (GTK_FILE_CHOOSER (native));
+		file = e_gtk_file_chooser_get_file (native);
 
 		/* XXX Need a way to cancel this. */
 		g_file_load_contents_async (
@@ -528,8 +528,8 @@ action_insert_image_cb (EUIAction *action,
 	GtkWidget *toplevel;
 	gint response;
 
-	toplevel = gtk_widget_get_toplevel (GTK_WIDGET (editor));
-	if (e_util_is_running_flatpak ()) {
+	toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (editor));
+	{
 		GtkFileFilter *file_filter;
 
 		native = gtk_file_chooser_native_new (
@@ -541,45 +541,28 @@ action_insert_image_cb (EUIAction *action,
 		file_filter = gtk_file_filter_new ();
 		gtk_file_filter_add_pixbuf_formats (file_filter);
 		gtk_file_filter_set_name (file_filter, _("Image files"));
-		gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (native), file_filter);
-		gtk_file_chooser_set_filter (GTK_FILE_CHOOSER (native), file_filter);
+		e_gtk_file_chooser_add_filter (native, file_filter);
+		e_gtk_file_chooser_set_filter (native, file_filter);
 
 		file_filter = gtk_file_filter_new ();
 		gtk_file_filter_set_name (file_filter, _("All files"));
 		gtk_file_filter_add_pattern (file_filter, "*");
-		gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (native), file_filter);
-	} else {
-		GSList *filters, *link;
-
-		dialog = e_image_chooser_dialog_new (C_("dialog-title", "Insert Image"), GTK_IS_WINDOW (toplevel) ? GTK_WINDOW (toplevel) : NULL);
-
-		filters = gtk_file_chooser_list_filters (GTK_FILE_CHOOSER (dialog));
-
-		for (link = filters; link; link = g_slist_next (link)) {
-			GtkFileFilter *file_filter = link->data;
-
-			if (g_strcmp0 (gtk_file_filter_get_name (file_filter), _("Image files")) == 0) {
-				gtk_file_filter_add_mime_type (file_filter, "image/*");
-				break;
-			}
-		}
-
-		g_slist_free (filters);
+		e_gtk_file_chooser_add_filter (native, file_filter);
 	}
 
 	if (dialog)
-		response = gtk_dialog_run (GTK_DIALOG (dialog));
+		response = e_gtk_dialog_run (GTK_DIALOG (dialog));
 	else
-		response = gtk_native_dialog_run (GTK_NATIVE_DIALOG (native));
+		response = e_gtk_native_dialog_run (GTK_NATIVE_DIALOG (native));
 
 	if (response == GTK_RESPONSE_ACCEPT) {
 		EContentEditor *cnt_editor;
 		gchar *uri;
 
 		if (dialog)
-			uri = gtk_file_chooser_get_uri (GTK_FILE_CHOOSER (dialog));
+			uri = e_gtk_file_chooser_get_uri (dialog);
 		else
-			uri = gtk_file_chooser_get_uri (GTK_FILE_CHOOSER (native));
+			uri = e_gtk_file_chooser_get_uri (native);
 
 		cnt_editor = e_html_editor_get_content_editor (editor);
 		e_content_editor_insert_image (cnt_editor, uri);
@@ -588,7 +571,7 @@ action_insert_image_cb (EUIAction *action,
 	}
 
 	if (dialog)
-		gtk_widget_destroy (dialog);
+		e_gtk_widget_destroy (dialog);
 	else
 		g_object_unref (native);
 }
@@ -644,7 +627,7 @@ action_insert_text_file_cb (EUIAction *action,
 	GtkWidget *toplevel;
 	GtkFileFilter *filter;
 
-	toplevel = gtk_widget_get_toplevel (GTK_WIDGET (editor));
+	toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (editor));
 
 	native = gtk_file_chooser_native_new (
 		_("Insert text file"), GTK_IS_WINDOW (toplevel) ? GTK_WINDOW (toplevel) : NULL,
@@ -654,15 +637,15 @@ action_insert_text_file_cb (EUIAction *action,
 	filter = gtk_file_filter_new ();
 	gtk_file_filter_set_name (filter, _("Text file"));
 	gtk_file_filter_add_mime_type (filter, "text/plain");
-	gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (native), filter);
+	e_gtk_file_chooser_add_filter (native, filter);
 
 	e_util_load_file_chooser_folder (GTK_FILE_CHOOSER (native));
 
-	if (gtk_native_dialog_run (GTK_NATIVE_DIALOG (native)) == GTK_RESPONSE_ACCEPT) {
+	if (e_gtk_native_dialog_run (GTK_NATIVE_DIALOG (native)) == GTK_RESPONSE_ACCEPT) {
 		GFile *file;
 
 		e_util_save_file_chooser_folder (GTK_FILE_CHOOSER (native));
-		file = gtk_file_chooser_get_file (GTK_FILE_CHOOSER (native));
+		file = e_gtk_file_chooser_get_file (native);
 
 		/* XXX Need a way to cancel this. */
 		g_file_load_contents_async (
@@ -822,7 +805,7 @@ html_editor_actions_notify_mode_cb (EHTMLEditor *editor,
 }
 
 static void
-clipboard_text_received_for_paste_as_text (GtkClipboard *clipboard,
+clipboard_text_received_for_paste_as_text (GdkClipboard *clipboard,
                                            const gchar *text,
                                            EHTMLEditor *editor)
 {
@@ -847,19 +830,19 @@ action_paste_as_text_cb (EUIAction *action,
 {
 	EHTMLEditor *editor = user_data;
 	EContentEditor *cnt_editor;
-	GtkClipboard *clipboard;
+	GdkClipboard *clipboard;
 
 	cnt_editor = e_html_editor_get_content_editor (editor);
 	if (!gtk_widget_has_focus (GTK_WIDGET (cnt_editor)))
 		gtk_widget_grab_focus (GTK_WIDGET (cnt_editor));
 
-	clipboard = gtk_clipboard_get_for_display (
+	clipboard = e_gtk_clipboard_get_for_display (
 		gdk_display_get_default (),
-		GDK_SELECTION_CLIPBOARD);
+		E_GTK_SELECTION_CLIPBOARD);
 
-	gtk_clipboard_request_text (
+	e_gtk_clipboard_request_text (
 		clipboard,
-		(GtkClipboardTextReceivedFunc) clipboard_text_received_for_paste_as_text,
+		(EGtkClipboardTextReceivedFunc) clipboard_text_received_for_paste_as_text,
 		editor);
 }
 
@@ -883,7 +866,7 @@ paste_quote_text (EHTMLEditor *editor,
 }
 
 static void
-clipboard_html_received_for_paste_quote (GtkClipboard *clipboard,
+clipboard_html_received_for_paste_quote (GdkClipboard *clipboard,
                                          const gchar *text,
                                          gpointer user_data)
 {
@@ -896,7 +879,7 @@ clipboard_html_received_for_paste_quote (GtkClipboard *clipboard,
 }
 
 static void
-clipboard_text_received_for_paste_quote (GtkClipboard *clipboard,
+clipboard_text_received_for_paste_quote (GdkClipboard *clipboard,
                                          const gchar *text,
                                          gpointer user_data)
 {
@@ -915,24 +898,24 @@ action_paste_quote_cb (EUIAction *action,
 {
 	EHTMLEditor *editor = user_data;
 	EContentEditor *cnt_editor;
-	GtkClipboard *clipboard;
+	GdkClipboard *clipboard;
 
 	cnt_editor = e_html_editor_get_content_editor (editor);
 	if (!gtk_widget_has_focus (GTK_WIDGET (cnt_editor)))
 		gtk_widget_grab_focus (GTK_WIDGET (cnt_editor));
 
-	clipboard = gtk_clipboard_get_for_display (
+	clipboard = e_gtk_clipboard_get_for_display (
 		gdk_display_get_default (),
-		GDK_SELECTION_CLIPBOARD);
+		E_GTK_SELECTION_CLIPBOARD);
 
 	if (e_html_editor_get_mode (editor) == E_CONTENT_EDITOR_MODE_HTML) {
 		if (e_clipboard_wait_is_html_available (clipboard))
 			e_clipboard_request_html (clipboard, clipboard_html_received_for_paste_quote, editor);
-		else if (gtk_clipboard_wait_is_text_available (clipboard))
-			gtk_clipboard_request_text (clipboard, clipboard_text_received_for_paste_quote, editor);
+		else if (e_gtk_clipboard_wait_is_text_available (clipboard))
+			e_gtk_clipboard_request_text (clipboard, clipboard_text_received_for_paste_quote, editor);
 	} else {
-		if (gtk_clipboard_wait_is_text_available (clipboard))
-			gtk_clipboard_request_text (clipboard, clipboard_text_received_for_paste_quote, editor);
+		if (e_gtk_clipboard_wait_is_text_available (clipboard))
+			e_gtk_clipboard_request_text (clipboard, clipboard_text_received_for_paste_quote, editor);
 		else if (e_clipboard_wait_is_html_available (clipboard))
 			e_clipboard_request_html (clipboard, clipboard_html_received_for_paste_quote, editor);
 	}

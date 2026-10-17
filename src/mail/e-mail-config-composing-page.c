@@ -401,7 +401,7 @@ mail_config_composing_page_constructed (GObject *object)
 	widget = gtk_grid_new ();
 	gtk_grid_set_row_spacing (GTK_GRID (widget), 6);
 	gtk_grid_set_column_spacing (GTK_GRID (widget), 6);
-	gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -524,14 +524,14 @@ mail_config_composing_page_constructed (GObject *object)
 
 	widget = gtk_check_button_new_with_mnemonic (_("Start _typing at the bottom"));
 	gtk_widget_set_margin_start (widget, 12);
-	gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	mail_config_composing_page_setup_three_state_value (composition_ext, "start-bottom", widget);
 
 	widget = gtk_check_button_new_with_mnemonic (_("_Keep signature above the original message"));
 	gtk_widget_set_margin_start (widget, 12);
-	gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	mail_config_composing_page_setup_three_state_value (composition_ext, "top-signature", widget);
@@ -541,7 +541,7 @@ mail_config_composing_page_constructed (GObject *object)
 	widget = gtk_grid_new ();
 	gtk_grid_set_row_spacing (GTK_GRID (widget), 6);
 	gtk_grid_set_column_spacing (GTK_GRID (widget), 6);
-	gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;

@@ -634,8 +634,8 @@ source_viewer_constructed (GObject *object)
 	gtk_window_set_default_size (GTK_WINDOW (viewer), 800, 600);
 
 	paned = gtk_paned_new (GTK_ORIENTATION_HORIZONTAL);
-	gtk_paned_set_position (GTK_PANED (paned), 400);
-	gtk_container_add (GTK_CONTAINER (viewer), paned);
+	e_gtk_paned_set_position (paned, 400);
+	e_gtk_container_add (viewer, paned);
 	gtk_widget_show (paned);
 
 	/* Left panel */
@@ -644,8 +644,7 @@ source_viewer_constructed (GObject *object)
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_set_shadow_type (
-		GTK_SCROLLED_WINDOW (widget), GTK_SHADOW_IN);
+	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (widget), TRUE);
 	gtk_paned_add1 (GTK_PANED (paned), widget);
 	gtk_widget_show (widget);
 
@@ -653,7 +652,7 @@ source_viewer_constructed (GObject *object)
 
 	widget = gtk_tree_view_new_with_model (
 		GTK_TREE_MODEL (viewer->tree_store));
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	viewer->tree_view = widget;  /* do not reference */
 	gtk_widget_show (widget);
 
@@ -745,7 +744,7 @@ source_viewer_constructed (GObject *object)
 	/* leave left margin at zero */
 	gtk_notebook_set_show_tabs (GTK_NOTEBOOK (widget), FALSE);
 	gtk_notebook_set_show_border (GTK_NOTEBOOK (widget), FALSE);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	viewer->top_panel = widget;  /* do not reference */
 	gtk_widget_show (widget);
 
@@ -753,16 +752,15 @@ source_viewer_constructed (GObject *object)
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_set_shadow_type (
-		GTK_SCROLLED_WINDOW (widget), GTK_SHADOW_IN);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (widget), TRUE);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
 
 	widget = gtk_text_view_new ();
 	gtk_text_view_set_editable (GTK_TEXT_VIEW (widget), FALSE);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	viewer->text_view = widget;  /* do not reference */
 	gtk_widget_show (widget);
 
@@ -785,7 +783,7 @@ source_viewer_constructed (GObject *object)
 	container = widget;
 
 	widget = gtk_label_new ("Identity:");
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	widget = gtk_label_new (NULL);
@@ -793,12 +791,12 @@ source_viewer_constructed (GObject *object)
 	gtk_label_set_ellipsize (GTK_LABEL (widget), PANGO_ELLIPSIZE_END);
 	gtk_label_set_selectable (GTK_LABEL (widget), TRUE);
 	gtk_label_set_xalign (GTK_LABEL (widget), 0);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	viewer->viewing_label = widget;  /* do not reference */
 	gtk_widget_show (widget);
 
 	widget = e_dialog_button_new_with_icon ("edit-delete", _("_Delete"));
-	gtk_box_pack_end (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_end (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	viewer->delete_button = widget;  /* do not reference */
 	gtk_widget_hide (widget);
 
@@ -815,19 +813,19 @@ source_viewer_constructed (GObject *object)
 	container = widget;
 
 	widget = gtk_label_new ("Deleting");
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	widget = gtk_label_new (NULL);
 	gtk_label_set_attributes (GTK_LABEL (widget), bold);
 	gtk_label_set_ellipsize (GTK_LABEL (widget), PANGO_ELLIPSIZE_END);
 	gtk_label_set_xalign (GTK_LABEL (widget), 0);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	viewer->deleting_label = widget;  /* do not reference */
 	gtk_widget_show (widget);
 
 	widget = e_dialog_button_new_with_icon ("process-stop", _("_Cancel"));
-	gtk_box_pack_end (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_end (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	viewer->deleting_cancel = widget;  /* do not reference */
 	gtk_widget_show (widget);
 
@@ -1163,7 +1161,7 @@ main (gint argc,
 	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
 	textdomain (GETTEXT_PACKAGE);
 
-	gtk_init (&argc, &argv);
+	gtk_init ();
 
 	viewer = e_source_viewer_new (NULL, &error);
 

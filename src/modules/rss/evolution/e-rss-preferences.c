@@ -357,12 +357,12 @@ e_rss_preferences_entry_changed_cb (GtkEntry *entry,
 
 	pd = g_object_get_data (popover, "e-rss-popover-data");
 
-	text = gtk_entry_get_text (pd->href);
+	text = gtk_editable_get_text (GTK_EDITABLE (pd->href));
 	sensitive = text && *text;
 	gtk_widget_set_sensitive (pd->fetch_button, sensitive);
 
 	if (sensitive) {
-		text = gtk_entry_get_text (pd->name);
+		text = gtk_editable_get_text (GTK_EDITABLE (pd->name));
 		sensitive = text && *text;
 	}
 
@@ -482,7 +482,7 @@ e_rss_preferences_feed_info_ready_cb (GObject *source_object,
 					gtk_combo_box_set_active_id (pd->content_type, e_rss_preferences_content_type_to_string (CAMEL_RSS_CONTENT_TYPE_HTML));
 
 				if (title && *title)
-					gtk_entry_set_text (pd->name, title);
+					gtk_editable_set_text (GTK_EDITABLE (pd->name), title);
 
 				if (icon && *icon) {
 					SoupMessage *message2;
@@ -553,7 +553,7 @@ e_rss_preferences_fetch_clicked_cb (GtkWidget *button,
 	e_activity_set_text (pd->activity, _("Fetching feed information…"));
 	e_activity_bar_set_activity (pd->activity_bar, pd->activity);
 
-	message = soup_message_new (SOUP_METHOD_GET, gtk_entry_get_text (pd->href));
+	message = soup_message_new (SOUP_METHOD_GET, gtk_editable_get_text (GTK_EDITABLE (pd->href)));
 	if (!message) {
 		e_activity_set_text (pd->activity, _("Invalid Feed URL"));
 		e_activity_set_state (pd->activity, E_ACTIVITY_WAITING);
@@ -589,17 +589,16 @@ e_rss_preferences_icon_clicked_cb (GtkWidget *button,
 {
 	GObject *popover = user_data;
 	PopoverData *pd;
-	GtkWidget *dialog;
+	GtkWidget *toplevel;
 	GtkWindow *parent;
 	GFile *file;
 
 	pd = g_object_get_data (popover, "e-rss-popover-data");
 
-	dialog = gtk_widget_get_toplevel (button);
-	parent = GTK_IS_WINDOW (dialog) ? GTK_WINDOW (dialog) : NULL;
+	toplevel = e_gtk_widget_get_toplevel (button);
+	parent = GTK_IS_WINDOW (toplevel) ? GTK_WINDOW (toplevel) : NULL;
 
-	dialog = e_image_chooser_dialog_new (_("Choose Feed Image"), parent);
-	file = e_image_chooser_dialog_run (E_IMAGE_CHOOSER_DIALOG (dialog));
+	file = e_image_chooser_dialog_run (e_image_chooser_dialog_new (_("Choose Feed Image"), parent));
 
 	g_clear_pointer (&pd->icon_filename, g_free);
 
@@ -608,10 +607,10 @@ e_rss_preferences_icon_clicked_cb (GtkWidget *button,
 		gtk_image_set_from_file (pd->icon_image, pd->icon_filename);
 		e_rss_preferences_maybe_scale_image (pd->icon_image);
 	} else {
-		gtk_image_set_from_icon_name (pd->icon_image, "rss", GTK_ICON_SIZE_DIALOG);
+		gtk_image_set_from_icon_name (pd->icon_image, "rss");
 	}
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 }
 
 /* Copy icon to the private directory */
@@ -667,9 +666,9 @@ e_rss_preferences_maybe_copy_icon (const gchar *feed_id,
 	}
 
 	if (pixbuf)
-		gtk_icon_theme_rescan_if_needed (gtk_icon_theme_get_default ());
+		gtk_icon_theme_rescan_if_needed (e_gtk_icon_theme_get_default ());
 	else if (g_file_copy (src, des, G_FILE_COPY_OVERWRITE, NULL, NULL, NULL, &error))
-		gtk_icon_theme_rescan_if_needed (gtk_icon_theme_get_default ());
+		gtk_icon_theme_rescan_if_needed (e_gtk_icon_theme_get_default ());
 	else
 		g_warning ("Failed to copy icon file '%s' to '%s': %s", icon_filename, filename, error ? error->message : "Unknown error");
 
@@ -769,7 +768,7 @@ e_rss_preferences_save_clicked_cb (GtkWidget *button,
 		gchar *real_icon_filename;
 
 		old_display_name = g_strdup (camel_rss_store_summary_get_display_name (store_summary, pd->id));
-		display_name = gtk_entry_get_text (pd->name);
+		display_name = gtk_editable_get_text (GTK_EDITABLE (pd->name));
 
 		real_icon_filename = e_rss_preferences_maybe_copy_icon (pd->id, icon_filename, user_data_dir);
 
@@ -792,8 +791,8 @@ e_rss_preferences_save_clicked_cb (GtkWidget *button,
 		g_free (old_display_name);
 	} else {
 		e_rss_preferences_create_feed (service, store_summary,
-			gtk_entry_get_text (pd->href),
-			gtk_entry_get_text (pd->name),
+			gtk_editable_get_text (GTK_EDITABLE (pd->href)),
+			gtk_editable_get_text (GTK_EDITABLE (pd->name)),
 			icon_filename,
 			content_type,
 			user_data_dir,
@@ -861,8 +860,8 @@ e_rss_preferences_get_popover (GtkWidget *parent,
 	gtk_grid_attach (grid, widget, 0, 0, 1, 3);
 	pd->icon_button = GTK_BUTTON (widget);
 
-	widget = gtk_image_new_from_icon_name ("rss", GTK_ICON_SIZE_DIALOG);
-	gtk_container_add (GTK_CONTAINER (pd->icon_button), widget);
+	widget = gtk_image_new_from_icon_name ("rss");
+	e_gtk_container_add (pd->icon_button, widget);
 	pd->icon_image = GTK_IMAGE (widget);
 
 	widget = gtk_label_new_with_mnemonic (_("Feed _URL:"));
@@ -921,15 +920,15 @@ e_rss_preferences_get_popover (GtkWidget *parent,
 	gtk_grid_attach (grid, widget, 1, 5, 3, 1);
 	pd->save_button = widget;
 
-	gtk_widget_show_all (GTK_WIDGET (grid));
+	gtk_widget_set_visible (GTK_WIDGET (grid), TRUE);
 
 	widget = e_activity_bar_new ();
 	gtk_grid_attach (grid, widget, 0, 6, 4, 1);
 	pd->activity_bar = E_ACTIVITY_BAR (widget);
 
 	gtk_popover_set_position (popover, GTK_POS_BOTTOM);
-	gtk_container_add (GTK_CONTAINER (popover), GTK_WIDGET (grid));
-	gtk_container_set_border_width (GTK_CONTAINER (popover), 6);
+	e_gtk_container_add (popover, GTK_WIDGET (grid));
+	e_gtk_widget_set_border_width (popover, 6);
 
 	g_object_set_data_full (G_OBJECT (popover), "e-rss-popover-data", pd, popover_data_free);
 	g_object_set_data_full (G_OBJECT (tree_view), "e-rss-popover", g_object_ref_sink (popover), g_object_unref);
@@ -965,9 +964,9 @@ e_rss_preferences_add_clicked_cb (GtkWidget *button,
 
 	popover = e_rss_preferences_get_popover (button, tree_view, NULL, &pd);
 
-	gtk_entry_set_text (pd->href, "");
-	gtk_entry_set_text (pd->name, "");
-	gtk_image_set_from_icon_name (pd->icon_image, "rss", GTK_ICON_SIZE_DIALOG);
+	gtk_editable_set_text (GTK_EDITABLE (pd->href), "");
+	gtk_editable_set_text (GTK_EDITABLE (pd->name), "");
+	gtk_image_set_from_icon_name (pd->icon_image, "rss");
 	gtk_combo_box_set_active_id (pd->content_type, "html");
 	e_rss_preferences_three_state_to_widget (pd->complete_articles, CAMEL_THREE_STATE_INCONSISTENT);
 	e_rss_preferences_three_state_to_widget (pd->feed_enclosures, CAMEL_THREE_STATE_INCONSISTENT);
@@ -1045,14 +1044,14 @@ e_rss_properties_got_folder_to_edit_cb (GObject *source_object,
 
 		icon_filename = camel_rss_store_summary_get_icon_filename (store_summary, id);
 
-		gtk_entry_set_text (pd->href, camel_rss_store_summary_get_href (store_summary, id));
-		gtk_entry_set_text (pd->name, camel_rss_store_summary_get_display_name (store_summary, id));
+		gtk_editable_set_text (GTK_EDITABLE (pd->href), camel_rss_store_summary_get_href (store_summary, id));
+		gtk_editable_set_text (GTK_EDITABLE (pd->name), camel_rss_store_summary_get_display_name (store_summary, id));
 
 		if (icon_filename && g_file_test (icon_filename, G_FILE_TEST_IS_REGULAR)) {
 			gtk_image_set_from_file (pd->icon_image, icon_filename);
 			e_rss_preferences_maybe_scale_image (pd->icon_image);
 		} else {
-			gtk_image_set_from_icon_name (pd->icon_image, "rss", GTK_ICON_SIZE_DIALOG);
+			gtk_image_set_from_icon_name (pd->icon_image, "rss");
 		}
 
 		gtk_combo_box_set_active_id (pd->content_type, e_rss_preferences_content_type_to_string (
@@ -1153,7 +1152,7 @@ e_rss_choose_file (gpointer parent,
 	filter = gtk_file_filter_new ();
 	gtk_file_filter_set_name (filter, _("OPML files"));
 	gtk_file_filter_add_mime_type (filter, "text/x-opml+xml");
-	gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (native), filter);
+	e_gtk_file_chooser_add_filter (native, filter);
 
 	e_util_load_file_chooser_folder (GTK_FILE_CHOOSER (native));
 
@@ -1163,9 +1162,9 @@ e_rss_choose_file (gpointer parent,
 		gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (native), _("feeds.opml"));
 	}
 
-	if (gtk_native_dialog_run (GTK_NATIVE_DIALOG (native)) == GTK_RESPONSE_ACCEPT) {
+	if (e_gtk_native_dialog_run (GTK_NATIVE_DIALOG (native)) == GTK_RESPONSE_ACCEPT) {
 		e_util_save_file_chooser_folder (GTK_FILE_CHOOSER (native));
-		file = gtk_file_chooser_get_file (GTK_FILE_CHOOSER (native));
+		file = e_gtk_file_chooser_get_file (native);
 	}
 
 	g_object_unref (native);
@@ -1429,7 +1428,7 @@ e_rss_preferences_export_import (GtkWidget *button,
 		return;
 	}
 
-	toplevel = gtk_widget_get_toplevel (button);
+	toplevel = e_gtk_widget_get_toplevel (button);
 	if (!GTK_IS_WINDOW (toplevel))
 		toplevel = NULL;
 
@@ -1668,10 +1667,10 @@ e_rss_preferences_new (EPreferencesWindow *window)
 
 	/* Translators: This is part of "Do not download enclosures larger than [ nnn ] KB" */
 	widget = gtk_check_button_new_with_mnemonic (_("Do not download e_nclosures larger than"));
-	gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 
 	spin = gtk_spin_button_new_with_range (1, 999999, 100);
-	gtk_box_pack_start (GTK_BOX (hbox), spin, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), spin, FALSE, FALSE, 0);
 
 	e_binding_bind_property (
 		widget, "active",
@@ -1691,7 +1690,7 @@ e_rss_preferences_new (EPreferencesWindow *window)
 
 	/* Translators: This is part of "Do not download enclosures larger than [ nnn ] KB" */
 	widget = gtk_label_new (_("KB"));
-	gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 
 	gtk_grid_attach (grid, hbox, 0, row, 2, 1);
 	row++;
@@ -1735,7 +1734,7 @@ e_rss_preferences_new (EPreferencesWindow *window)
 		"visible", TRUE,
 		NULL);
 	g_object_unref (list_store);
-	gtk_container_add (GTK_CONTAINER (scrolled_window), widget);
+	e_gtk_container_add (scrolled_window, widget);
 
 	tree_view = GTK_TREE_VIEW (widget);
 
@@ -1789,7 +1788,7 @@ e_rss_preferences_new (EPreferencesWindow *window)
 	selection = gtk_tree_view_get_selection (tree_view);
 	gtk_tree_selection_set_mode (selection, GTK_SELECTION_SINGLE);
 
-	button_box = gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
+	button_box = e_gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
 	g_object_set (G_OBJECT (button_box),
 		"layout-style", GTK_BUTTONBOX_START,
 		"margin-start", 6,
@@ -1797,14 +1796,14 @@ e_rss_preferences_new (EPreferencesWindow *window)
 		NULL);
 
 	widget = e_dialog_button_new_with_icon ("list-add", _("_Add"));
-	gtk_container_add (GTK_CONTAINER (button_box), widget);
+	e_gtk_container_add (button_box, widget);
 
 	g_signal_connect_object (widget, "clicked",
 		G_CALLBACK (e_rss_preferences_add_clicked_cb), tree_view, 0);
 
 	widget = e_dialog_button_new_with_icon (NULL, _("_Edit"));
 	gtk_widget_set_sensitive (widget, FALSE);
-	gtk_container_add (GTK_CONTAINER (button_box), widget);
+	e_gtk_container_add (button_box, widget);
 
 	g_signal_connect_object (widget, "clicked",
 		G_CALLBACK (e_rss_preferences_edit_clicked_cb), tree_view, 0);
@@ -1817,7 +1816,7 @@ e_rss_preferences_new (EPreferencesWindow *window)
 
 	widget = e_dialog_button_new_with_icon ("edit-delete", _("_Remove"));
 	gtk_widget_set_sensitive (widget, FALSE);
-	gtk_container_add (GTK_CONTAINER (button_box), widget);
+	e_gtk_container_add (button_box, widget);
 
 	g_signal_connect_object (widget, "clicked",
 		G_CALLBACK (e_rss_preferences_remove_clicked_cb), tree_view, 0);
@@ -1827,7 +1826,7 @@ e_rss_preferences_new (EPreferencesWindow *window)
 
 	widget = e_dialog_button_new_with_icon (NULL, _("E_xport"));
 	gtk_widget_set_sensitive (widget, FALSE);
-	gtk_container_add (GTK_CONTAINER (button_box), widget);
+	e_gtk_container_add (button_box, widget);
 
 	g_signal_connect_object (list_store, "row-deleted",
 		G_CALLBACK (e_rss_preferences_row_deleted_cb), widget, 0);
@@ -1839,7 +1838,7 @@ e_rss_preferences_new (EPreferencesWindow *window)
 		G_CALLBACK (e_rss_preferences_export_clicked_cb), NULL);
 
 	widget = e_dialog_button_new_with_icon (NULL, _("_Import"));
-	gtk_container_add (GTK_CONTAINER (button_box), widget);
+	e_gtk_container_add (button_box, widget);
 
 	g_signal_connect (widget, "clicked",
 		G_CALLBACK (e_rss_preferences_import_clicked_cb), NULL);
@@ -1851,7 +1850,7 @@ e_rss_preferences_new (EPreferencesWindow *window)
 	pango_attr_list_unref (bold);
 
 	widget = GTK_WIDGET (grid);
-	gtk_widget_show_all (widget);
+	gtk_widget_set_visible (widget, TRUE);
 
 	g_clear_object (&store_summary);
 	g_clear_object (&service);

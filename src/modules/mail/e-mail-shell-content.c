@@ -162,19 +162,19 @@ mail_shell_content_constructed (GObject *object)
 
 	widget = e_paned_new (GTK_ORIENTATION_HORIZONTAL);
 	e_paned_set_fixed_resize (E_PANED (widget), FALSE);
-	gtk_container_add (GTK_CONTAINER (shell_content), widget);
+	e_gtk_container_add (shell_content, widget);
 	gtk_widget_show (widget);
 
 	paned = GTK_PANED (widget);
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 4);
-	gtk_paned_pack1 (paned, widget, TRUE, FALSE);
+	e_gtk_paned_pack1 (paned, widget, TRUE, FALSE);
 	gtk_widget_show (widget);
 
 	vbox = GTK_BOX (widget);
 
 	widget = e_mail_paned_view_new (shell_view);
-	gtk_box_pack_start (vbox, widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (vbox, widget, TRUE, TRUE, 0);
 
 	self->priv->mail_view = E_MAIL_VIEW (g_object_ref (widget));
 	gtk_widget_show (widget);
@@ -191,7 +191,7 @@ mail_shell_content_constructed (GObject *object)
 		NULL, NULL, NULL);
 
 	widget = e_to_do_pane_new (shell_view);
-	gtk_paned_pack2 (paned, widget, FALSE, FALSE);
+	e_gtk_paned_pack2 (paned, widget, FALSE, FALSE);
 	gtk_widget_show (widget);
 
 	self->priv->to_do_pane = widget;

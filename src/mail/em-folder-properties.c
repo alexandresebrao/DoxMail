@@ -162,17 +162,13 @@ static void
 tweaks_custom_icon_button_clicked_cb (GtkWidget *button,
 				      FolderTweaksData *ftd)
 {
-	GtkWidget *dialog;
 	GtkWidget *toplevel;
 	GFile *file;
 
-	toplevel = gtk_widget_get_toplevel (button);
-	dialog = e_image_chooser_dialog_new (_("Select Custom Icon"),
-		GTK_IS_WINDOW (toplevel) ? GTK_WINDOW (toplevel) : NULL);
+	toplevel = e_gtk_widget_get_toplevel (button);
 
-	file = e_image_chooser_dialog_run (E_IMAGE_CHOOSER_DIALOG (dialog));
-
-	gtk_widget_destroy (dialog);
+	file = e_image_chooser_dialog_run (e_image_chooser_dialog_new (_("Select Custom Icon"),
+		GTK_IS_WINDOW (toplevel) ? GTK_WINDOW (toplevel) : NULL));
 
 	if (file) {
 		gchar *filename;
@@ -185,7 +181,7 @@ tweaks_custom_icon_button_clicked_cb (GtkWidget *button,
 			image = gtk_button_get_image (GTK_BUTTON (button));
 			custom_icon = g_file_icon_new (file);
 
-			gtk_image_set_from_gicon (GTK_IMAGE (image), custom_icon, GTK_ICON_SIZE_BUTTON);
+			gtk_image_set_from_gicon (GTK_IMAGE (image), custom_icon);
 
 			g_clear_object (&custom_icon);
 
@@ -214,15 +210,14 @@ emfp_add_tweaks_custom_icon_row (GtkBox *vbox,
 	g_return_if_fail (E_IS_MAIL_FOLDER_TWEAKS (tweaks));
 
 	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 4);
-	gtk_box_pack_start (vbox, hbox, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (vbox, hbox, FALSE, FALSE, 0);
 
 	checkbox = gtk_check_button_new_with_mnemonic (_("_Use custom icon"));
-	gtk_box_pack_start (GTK_BOX (hbox), checkbox, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), checkbox, FALSE, FALSE, 0);
 
 	button = gtk_button_new ();
-	image = gtk_image_new_from_icon_name (NULL, GTK_ICON_SIZE_BUTTON);
-	gtk_button_set_image (GTK_BUTTON (button), image);
-	gtk_button_set_always_show_image (GTK_BUTTON (button), TRUE);
+	image = gtk_image_new_from_icon_name (NULL);
+	e_gtk_button_set_image (GTK_BUTTON (button), image);
 
 	icon_filename = e_mail_folder_tweaks_dup_icon_filename (tweaks, folder_uri);
 	if (icon_filename &&
@@ -236,14 +231,14 @@ emfp_add_tweaks_custom_icon_row (GtkBox *vbox,
 		g_clear_object (&file);
 
 		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (checkbox), TRUE);
-		gtk_image_set_from_gicon (GTK_IMAGE (image), custom_icon, GTK_ICON_SIZE_BUTTON);
+		gtk_image_set_from_gicon (GTK_IMAGE (image), custom_icon);
 
 		g_clear_object (&custom_icon);
 	}
 
 	g_free (icon_filename);
 
-	gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
 
 	e_binding_bind_property (
 		checkbox, "active",
@@ -259,7 +254,7 @@ emfp_add_tweaks_custom_icon_row (GtkBox *vbox,
 		G_CALLBACK (tweaks_custom_icon_button_clicked_cb),
 		folder_tweaks_data_new (folder_uri, tweaks, NULL), folder_tweaks_data_free, 0);
 
-	gtk_widget_show_all (hbox);
+	gtk_widget_set_visible (hbox, TRUE);
 }
 
 static void
@@ -307,14 +302,14 @@ emfp_add_tweaks_text_color_row (GtkBox *vbox,
 	g_return_if_fail (E_IS_MAIL_FOLDER_TWEAKS (tweaks));
 
 	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 4);
-	gtk_box_pack_start (vbox, hbox, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (vbox, hbox, FALSE, FALSE, 0);
 
 	checkbox = gtk_check_button_new_with_mnemonic (_("Use te_xt color"));
-	gtk_box_pack_start (GTK_BOX (hbox), checkbox, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), checkbox, FALSE, FALSE, 0);
 
 	button = gtk_color_button_new ();
 
-	gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
 
 	if (e_mail_folder_tweaks_get_color (tweaks, folder_uri, &rgba)) {
 		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (checkbox), TRUE);
@@ -335,7 +330,7 @@ emfp_add_tweaks_text_color_row (GtkBox *vbox,
 		G_CALLBACK (tweaks_text_color_button_color_set_cb),
 		folder_tweaks_data_new (folder_uri, tweaks, NULL), folder_tweaks_data_free, 0);
 
-	gtk_widget_show_all (hbox);
+	gtk_widget_set_visible (hbox, TRUE);
 }
 
 static void
@@ -502,7 +497,7 @@ emfp_get_folder_item (EConfig *ec,
 	gtk_grid_set_row_spacing (GTK_GRID (grid), 6);
 	gtk_grid_set_column_spacing (GTK_GRID (grid), 12);
 	gtk_widget_show (grid);
-	gtk_box_pack_start ((GtkBox *) parent, grid, TRUE, TRUE, 0);
+	e_gtk_box_pack_start ((GtkBox *) parent, grid, TRUE, TRUE, 0);
 
 	store = camel_folder_get_parent_store (context->folder);
 	folder_name = camel_folder_get_full_name (context->folder);
@@ -768,7 +763,7 @@ emfp_get_appearance_item (EConfig *ec,
 	vbox = GTK_BOX (gtk_box_new (GTK_ORIENTATION_VERTICAL, 6));
 	gtk_widget_show (GTK_WIDGET (vbox));
 
-	gtk_box_pack_start (GTK_BOX (parent), GTK_WIDGET (vbox), TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (parent), GTK_WIDGET (vbox), TRUE, TRUE, 0);
 
 	tweaks = e_mail_folder_tweaks_new ();
 	folder_uri = e_mail_folder_uri_from_folder (context->folder);
@@ -941,7 +936,7 @@ emfp_get_autoarchive_item (EConfig *ec,
 	g_object_set_data_full (G_OBJECT (ec), AUTO_ARCHIVE_KEY_DATA, aad, auto_archive_data_free);
 
 	grid = GTK_GRID (gtk_grid_new ());
-	gtk_box_pack_start (GTK_BOX (parent), GTK_WIDGET (grid), TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (parent), GTK_WIDGET (grid), TRUE, TRUE, 0);
 
 	label = gtk_label_new (_("Archive this folder using these settings:"));
 	gtk_grid_attach (grid, label, 0, 0, 3, 1);
@@ -986,11 +981,11 @@ emfp_get_autoarchive_item (EConfig *ec,
 	gtk_grid_attach (grid, hbox, 1, 3, 2, 1);
 
 	widget = gtk_radio_button_new_with_mnemonic_from_widget (GTK_RADIO_BUTTON (radio), _("_Move messages to:"));
-	gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 	aad->move_to_custom_radio = widget;
 
 	widget = em_folder_selection_button_new (e_mail_backend_get_session (mail_backend), _("Archive folder"), _("Select folder to use for Archive"));
-	gtk_box_pack_start (GTK_BOX (hbox), widget, TRUE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, TRUE, FALSE, 0);
 	aad->custom_folder_butt = widget;
 
 	widget = gtk_radio_button_new_with_mnemonic_from_widget (GTK_RADIO_BUTTON (radio), _("_Delete messages"));
@@ -1036,7 +1031,7 @@ emfp_get_autoarchive_item (EConfig *ec,
 			emfp_autoarchive_unit_to_string (E_AUTO_ARCHIVE_UNIT_MONTHS)));
 	}
 
-	gtk_widget_show_all (GTK_WIDGET (grid));
+	gtk_widget_set_visible (GTK_WIDGET (grid), TRUE);
 
 	g_signal_connect (ec, "commit", G_CALLBACK (emfp_autoarchive_commit_cb), aad);
 
@@ -1146,7 +1141,7 @@ emfp_labels_action (GtkWidget *parent,
 		return;
 	}
 
-	if (parent && !gtk_widget_is_toplevel (parent))
+	if (parent && !e_gtk_widget_is_toplevel (parent))
 		parent = NULL;
 
 	shell = e_shell_get_default ();
@@ -1174,7 +1169,7 @@ emfp_labels_action (GtkWidget *parent,
 
 				repeat = FALSE;
 
-				if (gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_OK)
+				if (e_gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_OK)
 					break;
 
 				label_name = e_mail_label_dialog_get_label_name (label_dialog);
@@ -1193,7 +1188,7 @@ emfp_labels_action (GtkWidget *parent,
 				emfp_update_label_row (model, &my_iter, label_name, &label_color);
 			}
 
-			gtk_widget_destroy (dialog);
+			e_gtk_widget_destroy (dialog);
 		}
 	} else if (action == EMFP_EDIT_LABEL) {
 		if (tag_exists) {
@@ -1218,7 +1213,7 @@ emfp_labels_action (GtkWidget *parent,
 			while (repeat) {
 				repeat = FALSE;
 
-				if (gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_OK)
+				if (e_gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_OK)
 					break;
 
 				new_name = e_mail_label_dialog_get_label_name (label_dialog);
@@ -1239,7 +1234,7 @@ emfp_labels_action (GtkWidget *parent,
 			}
 
 			g_free (label_name);
-			gtk_widget_destroy (dialog);
+			e_gtk_widget_destroy (dialog);
 		}
 	} else if (action == EMFP_REMOVE_LABEL) {
 		if (tag_exists) {
@@ -1264,7 +1259,7 @@ emfp_labels_add_clicked_cb (GtkWidget *button,
 {
 	g_return_if_fail (GTK_IS_TREE_SELECTION (selection));
 
-	emfp_labels_action (gtk_widget_get_toplevel (button), selection, EMFP_ADD_LABEL);
+	emfp_labels_action (e_gtk_widget_get_toplevel (button), selection, EMFP_ADD_LABEL);
 }
 
 static void
@@ -1273,7 +1268,7 @@ emfp_labels_edit_clicked_cb (GtkWidget *button,
 {
 	g_return_if_fail (GTK_IS_TREE_SELECTION (selection));
 
-	emfp_labels_action (gtk_widget_get_toplevel (button), selection, EMFP_EDIT_LABEL);
+	emfp_labels_action (e_gtk_widget_get_toplevel (button), selection, EMFP_EDIT_LABEL);
 }
 
 static void
@@ -1282,7 +1277,7 @@ emfp_labels_remove_clicked_cb (GtkWidget *button,
 {
 	g_return_if_fail (GTK_IS_TREE_SELECTION (selection));
 
-	emfp_labels_action (gtk_widget_get_toplevel (button), selection, EMFP_REMOVE_LABEL);
+	emfp_labels_action (e_gtk_widget_get_toplevel (button), selection, EMFP_REMOVE_LABEL);
 }
 
 static GtkWidget *
@@ -1315,7 +1310,7 @@ emfp_get_labels_item (EConfig *ec,
 		E_MAIL_UI_SESSION (e_mail_backend_get_session (mail_backend)));
 
 	grid = GTK_GRID (gtk_grid_new ());
-	gtk_box_pack_start (GTK_BOX (parent), GTK_WIDGET (grid), TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (parent), GTK_WIDGET (grid), TRUE, TRUE, 0);
 
 	widget = gtk_scrolled_window_new (NULL, NULL);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (widget), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
@@ -1365,21 +1360,20 @@ emfp_get_labels_item (EConfig *ec,
 	gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (tree_view), -1,
 		_("Label"), renderer, "text", 1, "foreground-rgba", 2, NULL);
 
-	gtk_container_add (GTK_CONTAINER (widget), tree_view);
+	e_gtk_container_add (widget, tree_view);
 
-	widget = gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
-	gtk_button_box_set_layout (GTK_BUTTON_BOX (widget), GTK_BUTTONBOX_START);
+	widget = e_gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
 	gtk_widget_set_margin_start (widget, 12);
 	gtk_grid_attach (grid, widget, 1, 0, 1, 1);
 
 	add_btn = e_dialog_button_new_with_icon ("list-add", _("_Add"));
-	gtk_container_add (GTK_CONTAINER (widget), add_btn);
+	e_gtk_container_add (widget, add_btn);
 
 	edit_btn = gtk_button_new_with_mnemonic (_("_Edit"));
-	gtk_container_add (GTK_CONTAINER (widget), edit_btn);
+	e_gtk_container_add (widget, edit_btn);
 
 	remove_btn = e_dialog_button_new_with_icon ("list-remove", _("_Remove"));
-	gtk_container_add (GTK_CONTAINER (widget), remove_btn);
+	e_gtk_container_add (widget, remove_btn);
 
 	gtk_widget_set_sensitive (add_btn, FALSE);
 	gtk_widget_set_sensitive (edit_btn, FALSE);
@@ -1402,7 +1396,7 @@ emfp_get_labels_item (EConfig *ec,
 	g_signal_connect (remove_btn, "clicked",
 		G_CALLBACK (emfp_labels_remove_clicked_cb), selection);
 
-	gtk_widget_show_all (GTK_WIDGET (grid));
+	gtk_widget_set_visible (GTK_WIDGET (grid), TRUE);
 
 	return GTK_WIDGET (grid);
 }
@@ -1504,7 +1498,7 @@ emfp_dialog_run (AsyncContext *context)
 	gtk_window_set_default_size ((GtkWindow *) dialog, 192, 160);
 
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
-	gtk_container_set_border_width (GTK_CONTAINER (content_area), 12);
+	e_gtk_widget_set_border_width (content_area, 12);
 
 	/** @HookPoint-EMConfig: Folder Properties Window
 	 * @Id: org.gnome.evolution.mail.folderConfig
@@ -1525,18 +1519,18 @@ emfp_dialog_run (AsyncContext *context)
 	e_config_set_target ((EConfig *) ec, (EConfigTarget *) target);
 	w = e_config_create_widget ((EConfig *) ec);
 
-	gtk_box_pack_start (GTK_BOX (content_area), w, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (content_area), w, TRUE, TRUE, 0);
 
 	/* We do 'apply on ok', since instant apply may start some
 	 * very long running tasks. */
 
-	if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
+	if (e_gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
 		e_config_commit ((EConfig *) ec);
 		camel_folder_save_state (context->folder);
 	} else
 		e_config_abort ((EConfig *) ec);
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 }
 
 static gboolean

@@ -313,14 +313,14 @@ button_clicked (GtkButton *button,
 		G_CALLBACK (set_combobox_past_future), fds);
 
 	content_area = gtk_dialog_get_content_area (dialog);
-	gtk_box_pack_start (GTK_BOX (content_area), toplevel, TRUE, TRUE, 3);
+	e_gtk_box_pack_start (GTK_BOX (content_area), toplevel, TRUE, TRUE, 3);
 
-	if (gtk_dialog_run (dialog) == GTK_RESPONSE_OK) {
+	if (e_gtk_dialog_run (dialog) == GTK_RESPONSE_OK) {
 		get_values (fds);
 		set_button (fds);
 	}
 
-	gtk_widget_destroy ((GtkWidget *) dialog);
+	e_gtk_widget_destroy ((GtkWidget *) dialog);
 }
 
 static gboolean
@@ -419,7 +419,7 @@ filter_datespec_get_widget (EFilterElement *element)
 	set_button (fds);
 
 	button = gtk_button_new ();
-	gtk_container_add (GTK_CONTAINER (button), fds->priv->label_button);
+	e_gtk_container_add (button, fds->priv->label_button);
 	g_signal_connect (
 		button, "clicked",
 		G_CALLBACK (button_clicked), fds);

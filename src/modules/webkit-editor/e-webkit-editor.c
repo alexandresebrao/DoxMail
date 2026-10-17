@@ -1903,7 +1903,7 @@ show_lose_formatting_dialog (EWebKitEditor *wk_editor)
 	GtkWidget *toplevel;
 	GtkWindow *parent = NULL;
 
-	toplevel = gtk_widget_get_toplevel (GTK_WIDGET (wk_editor));
+	toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (wk_editor));
 
 	if (GTK_IS_WINDOW (toplevel))
 		parent = GTK_WINDOW (toplevel);
@@ -4157,7 +4157,7 @@ webkit_editor_get_link_to_text (EWebKitEditor *wk_editor)
 }
 
 static void
-webkit_editor_clipboard_owner_changed_cb (GtkClipboard *clipboard,
+webkit_editor_clipboard_owner_changed_cb (GdkClipboard *clipboard,
 					  GdkEventOwnerChange *event,
 					  gpointer user_data)
 {
@@ -4188,23 +4188,23 @@ wk_editor_change_existing_instances (gint inc)
 		g_return_if_fail (!owner_change_primary_clipboard_cb_id);
 
 		owner_change_clipboard_cb_id = g_signal_connect (
-			gtk_clipboard_get (GDK_SELECTION_CLIPBOARD), "owner-change",
+			e_gtk_clipboard_get (E_GTK_SELECTION_CLIPBOARD), "owner-change",
 			G_CALLBACK (webkit_editor_clipboard_owner_changed_cb), &wk_editor_clipboard_owner_is_from_self);
 
 		owner_change_primary_clipboard_cb_id = g_signal_connect (
-			gtk_clipboard_get (GDK_SELECTION_PRIMARY), "owner-change",
+			e_gtk_clipboard_get (E_GTK_SELECTION_PRIMARY), "owner-change",
 			G_CALLBACK (webkit_editor_clipboard_owner_changed_cb), &wk_editor_primary_clipboard_owner_is_from_self);
 
 		wk_editor_clipboard_owner_is_from_self = FALSE;
 		wk_editor_primary_clipboard_owner_is_from_self = FALSE;
 	} else if (instances == 0 && inc < 0) {
 		if (owner_change_clipboard_cb_id > 0) {
-			g_signal_handler_disconnect (gtk_clipboard_get (GDK_SELECTION_CLIPBOARD), owner_change_clipboard_cb_id);
+			g_signal_handler_disconnect (e_gtk_clipboard_get (E_GTK_SELECTION_CLIPBOARD), owner_change_clipboard_cb_id);
 			owner_change_clipboard_cb_id = 0;
 		}
 
 		if (owner_change_primary_clipboard_cb_id > 0) {
-			g_signal_handler_disconnect (gtk_clipboard_get (GDK_SELECTION_PRIMARY), owner_change_primary_clipboard_cb_id);
+			g_signal_handler_disconnect (e_gtk_clipboard_get (E_GTK_SELECTION_PRIMARY), owner_change_primary_clipboard_cb_id);
 			owner_change_primary_clipboard_cb_id = 0;
 		}
 	}
@@ -4932,7 +4932,7 @@ webkit_editor_move_caret_on_current_coordinates (GtkWidget *widget)
 	device_manager = gdk_display_get_device_manager (gtk_widget_get_display (widget));
 	pointer = gdk_device_manager_get_client_pointer (device_manager);
 	gdk_window_get_device_position (
-		gtk_widget_get_window (widget), pointer, &x, &y, NULL);
+		e_gtk_widget_get_surface (widget), pointer, &x, &y, NULL);
 	webkit_editor_move_caret_on_coordinates
 		(E_CONTENT_EDITOR (widget), x, y, FALSE);
 }
@@ -5003,7 +5003,7 @@ webkit_editor_can_paste_cb (GObject *source_object,
 
 static gboolean
 webkit_editor_focus_in_event_cb (EWebKitEditor *wk_editor,
-                                 GdkEventFocus *event,
+                                 GdkEvent *event,
                                  gpointer user_data)
 {
 	/* Recheck clipboard capabilities when editor receives focus */
@@ -5095,7 +5095,7 @@ webkit_editor_load_changed_cb (EWebKitEditor *wk_editor,
 }
 
 static gboolean
-is_libreoffice_content (GdkAtom *targets,
+is_libreoffice_content (EGtkAtom *targets,
 			gint n_targets)
 {
 	struct _prefixes {
@@ -5108,7 +5108,7 @@ is_libreoffice_content (GdkAtom *targets,
 	gint ii, jj;
 
 	for (ii = 0; ii < n_targets; ii++) {
-		gchar *name = gdk_atom_name (targets[ii]);
+		gchar *name = e_gtk_atom_name (targets[ii]);
 
 		if (!name)
 			continue;
@@ -5130,8 +5130,8 @@ is_libreoffice_content (GdkAtom *targets,
 }
 
 static void
-webkit_editor_paste_clipboard_targets_cb (GtkClipboard *clipboard,
-                                          GdkAtom *targets,
+webkit_editor_paste_clipboard_targets_cb (GdkClipboard *clipboard,
+                                          EGtkAtom *targets,
                                           gint n_targets,
 					  gboolean is_from_self,
 					  gboolean is_primary_paste,
@@ -5161,10 +5161,10 @@ webkit_editor_paste_clipboard_targets_cb (GtkClipboard *clipboard,
 			content = e_clipboard_wait_for_html (clipboard);
 			is_html = TRUE;
 		} else if (gtk_targets_include_text (targets, n_targets))
-			content = gtk_clipboard_wait_for_text (clipboard);
+			content = e_gtk_clipboard_wait_for_text (clipboard);
 	} else {
 		if (gtk_targets_include_text (targets, n_targets))
-			content = gtk_clipboard_wait_for_text (clipboard);
+			content = e_gtk_clipboard_wait_for_text (clipboard);
 		else if (e_targets_include_html (targets, n_targets)) {
 			content = e_clipboard_wait_for_html (clipboard);
 			is_html = TRUE;
@@ -5234,8 +5234,8 @@ static void
 webkit_editor_paste_primary (EContentEditor *editor)
 {
 
-	GtkClipboard *clipboard;
-	GdkAtom *targets = NULL;
+	GdkClipboard *clipboard;
+	EGtkAtom *targets = NULL;
 	gint n_targets;
 	EWebKitEditor *wk_editor;
 
@@ -5243,9 +5243,9 @@ webkit_editor_paste_primary (EContentEditor *editor)
 
 	webkit_editor_move_caret_on_current_coordinates (GTK_WIDGET (wk_editor));
 
-	clipboard = gtk_clipboard_get (GDK_SELECTION_PRIMARY);
+	clipboard = e_gtk_clipboard_get (E_GTK_SELECTION_PRIMARY);
 
-	if (gtk_clipboard_wait_for_targets (clipboard, &targets, &n_targets)) {
+	if (e_gtk_clipboard_wait_for_targets (clipboard, &targets, &n_targets)) {
 		webkit_editor_paste_clipboard_targets_cb (clipboard, targets, n_targets, wk_editor_primary_clipboard_owner_is_from_self, TRUE, wk_editor);
 		g_free (targets);
 	}
@@ -5254,16 +5254,16 @@ webkit_editor_paste_primary (EContentEditor *editor)
 static void
 webkit_editor_paste (EContentEditor *editor)
 {
-	GtkClipboard *clipboard;
-	GdkAtom *targets = NULL;
+	GdkClipboard *clipboard;
+	EGtkAtom *targets = NULL;
 	gint n_targets;
 	EWebKitEditor *wk_editor;
 
 	wk_editor = E_WEBKIT_EDITOR (editor);
 
-	clipboard = gtk_clipboard_get (GDK_SELECTION_CLIPBOARD);
+	clipboard = e_gtk_clipboard_get (E_GTK_SELECTION_CLIPBOARD);
 
-	if (gtk_clipboard_wait_for_targets (clipboard, &targets, &n_targets)) {
+	if (e_gtk_clipboard_wait_for_targets (clipboard, &targets, &n_targets)) {
 		webkit_editor_paste_clipboard_targets_cb (clipboard, targets, n_targets, wk_editor_clipboard_owner_is_from_self, FALSE, wk_editor);
 		g_free (targets);
 	}
@@ -5321,14 +5321,14 @@ webkit_editor_context_menu_cb (EWebKitEditor *wk_editor,
 
 static void
 webkit_editor_drag_begin_cb (EWebKitEditor *wk_editor,
-                             GdkDragContext *context)
+                             EGtkDragContext *context)
 {
 	wk_editor->priv->performing_drag = TRUE;
 }
 
 static void
 webkit_editor_drag_failed_cb (EWebKitEditor *wk_editor,
-                              GdkDragContext *context,
+                              EGtkDragContext *context,
                               GtkDragResult result)
 {
 	wk_editor->priv->performing_drag = FALSE;
@@ -5336,17 +5336,17 @@ webkit_editor_drag_failed_cb (EWebKitEditor *wk_editor,
 
 static void
 webkit_editor_drag_end_cb (EWebKitEditor *wk_editor,
-                           GdkDragContext *context)
+                           EGtkDragContext *context)
 {
 	wk_editor->priv->performing_drag = FALSE;
 }
 
 static void
 webkit_editor_drag_data_received_cb (GtkWidget *widget,
-                                     GdkDragContext *context,
+                                     EGtkDragContext *context,
                                      gint x,
                                      gint y,
-                                     GtkSelectionData *selection,
+                                     EGtkSelectionData *selection,
                                      guint info,
                                      guint time)
 {
@@ -5356,14 +5356,14 @@ webkit_editor_drag_data_received_cb (GtkWidget *widget,
 	g_signal_handler_disconnect (wk_editor, wk_editor->priv->drag_data_received_handler_id);
 	wk_editor->priv->drag_data_received_handler_id = 0;
 
-	is_move = gdk_drag_context_get_selected_action(context) == GDK_ACTION_MOVE;
+	is_move = e_gtk_drag_context_get_selected_action (context) == GDK_ACTION_MOVE;
 
 	/* Leave DnD inside the view on WebKit */
 	/* Leave the text on WebKit to handle it. */
 	if (wk_editor->priv->performing_drag ||
 	    info == E_DND_TARGET_TYPE_UTF8_STRING || info == E_DND_TARGET_TYPE_STRING ||
 	    info == E_DND_TARGET_TYPE_TEXT_PLAIN || info == E_DND_TARGET_TYPE_TEXT_PLAIN_UTF8) {
-		gdk_drag_status (context, gdk_drag_context_get_selected_action(context), time);
+		e_gtk_drag_status (context, e_gtk_drag_context_get_selected_action (context), time);
 		if (!GTK_WIDGET_CLASS (e_webkit_editor_parent_class)->drag_drop ||
 		    !GTK_WIDGET_CLASS (e_webkit_editor_parent_class)->drag_drop (widget, context, x, y, time)) {
 			goto process_ourselves;
@@ -5383,11 +5383,11 @@ webkit_editor_drag_data_received_cb (GtkWidget *widget,
 		gchar *text;
 
  process_ourselves:
-		data = gtk_selection_data_get_data (selection);
-		length = gtk_selection_data_get_length (selection);
+		data = e_gtk_selection_data_get_data (selection);
+		length = e_gtk_selection_data_get_length (selection);
 
 		if (!data || length < 0) {
-			gtk_drag_finish (context, FALSE, is_move, time);
+			e_gtk_drag_finish (context, FALSE, is_move, time);
 			g_signal_stop_emission_by_name (widget, "drag-data-received");
 			return;
 		}
@@ -5404,7 +5404,7 @@ webkit_editor_drag_data_received_cb (GtkWidget *widget,
 			g_free (text);
 		} while (list_len);
 
-		gtk_drag_finish (context, TRUE, is_move, time);
+		e_gtk_drag_finish (context, TRUE, is_move, time);
 		g_signal_stop_emission_by_name (widget, "drag-data-received");
 		e_content_editor_emit_drop_handled (E_CONTENT_EDITOR (widget));
 		return;
@@ -5413,7 +5413,7 @@ webkit_editor_drag_data_received_cb (GtkWidget *widget,
 
 static void
 webkit_editor_drag_leave_cb (EWebKitEditor *wk_editor,
-                             GdkDragContext *context,
+                             EGtkDragContext *context,
                              guint time)
 {
 	/* Don't pass drag-leave to WebKit otherwise the drop won't be handled by it.
@@ -5423,32 +5423,32 @@ webkit_editor_drag_leave_cb (EWebKitEditor *wk_editor,
 
 static gboolean
 webkit_editor_drag_motion_cb (GtkWidget *widget,
-			      GdkDragContext *context,
+			      EGtkDragContext *context,
 			      gint x,
 			      gint y,
 			      guint time,
 			      gpointer user_data)
 {
-	static GdkAtom x_uid_list = GDK_NONE, x_moz_url = GDK_NONE;
-	GdkAtom chosen;
+	static EGtkAtom x_uid_list = E_GTK_ATOM_NONE, x_moz_url = E_GTK_ATOM_NONE;
+	EGtkAtom chosen;
 
-	chosen = gtk_drag_dest_find_target (widget, context, NULL);
+	chosen = e_gtk_drag_dest_find_target (widget, context, NULL);
 
-	if (x_uid_list == GDK_NONE)
-		x_uid_list = gdk_atom_intern_static_string ("x-uid-list");
+	if (x_uid_list == E_GTK_ATOM_NONE)
+		x_uid_list = e_gtk_atom_intern_static_string ("x-uid-list");
 
 	/* This is when dragging message from the message list, which can eventually freeze
 	   Evolution, if PDF file format is set, when processes by WebKitGTK itself. */
-	if (chosen != GDK_NONE && chosen == x_uid_list) {
-		gdk_drag_status (context, GDK_ACTION_COPY, time);
+	if (chosen != E_GTK_ATOM_NONE && chosen == x_uid_list) {
+		e_gtk_drag_status (context, GDK_ACTION_COPY, time);
 		return TRUE;
 	}
 
-	if (x_moz_url == GDK_NONE)
-		x_moz_url = gdk_atom_intern_static_string ("text/x-moz-url");
+	if (x_moz_url == E_GTK_ATOM_NONE)
+		x_moz_url = e_gtk_atom_intern_static_string ("text/x-moz-url");
 
-	if (chosen != GDK_NONE && chosen == x_moz_url) {
-		gdk_drag_status (context, GDK_ACTION_COPY, time);
+	if (chosen != E_GTK_ATOM_NONE && chosen == x_moz_url) {
+		e_gtk_drag_status (context, GDK_ACTION_COPY, time);
 		return TRUE;
 	}
 
@@ -5457,7 +5457,7 @@ webkit_editor_drag_motion_cb (GtkWidget *widget,
 
 static gboolean
 webkit_editor_drag_drop_cb (EWebKitEditor *wk_editor,
-                            GdkDragContext *context,
+                            EGtkDragContext *context,
                             gint x,
                             gint y,
                             guint time)
@@ -5526,7 +5526,7 @@ paste_quote_text (EContentEditor *editor,
 }
 
 static void
-clipboard_html_received_for_paste_quote (GtkClipboard *clipboard,
+clipboard_html_received_for_paste_quote (GdkClipboard *clipboard,
                                          const gchar *text,
                                          gpointer user_data)
 {
@@ -5539,7 +5539,7 @@ clipboard_html_received_for_paste_quote (GtkClipboard *clipboard,
 }
 
 static void
-clipboard_text_received_for_paste_quote (GtkClipboard *clipboard,
+clipboard_text_received_for_paste_quote (GdkClipboard *clipboard,
                                          const gchar *text,
                                          gpointer user_data)
 {
@@ -5555,22 +5555,22 @@ static void
 paste_primary_clipboard_quoted (EContentEditor *editor)
 {
 	EWebKitEditor *wk_editor;
-	GtkClipboard *clipboard;
+	GdkClipboard *clipboard;
 
 	wk_editor = E_WEBKIT_EDITOR (editor);
 
-	clipboard = gtk_clipboard_get_for_display (
+	clipboard = e_gtk_clipboard_get_for_display (
 		gdk_display_get_default (),
-		GDK_SELECTION_PRIMARY);
+		E_GTK_SELECTION_PRIMARY);
 
        if (wk_editor->priv->mode == E_CONTENT_EDITOR_MODE_HTML) {
                if (e_clipboard_wait_is_html_available (clipboard))
                        e_clipboard_request_html (clipboard, clipboard_html_received_for_paste_quote, editor);
-               else if (gtk_clipboard_wait_is_text_available (clipboard))
-                       gtk_clipboard_request_text (clipboard, clipboard_text_received_for_paste_quote, editor);
+               else if (e_gtk_clipboard_wait_is_text_available (clipboard))
+                       e_gtk_clipboard_request_text (clipboard, clipboard_text_received_for_paste_quote, editor);
        } else {
-               if (gtk_clipboard_wait_is_text_available (clipboard))
-                       gtk_clipboard_request_text (clipboard, clipboard_text_received_for_paste_quote, editor);
+               if (e_gtk_clipboard_wait_is_text_available (clipboard))
+                       e_gtk_clipboard_request_text (clipboard, clipboard_text_received_for_paste_quote, editor);
                else if (e_clipboard_wait_is_html_available (clipboard))
                        e_clipboard_request_html (clipboard, clipboard_html_received_for_paste_quote, editor);
        }
@@ -5672,7 +5672,7 @@ webkit_editor_query_tooltip_cb (GtkWidget *widget,
 
 static gboolean
 webkit_editor_button_press_event (GtkWidget *widget,
-                                  GdkEventButton *event)
+                                  GdkEvent *event)
 {
 	EWebKitEditor *wk_editor;
 
@@ -5716,7 +5716,7 @@ webkit_editor_button_press_event (GtkWidget *widget,
 	    *wk_editor->priv->last_hover_uri &&
 	    (event->state & GDK_CONTROL_MASK) != 0 &&
 	    (event->state & GDK_SHIFT_MASK) == 0 &&
-	    (event->state & GDK_MOD1_MASK) == 0) {
+	    (event->state & GDK_ALT_MASK) == 0) {
 		if (*wk_editor->priv->last_hover_uri == '#') {
 			MoveToAnchorData *data;
 
@@ -5729,7 +5729,7 @@ webkit_editor_button_press_event (GtkWidget *widget,
 		} else {
 			GtkWidget *toplevel;
 
-			toplevel = gtk_widget_get_toplevel (GTK_WIDGET (wk_editor));
+			toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (wk_editor));
 
 			e_show_uri (GTK_WINDOW (toplevel), wk_editor->priv->last_hover_uri);
 		}
@@ -5742,7 +5742,7 @@ webkit_editor_button_press_event (GtkWidget *widget,
 
 static gboolean
 webkit_editor_button_release_event (GtkWidget *widget,
-				    GdkEventButton *event)
+				    GdkEvent *event)
 {
 	if (event->button == 2) {
 		/* WebKitGTK 2.46.1 changed the middle-click paste behavior and moved
@@ -5760,7 +5760,7 @@ webkit_editor_button_release_event (GtkWidget *widget,
 
 static gboolean
 webkit_editor_key_press_event (GtkWidget *widget,
-                               GdkEventKey *event)
+                               GdkEvent *event)
 {
 	GdkKeymapKey key = { 0, 0, 0 };
 	guint keyval;

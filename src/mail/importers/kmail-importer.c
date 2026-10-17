@@ -204,7 +204,7 @@ import_folder_getwidget (EImport *ei,
 	hbox = gtk_hbox_new (FALSE, 0);
 
 	w = gtk_label_new_with_mnemonic (_("_Destination folder:"));
-	gtk_box_pack_start ((GtkBox *) hbox, w, FALSE, TRUE, 6);
+	e_gtk_box_pack_start ((GtkBox *) hbox, w, FALSE, TRUE, 6);
 
 	label = GTK_LABEL (w);
 
@@ -219,11 +219,11 @@ import_folder_getwidget (EImport *ei,
 	g_signal_connect (
 		w, "selected",
 		G_CALLBACK (folder_selected), target);
-	gtk_box_pack_start ((GtkBox *) hbox, w, FALSE, TRUE, 6);
+	e_gtk_box_pack_start ((GtkBox *) hbox, w, FALSE, TRUE, 6);
 
 	w = gtk_vbox_new (FALSE, 0);
-	gtk_box_pack_start ((GtkBox *) w, hbox, FALSE, FALSE, 0);
-	gtk_widget_show_all (w);
+	e_gtk_box_pack_start ((GtkBox *) w, hbox, FALSE, FALSE, 0);
+	gtk_widget_set_visible (w, TRUE);
 
 	g_free (select_uri);
 
@@ -252,7 +252,7 @@ kmail_getwidget (EImport *ei,
 		w, "toggled",
 		G_CALLBACK (checkbox_toggle_cb), target);
 
-	gtk_box_pack_start ((GtkBox *) box, w, FALSE, FALSE, 0);
+	e_gtk_box_pack_start ((GtkBox *) box, w, FALSE, FALSE, 0);
 
 	contact_list = kcontact_get_list ();
 	count = g_slist_length (contact_list);
@@ -263,15 +263,15 @@ kmail_getwidget (EImport *ei,
 		w, "toggled",
 		G_CALLBACK (checkbox_toggle_cb), target);
 
-	gtk_box_pack_start ((GtkBox *) box, w, FALSE, FALSE, 0);
+	e_gtk_box_pack_start ((GtkBox *) box, w, FALSE, FALSE, 0);
 
 	/* for now, we don't allow to select a folder */
 	#if ENABLE_SELECT
 	w = import_folder_getwidget (ei, target, im);
-	gtk_box_pack_start ((GtkBox *) box, w, FALSE, FALSE, 0);
+	e_gtk_box_pack_start ((GtkBox *) box, w, FALSE, FALSE, 0);
 	#endif
 
-	gtk_widget_show_all (box);
+	gtk_widget_set_visible (box, TRUE);
 	g_slist_free_full (contact_list, g_free);
 	g_free (contact_str);
 

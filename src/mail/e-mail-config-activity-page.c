@@ -53,12 +53,11 @@ mail_config_activity_page_constructed (GObject *object)
 	 * packed.  They should never both be visible at the same time. */
 
 	frame = gtk_frame_new (NULL);
-	gtk_frame_set_shadow_type (GTK_FRAME (frame), GTK_SHADOW_IN);
-	gtk_box_pack_end (GTK_BOX (page->priv->box), frame, FALSE, FALSE, 0);
+	e_gtk_box_pack_end (GTK_BOX (page->priv->box), frame, FALSE, FALSE, 0);
 	/* Visibility is bound to the EActivityBar. */
 
 	widget = e_activity_bar_new ();
-	gtk_container_add (GTK_CONTAINER (frame), widget);
+	e_gtk_container_add (frame, widget);
 	page->priv->activity_bar = widget;  /* do not reference */
 	/* EActivityBar controls its own visibility. */
 
@@ -68,12 +67,11 @@ mail_config_activity_page_constructed (GObject *object)
 		G_BINDING_SYNC_CREATE);
 
 	frame = gtk_frame_new (NULL);
-	gtk_frame_set_shadow_type (GTK_FRAME (frame), GTK_SHADOW_IN);
-	gtk_box_pack_end (GTK_BOX (page->priv->box), frame, FALSE, FALSE, 0);
+	e_gtk_box_pack_end (GTK_BOX (page->priv->box), frame, FALSE, FALSE, 0);
 	/* Visibility is bound to the EAlertBar. */
 
 	widget = e_alert_bar_new ();
-	gtk_container_add (GTK_CONTAINER (frame), widget);
+	e_gtk_container_add (frame, widget);
 	page->priv->alert_bar = widget;  /* do not reference */
 	/* EAlertBar controls its own visibility. */
 

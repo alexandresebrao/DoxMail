@@ -187,8 +187,8 @@ cal_component_preview_attachment_loaded (EAttachment *attachment,
 			g_object_unref (file_info);
 		}
 
-		parent = gtk_widget_get_toplevel (GTK_WIDGET (self));
-		parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+		parent = e_gtk_widget_get_toplevel (GTK_WIDGET (self));
+		parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 		e_attachment_load_handle_error (attachment, result, parent);
 
@@ -208,8 +208,8 @@ cal_component_preview_create_attachment (ECalComponentPreview *self,
 
 	g_return_val_if_fail (I_CAL_IS_PROPERTY (attach_prop), NULL);
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (self));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (self));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	attach = i_cal_property_get_attach (attach_prop);
 	if (attach) {

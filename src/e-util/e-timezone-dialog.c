@@ -87,10 +87,10 @@ static void e_timezone_dialog_dispose		(GObject	*object);
 static gboolean get_widgets			(ETimezoneDialog *etd);
 static gboolean on_map_timeout			(gpointer	 data);
 static gboolean on_map_motion			(GtkWidget	*widget,
-						 GdkEventMotion *event,
+						 GdkEvent *event,
 						 gpointer	 data);
 static gboolean on_map_leave			(GtkWidget	*widget,
-						 GdkEventCrossing *event,
+						 GdkEvent *event,
 						 gpointer	 data);
 static gboolean on_map_visibility_changed	(GtkWidget	*w,
 						 GdkEventVisibility *event,
@@ -342,25 +342,20 @@ e_timezone_dialog_construct (ETimezoneDialog *etd)
 	}
 
 	widget = gtk_dialog_get_content_area (GTK_DIALOG (priv->app));
-	gtk_container_set_border_width (GTK_CONTAINER (widget), 0);
+	e_gtk_widget_set_border_width (widget, 0);
 
-	widget = gtk_dialog_get_action_area (GTK_DIALOG (priv->app));
-	gtk_container_set_border_width (GTK_CONTAINER (widget), 12);
+	widget = e_gtk_dialog_get_action_area (GTK_DIALOG (priv->app));
+	e_gtk_widget_set_border_width (widget, 12);
 
 	priv->map = e_map_new ();
 	map = GTK_WIDGET (priv->map);
 
 	g_object_weak_ref (G_OBJECT (map), map_destroy_cb, priv);
 
-	gtk_widget_set_events (
-		map,
-		gtk_widget_get_events (map) |
-		GDK_LEAVE_NOTIFY_MASK |
-		GDK_VISIBILITY_NOTIFY_MASK);
 
 	e_timezone_dialog_add_timezones (etd);
 
-	gtk_container_add (GTK_CONTAINER (priv->map_window), map);
+	e_gtk_container_add (priv->map_window, map);
 	gtk_widget_show (map);
 
 	/* Ensure a reasonable minimum amount of map is visible */
@@ -575,7 +570,7 @@ on_map_timeout (gpointer data)
 
 static gboolean
 on_map_motion (GtkWidget *widget,
-               GdkEventMotion *event,
+               GdkEvent *event,
                gpointer data)
 {
 	ETimezoneDialog *etd;
@@ -618,7 +613,7 @@ on_map_motion (GtkWidget *widget,
 
 static gboolean
 on_map_leave (GtkWidget *widget,
-              GdkEventCrossing *event,
+              GdkEvent *event,
               gpointer data)
 {
 	ETimezoneDialog *etd;
@@ -690,8 +685,8 @@ on_map_button_pressed (GtkWidget *w,
 	etd = E_TIMEZONE_DIALOG (data);
 	priv = etd->priv;
 
-	gdk_event_get_button (button_event, &event_button);
-	gdk_event_get_coords (button_event, &event_x_win, &event_y_win);
+	e_gdk_event_get_button (button_event, &event_button);
+	e_gdk_event_get_coords (button_event, &event_x_win, &event_y_win);
 
 	e_map_window_to_world (
 		priv->map, event_x_win, event_y_win, &longitude, &latitude);

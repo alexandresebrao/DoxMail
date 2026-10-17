@@ -26,6 +26,7 @@
 #define E_ATTACHMENT_BAR_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-paned.h>
 #include <e-util/e-attachment-view.h>
 
 /* Standard GObject macros */
@@ -54,12 +55,12 @@ typedef struct _EAttachmentBarClass EAttachmentBarClass;
 typedef struct _EAttachmentBarPrivate EAttachmentBarPrivate;
 
 struct _EAttachmentBar {
-	GtkPaned parent;
+	EPaned parent;
 	EAttachmentBarPrivate *priv;
 };
 
 struct _EAttachmentBarClass {
-	GtkPanedClass parent_class;
+	EPanedClass parent_class;
 };
 
 GType		e_attachment_bar_get_type	(void) G_GNUC_CONST;

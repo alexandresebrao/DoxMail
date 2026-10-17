@@ -675,7 +675,7 @@ mail_shell_backend_view_file (EMailShellBackend *mail_shell_backend,
 
 	if (!e_mail_viewer_assign_file (E_MAIL_VIEWER (viewer), file)) {
 		g_object_ref_sink (viewer);
-		gtk_widget_destroy (GTK_WIDGET (viewer));
+		e_gtk_widget_destroy (GTK_WIDGET (viewer));
 
 		return FALSE;
 	}
@@ -1045,7 +1045,7 @@ mail_shell_backend_create_network_page (EPreferencesWindow *window)
 	pango_attr_list_insert (bold, pango_attr_weight_new (PANGO_WEIGHT_BOLD));
 
 	vbox = GTK_BOX (gtk_box_new (GTK_ORIENTATION_VERTICAL, 4));
-	gtk_container_set_border_width (GTK_CONTAINER (vbox), 12);
+	e_gtk_widget_set_border_width (vbox, 12);
 
 	widget = gtk_label_new (_("General"));
 	g_object_set (G_OBJECT (widget),
@@ -1056,7 +1056,7 @@ mail_shell_backend_create_network_page (EPreferencesWindow *window)
 		"attributes", bold,
 		NULL);
 	gtk_widget_show (widget);
-	gtk_box_pack_start (vbox, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (vbox, widget, FALSE, FALSE, 0);
 
 	pango_attr_list_unref (bold);
 
@@ -1064,10 +1064,10 @@ mail_shell_backend_create_network_page (EPreferencesWindow *window)
 	gtk_widget_set_margin_start (GTK_WIDGET (hbox), 12);
 
 	label = gtk_label_new_with_mnemonic (C_("NetworkMonitor", "Method to detect _online state:"));
-	gtk_box_pack_start (hbox, label, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (hbox, label, FALSE, FALSE, 0);
 
 	widget = gtk_combo_box_text_new ();
-	gtk_box_pack_start (hbox, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (hbox, widget, FALSE, FALSE, 0);
 
 	gtk_label_set_mnemonic_widget (GTK_LABEL (label), widget);
 
@@ -1105,8 +1105,8 @@ mail_shell_backend_create_network_page (EPreferencesWindow *window)
 		NULL,
 		NULL, NULL);
 
-	gtk_widget_show_all (GTK_WIDGET (hbox));
-	gtk_box_pack_start (vbox, GTK_WIDGET (hbox), FALSE, FALSE, 0);
+	gtk_widget_set_visible (GTK_WIDGET (hbox), TRUE);
+	e_gtk_box_pack_start (vbox, GTK_WIDGET (hbox), FALSE, FALSE, 0);
 
 	eds_settings = e_util_ref_settings ("org.gnome.evolution-data-server");
 
@@ -1117,13 +1117,13 @@ mail_shell_backend_create_network_page (EPreferencesWindow *window)
 		G_SETTINGS_BIND_DEFAULT);
 	gtk_widget_set_margin_start (widget, 12);
 	gtk_widget_show (widget);
-	gtk_box_pack_start (vbox, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (vbox, widget, FALSE, FALSE, 0);
 
 	g_clear_object (&eds_settings);
 
 	widget = e_proxy_preferences_new (registry);
 	gtk_widget_show (widget);
-	gtk_box_pack_start (vbox, widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (vbox, widget, TRUE, TRUE, 0);
 
 	return GTK_WIDGET (vbox);
 }

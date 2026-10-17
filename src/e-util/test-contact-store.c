@@ -26,7 +26,7 @@ entry_changed (GtkWidget *entry,
 	const gchar *text;
 	EBookQuery  *query;
 
-	text = gtk_entry_get_text (GTK_ENTRY (entry));
+	text = gtk_editable_get_text (GTK_EDITABLE (entry));
 
 	query = e_book_query_any_field_contains (text);
 	e_contact_store_set_query (contact_store, query);
@@ -74,18 +74,18 @@ start_test (const gchar *param)
 		"column-homogeneous", FALSE,
 		"row-spacing", 2,
 		NULL);
-	gtk_container_add (GTK_CONTAINER (window), vgrid);
+	e_gtk_container_add (window, vgrid);
 
 	entry = gtk_entry_new ();
 	gtk_widget_set_halign (entry, GTK_ALIGN_FILL);
-	gtk_container_add (GTK_CONTAINER (vgrid), entry);
+	e_gtk_container_add (vgrid, entry);
 
 	scrolled_window = gtk_scrolled_window_new (NULL, NULL);
 	gtk_widget_set_hexpand (scrolled_window, TRUE);
 	gtk_widget_set_halign (scrolled_window, GTK_ALIGN_FILL);
 	gtk_widget_set_vexpand (scrolled_window, TRUE);
 	gtk_widget_set_valign (scrolled_window, GTK_ALIGN_FILL);
-	gtk_container_add (GTK_CONTAINER (vgrid), scrolled_window);
+	e_gtk_container_add (vgrid, scrolled_window);
 
 	contact_store = e_contact_store_new ();
 	model_sort = gtk_tree_model_sort_new_with_model (GTK_TREE_MODEL (contact_store));
@@ -101,7 +101,7 @@ start_test (const gchar *param)
 	column = create_text_column_for_field (E_CONTACT_EMAIL_1);
 	gtk_tree_view_append_column (GTK_TREE_VIEW (tree_view), column);
 
-	gtk_container_add (GTK_CONTAINER (scrolled_window), tree_view);
+	e_gtk_container_add (scrolled_window, tree_view);
 
 #if 0  /* ACCOUNT_MGMT */
 	book_client = e_book_client_new_default (NULL);
@@ -118,7 +118,7 @@ start_test (const gchar *param)
 
 	g_object_unref (contact_store);
 
-	gtk_widget_show_all (window);
+	gtk_widget_set_visible (window, TRUE);
 
 	return FALSE;
 }
@@ -129,7 +129,7 @@ main (gint argc,
 {
 	const gchar *param;
 
-	gtk_init (&argc, &argv);
+	gtk_init ();
 
 	if (argc < 2)
 		param = "???";

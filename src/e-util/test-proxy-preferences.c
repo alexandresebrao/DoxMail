@@ -29,7 +29,7 @@ quit_delay_cb (gpointer user_data)
 
 static gint
 delete_event_cb (GtkWidget *widget,
-                 GdkEventAny *event,
+                 GdkEvent *event,
                  gpointer data)
 {
 	e_proxy_preferences_submit (preferences);
@@ -50,7 +50,7 @@ main (gint argc,
 	GtkWidget *widget;
 	GError *local_error = NULL;
 
-	gtk_init (&argc, &argv);
+	gtk_init ();
 
 	registry = e_source_registry_new_sync (NULL, &local_error);
 
@@ -62,7 +62,7 @@ main (gint argc,
 	}
 
 	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-	gtk_container_set_border_width (GTK_CONTAINER (window), 12);
+	e_gtk_widget_set_border_width (window, 12);
 	gtk_window_set_default_size (GTK_WINDOW (window), 400, 300);
 	gtk_window_set_title (GTK_WINDOW (window), "Proxy Preferences");
 	gtk_widget_show (window);
@@ -72,7 +72,7 @@ main (gint argc,
 		G_CALLBACK (delete_event_cb), NULL);
 
 	widget = e_proxy_preferences_new (registry);
-	gtk_container_add (GTK_CONTAINER (window), widget);
+	e_gtk_container_add (window, widget);
 	preferences = E_PROXY_PREFERENCES (widget);
 	gtk_widget_show (widget);
 

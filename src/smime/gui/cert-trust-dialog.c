@@ -122,7 +122,7 @@ ctd_response (GtkWidget *w,
 			e_cert_trust_has_trusted_ca (icert->trust, FALSE, TRUE,  FALSE),
 			e_cert_trust_has_trusted_ca (icert->trust, FALSE, FALSE, TRUE));
 
-		if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
+		if (e_gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
 			gboolean trust_ssl, trust_email, trust_objsign;
 
 			ca_trust_dialog_get_trust (
@@ -142,7 +142,7 @@ ctd_response (GtkWidget *w,
 			cert_trust_dialog_refresh (data);
 		}
 
-		gtk_widget_destroy (dialog);
+		e_gtk_widget_destroy (dialog);
 		break; }
 	}
 }

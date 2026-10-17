@@ -52,7 +52,7 @@ charset_combo_box_entry_changed_cb (GtkEntry *entry,
 	const gchar *text;
 	gboolean sensitive;
 
-	text = gtk_entry_get_text (entry);
+	text = gtk_editable_get_text (GTK_EDITABLE (entry));
 	sensitive = (text != NULL && *text != '\0');
 	gtk_dialog_set_response_sensitive (dialog, GTK_RESPONSE_OK, sensitive);
 }
@@ -73,8 +73,8 @@ charset_combo_box_run_dialog (ECharsetComboBox *combo_box)
 	 *       now, but we should revisit this when the space issue is
 	 *       finally resolved. */
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (combo_box));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (combo_box));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	charset = combo_box->previous_id;
 
@@ -88,29 +88,29 @@ charset_combo_box_run_dialog (ECharsetComboBox *combo_box)
 
 	gtk_dialog_set_default_response (dialog, GTK_RESPONSE_OK);
 
-	gtk_container_set_border_width (GTK_CONTAINER (dialog), 12);
+	e_gtk_widget_set_border_width (dialog, 12);
 
-	widget = gtk_dialog_get_action_area (dialog);
-	gtk_container_set_border_width (GTK_CONTAINER (widget), 0);
+	widget = e_gtk_dialog_get_action_area (dialog);
+	e_gtk_widget_set_border_width (widget, 0);
 
 	widget = gtk_dialog_get_content_area (dialog);
 	gtk_box_set_spacing (GTK_BOX (widget), 12);
-	gtk_container_set_border_width (GTK_CONTAINER (widget), 0);
+	e_gtk_widget_set_border_width (widget, 0);
 
 	container = widget;
 
 	widget = gtk_label_new (_("Enter the character set to use"));
-	gtk_label_set_line_wrap (GTK_LABEL (widget), TRUE);
+	gtk_label_set_wrap (GTK_LABEL (widget), TRUE);
 	gtk_label_set_width_chars (GTK_LABEL (widget), 20);
 	gtk_label_set_xalign (GTK_LABEL (widget), 0);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	widget = gtk_entry_new ();
 	gtk_widget_set_margin_start (widget, 12);
 	entry = GTK_ENTRY (widget);
 	gtk_entry_set_activates_default (entry, TRUE);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	g_signal_connect (
@@ -119,10 +119,10 @@ charset_combo_box_run_dialog (ECharsetComboBox *combo_box)
 
 	/* Set the default text -after- connecting the signal handler.
 	 * This will initialize the "OK" button to the proper state. */
-	gtk_entry_set_text (entry, charset);
+	gtk_editable_set_text (GTK_EDITABLE (entry), charset);
 
-	if (gtk_dialog_run (dialog) == GTK_RESPONSE_OK) {
-		charset = gtk_entry_get_text (entry);
+	if (e_gtk_dialog_run (dialog) == GTK_RESPONSE_OK) {
+		charset = gtk_editable_get_text (GTK_EDITABLE (entry));
 		g_return_if_fail (charset != NULL && *charset != '\0');
 
 		/* for the cases where the user confirmed the choice without changing it,
@@ -137,7 +137,7 @@ charset_combo_box_run_dialog (ECharsetComboBox *combo_box)
 		combo_box->block_dialog = FALSE;
 	}
 
-	gtk_widget_destroy (GTK_WIDGET (dialog));
+	e_gtk_widget_destroy (GTK_WIDGET (dialog));
 }
 
 static void

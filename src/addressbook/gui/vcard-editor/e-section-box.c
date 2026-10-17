@@ -93,7 +93,7 @@ e_section_box_layout (ESectionBox *self)
 		GtkBox *column_box;
 
 		if (gtk_widget_get_parent (widget))
-			gtk_container_remove (GTK_CONTAINER (gtk_widget_get_parent (widget)), widget);
+			e_gtk_container_remove (gtk_widget_get_parent (widget), widget);
 
 		if (!gtk_widget_get_visible (widget))
 			continue;
@@ -117,7 +117,7 @@ e_section_box_layout (ESectionBox *self)
 
 			box_widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, SPACING);
 			gtk_widget_set_visible (box_widget, TRUE);
-			gtk_box_pack_start (self->columns_box, box_widget, FALSE, TRUE, 0);
+			e_gtk_box_pack_start (self->columns_box, box_widget, FALSE, TRUE, 0);
 
 			column_box = GTK_BOX (box_widget);
 
@@ -126,7 +126,7 @@ e_section_box_layout (ESectionBox *self)
 			gtk_widget_set_visible (GTK_WIDGET (column_box), TRUE);
 		}
 
-		gtk_box_pack_start (column_box, widget, FALSE, TRUE, 0);
+		e_gtk_box_pack_start (column_box, widget, FALSE, TRUE, 0);
 	}
 
 	for (ii = n_columns; ii < MAX_COLUMNS && self->column_boxes[ii]; ii++) {
@@ -191,12 +191,12 @@ e_section_box_constructed (GObject *object)
 	G_OBJECT_CLASS (e_section_box_parent_class)->constructed (object);
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, SPACING);
-	gtk_box_pack_start (GTK_BOX (self), widget, FALSE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (self), widget, FALSE, TRUE, 0);
 
 	self->columns_box = GTK_BOX (widget);
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, SPACING);
-	gtk_box_pack_start (self->columns_box, widget, FALSE, TRUE, 0);
+	e_gtk_box_pack_start (self->columns_box, widget, FALSE, TRUE, 0);
 	self->column_boxes[0] = GTK_BOX (widget);
 }
 

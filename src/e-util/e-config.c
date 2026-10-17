@@ -451,7 +451,7 @@ ec_rebuild (EConfig *config)
 				w = gtk_label_new_with_mnemonic (translated_label);
 				gtk_widget_show (w);
 				page = gtk_box_new (GTK_ORIENTATION_VERTICAL, 12);
-				gtk_container_set_border_width ((GtkContainer *) page, 12);
+				e_gtk_widget_set_border_width ((GtkContainer *) page, 12);
 				gtk_widget_show (page);
 				gtk_notebook_insert_page ((GtkNotebook *) book, page, w, pageno);
 				gtk_container_child_set (GTK_CONTAINER (book), page, "tab-fill", TRUE, "tab-expand", TRUE, NULL);
@@ -463,7 +463,7 @@ ec_rebuild (EConfig *config)
 
 			if (wn->widget && wn->widget != page) {
 				d (printf ("destroy old widget for page '%s' (%p)\n", item->path, wn->widget));
-				gtk_widget_destroy (wn->widget);
+				e_gtk_widget_destroy (wn->widget);
 			}
 
 			pageno++;
@@ -530,7 +530,7 @@ ec_rebuild (EConfig *config)
 
 				if (wn->frame) {
 					d (printf ("Item %s, clearing generated section widget\n", wn->item->path));
-					gtk_widget_destroy (wn->frame);
+					e_gtk_widget_destroy (wn->frame);
 					wn->widget = NULL;
 					wn->frame = NULL;
 				}
@@ -562,14 +562,14 @@ ec_rebuild (EConfig *config)
 					"label_widget", label,
 					"child", section,
 					NULL);
-				gtk_widget_show_all (frame);
-				gtk_box_pack_start ((GtkBox *) page, frame, TRUE, TRUE, 0);
+				gtk_widget_set_visible (frame, TRUE);
+				e_gtk_box_pack_start ((GtkBox *) page, frame, TRUE, TRUE, 0);
 				wn->frame = frame;
 			}
 		nopage:
 			if (wn->widget && wn->widget != section) {
 				d (printf ("destroy old widget for section '%s'\n", item->path));
-				gtk_widget_destroy (wn->widget);
+				e_gtk_widget_destroy (wn->widget);
 			}
 
 			d (printf ("Item %s, setting section widget\n", wn->item->path));
@@ -606,7 +606,7 @@ ec_rebuild (EConfig *config)
 
 			if (wn->widget && wn->widget != w) {
 				d (printf ("destroy old widget for item '%s'\n", item->path));
-				gtk_widget_destroy (wn->widget);
+				e_gtk_widget_destroy (wn->widget);
 			}
 
 			wn->widget = w;
@@ -1130,8 +1130,7 @@ config_hook_section_factory (EConfig *config,
 
 	widget = gtk_frame_new (NULL);
 	gtk_frame_set_label_widget (GTK_FRAME (widget), label);
-	gtk_frame_set_shadow_type (GTK_FRAME (widget), GTK_SHADOW_NONE);
-	gtk_box_pack_start (GTK_BOX (parent), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (parent), widget, FALSE, FALSE, 0);
 
 	*real_frame = widget;
 
@@ -1162,7 +1161,7 @@ config_hook_section_factory (EConfig *config,
 
 	gtk_widget_set_margin_top (widget, 6);
 	gtk_widget_set_margin_start (widget, 12);
-	gtk_container_add (GTK_CONTAINER (parent), widget);
+	e_gtk_container_add (parent, widget);
 	gtk_widget_show (widget);
 
 	return widget;

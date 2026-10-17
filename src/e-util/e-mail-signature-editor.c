@@ -197,7 +197,7 @@ action_close_cb (EUIAction *action,
 	cnt_editor = e_html_editor_get_content_editor (editor);
 
 	original_name = window->priv->original_name;
-	signature_name = gtk_entry_get_text (GTK_ENTRY (window->priv->entry));
+	signature_name = gtk_editable_get_text (GTK_EDITABLE (window->priv->entry));
 
 	something_changed |= e_content_editor_can_undo (cnt_editor);
 	something_changed |= (strcmp (signature_name, original_name) != 0);
@@ -218,7 +218,7 @@ action_close_cb (EUIAction *action,
 			return;
 	}
 
-	gtk_widget_destroy (GTK_WIDGET (window));
+	e_gtk_widget_destroy (GTK_WIDGET (window));
 }
 
 static void
@@ -260,7 +260,7 @@ mail_signature_editor_commit_ready_cb (GObject *source_object,
 		 * (and ESource properties are left unchanged). */
 		g_signal_emit_by_name (registry, "source-changed", source);
 
-		gtk_widget_destroy (GTK_WIDGET (editor));
+		e_gtk_widget_destroy (GTK_WIDGET (editor));
 	}
 }
 
@@ -279,7 +279,7 @@ action_save_and_close_cb (EUIAction *action,
 	entry = GTK_ENTRY (editor->priv->entry);
 	source = e_mail_signature_editor_get_source (editor);
 
-	display_name = g_strstrip (g_strdup (gtk_entry_get_text (entry)));
+	display_name = g_strstrip (g_strdup (gtk_editable_get_text (GTK_EDITABLE (entry))));
 
 	/* Make sure the signature name is not blank. */
 	if (*display_name == '\0') {
@@ -582,7 +582,7 @@ mail_signature_editor_constructed (GObject *object)
 	gtk_window_set_default_size (GTK_WINDOW (window), -1, 440);
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-	gtk_container_add (GTK_CONTAINER (window), widget);
+	e_gtk_container_add (window, widget);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -592,7 +592,7 @@ mail_signature_editor_constructed (GObject *object)
 	g_clear_object (&ui_item);
 
 	window->priv->menu_bar = e_menu_bar_new (GTK_MENU_BAR (widget), GTK_WINDOW (window), &window->priv->menu_button);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 
 	/* Construct the main menu and toolbar. */
 
@@ -609,31 +609,31 @@ mail_signature_editor_constructed (GObject *object)
 	}
 
 	widget = GTK_WIDGET (ui_item);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 
 	/* Construct the signature name entry. */
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
-	gtk_container_set_border_width (GTK_CONTAINER (widget), 6);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_widget_set_border_width (widget, 6);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	hbox = widget;
 
 	widget = gtk_entry_new ();
-	gtk_box_pack_end (GTK_BOX (hbox), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_end (GTK_BOX (hbox), widget, TRUE, TRUE, 0);
 	window->priv->entry = widget;  /* not referenced */
 	gtk_widget_show (widget);
 
 	widget = gtk_label_new_with_mnemonic (_("_Signature Name:"));
 	gtk_label_set_mnemonic_widget (GTK_LABEL (widget), window->priv->entry);
-	gtk_box_pack_end (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_end (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	/* Construct the main editing area. */
 
 	widget = GTK_WIDGET (editor);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	g_signal_connect (
@@ -656,7 +656,7 @@ mail_signature_editor_constructed (GObject *object)
 	/* Set the entry text before we grab focus. */
 	g_free (window->priv->original_name);
 	window->priv->original_name = g_strdup (display_name);
-	gtk_entry_set_text (GTK_ENTRY (window->priv->entry), display_name);
+	gtk_editable_set_text (GTK_EDITABLE (window->priv->entry), display_name);
 
 	/* Set the focus appropriately.  If this is a new signature, draw
 	 * the user's attention to the signature name entry.  Otherwise go

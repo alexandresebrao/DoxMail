@@ -36,8 +36,8 @@
  * which the action groups should be inserted (for example a #GtkWindow, but
  * can be other as well).
  *
- * The #GtkAccelGroup returned from the e_ui_manager_get_accel_group() needs
- * to be added to the #GtkWindow with gtk_window_add_accel_group().
+ * The windows need a shortcut controller from e_ui_manager_create_shortcut_controller()
+ * for the action accelerators to work.
  *
  * The object is not thread-safe, it's meant to be used only from
  * the main/GUI thread.
@@ -50,7 +50,7 @@ struct _EUIManager {
 
 	EUIParser *parser;
 	EUICustomizer *customizer;
-	GtkAccelGroup *accel_group;
+	GListStore *shortcuts; /* GtkShortcut, shared by the windows' shortcut controllers */
 	GHashTable *action_groups; /* gchar * ~> EUIActionGroup * */
 	GHashTable *gicons; /* gchar * ~> GIcon * */
 	GHashTable *groups; /* gchar * ~> GPtrArray * { EUIAction }; used for radio groups */
@@ -309,7 +309,7 @@ e_ui_manager_finalize (GObject *object)
 
 	g_clear_object (&self->parser);
 	g_clear_object (&self->customizer);
-	g_clear_object (&self->accel_group);
+	g_clear_object (&self->shortcuts);
 	g_clear_pointer (&self->action_groups, g_hash_table_unref);
 	g_clear_pointer (&self->gicons, g_hash_table_unref);
 	g_clear_pointer (&self->groups, g_hash_table_unref);
@@ -427,7 +427,7 @@ e_ui_manager_class_init (EUIManagerClass *klass)
 	 * For the %E_UI_ELEMENT_KIND_HEADERBAR any widget can be returned, though the mostly
 	 * used might be an #EHeaderBarButton.
 	 *
-	 * For the %E_UI_ELEMENT_KIND_TOOLBAR only a #GtkToolItem descendant is expected.
+	 * For the %E_UI_ELEMENT_KIND_TOOLBAR a #GtkWidget is expected (see eum_tool_button_new()).
 	 *
 	 * For the %E_UI_ELEMENT_KIND_MENU only a #GMenuItem descendant is expected.
 	 *
@@ -517,7 +517,7 @@ e_ui_manager_init (EUIManager *self)
 	g_weak_ref_init (&self->action_groups_widget, NULL);
 
 	self->parser = e_ui_parser_new ();
-	self->accel_group = gtk_accel_group_new ();
+	self->shortcuts = g_list_store_new (GTK_TYPE_SHORTCUT);
 	self->action_groups = g_hash_table_new_full (g_str_hash, g_str_equal, NULL, g_object_unref);
 	self->gicons = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_object_unref);
 	self->groups = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, (GDestroyNotify) g_ptr_array_unref);
@@ -597,25 +597,49 @@ e_ui_manager_get_customizer (EUIManager *self)
 }
 
 /**
- * e_ui_manager_get_accel_group:
+ * e_ui_manager_get_shortcuts:
  * @self: an #EUIManager
  *
- * Gets a #GtkAccelGroup associated with the @self. Actions
- * with configured accelerators register themselves to this accel
- * group.
+ * Gets the #GtkShortcut list for the accelerators of the actions
+ * of the @self. Actions with configured accelerators register
+ * themselves into it.
  *
- * It should be added to a #GtkWindow with gtk_window_add_accel_group().
+ * Returns: (transfer none): a #GListModel of #GtkShortcut
  *
- * Returns: (transfer none): a #GtkAccelGroup
- *
- * Since: 3.56
+ * Since: DoxMail
  **/
-GtkAccelGroup *
-e_ui_manager_get_accel_group (EUIManager *self)
+GListModel *
+e_ui_manager_get_shortcuts (EUIManager *self)
 {
 	g_return_val_if_fail (E_IS_UI_MANAGER (self), NULL);
 
-	return self->accel_group;
+	return G_LIST_MODEL (self->shortcuts);
+}
+
+/**
+ * e_ui_manager_create_shortcut_controller:
+ * @self: an #EUIManager
+ *
+ * Creates a shortcut controller for the action accelerators, to be added
+ * to a window with gtk_widget_add_controller(). It runs in the capture
+ * phase, thus before the focused widget, like the GTK 3 accel groups did.
+ *
+ * Returns: (transfer full): a new #GtkEventController
+ *
+ * Since: DoxMail
+ **/
+GtkEventController *
+e_ui_manager_create_shortcut_controller (EUIManager *self)
+{
+	GtkEventController *controller;
+
+	g_return_val_if_fail (E_IS_UI_MANAGER (self), NULL);
+
+	controller = gtk_shortcut_controller_new_for_model (G_LIST_MODEL (self->shortcuts));
+	gtk_event_controller_set_propagation_phase (controller, GTK_PHASE_CAPTURE);
+	gtk_shortcut_controller_set_scope (GTK_SHORTCUT_CONTROLLER (controller), GTK_SHORTCUT_SCOPE_MANAGED);
+
+	return controller;
 }
 
 /**
@@ -767,24 +791,33 @@ e_ui_manager_can_process_accel (EUIManager *self,
 	return !ignore;
 }
 
+typedef struct _ShortcutData {
+	CamelWeakRefGroup *weak_ref_group; /* EUIManager */
+	EUIManagerShortcutDef sdef;
+} ShortcutData;
+
+static void
+shortcut_data_free (gpointer ptr)
+{
+	ShortcutData *sd = ptr;
+
+	camel_weak_ref_group_unref (sd->weak_ref_group);
+	g_free (sd);
+}
+
 static gboolean
-e_ui_manager_accel_activated_cb (GtkAccelGroup *accel_group,
-				 GObject *acceleratable,
-				 guint key,
-				 GdkModifierType mods,
+e_ui_manager_accel_activated_cb (GtkWidget *widget,
+				 GVariant *args,
 				 gpointer user_data)
 {
-	CamelWeakRefGroup *weak_ref_group = user_data;
-	EUIManager *self = camel_weak_ref_group_get (weak_ref_group);
-	EUIManagerShortcutDef sdef = { 0, 0 };
+	ShortcutData *sd = user_data;
+	EUIManager *self = camel_weak_ref_group_get (sd->weak_ref_group);
+	EUIManagerShortcutDef sdef = sd->sdef;
 	GPtrArray *actions;
 	gboolean handled = FALSE;
 
 	if (!self)
 		return FALSE;
-
-	sdef.key = key;
-	sdef.mods = mods;
 
 	actions = g_hash_table_lookup (self->shortcut_actions, &sdef);
 
@@ -827,7 +860,7 @@ e_ui_manager_accel_activated_cb (GtkAccelGroup *accel_group,
 			}
 		}
 	} else {
-		g_warning ("%s: No action found for key 0x%x and mods 0x%x", G_STRFUNC, key, mods);
+		g_warning ("%s: No action found for key 0x%x and mods 0x%x", G_STRFUNC, sdef.key, sdef.mods);
 	}
 
 	g_clear_object (&self);
@@ -845,7 +878,7 @@ e_ui_manager_connect_accel_cb (EUIManager *self,
 
 	g_return_if_fail (E_IS_UI_MANAGER (self));
 
-	if (!self->accel_group || !accel || !*accel)
+	if (!self->shortcuts || !accel || !*accel)
 		return;
 
 	gtk_accelerator_parse (accel, &sdef.key, &sdef.mods);
@@ -858,7 +891,8 @@ e_ui_manager_connect_accel_cb (EUIManager *self,
 
 		if (!actions) {
 			EUIManagerShortcutDef *sdef_ptr;
-			GClosure *closure;
+			GtkShortcut *shortcut;
+			ShortcutData *sd;
 
 			sdef_ptr = g_new0 (EUIManagerShortcutDef, 1);
 			sdef_ptr->key = sdef.key;
@@ -867,11 +901,16 @@ e_ui_manager_connect_accel_cb (EUIManager *self,
 			actions = g_ptr_array_new_with_free_func (g_object_unref);
 			g_hash_table_insert (self->shortcut_actions, sdef_ptr, actions);
 
-			closure = g_cclosure_new (G_CALLBACK (e_ui_manager_accel_activated_cb),
-				camel_weak_ref_group_ref (self->self_weak_ref_group),
-				(GClosureNotify) camel_weak_ref_group_unref);
+			sd = g_new0 (ShortcutData, 1);
+			sd->weak_ref_group = camel_weak_ref_group_ref (self->self_weak_ref_group);
+			sd->sdef = sdef;
 
-			gtk_accel_group_connect (self->accel_group, sdef.key, sdef.mods, GTK_ACCEL_LOCKED, closure);
+			shortcut = gtk_shortcut_new (
+				gtk_keyval_trigger_new (sdef.key, sdef.mods),
+				gtk_callback_action_new (e_ui_manager_accel_activated_cb, sd, shortcut_data_free));
+
+			g_list_store_append (self->shortcuts, shortcut);
+			g_object_unref (shortcut);
 		}
 
 		for (ii = 0; ii < actions->len; ii++) {
@@ -894,6 +933,32 @@ e_ui_manager_connect_accel_cb (EUIManager *self,
 }
 
 static void
+eum_remove_shortcut (EUIManager *self,
+		     const EUIManagerShortcutDef *sdef)
+{
+	guint ii, n_items;
+
+	n_items = g_list_model_get_n_items (G_LIST_MODEL (self->shortcuts));
+
+	for (ii = 0; ii < n_items; ii++) {
+		GtkShortcut *shortcut = g_list_model_get_item (G_LIST_MODEL (self->shortcuts), ii);
+		GtkShortcutTrigger *trigger = gtk_shortcut_get_trigger (shortcut);
+		gboolean found;
+
+		found = GTK_IS_KEYVAL_TRIGGER (trigger) &&
+			gtk_keyval_trigger_get_keyval (GTK_KEYVAL_TRIGGER (trigger)) == sdef->key &&
+			gtk_keyval_trigger_get_modifiers (GTK_KEYVAL_TRIGGER (trigger)) == sdef->mods;
+
+		g_object_unref (shortcut);
+
+		if (found) {
+			g_list_store_remove (self->shortcuts, ii);
+			break;
+		}
+	}
+}
+
+static void
 e_ui_manager_disconnect_accel_cb (EUIManager *self,
 				  EUIAction *action,
 				  const gchar *accel,
@@ -903,7 +968,7 @@ e_ui_manager_disconnect_accel_cb (EUIManager *self,
 
 	g_return_if_fail (E_IS_UI_MANAGER (self));
 
-	if (!self->accel_group || !accel || !*accel)
+	if (!self->shortcuts || !accel || !*accel)
 		return;
 
 	gtk_accelerator_parse (accel, &sdef.key, &sdef.mods);
@@ -923,7 +988,7 @@ e_ui_manager_disconnect_accel_cb (EUIManager *self,
 					g_ptr_array_remove_index (actions, ii);
 					if (!actions->len) {
 						g_hash_table_remove (self->shortcut_actions, &sdef);
-						gtk_accel_group_disconnect_key (self->accel_group, sdef.key, sdef.mods);
+						eum_remove_shortcut (self, &sdef);
 					}
 					break;
 				}
@@ -1567,13 +1632,11 @@ e_ui_manager_add_css_classes (EUIManager *self,
 			      const gchar *css_classes) /* space-separated */
 {
 	EHeaderBarButton *header_bar_button = NULL;
-	GtkStyleContext *style_context;
 
 	if (!item || !css_classes || !*css_classes)
 		return;
 
 	header_bar_button = E_IS_HEADER_BAR_BUTTON (item) ? E_HEADER_BAR_BUTTON (item) : NULL;
-	style_context = gtk_widget_get_style_context (item);
 
 	if (strchr (css_classes, ' ')) {
 		gchar **strv = g_strsplit (css_classes, " ", -1);
@@ -1586,7 +1649,7 @@ e_ui_manager_add_css_classes (EUIManager *self,
 				if (header_bar_button)
 					e_header_bar_button_css_add_class (header_bar_button, css_class);
 				else
-					gtk_style_context_add_class (style_context, css_class);
+					gtk_widget_add_css_class (item, css_class);
 			}
 		}
 
@@ -1595,7 +1658,7 @@ e_ui_manager_add_css_classes (EUIManager *self,
 		if (header_bar_button)
 			e_header_bar_button_css_add_class (header_bar_button, css_classes);
 		else
-			gtk_style_context_add_class (style_context, css_classes);
+			gtk_widget_add_css_class (item, css_classes);
 	}
 }
 
@@ -1617,27 +1680,56 @@ e_ui_manager_create_headerbar_item (EUIManager *self,
 	return G_OBJECT (item);
 }
 
+/* GTK 4 has no GtkToolbar; its items are flat buttons with an icon and a
+ * label, the label shown only for the "important" items, as the GTK 3
+ * toolbar did in its default style. */
+#define TOOL_ITEM_IMAGE_KEY "e-ui-manager-tool-item-image"
+#define TOOL_ITEM_LABEL_KEY "e-ui-manager-tool-item-label"
+
+static GtkWidget *
+eum_tool_button_new (gboolean toggle,
+		     gboolean important)
+{
+	GtkWidget *button, *box, *image, *label;
+
+	button = toggle ? gtk_toggle_button_new () : gtk_button_new ();
+	gtk_button_set_has_frame (GTK_BUTTON (button), FALSE);
+
+	box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
+	image = gtk_image_new ();
+	label = gtk_label_new (NULL);
+	gtk_label_set_use_underline (GTK_LABEL (label), TRUE);
+	gtk_widget_set_visible (label, important);
+
+	gtk_box_append (GTK_BOX (box), image);
+	gtk_box_append (GTK_BOX (box), label);
+	gtk_button_set_child (GTK_BUTTON (button), box);
+
+	g_object_set_data (G_OBJECT (button), TOOL_ITEM_IMAGE_KEY, image);
+	g_object_set_data (G_OBJECT (button), TOOL_ITEM_LABEL_KEY, label);
+
+	return button;
+}
+
 static GObject *
 e_ui_manager_create_toolbar_item (EUIManager *self,
 				  EUIElement *elem,
 				  EUIAction *action)
 {
-	GtkToolButton *item = NULL;
+	GtkWidget *item;
 	GVariant *state;
+	gboolean toggle;
 
 	state = g_action_get_state (G_ACTION (action));
 
-	if (e_ui_action_get_radio_group (action))
-		item = GTK_TOOL_BUTTON (gtk_toggle_tool_button_new ());
-	else if (state && g_variant_is_of_type (state, G_VARIANT_TYPE_BOOLEAN))
-		item = GTK_TOOL_BUTTON (gtk_toggle_tool_button_new ());
-	else
-		item = GTK_TOOL_BUTTON (gtk_tool_button_new (NULL, NULL));
+	toggle = e_ui_action_get_radio_group (action) ||
+		(state && g_variant_is_of_type (state, G_VARIANT_TYPE_BOOLEAN));
 
 	g_clear_pointer (&state, g_variant_unref);
 
-	e_ui_manager_add_css_classes (self, GTK_WIDGET (item), e_ui_element_item_get_css_classes (elem));
-	gtk_tool_item_set_is_important (GTK_TOOL_ITEM (item), e_ui_element_item_get_important (elem));
+	item = eum_tool_button_new (toggle, e_ui_element_item_get_important (elem));
+
+	e_ui_manager_add_css_classes (self, item, e_ui_element_item_get_css_classes (elem));
 	e_ui_manager_update_item_from_action (self, item, action);
 
 	return G_OBJECT (item);
@@ -1746,8 +1838,6 @@ eum_traverse_headerbar_rec (EUIManager *self,
 
 				item = e_ui_manager_create_item_one (self, elem, action, E_UI_ELEMENT_KIND_HEADERBAR);
 				if (item) {
-					GPtrArray *radio_group;
-
 					if (*inout_any_added && *inout_need_separator) {
 						GtkWidget *separator;
 
@@ -1769,20 +1859,6 @@ eum_traverse_headerbar_rec (EUIManager *self,
 
 					*inout_any_added = TRUE;
 					*inout_need_separator = FALSE;
-
-					radio_group = e_ui_action_get_radio_group (action);
-					if (radio_group && GTK_IS_RADIO_BUTTON (item)) {
-						GSList **pgroup;
-
-						pgroup = g_hash_table_lookup (groups, radio_group);
-						if (pgroup) {
-							gtk_radio_button_set_group (GTK_RADIO_BUTTON (item), *pgroup);
-						} else {
-							pgroup = g_new0 (GSList *, 1);
-							*pgroup = gtk_radio_button_get_group (GTK_RADIO_BUTTON (item));
-							g_hash_table_insert (groups, radio_group, pgroup);
-						}
-					}
 
 					if (eheaderbar) {
 						if (add_to_start)
@@ -1869,13 +1945,16 @@ eum_headerbar_handle_changed_cb (EUIManager *self,
 	if (eheaderbar) {
 		e_header_bar_remove_all (eheaderbar);
 	} else {
-		GtkContainer *container = GTK_CONTAINER (gtkheaderbar);
 		GList *children, *link;
 
-		children = gtk_container_get_children (container);
+		children = e_gtk_widget_get_children (gtkheaderbar);
 		for (link = children; link; link = g_list_next (link)) {
 			GtkWidget *child = link->data;
-			gtk_container_remove (container, child);
+
+			/* the title widget and the window buttons stay */
+			if (child != gtk_header_bar_get_title_widget (gtkheaderbar) &&
+			    !GTK_IS_WINDOW_CONTROLS (child))
+				gtk_header_bar_remove (gtkheaderbar, child);
 		}
 
 		g_list_free (children);
@@ -1909,7 +1988,7 @@ e_ui_manager_create_item_for_headerbar (EUIManager *self,
 		widget = gtk_header_bar_new ();
 		gtkheaderbar = GTK_HEADER_BAR (widget);
 
-		gtk_header_bar_set_show_close_button (gtkheaderbar, TRUE);
+		gtk_header_bar_set_show_title_buttons (gtkheaderbar, TRUE);
 
 		eum_traverse_headerbar (self, NULL, gtkheaderbar, elem, is_customized);
 	} else {
@@ -1930,7 +2009,7 @@ e_ui_manager_create_item_for_headerbar (EUIManager *self,
 
 static void
 eum_traverse_toolbar_rec (EUIManager *self,
-			  GtkToolbar *toolbar,
+			  GtkWidget *toolbar,
 			  EUIElement *parent_elem,
 			  GHashTable *groups,
 			  gboolean *inout_need_separator,
@@ -1956,20 +2035,16 @@ eum_traverse_toolbar_rec (EUIManager *self,
 
 				item = e_ui_manager_create_item_one (self, elem, action, E_UI_ELEMENT_KIND_TOOLBAR);
 				if (item) {
-					if (GTK_IS_TOOL_ITEM (item)) {
-						if (*inout_any_added && *inout_need_separator) {
-							GtkToolItem *separator;
-
-							separator = gtk_separator_tool_item_new ();
-							gtk_toolbar_insert (toolbar, separator, -1);
-						}
+					if (GTK_IS_WIDGET (item)) {
+						if (*inout_any_added && *inout_need_separator)
+							gtk_box_append (GTK_BOX (toolbar), gtk_separator_new (GTK_ORIENTATION_VERTICAL));
 
 						*inout_any_added = TRUE;
 						*inout_need_separator = FALSE;
 
-						gtk_toolbar_insert (toolbar, GTK_TOOL_ITEM (item), -1);
+						gtk_box_append (GTK_BOX (toolbar), GTK_WIDGET (item));
 					} else {
-						g_warning ("%s: Expected GtkToolItem, but received %s for action '%s.%s'", G_STRFUNC,
+						g_warning ("%s: Expected GtkWidget, but received %s for action '%s.%s'", G_STRFUNC,
 							G_OBJECT_TYPE_NAME (item), e_ui_action_get_map_name (action), e_ui_element_item_get_action (elem));
 						g_object_ref_sink (item);
 						g_clear_object (&item);
@@ -1994,7 +2069,7 @@ eum_traverse_toolbar_rec (EUIManager *self,
 
 static void
 eum_traverse_toolbar (EUIManager *self,
-		      GtkToolbar *toolbar,
+		      GtkWidget *toolbar,
 		      EUIElement *elem,
 		      gboolean is_customized)
 {
@@ -2013,21 +2088,17 @@ static void
 eum_toolbar_handle_changed_cb (EUIManager *self,
 			       gpointer user_data)
 {
-	GtkContainer *toolbar = user_data;
-	GList *children, *link;
+	GtkWidget *toolbar = user_data;
+	GtkWidget *child;
 	EUIElement *elem;
 	const gchar *id;
 	gboolean is_customized = FALSE;
 
 	g_return_if_fail (E_IS_UI_MANAGER (self));
-	g_return_if_fail (GTK_IS_TOOLBAR (toolbar));
+	g_return_if_fail (GTK_IS_BOX (toolbar));
 
-	children = gtk_container_get_children (toolbar);
-	for (link = children; link; link = g_list_next (link)) {
-		gtk_container_remove (toolbar, link->data);
-	}
-
-	g_list_free (children);
+	while ((child = gtk_widget_get_first_child (toolbar)) != NULL)
+		gtk_box_remove (GTK_BOX (toolbar), child);
 
 	id = gtk_widget_get_name (GTK_WIDGET (toolbar));
 	g_return_if_fail (id != NULL);
@@ -2039,7 +2110,7 @@ eum_toolbar_handle_changed_cb (EUIManager *self,
 		return;
 	}
 
-	eum_traverse_toolbar (self, GTK_TOOLBAR (toolbar), elem, is_customized);
+	eum_traverse_toolbar (self, toolbar, elem, is_customized);
 }
 
 static GObject *
@@ -2047,19 +2118,18 @@ e_ui_manager_create_item_for_toolbar (EUIManager *self,
 				      EUIElement *elem,
 				      gboolean is_customized)
 {
-	GtkToolbar *toolbar;
+	GtkWidget *toolbar;
 
 	g_return_val_if_fail (elem != NULL, NULL);
 
-	toolbar = GTK_TOOLBAR (gtk_toolbar_new ());
-	gtk_widget_set_name (GTK_WIDGET (toolbar), e_ui_element_get_id (elem));
+	toolbar = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+	gtk_widget_add_css_class (toolbar, "toolbar");
+	gtk_widget_set_name (toolbar, e_ui_element_get_id (elem));
 
-	if (e_ui_element_toolbar_get_primary (elem)) {
-		gtk_style_context_add_class (gtk_widget_get_style_context (GTK_WIDGET (toolbar)),
-			GTK_STYLE_CLASS_PRIMARY_TOOLBAR);
-	}
+	if (e_ui_element_toolbar_get_primary (elem))
+		gtk_widget_add_css_class (toolbar, "primary-toolbar");
 
-	e_util_setup_toolbar_icon_size (toolbar, GTK_ICON_SIZE_BUTTON);
+	e_util_setup_toolbar_icon_size (toolbar, E_GTK_ICON_SIZE_BUTTON);
 
 	g_signal_connect_object (self, "changed",
 		G_CALLBACK (eum_toolbar_handle_changed_cb), toolbar, 0);
@@ -2210,7 +2280,7 @@ e_ui_manager_create_item_for_menu (EUIManager *self,
  * for an item which does not exist.
  *
  * The returned #GObject is an #EUIMenu (a #GMenuModel descendant) for the menu,
- * an #EHeaderBar for the headerbar and a #GtkToolbar for the toolbar.
+ * an #EHeaderBar for the headerbar and a #GtkBox with the "toolbar" style class for the toolbar.
  *
  * Returns: (transfer full): a new #GObject for the @id
  *
@@ -2444,7 +2514,7 @@ e_ui_manager_synchro_menu_item_attribute_cb (EUIAction *action,
  * @action: an #EUIAction to update the @item with
  *
  * Updates properties of the @item with the values from the @action.
- * The function can handle only #GMenuItem, #GtkToolButton,
+ * The function can handle only #GMenuItem, the toolbar buttons,
  * #GtkButton and #EHeaderBarButton descendants.
  *
  * Passing other than supported types into the function is
@@ -2481,12 +2551,9 @@ e_ui_manager_update_item_from_action (EUIManager *self,
 
 		/* this is remembered per application run, also because it's not
 		   that easy to rebuild the menu once it's created */
-		if (with_icons == -1) {
-			GtkSettings *settings = gtk_settings_get_default ();
-			gboolean gtk_menu_images = TRUE;
-			g_object_get (settings, "gtk-menu-images", &gtk_menu_images, NULL);
-			with_icons = gtk_menu_images ? 1 : 0;
-		}
+		/* GTK 4 has no "gtk-menu-images" setting */
+		if (with_icons == -1)
+			with_icons = 1;
 
 		g_menu_item_set_action_and_target_value (item, action_name_full, param_type && target ? target : NULL);
 
@@ -2514,12 +2581,12 @@ e_ui_manager_update_item_from_action (EUIManager *self,
 				}
 			}
 		}
-	} else if (GTK_IS_TOOL_BUTTON (item)) {
+	} else if (GTK_IS_BUTTON (item) && g_object_get_data (item, TOOL_ITEM_LABEL_KEY)) {
+		GtkImage *image = g_object_get_data (item, TOOL_ITEM_IMAGE_KEY);
+
 		gtk_actionable_set_action_name (GTK_ACTIONABLE (item), action_name_full);
 		if (param_type && target)
 			gtk_actionable_set_action_target_value (GTK_ACTIONABLE (item), target);
-
-		gtk_tool_button_set_use_underline (item, TRUE);
 
 		value = e_ui_action_get_icon_name (action);
 		if (value) {
@@ -2527,21 +2594,16 @@ e_ui_manager_update_item_from_action (EUIManager *self,
 				GIcon *icon;
 
 				icon = e_ui_manager_get_gicon (self, value + 7);
-				if (icon) {
-					GtkWidget *image;
-
-					image = gtk_image_new_from_gicon (icon, gtk_tool_item_get_icon_size (item));
-					gtk_widget_set_visible (image, TRUE);
-					gtk_tool_button_set_icon_widget (item, image);
-				}
+				if (icon)
+					gtk_image_set_from_gicon (image, icon);
 			} else {
-				gtk_tool_button_set_icon_name (item, value);
+				gtk_image_set_from_icon_name (image, value);
 			}
 		}
 
 		e_ui_manager_create_named_binding (self, FALSE, "EUIManager::binding:label",
 			action, "label",
-			item, "label");
+			g_object_get_data (item, TOOL_ITEM_LABEL_KEY), "label");
 
 		e_ui_manager_create_named_binding (self, FALSE, "EUIManager::binding:tooltip",
 			action, "tooltip",
@@ -2567,19 +2629,18 @@ e_ui_manager_update_item_from_action (EUIManager *self,
 
 				icon = e_ui_manager_get_gicon (self, value + 7);
 				if (icon)
-					image = gtk_image_new_from_gicon (icon, GTK_ICON_SIZE_BUTTON);
+					image = gtk_image_new_from_gicon (icon);
 			} else {
-				image = gtk_image_new_from_icon_name (value, GTK_ICON_SIZE_BUTTON);
+				image = gtk_image_new_from_icon_name (value);
 			}
 
 			if (image) {
-				gtk_button_set_image (item, image);
-				gtk_widget_show (image);
+				e_gtk_button_set_image (item, image);
 			} else {
-				gtk_button_set_image (item, NULL);
+				e_gtk_button_set_image (item, NULL);
 			}
 		} else {
-			gtk_button_set_image (item, NULL);
+			e_gtk_button_set_image (item, NULL);
 		}
 
 		e_ui_manager_create_named_binding (self, headerbar_parent, "EUIManager::binding:label",
@@ -2625,7 +2686,7 @@ e_ui_manager_update_item_from_action (EUIManager *self,
  *
  * Creates a new UI item suitable for the @for_kind, containing the @menu_model.
  * For %E_UI_ELEMENT_KIND_MENU returns a submenu #GMenuItem;
- * for %E_UI_ELEMENT_KIND_TOOLBAR returns a #GtkMenuToolButton and
+ * for %E_UI_ELEMENT_KIND_TOOLBAR returns a #GtkBox with a button and a #GtkMenuButton and
  * for %E_UI_ELEMENT_KIND_HEADERBAR returns an #EHeaderBarButton.
  *
  * This might be usually called from #EUIManager 's "create-item" callback.
@@ -2650,32 +2711,38 @@ e_ui_manager_create_item_from_menu_model (EUIManager *self,
 	if (for_kind == E_UI_ELEMENT_KIND_MENU) {
 		item = G_OBJECT (g_menu_item_new_submenu (e_ui_action_get_label (action), menu_model));
 	} else if (for_kind == E_UI_ELEMENT_KIND_TOOLBAR) {
-		GtkToolItem *tool_item;
-		GtkWidget *menu;
+		GtkWidget *box, *button, *menu_button;
 
-		menu = gtk_menu_new_from_model (menu_model);
-		tool_item = gtk_menu_tool_button_new (NULL, e_ui_action_get_label (action));
-		gtk_menu_tool_button_set_menu (GTK_MENU_TOOL_BUTTON (tool_item), menu);
+		/* GtkMenuToolButton: the action's button and an arrow with the menu */
+		button = eum_tool_button_new (FALSE, elem ? e_ui_element_item_get_important (elem) : TRUE);
 
-		if (elem) {
-			e_ui_manager_add_css_classes (self, GTK_WIDGET (tool_item), e_ui_element_item_get_css_classes (elem));
-			gtk_tool_item_set_is_important (tool_item, e_ui_element_item_get_important (elem));
-		} else {
-			gtk_tool_item_set_is_important (tool_item, TRUE);
-		}
+		menu_button = gtk_menu_button_new ();
+		gtk_menu_button_set_has_frame (GTK_MENU_BUTTON (menu_button), FALSE);
+		gtk_menu_button_set_menu_model (GTK_MENU_BUTTON (menu_button), menu_model);
 
-		e_ui_manager_update_item_from_action (self, tool_item, action);
-		e_ui_action_util_assign_to_widget (action, GTK_WIDGET (tool_item));
+		box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+		gtk_widget_add_css_class (box, "linked");
+		gtk_box_append (GTK_BOX (box), button);
+		gtk_box_append (GTK_BOX (box), menu_button);
 
-		item = G_OBJECT (tool_item);
+		if (elem)
+			e_ui_manager_add_css_classes (self, box, e_ui_element_item_get_css_classes (elem));
+
+		e_ui_manager_update_item_from_action (self, button, action);
+		e_ui_action_util_assign_to_widget (action, button);
+
+		e_binding_bind_property (
+			action, "is-visible",
+			box, "visible",
+			G_BINDING_SYNC_CREATE);
+
+		item = G_OBJECT (box);
 	} else if (for_kind == E_UI_ELEMENT_KIND_HEADERBAR) {
-		GtkWidget *widget, *menu;
-
-		menu = gtk_menu_new_from_model (menu_model);
+		GtkWidget *widget;
 
 		widget = e_header_bar_button_new (e_ui_action_get_label (action), action, self);
 
-		e_header_bar_button_take_menu (E_HEADER_BAR_BUTTON (widget), menu);
+		e_header_bar_button_set_menu_model (E_HEADER_BAR_BUTTON (widget), menu_model);
 
 		e_binding_bind_property (
 			action, "sensitive",

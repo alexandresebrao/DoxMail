@@ -105,7 +105,7 @@ enum {
 
 static guint signals[LAST_SIGNAL] = { 0 };
 
-static GdkAtom clipboard_atom = GDK_NONE;
+static EGtkAtom clipboard_atom = E_GTK_ATOM_NONE;
 
 typedef struct _ECellTextPrivate {
 	PangoEllipsizeMode ellipsize_mode;
@@ -113,7 +113,7 @@ typedef struct _ECellTextPrivate {
 
 G_DEFINE_TYPE_WITH_PRIVATE (ECellText, e_cell_text, E_TYPE_CELL)
 
-#define UTF8_ATOM  gdk_atom_intern ("UTF8_STRING", FALSE)
+#define UTF8_ATOM  e_gtk_atom_intern ("UTF8_STRING", FALSE)
 
 #define TEXT_PAD 4
 
@@ -198,8 +198,8 @@ struct _CellEdit {
 
 static void e_cell_text_view_command (ETextEventProcessor *tep, ETextEventProcessorCommand *command, gpointer data);
 
-static void e_cell_text_view_get_selection (CellEdit *edit, GdkAtom selection, guint32 time);
-static void e_cell_text_view_supply_selection (CellEdit *edit, guint time, GdkAtom selection, gchar *data, gint length);
+static void e_cell_text_view_get_selection (CellEdit *edit, EGtkAtom selection, guint32 time);
+static void e_cell_text_view_supply_selection (CellEdit *edit, guint time, EGtkAtom selection, gchar *data, gint length);
 
 static void _get_tep (CellEdit *edit);
 
@@ -271,7 +271,7 @@ ect_stop_editing (ECellTextView *text_view,
 	if (!edit)
 		return;
 
-	window = gtk_widget_get_window (GTK_WIDGET (text_view->canvas));
+	window = e_gtk_widget_get_surface (GTK_WIDGET (text_view->canvas));
 
 	row = edit->row;
 	view_col = edit->view_col;
@@ -978,7 +978,7 @@ ect_edit_select_all (ECellTextView *text_view)
 }
 
 static gboolean
-key_begins_editing (GdkEventKey *event)
+key_begins_editing (GdkEvent *event)
 {
 	if (event->length == 0)
 		return FALSE;
@@ -1034,7 +1034,7 @@ ect_event (ECellView *ecell_view,
 		if (edit_display && edit->im_context &&
 				gtk_im_context_filter_keypress (\
 					edit->im_context,
-					(GdkEventKey *) event)) {
+					(GdkEvent *) event)) {
 
 			edit->need_im_reset = TRUE;
 			if (preedit_len && flags & E_CELL_PREEDIT)
@@ -1059,7 +1059,7 @@ ect_event (ECellView *ecell_view,
 			  edit_display = TRUE;
 		}
 		if (edit_display) {
-			GdkEventKey key = event->key;
+			GdkEvent key = event->key;
 			if (key.type == GDK_KEY_PRESS &&
 			    (key.keyval == GDK_KEY_KP_Enter || key.keyval == GDK_KEY_Return)) {
 				/* stop editing when it's only GDK_KEY_PRESS event */
@@ -1100,7 +1100,7 @@ ect_event (ECellView *ecell_view,
 		    && e_table_model_is_cell_editable (ecell_view->e_table_model, model_col, row)
 		    && event->type == GDK_BUTTON_RELEASE
 		    && event->button.button == 1) {
-			GdkEventButton button = event->button;
+			GdkEvent button = event->button;
 
 			e_table_item_enter_edit (text_view->cell_view.e_table_item_view, view_col, row);
 			edit = text_view->edit;
@@ -1131,7 +1131,7 @@ ect_event (ECellView *ecell_view,
 			e_tep_event.button.type = GDK_BUTTON_RELEASE;
 		}
 		if (edit_display) {
-			GdkEventButton button = event->button;
+			GdkEvent button = event->button;
 			e_tep_event.button.time = button.time;
 			e_tep_event.button.state = button.state;
 			e_tep_event.button.button = button.button;
@@ -1158,7 +1158,7 @@ ect_event (ECellView *ecell_view,
 		event->motion.x -= 4;
 		event->motion.y -= 1;
 		if (edit_display) {
-			GdkEventMotion motion = event->motion;
+			GdkEvent motion = event->motion;
 			e_tep_event.motion.time = motion.time;
 			e_tep_event.motion.state = motion.state;
 			e_tep_event.motion.position = get_position_from_xy (edit, event->motion.x, event->motion.y);
@@ -1180,7 +1180,7 @@ ect_event (ECellView *ecell_view,
 			if (edit->default_cursor_shown) {
 				GdkWindow *window;
 
-				window = gtk_widget_get_window (canvas);
+				window = e_gtk_widget_get_surface (canvas);
 				gdk_window_set_cursor (window, text_view->i_cursor);
 				edit->default_cursor_shown = FALSE;
 			}
@@ -1194,7 +1194,7 @@ ect_event (ECellView *ecell_view,
 			if (!edit->default_cursor_shown) {
 				GdkWindow *window;
 
-				window = gtk_widget_get_window (canvas);
+				window = e_gtk_widget_get_surface (canvas);
 				gdk_window_set_cursor (window, NULL);
 				edit->default_cursor_shown = TRUE;
 			}
@@ -1927,7 +1927,7 @@ e_cell_text_class_init (ECellTextClass *class)
 			G_PARAM_READWRITE));
 
 	if (!clipboard_atom)
-		clipboard_atom = gdk_atom_intern ("CLIPBOARD", FALSE);
+		clipboard_atom = e_gtk_atom_intern ("CLIPBOARD", FALSE);
 
 	ellipsis_env = g_getenv ("GAL_ELLIPSIS");
 	if (ellipsis_env) {
@@ -2635,7 +2635,7 @@ e_cell_text_view_command (ETextEventProcessor *tep,
 		sel_end = MAX (edit->selection_start, edit->selection_end);
 		if (sel_start != sel_end) {
 			e_cell_text_view_supply_selection (
-				edit, command->time, GDK_SELECTION_PRIMARY,
+				edit, command->time, E_GTK_SELECTION_PRIMARY,
 				edit->text + sel_start,
 				sel_end - sel_start);
 		} else if (edit->timer) {
@@ -2688,7 +2688,7 @@ e_cell_text_view_command (ETextEventProcessor *tep,
 		change = TRUE;
 		break;
 	case E_TEP_GET_SELECTION:
-		e_cell_text_view_get_selection (edit, GDK_SELECTION_PRIMARY, command->time);
+		e_cell_text_view_get_selection (edit, E_GTK_SELECTION_PRIMARY, command->time);
 		break;
 	case E_TEP_ACTIVATE:
 		e_table_item_leave_edit_ (text_view->cell_view.e_table_item_view);
@@ -2749,26 +2749,26 @@ e_cell_text_view_command (ETextEventProcessor *tep,
 static void
 e_cell_text_view_supply_selection (CellEdit *edit,
                                    guint time,
-                                   GdkAtom selection,
+                                   EGtkAtom selection,
                                    gchar *data,
                                    gint length)
 {
 #if DO_SELECTION
-	GtkClipboard *clipboard;
+	GdkClipboard *clipboard;
 
 	clipboard = gtk_widget_get_clipboard (GTK_WIDGET (edit->text_view->canvas), selection);
 
-	if (selection == GDK_SELECTION_PRIMARY) {
+	if (selection == E_GTK_SELECTION_PRIMARY) {
 		edit->has_selection = TRUE;
 	}
 
-	gtk_clipboard_set_text (clipboard, data, length);
+	e_gtk_clipboard_set_text (clipboard, data, length);
 #endif
 }
 
 #ifdef DO_SELECTION
 static void
-paste_received (GtkClipboard *clipboard,
+paste_received (GdkClipboard *clipboard,
                 const gchar *text,
                 gpointer data)
 {
@@ -2792,11 +2792,11 @@ paste_received (GtkClipboard *clipboard,
 
 static void
 e_cell_text_view_get_selection (CellEdit *edit,
-                                GdkAtom selection,
+                                EGtkAtom selection,
                                 guint32 time)
 {
 #if DO_SELECTION
-	gtk_clipboard_request_text (
+	e_gtk_clipboard_request_text (
 		gtk_widget_get_clipboard (GTK_WIDGET (edit->text_view->canvas),
 		selection),
 		paste_received, edit);

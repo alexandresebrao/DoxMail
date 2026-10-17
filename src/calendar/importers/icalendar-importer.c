@@ -324,7 +324,7 @@ create_calendar_clicked_cb (GtkWidget *button,
 	GtkWidget *toplevel;
 	GtkWindow *window;
 
-	toplevel = gtk_widget_get_toplevel (button);
+	toplevel = e_gtk_widget_get_toplevel (button);
 	if (!GTK_IS_WINDOW (toplevel))
 		toplevel = NULL;
 
@@ -420,12 +420,12 @@ ivcal_getwidget (EImport *ei,
 	top_vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
 
 	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
-	gtk_box_pack_start (GTK_BOX (top_vbox), hbox, FALSE, TRUE, 6);
+	e_gtk_box_pack_start (GTK_BOX (top_vbox), hbox, FALSE, TRUE, 6);
 
 	nb = gtk_notebook_new ();
 	gtk_notebook_set_show_tabs (GTK_NOTEBOOK (nb), FALSE);
 	gtk_notebook_set_show_border (GTK_NOTEBOOK (nb), FALSE);
-	gtk_box_pack_start (GTK_BOX (top_vbox), nb, TRUE, TRUE, 6);
+	e_gtk_box_pack_start (GTK_BOX (top_vbox), nb, TRUE, TRUE, 6);
 
 	/* Type of iCalendar items */
 	for (i = 0; import_type_map[i] != -1; i++) {
@@ -464,8 +464,8 @@ ivcal_getwidget (EImport *ei,
 
 		scrolled = gtk_scrolled_window_new (NULL, NULL);
 		gtk_scrolled_window_set_policy ((GtkScrolledWindow *) scrolled, GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
-		gtk_container_add ((GtkContainer *) scrolled, selector);
-		gtk_box_pack_start (GTK_BOX (vbox), scrolled, TRUE, TRUE, 0);
+		e_gtk_container_add ((GtkContainer *) scrolled, selector);
+		e_gtk_box_pack_start (GTK_BOX (vbox), scrolled, TRUE, TRUE, 0);
 
 		create_button = gtk_button_new_with_mnemonic (create_label);
 		g_object_set_data (G_OBJECT (create_button), "source-type", GINT_TO_POINTER (import_type_map[i]));
@@ -475,7 +475,7 @@ ivcal_getwidget (EImport *ei,
 			"vexpand", FALSE,
 			"valign", GTK_ALIGN_START,
 			NULL);
-		gtk_box_pack_start (GTK_BOX (vbox), create_button, FALSE, FALSE, 0);
+		e_gtk_box_pack_start (GTK_BOX (vbox), create_button, FALSE, FALSE, 0);
 
 		g_signal_connect (create_button, "clicked", G_CALLBACK (create_calendar_clicked_cb), selector);
 		g_signal_connect (
@@ -483,7 +483,7 @@ ivcal_getwidget (EImport *ei,
 			G_CALLBACK (primary_selection_changed_cb), target);
 
 		rb = gtk_radio_button_new_with_label (group, _(import_type_strings[i]));
-		gtk_box_pack_start (GTK_BOX (hbox), rb, FALSE, FALSE, 6);
+		e_gtk_box_pack_start (GTK_BOX (hbox), rb, FALSE, FALSE, 6);
 
 		sd = g_malloc0 (sizeof (*sd));
 		sd->target = target;
@@ -507,7 +507,7 @@ ivcal_getwidget (EImport *ei,
 	if (first)
 		gtk_toggle_button_set_active ((GtkToggleButton *) first, TRUE);
 
-	gtk_widget_show_all (top_vbox);
+	gtk_widget_set_visible (top_vbox, TRUE);
 	g_hash_table_unref (known_readonly);
 
 	return top_vbox;
@@ -1191,16 +1191,16 @@ gnome_calendar_getwidget (EImport *ei,
 	g_signal_connect (
 		w, "toggled",
 		G_CALLBACK (calendar_toggle_cb), target);
-	gtk_box_pack_start (GTK_BOX (hbox), w, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), w, FALSE, FALSE, 0);
 
 	w = gtk_check_button_new_with_label (_("Tasks"));
 	gtk_toggle_button_set_active ((GtkToggleButton *) w, !done_tasks);
 	g_signal_connect (
 		w, "toggled",
 		G_CALLBACK (tasks_toggle_cb), target);
-	gtk_box_pack_start (GTK_BOX (hbox), w, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), w, FALSE, FALSE, 0);
 
-	gtk_widget_show_all (hbox);
+	gtk_widget_set_visible (hbox, TRUE);
 
 	return hbox;
 }

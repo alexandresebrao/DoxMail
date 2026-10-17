@@ -108,7 +108,7 @@ new_rule_response (GtkWidget *dialog,
 			e_rule_context_save (context, user);
 	}
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 }
 
 static void
@@ -815,7 +815,7 @@ e_rule_context_add_rule_gui (ERuleContext *context,
 	gtk_window_set_resizable ((GtkWindow *) dialog, TRUE);
 
 	content_area = gtk_dialog_get_content_area (dialog);
-	gtk_box_pack_start (GTK_BOX (content_area), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (content_area), widget, TRUE, TRUE, 0);
 
 	g_object_set_data_full ((GObject *) dialog, "rule", rule, g_object_unref);
 	if (path)

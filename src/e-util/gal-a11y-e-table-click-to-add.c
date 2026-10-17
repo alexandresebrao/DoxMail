@@ -75,7 +75,7 @@ static gboolean
 idle_do_action (gpointer data)
 {
 	GtkLayout *layout;
-	GdkEventButton event;
+	GdkEvent event;
 	ETableClickToAdd * etcta;
 	gint finished;
 

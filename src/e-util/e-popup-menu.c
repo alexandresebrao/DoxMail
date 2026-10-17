@@ -51,7 +51,7 @@ make_item (GtkMenu *menu,
 	gtk_label_set_xalign (GTK_LABEL (label), 0);
 	gtk_widget_show (label);
 
-	gtk_container_add (GTK_CONTAINER (item), label);
+	e_gtk_container_add (item, label);
 }
 
 GtkMenu *

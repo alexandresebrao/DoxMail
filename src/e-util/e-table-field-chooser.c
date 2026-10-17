@@ -163,20 +163,19 @@ create_content (GnomeCanvas **canvas)
 
 	label1 = gtk_label_new (_("To add a column to your table, drag it into\nthe location in which you want it to appear."));
 	gtk_widget_show (label1);
-	gtk_box_pack_start (GTK_BOX (vbox_top), label1, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox_top), label1, FALSE, FALSE, 0);
 	gtk_label_set_justify (GTK_LABEL (label1), GTK_JUSTIFY_CENTER);
 
 	scrolledwindow1 = gtk_scrolled_window_new (NULL, NULL);
 	gtk_widget_show (scrolledwindow1);
-	gtk_box_pack_start (GTK_BOX (vbox_top), scrolledwindow1, TRUE, TRUE, 0);
-	gtk_widget_set_can_focus (scrolledwindow1, FALSE);
+	e_gtk_box_pack_start (GTK_BOX (vbox_top), scrolledwindow1, TRUE, TRUE, 0);
+	gtk_widget_set_focusable (scrolledwindow1, FALSE);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow1), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
 	canvas_buttons = e_canvas_new ();
 	gtk_widget_show (canvas_buttons);
-	gtk_container_add (GTK_CONTAINER (scrolledwindow1), canvas_buttons);
-	gtk_widget_set_can_focus (canvas_buttons, FALSE);
-	gtk_widget_set_can_default (canvas_buttons, FALSE);
+	e_gtk_container_add (scrolledwindow1, canvas_buttons);
+	gtk_widget_set_focusable (canvas_buttons, FALSE);
 
 	*canvas = GNOME_CANVAS (canvas_buttons);
 
@@ -197,7 +196,7 @@ e_table_field_chooser_init (ETableFieldChooser *etfc)
 	}
 
 	gtk_widget_set_size_request (widget, -1, 250);
-	gtk_box_pack_start (GTK_BOX (etfc), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (etfc), widget, TRUE, TRUE, 0);
 
 	etfc->rect = gnome_canvas_item_new (
 		gnome_canvas_root (GNOME_CANVAS (etfc->canvas)),
@@ -231,7 +230,7 @@ e_table_field_chooser_init (ETableFieldChooser *etfc)
 		etfc->canvas, "size_allocate",
 		G_CALLBACK (allocate_callback), etfc);
 
-	gtk_widget_show_all (widget);
+	gtk_widget_set_visible (widget, TRUE);
 }
 
 static void

@@ -191,7 +191,7 @@ e_text_event_processor_emacs_like_event (ETextEventProcessor *tep,
 
 			if (key.state & GDK_SHIFT_MASK)
 				command.action = E_TEP_SELECT;
-			else if (key.state & GDK_MOD1_MASK)
+			else if (key.state & GDK_ALT_MASK)
 				command.action = E_TEP_NOP;
 			else
 				command.action = E_TEP_MOVE;
@@ -474,7 +474,7 @@ e_text_event_processor_emacs_like_event (ETextEventProcessor *tep,
 
 			default:
 				if ((key.state & GDK_CONTROL_MASK) &&
-				   !(key.state & GDK_MOD1_MASK)) {
+				   !(key.state & GDK_ALT_MASK)) {
 					if ((key.keyval >= 'A') && (key.keyval <= 'Z'))
 						key.keyval -= 'A' - 'a';
 
@@ -501,7 +501,7 @@ e_text_event_processor_emacs_like_event (ETextEventProcessor *tep,
 
 					break;
 
-				} else if ((key.state & GDK_MOD1_MASK) &&
+				} else if ((key.state & GDK_ALT_MASK) &&
 					  !(key.state & GDK_CONTROL_MASK)) {
 					if ((key.keyval >= 'A') && (key.keyval <= 'Z'))
 						key.keyval -= 'A' - 'a';
@@ -513,7 +513,7 @@ e_text_event_processor_emacs_like_event (ETextEventProcessor *tep,
 						command.value = alt_keys[(gint) (key.keyval - 'a')].value;
 						command.string = alt_keys[(gint) (key.keyval - 'a')].string;
 					}
-				} else if (!(key.state & GDK_MOD1_MASK) &&
+				} else if (!(key.state & GDK_ALT_MASK) &&
 					!(key.state & GDK_CONTROL_MASK) &&
 					key.length > 0) {
 					if (key.keyval >= GDK_KEY_KP_0 &&

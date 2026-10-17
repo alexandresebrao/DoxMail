@@ -156,7 +156,7 @@ e_vcard_editor_address_constructed (GObject *object)
 		"top-margin", 6,
 		"bottom-margin", 6,
 		NULL);
-	gtk_container_add (GTK_CONTAINER (scrolled_window), widget);
+	e_gtk_container_add (scrolled_window, widget);
 	gtk_grid_attach (grid, label, 0, 1, 1, 1);
 	gtk_grid_attach (grid, scrolled_window, 1, 1, 1, 1);
 
@@ -237,7 +237,7 @@ e_vcard_editor_address_constructed (GObject *object)
 
 	self->country_entry = GTK_ENTRY (widget);
 
-	gtk_widget_show_all (GTK_WIDGET (self));
+	gtk_widget_set_visible (GTK_WIDGET (self), TRUE);
 
 	g_signal_connect_swapped (self->type_combo, "changed",
 		G_CALLBACK (eve_address_emit_changed), self);
@@ -351,11 +351,11 @@ e_vcard_editor_address_fill_widgets (EVCardEditorAddress *self,
 		gtk_text_buffer_place_cursor (text_buffer, &iter_start);
 	}
 
-	gtk_entry_set_text (self->pobox_entry, addr && addr->po ? addr->po : "");
-	gtk_entry_set_text (self->city_entry, addr && addr->locality ? addr->locality : "");
-	gtk_entry_set_text (self->zip_entry, addr && addr->code ? addr->code : "");
-	gtk_entry_set_text (self->state_entry, addr && addr->region ? addr->region : "");
-	gtk_entry_set_text (self->country_entry, addr && addr->country ? addr->country : "");
+	gtk_editable_set_text (GTK_EDITABLE (self->pobox_entry), addr && addr->po ? addr->po : "");
+	gtk_editable_set_text (GTK_EDITABLE (self->city_entry), addr && addr->locality ? addr->locality : "");
+	gtk_editable_set_text (GTK_EDITABLE (self->zip_entry), addr && addr->code ? addr->code : "");
+	gtk_editable_set_text (GTK_EDITABLE (self->state_entry), addr && addr->region ? addr->region : "");
+	gtk_editable_set_text (GTK_EDITABLE (self->country_entry), addr && addr->country ? addr->country : "");
 
 	self->updating = FALSE;
 }
@@ -404,11 +404,11 @@ e_vcard_editor_address_fill_addr (EVCardEditorAddress *self,
 		}
 	}
 
-	pobox = g_strstrip (g_strdup (gtk_entry_get_text (self->pobox_entry)));
-	city = g_strstrip (g_strdup (gtk_entry_get_text (self->city_entry)));
-	zip = g_strstrip (g_strdup (gtk_entry_get_text (self->zip_entry)));
-	state = g_strstrip (g_strdup (gtk_entry_get_text (self->state_entry)));
-	country = g_strstrip (g_strdup (gtk_entry_get_text (self->country_entry)));
+	pobox = g_strstrip (g_strdup (gtk_editable_get_text (GTK_EDITABLE (self->pobox_entry))));
+	city = g_strstrip (g_strdup (gtk_editable_get_text (GTK_EDITABLE (self->city_entry))));
+	zip = g_strstrip (g_strdup (gtk_editable_get_text (GTK_EDITABLE (self->zip_entry))));
+	state = g_strstrip (g_strdup (gtk_editable_get_text (GTK_EDITABLE (self->state_entry))));
+	country = g_strstrip (g_strdup (gtk_editable_get_text (GTK_EDITABLE (self->country_entry))));
 
 	if ((pobox && *pobox) || (city && *city) || (zip && *zip) || (state && *state) ||
 	    (country && *country) || (street && *street) || (ext && *ext)) {

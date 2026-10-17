@@ -49,7 +49,7 @@ enum {
 	PROP_CURRENT_VIEW
 };
 
-static GtkTargetEntry drag_types[] = {
+static EGtkTargetEntry drag_types[] = {
 	{ (gchar *) "text/x-source-vcard", 0, 1 }
 };
 
@@ -493,7 +493,7 @@ target_client_connect_cb (GObject *source_object,
 
 static gboolean
 addressbook_selector_data_dropped (ESourceSelector *selector,
-                                   GtkSelectionData *selection_data,
+                                   EGtkSelectionData *selection_data,
                                    ESource *destination,
                                    GdkDragAction action,
                                    guint info)
@@ -509,7 +509,7 @@ addressbook_selector_data_dropped (ESourceSelector *selector,
 
 	g_return_val_if_fail (self->priv->current_view != NULL, FALSE);
 
-	string = (const gchar *) gtk_selection_data_get_data (selection_data);
+	string = (const gchar *) e_gtk_selection_data_get_data (selection_data);
 	remove_from_source = (action == GDK_ACTION_MOVE);
 
 	registry = e_source_selector_get_registry (selector);
@@ -588,8 +588,8 @@ e_addressbook_selector_init (EAddressbookSelector *selector)
 	e_source_selector_set_show_toggles (
 		E_SOURCE_SELECTOR (selector), FALSE);
 
-	gtk_drag_dest_set (
-		GTK_WIDGET (selector), GTK_DEST_DEFAULT_ALL,
+	e_gtk_drag_dest_set (
+		GTK_WIDGET (selector), E_GTK_DEST_DEFAULT_ALL,
 		drag_types, G_N_ELEMENTS (drag_types),
 		GDK_ACTION_COPY | GDK_ACTION_MOVE);
 

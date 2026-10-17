@@ -42,7 +42,7 @@ main (gint argc,
 	GList *modules;
 	GError *error = NULL;
 
-	gtk_init (&argc, &argv);
+	gtk_init ();
 
 	e_util_init_main_thread (NULL);
 

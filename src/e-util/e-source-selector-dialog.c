@@ -221,7 +221,7 @@ source_selector_dialog_constructed (GObject *object)
 
 	widget = e_tree_view_frame_new ();
 	e_tree_view_frame_set_toolbar_visible (E_TREE_VIEW_FRAME (widget), FALSE);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -310,12 +310,12 @@ e_source_selector_dialog_init (ESourceSelectorDialog *dialog)
 
 	dialog->priv = e_source_selector_dialog_get_instance_private (dialog);
 
-	action_area = gtk_dialog_get_action_area (GTK_DIALOG (dialog));
+	action_area = e_gtk_dialog_get_action_area (GTK_DIALOG (dialog));
 
 	gtk_window_set_title (GTK_WINDOW (dialog), _("Select destination"));
 	gtk_window_set_default_size (GTK_WINDOW (dialog), 400, 500);
 
-	gtk_container_set_border_width (GTK_CONTAINER (dialog), 5);
+	e_gtk_widget_set_border_width (dialog, 5);
 	gtk_widget_set_margin_top (action_area, 5);
 
 	gtk_dialog_add_buttons (

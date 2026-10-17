@@ -2053,7 +2053,7 @@ e_calendar_item_key_press_event (ECalendarItem *calitem,
 	gboolean multi_selection;
 
 	if (event->key.state & GDK_CONTROL_MASK ||
-	    event->key.state & GDK_MOD1_MASK)
+	    event->key.state & GDK_ALT_MASK)
 		return FALSE;
 
 	is_rtl = gtk_widget_get_direction (GTK_WIDGET (GNOME_CANVAS_ITEM (calitem)->canvas)) == GTK_TEXT_DIR_RTL;
@@ -2351,8 +2351,8 @@ e_calendar_item_button_press (ECalendarItem *calitem,
 	gint month_offset, day, add_days = 0;
 	gboolean all_week, round_up_end = FALSE, round_down_start = FALSE;
 
-	gdk_event_get_button (button_event, &event_button);
-	gdk_event_get_coords (button_event, &event_x_win, &event_y_win);
+	e_gdk_event_get_button (button_event, &event_button);
+	e_gdk_event_get_coords (button_event, &event_x_win, &event_y_win);
 	event_device = gdk_event_get_device (button_event);
 	event_time = gdk_event_get_time (button_event);
 
@@ -3705,7 +3705,7 @@ e_calendar_item_show_popup_menu (ECalendarItem *calitem,
 		g_snprintf (buffer, 64, "%i", year);
 		menuitem = gtk_menu_item_new_with_label (buffer);
 		gtk_widget_show (menuitem);
-		gtk_container_add (GTK_CONTAINER (menu), menuitem);
+		e_gtk_container_add (menu, menuitem);
 
 		submenu = gtk_menu_new ();
 		gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem), submenu);
@@ -3722,12 +3722,12 @@ e_calendar_item_show_popup_menu (ECalendarItem *calitem,
 
 			menuitem = gtk_menu_item_new ();
 			gtk_widget_show (menuitem);
-			gtk_container_add (GTK_CONTAINER (submenu), menuitem);
+			e_gtk_container_add (submenu, menuitem);
 
 			label = gtk_label_new (name);
 			gtk_label_set_xalign (GTK_LABEL (label), 0);
 			gtk_widget_show (label);
-			gtk_container_add (GTK_CONTAINER (menuitem), label);
+			e_gtk_container_add (menuitem, label);
 
 			g_object_set_data (
 				G_OBJECT (menuitem), "month",

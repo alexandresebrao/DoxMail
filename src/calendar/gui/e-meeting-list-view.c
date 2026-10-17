@@ -602,7 +602,6 @@ build_table (EMeetingListView *lview)
 	priv = lview->priv;
 	edit_table = priv->renderers;
 	gtk_tree_view_set_headers_visible (view, TRUE);
-	gtk_tree_view_set_rules_hint (view, TRUE);
 
 	client_cache = e_name_selector_ref_client_cache (priv->name_selector);
 

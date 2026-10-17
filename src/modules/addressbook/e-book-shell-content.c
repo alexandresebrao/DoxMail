@@ -251,7 +251,7 @@ book_shell_content_constructed (GObject *object)
 	container = GTK_WIDGET (object);
 
 	widget = e_paned_new (GTK_ORIENTATION_VERTICAL);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	self->priv->paned = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -265,7 +265,7 @@ book_shell_content_constructed (GObject *object)
 	widget = gtk_notebook_new ();
 	gtk_notebook_set_show_tabs (GTK_NOTEBOOK (widget), FALSE);
 	gtk_notebook_set_show_border (GTK_NOTEBOOK (widget), FALSE);
-	gtk_paned_pack1 (GTK_PANED (container), widget, TRUE, FALSE);
+	e_gtk_paned_pack1 (container, widget, TRUE, FALSE);
 	self->priv->notebook = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -295,7 +295,7 @@ book_shell_content_constructed (GObject *object)
 		shell_taskbar);
 
 	widget = e_preview_pane_new (E_WEB_VIEW (widget));
-	gtk_paned_pack2 (GTK_PANED (container), widget, FALSE, FALSE);
+	e_gtk_paned_pack2 (container, widget, FALSE, FALSE);
 	self->priv->preview_pane = g_object_ref (widget);
 	gtk_widget_show (widget);
 

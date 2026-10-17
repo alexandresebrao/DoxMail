@@ -107,11 +107,11 @@ smime_confirm_ca_cert_import (ECertDB *db,
 	GtkWidget *dialog = ca_trust_dialog_show (cert, TRUE);
 	gint response;
 
-	response = gtk_dialog_run (GTK_DIALOG (dialog));
+	response = e_gtk_dialog_run (GTK_DIALOG (dialog));
 
 	ca_trust_dialog_get_trust (dialog, trust_ssl, trust_email, trust_objsign);
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 
 	return response != GTK_RESPONSE_CANCEL;
 }

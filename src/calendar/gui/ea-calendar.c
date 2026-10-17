@@ -58,7 +58,7 @@ e_calendar_a11y_init (void)
 
 		/* first initialize ATK support in gnome-canvas and also gail-canvas */
 		gnome_canvas = gnome_canvas_new ();
-		gtk_widget_destroy (gnome_canvas);
+		e_gtk_widget_destroy (gnome_canvas);
 
 		/* force loading some types */
 		e_text_type = g_type_class_ref (E_TYPE_TEXT);

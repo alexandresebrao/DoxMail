@@ -368,12 +368,11 @@ e_filter_part_get_widget (EFilterPart *part)
 		widget = e_filter_element_get_widget (element);
 		if (widget != NULL) {
 			gboolean expand_fill = E_IS_FILTER_FILE (element) || E_IS_FILTER_INPUT (element);
-			gtk_box_pack_start (
-				GTK_BOX (hbox), widget, expand_fill, expand_fill, 3);
+			e_gtk_box_pack_start (GTK_BOX (hbox), widget, expand_fill, expand_fill, 3);
 		}
 	}
 
-	gtk_widget_show_all (hbox);
+	gtk_widget_set_visible (hbox, TRUE);
 
 	return hbox;
 }

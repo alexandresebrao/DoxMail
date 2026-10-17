@@ -142,8 +142,8 @@ mail_label_manager_add_label (EMailLabelManager *manager)
 	const gchar *label_name;
 	gboolean repeat = TRUE;
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (manager));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (manager));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 	dialog = e_mail_label_dialog_new (parent);
 	label_dialog = E_MAIL_LABEL_DIALOG (dialog);
 	tree_view = GTK_TREE_VIEW (manager->priv->tree_view);
@@ -154,7 +154,7 @@ mail_label_manager_add_label (EMailLabelManager *manager)
 	while (repeat) {
 		repeat = FALSE;
 
-		if (gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_OK)
+		if (e_gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_OK)
 			break;
 
 		label_name = e_mail_label_dialog_get_label_name (label_dialog);
@@ -173,7 +173,7 @@ mail_label_manager_add_label (EMailLabelManager *manager)
 			NULL, label_name, &label_color);
 	}
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 }
 
 static void
@@ -202,7 +202,7 @@ mail_label_manager_edit_label (EMailLabelManager *manager)
 	label_name = e_mail_label_list_store_get_name (label_store, &iter);
 	e_mail_label_list_store_get_color (label_store, &iter, &label_color);
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (manager));
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (manager));
 	dialog = e_mail_label_dialog_new (GTK_WINDOW (parent));
 	label_dialog = E_MAIL_LABEL_DIALOG (dialog);
 
@@ -213,7 +213,7 @@ mail_label_manager_edit_label (EMailLabelManager *manager)
 	while (repeat) {
 		repeat = FALSE;
 
-		if (gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_OK)
+		if (e_gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_OK)
 			break;
 
 		new_name = e_mail_label_dialog_get_label_name (label_dialog);
@@ -232,7 +232,7 @@ mail_label_manager_edit_label (EMailLabelManager *manager)
 			label_store, &iter, new_name, &label_color);
 	}
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 
 	g_free (label_name);
 }
@@ -326,15 +326,14 @@ e_mail_label_manager_init (EMailLabelManager *manager)
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_set_shadow_type (
-		GTK_SCROLLED_WINDOW (widget), GTK_SHADOW_IN);
+	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (widget), TRUE);
 	gtk_grid_attach (GTK_GRID (container), widget, 0, 0, 1, 1);
 	gtk_widget_show (widget);
 
 	container = widget;
 
 	widget = e_mail_label_tree_view_new ();
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	manager->priv->tree_view = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -355,9 +354,7 @@ e_mail_label_manager_init (EMailLabelManager *manager)
 	gtk_grid_attach (GTK_GRID (container), widget, 0, 1, 1, 1);
 	gtk_widget_show (widget);
 
-	widget = gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
-	gtk_button_box_set_layout (
-		GTK_BUTTON_BOX (widget), GTK_BUTTONBOX_START);
+	widget = e_gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
 	gtk_box_set_spacing (GTK_BOX (widget), 6);
 	gtk_grid_attach (GTK_GRID (container), widget, 1, 0, 1, 2);
 	gtk_widget_show (widget);
@@ -365,7 +362,7 @@ e_mail_label_manager_init (EMailLabelManager *manager)
 	container = widget;
 
 	widget = e_dialog_button_new_with_icon ("list-add", _("_Add"));
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	manager->priv->add_button = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -374,7 +371,7 @@ e_mail_label_manager_init (EMailLabelManager *manager)
 		G_CALLBACK (e_mail_label_manager_add_label), manager);
 
 	widget = gtk_button_new_with_mnemonic (_("_Edit"));
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	manager->priv->edit_button = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -383,7 +380,7 @@ e_mail_label_manager_init (EMailLabelManager *manager)
 		G_CALLBACK (e_mail_label_manager_edit_label), manager);
 
 	widget = e_dialog_button_new_with_icon ("list-remove", _("_Remove"));
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	manager->priv->remove_button = g_object_ref (widget);
 	gtk_widget_show (widget);
 

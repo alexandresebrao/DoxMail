@@ -191,7 +191,7 @@ focus_tracker_update_undo_redo (EFocusTracker *focus_tracker,
 static void
 focus_tracker_editable_update_actions (EFocusTracker *focus_tracker,
                                        GtkEditable *editable,
-                                       GdkAtom *targets,
+                                       EGtkAtom *targets,
                                        gint n_targets)
 {
 	EUIAction *action;
@@ -250,7 +250,7 @@ focus_tracker_editable_update_actions (EFocusTracker *focus_tracker,
 static void
 focus_tracker_text_view_update_actions (EFocusTracker *focus_tracker,
                                         GtkTextView *text_view,
-                                        GdkAtom *targets,
+                                        EGtkAtom *targets,
                                         gint n_targets)
 {
 	EUIAction *action;
@@ -306,7 +306,7 @@ focus_tracker_text_view_update_actions (EFocusTracker *focus_tracker,
 static void
 focus_tracker_editor_update_actions (EFocusTracker *focus_tracker,
                                      EContentEditor *cnt_editor,
-                                     GdkAtom *targets,
+                                     EGtkAtom *targets,
                                      gint n_targets)
 {
 	EUIAction *action;
@@ -345,7 +345,7 @@ focus_tracker_editor_update_actions (EFocusTracker *focus_tracker,
 static void
 focus_tracker_selectable_update_actions (EFocusTracker *focus_tracker,
                                          ESelectable *selectable,
-                                         GdkAtom *targets,
+                                         EGtkAtom *targets,
                                          gint n_targets)
 {
 	ESelectableInterface *iface;
@@ -392,8 +392,8 @@ focus_tracker_selectable_update_actions (EFocusTracker *focus_tracker,
 }
 
 static void
-focus_tracker_targets_received_cb (GtkClipboard *clipboard,
-                                   GdkAtom *targets,
+focus_tracker_targets_received_cb (GdkClipboard *clipboard,
+                                   EGtkAtom *targets,
                                    gint n_targets,
                                    EFocusTracker *focus_tracker)
 {
@@ -619,11 +619,11 @@ focus_tracker_dispose (GObject *object)
 	EFocusTracker *focus_tracker = E_FOCUS_TRACKER (object);
 
 	g_signal_handlers_disconnect_matched (
-		gtk_clipboard_get (GDK_SELECTION_PRIMARY),
+		e_gtk_clipboard_get (E_GTK_SELECTION_PRIMARY),
 		G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, focus_tracker);
 
 	g_signal_handlers_disconnect_matched (
-		gtk_clipboard_get (GDK_SELECTION_CLIPBOARD),
+		e_gtk_clipboard_get (E_GTK_SELECTION_CLIPBOARD),
 		G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, focus_tracker);
 
 	disconnect_and_unref (focus_tracker->priv->window);
@@ -642,14 +642,14 @@ focus_tracker_dispose (GObject *object)
 static void
 focus_tracker_constructed (GObject *object)
 {
-	GtkClipboard *clipboard;
+	GdkClipboard *clipboard;
 
 	/* Listen for "owner-change" signals from the primary selection
 	 * clipboard to learn when text selections change in GtkEditable
 	 * widgets.  It's a bit of an overkill, but I don't know of any
 	 * other notification mechanism. */
 
-	clipboard = gtk_clipboard_get (GDK_SELECTION_PRIMARY);
+	clipboard = e_gtk_clipboard_get (E_GTK_SELECTION_PRIMARY);
 
 	g_signal_connect_swapped (
 		clipboard, "owner-change",
@@ -659,7 +659,7 @@ focus_tracker_constructed (GObject *object)
 	 * so we can update the paste action when the user cuts or copies
 	 * something.  This is how GEdit does it. */
 
-	clipboard = gtk_clipboard_get (GDK_SELECTION_CLIPBOARD);
+	clipboard = e_gtk_clipboard_get (E_GTK_SELECTION_CLIPBOARD);
 
 	g_signal_connect_swapped (
 		clipboard, "owner-change",
@@ -910,16 +910,16 @@ e_focus_tracker_set_redo_action (EFocusTracker *focus_tracker,
 void
 e_focus_tracker_update_actions (EFocusTracker *focus_tracker)
 {
-	GtkClipboard *clipboard;
+	GdkClipboard *clipboard;
 
 	g_return_if_fail (E_IS_FOCUS_TRACKER (focus_tracker));
 
 	/* Request clipboard targets asynchronously. */
 
-	clipboard = gtk_clipboard_get (GDK_SELECTION_CLIPBOARD);
+	clipboard = e_gtk_clipboard_get (E_GTK_SELECTION_CLIPBOARD);
 
-	gtk_clipboard_request_targets (
-		clipboard, (GtkClipboardTargetsReceivedFunc)
+	e_gtk_clipboard_request_targets (
+		clipboard, (EGtkClipboardTargetsReceivedFunc)
 		focus_tracker_targets_received_cb,
 		g_object_ref (focus_tracker));
 }
@@ -940,13 +940,13 @@ e_focus_tracker_cut_clipboard (EFocusTracker *focus_tracker)
 		gtk_editable_cut_clipboard (GTK_EDITABLE (focus));
 
 	} else if (GTK_IS_TEXT_VIEW (focus)) {
-		GtkClipboard *clipboard;
+		GdkClipboard *clipboard;
 		GtkTextView *text_view;
 		GtkTextBuffer *buffer;
 		gboolean is_editable;
 
 		clipboard = gtk_widget_get_clipboard (
-			focus, GDK_SELECTION_CLIPBOARD);
+			focus, E_GTK_SELECTION_CLIPBOARD);
 
 		text_view = GTK_TEXT_VIEW (focus);
 		buffer = gtk_text_view_get_buffer (text_view);
@@ -975,12 +975,12 @@ e_focus_tracker_copy_clipboard (EFocusTracker *focus_tracker)
 		gtk_editable_copy_clipboard (GTK_EDITABLE (focus));
 
 	} else if (GTK_IS_TEXT_VIEW (focus)) {
-		GtkClipboard *clipboard;
+		GdkClipboard *clipboard;
 		GtkTextView *text_view;
 		GtkTextBuffer *buffer;
 
 		clipboard = gtk_widget_get_clipboard (
-			focus, GDK_SELECTION_CLIPBOARD);
+			focus, E_GTK_SELECTION_CLIPBOARD);
 
 		text_view = GTK_TEXT_VIEW (focus);
 		buffer = gtk_text_view_get_buffer (text_view);
@@ -1008,13 +1008,13 @@ e_focus_tracker_paste_clipboard (EFocusTracker *focus_tracker)
 		gtk_editable_paste_clipboard (GTK_EDITABLE (focus));
 
 	} else if (GTK_IS_TEXT_VIEW (focus)) {
-		GtkClipboard *clipboard;
+		GdkClipboard *clipboard;
 		GtkTextView *text_view;
 		GtkTextBuffer *buffer;
 		gboolean is_editable;
 
 		clipboard = gtk_widget_get_clipboard (
-			focus, GDK_SELECTION_CLIPBOARD);
+			focus, E_GTK_SELECTION_CLIPBOARD);
 
 		text_view = GTK_TEXT_VIEW (focus);
 		buffer = gtk_text_view_get_buffer (text_view);

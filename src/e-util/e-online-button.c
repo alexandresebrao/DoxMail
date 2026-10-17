@@ -153,11 +153,11 @@ e_online_button_init (EOnlineButton *button)
 
 	button->priv = e_online_button_get_instance_private (button);
 
-	gtk_widget_set_can_focus (GTK_WIDGET (button), FALSE);
-	gtk_button_set_relief (GTK_BUTTON (button), GTK_RELIEF_NONE);
+	gtk_widget_set_focusable (GTK_WIDGET (button), FALSE);
+	gtk_button_set_has_frame (GTK_BUTTON (button), FALSE);
 
 	widget = gtk_image_new ();
-	gtk_container_add (GTK_CONTAINER (button), widget);
+	e_gtk_container_add (button, widget);
 	button->priv->image = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -203,7 +203,7 @@ e_online_button_set_online (EOnlineButton *button,
 
 	image = GTK_IMAGE (button->priv->image);
 	icon_name = online ? "online" : "offline";
-	icon_theme = gtk_icon_theme_get_default ();
+	icon_theme = e_gtk_icon_theme_get_default ();
 
 	/* Prevent GTK+ from scaling these rectangular icons. */
 	icon_info = gtk_icon_theme_lookup_icon (

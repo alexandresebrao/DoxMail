@@ -662,44 +662,40 @@ e_plugin_lib_get_configure_widget (EPlugin *plugin)
 		"max-width-chars", 80,
 		NULL);
 	gtk_widget_show (label);
-	gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 6);
+	e_gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 6);
 
 	container = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 12);
 	gtk_widget_show (container);
-	gtk_box_pack_start (GTK_BOX (vbox), container, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), container, TRUE, TRUE, 0);
 
 	scrolledwindow = gtk_scrolled_window_new (NULL, NULL);
 	gtk_widget_show (scrolledwindow);
-	gtk_box_pack_start (GTK_BOX (container), scrolledwindow, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), scrolledwindow, TRUE, TRUE, 0);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
 	ui->ra_tree_view = gtk_tree_view_new ();
 	gtk_widget_show (ui->ra_tree_view);
-	gtk_container_add (GTK_CONTAINER (scrolledwindow), ui->ra_tree_view);
-	gtk_container_set_border_width (GTK_CONTAINER (ui->ra_tree_view), 1);
+	e_gtk_container_add (scrolledwindow, ui->ra_tree_view);
+	e_gtk_widget_set_border_width (ui->ra_tree_view, 1);
 	gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (ui->ra_tree_view), TRUE);
 	gtk_tree_view_set_headers_clickable (GTK_TREE_VIEW (ui->ra_tree_view), FALSE);
 
-	vbuttonbox = gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
+	vbuttonbox = e_gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
 	gtk_widget_show (vbuttonbox);
-	gtk_box_pack_start (GTK_BOX (container), vbuttonbox, FALSE, TRUE, 0);
-	gtk_button_box_set_layout (GTK_BUTTON_BOX (vbuttonbox), GTK_BUTTONBOX_START);
+	e_gtk_box_pack_start (GTK_BOX (container), vbuttonbox, FALSE, TRUE, 0);
 	gtk_box_set_spacing (GTK_BOX (vbuttonbox), 6);
 
 	ui->ra_button_add = e_dialog_button_new_with_icon ("list-add", _("_Add"));
 	gtk_widget_show (ui->ra_button_add);
-	gtk_container_add (GTK_CONTAINER (vbuttonbox), ui->ra_button_add);
-	gtk_widget_set_can_default (ui->ra_button_add, TRUE);
+	e_gtk_container_add (vbuttonbox, ui->ra_button_add);
 
 	ui->ra_button_edit = gtk_button_new_with_mnemonic (_("_Edit"));
 	gtk_widget_show (ui->ra_button_edit);
-	gtk_container_add (GTK_CONTAINER (vbuttonbox), ui->ra_button_edit);
-	gtk_widget_set_can_default (ui->ra_button_edit, TRUE);
+	e_gtk_container_add (vbuttonbox, ui->ra_button_edit);
 
 	ui->ra_button_remove = e_dialog_button_new_with_icon ("list-remove", _("_Remove"));
 	gtk_widget_show (ui->ra_button_remove);
-	gtk_container_add (GTK_CONTAINER (vbuttonbox), ui->ra_button_remove);
-	gtk_widget_set_can_default (ui->ra_button_remove, TRUE);
+	e_gtk_container_add (vbuttonbox, ui->ra_button_remove);
 
 	ui->settings = e_util_ref_settings ("org.gnome.evolution.plugin.sender-validation");
 	ui->ra_store = gtk_list_store_new (N_COLUMNS, G_TYPE_STRING, G_TYPE_STRING);
@@ -774,43 +770,40 @@ e_plugin_lib_get_configure_widget (EPlugin *plugin)
 		"max-width-chars", 80,
 		NULL);
 	gtk_widget_show (label);
-	gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 6);
+	e_gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 6);
 
 	container = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 12);
 	gtk_widget_show (container);
-	gtk_box_pack_start (GTK_BOX (vbox), container, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), container, TRUE, TRUE, 0);
 
 	scrolledwindow = gtk_scrolled_window_new (NULL, NULL);
 	gtk_widget_show (scrolledwindow);
-	gtk_box_pack_start (GTK_BOX (container), scrolledwindow, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), scrolledwindow, TRUE, TRUE, 0);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
 	ui->ar_tree_view = gtk_tree_view_new ();
 	gtk_widget_show (ui->ar_tree_view);
-	gtk_container_add (GTK_CONTAINER (scrolledwindow), ui->ar_tree_view);
-	gtk_container_set_border_width (GTK_CONTAINER (ui->ar_tree_view), 1);
+	e_gtk_container_add (scrolledwindow, ui->ar_tree_view);
+	e_gtk_widget_set_border_width (ui->ar_tree_view, 1);
 	gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (ui->ar_tree_view), TRUE);
 	gtk_tree_view_set_headers_clickable (GTK_TREE_VIEW (ui->ar_tree_view), FALSE);
 
-	vbuttonbox = gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
+	vbuttonbox = e_gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
 	gtk_widget_show (vbuttonbox);
-	gtk_box_pack_start (GTK_BOX (container), vbuttonbox, FALSE, TRUE, 0);
-	gtk_button_box_set_layout (GTK_BUTTON_BOX (vbuttonbox), GTK_BUTTONBOX_START);
+	e_gtk_box_pack_start (GTK_BOX (container), vbuttonbox, FALSE, TRUE, 0);
 	gtk_box_set_spacing (GTK_BOX (vbuttonbox), 6);
 
 	ui->ar_button_add = e_dialog_button_new_with_icon ("list-add", _("_Add"));
 	gtk_widget_show (ui->ar_button_add);
-	gtk_container_add (GTK_CONTAINER (vbuttonbox), ui->ar_button_add);
+	e_gtk_container_add (vbuttonbox, ui->ar_button_add);
 
 	ui->ar_button_edit = gtk_button_new_with_mnemonic (_("_Edit"));
 	gtk_widget_show (ui->ar_button_edit);
-	gtk_container_add (GTK_CONTAINER (vbuttonbox), ui->ar_button_edit);
-	gtk_widget_set_can_default (ui->ar_button_edit, TRUE);
+	e_gtk_container_add (vbuttonbox, ui->ar_button_edit);
 
 	ui->ar_button_remove = e_dialog_button_new_with_icon ("list-remove", _("_Remove"));
 	gtk_widget_show (ui->ar_button_remove);
-	gtk_container_add (GTK_CONTAINER (vbuttonbox), ui->ar_button_remove);
-	gtk_widget_set_can_default (ui->ar_button_remove, TRUE);
+	e_gtk_container_add (vbuttonbox, ui->ar_button_remove);
 
 	ui->ar_store = gtk_list_store_new (N_COLUMNS, G_TYPE_STRING, G_TYPE_STRING);
 
@@ -873,7 +866,7 @@ e_plugin_lib_get_configure_widget (EPlugin *plugin)
 	g_strfreev (strv);
 
 	hbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-	gtk_box_pack_start (GTK_BOX (hbox), vbox, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), vbox, TRUE, TRUE, 0);
 
 	/* to let free data properly on destroy of configuration widget */
 	g_object_set_data_full (G_OBJECT (hbox), "myui-data", ui, destroy_ui_data);

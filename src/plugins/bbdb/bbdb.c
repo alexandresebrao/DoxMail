@@ -704,11 +704,11 @@ bbdb_create_config_widget (void)
 
 	/* Create a new notebook page */
 	page = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-	gtk_container_set_border_width (GTK_CONTAINER (page), 12);
+	e_gtk_widget_set_border_width (page, 12);
 
 	/* Frame */
 	frame = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
-	gtk_box_pack_start (GTK_BOX (page), frame, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (page), frame, FALSE, FALSE, 0);
 
 	/* "Automatic Contacts" */
 	frame_label = gtk_label_new ("");
@@ -716,15 +716,15 @@ bbdb_create_config_widget (void)
 	gtk_label_set_markup (GTK_LABEL (frame_label), str);
 	g_free (str);
 	gtk_label_set_xalign (GTK_LABEL (frame_label), 0);
-	gtk_box_pack_start (GTK_BOX (frame), frame_label, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (frame), frame_label, FALSE, FALSE, 0);
 
 	/* Indent/padding */
 	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 12);
-	gtk_box_pack_start (GTK_BOX (frame), hbox, FALSE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (frame), hbox, FALSE, TRUE, 0);
 	padding_label = gtk_label_new ("");
-	gtk_box_pack_start (GTK_BOX (hbox), padding_label, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), padding_label, FALSE, FALSE, 0);
 	inner_vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
-	gtk_box_pack_start (GTK_BOX (hbox), inner_vbox, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), inner_vbox, FALSE, FALSE, 0);
 
 	/* Enable BBDB checkbox */
 	check = gtk_check_button_new_with_mnemonic (_("Create _address book entries when sending mails"));
@@ -735,7 +735,7 @@ bbdb_create_config_widget (void)
 	g_signal_connect (
 		check, "toggled",
 		G_CALLBACK (enable_toggled_cb), stuff);
-	gtk_box_pack_start (GTK_BOX (inner_vbox), check, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (inner_vbox), check, FALSE, FALSE, 0);
 
 	/* File Under setting */
 	check = gtk_check_button_new_with_mnemonic (_("Set File _under as “First Last”, instead of “Last, First”"));
@@ -747,10 +747,10 @@ bbdb_create_config_widget (void)
 		settings, CONF_KEY_ENABLE,
 		check, "sensitive",
 		G_SETTINGS_BIND_GET);
-	gtk_box_pack_start (GTK_BOX (inner_vbox), check, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (inner_vbox), check, FALSE, FALSE, 0);
 
 	label = gtk_label_new (_("Select Address book for Automatic Contacts"));
-	gtk_box_pack_start (GTK_BOX (inner_vbox), label, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (inner_vbox), label, FALSE, FALSE, 0);
 
 	/* Source selection combo box */
 	combo_box = create_addressbook_combo_box (stuff, AUTOMATIC_CONTACTS_ADDRESSBOOK, settings);
@@ -761,27 +761,27 @@ bbdb_create_config_widget (void)
 	g_signal_connect (
 		combo_box, "changed",
 		G_CALLBACK (source_changed_cb), stuff);
-	gtk_box_pack_start (GTK_BOX (inner_vbox), combo_box, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (inner_vbox), combo_box, FALSE, FALSE, 0);
 	stuff->combo_box = combo_box;
 
 	/* "Instant Messaging Contacts" */
 	frame = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
-	gtk_box_pack_start (GTK_BOX (page), frame, TRUE, TRUE, 24);
+	e_gtk_box_pack_start (GTK_BOX (page), frame, TRUE, TRUE, 24);
 
 	frame_label = gtk_label_new ("");
 	str = g_strdup_printf ("<span weight=\"bold\">%s</span>", _("Instant Messaging Contacts"));
 	gtk_label_set_markup (GTK_LABEL (frame_label), str);
 	g_free (str);
 	gtk_label_set_xalign (GTK_LABEL (frame_label), 0);
-	gtk_box_pack_start (GTK_BOX (frame), frame_label, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (frame), frame_label, FALSE, FALSE, 0);
 
 	/* Indent/padding */
 	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 12);
-	gtk_box_pack_start (GTK_BOX (frame), hbox, FALSE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (frame), hbox, FALSE, TRUE, 0);
 	padding_label = gtk_label_new ("");
-	gtk_box_pack_start (GTK_BOX (hbox), padding_label, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), padding_label, FALSE, FALSE, 0);
 	inner_vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
-	gtk_box_pack_start (GTK_BOX (hbox), inner_vbox, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), inner_vbox, FALSE, FALSE, 0);
 
 	/* Enable Gaim Checkbox */
 	check_gaim = gtk_check_button_new_with_mnemonic (_("_Synchronize contact info and images from Pidgin buddy list"));
@@ -792,10 +792,10 @@ bbdb_create_config_widget (void)
 	g_signal_connect (
 		check_gaim, "toggled",
 		G_CALLBACK (enable_gaim_toggled_cb), stuff);
-	gtk_box_pack_start (GTK_BOX (inner_vbox), check_gaim, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (inner_vbox), check_gaim, FALSE, FALSE, 0);
 
 	gaim_label = gtk_label_new (_("Select Address book for Pidgin buddy list"));
-	gtk_box_pack_start (GTK_BOX (inner_vbox), gaim_label, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (inner_vbox), gaim_label, FALSE, FALSE, 0);
 
 	/* Gaim Source Selection Combo Box */
 	gaim_combo_box = create_addressbook_combo_box (stuff, GAIM_ADDRESSBOOK, settings);
@@ -806,7 +806,7 @@ bbdb_create_config_widget (void)
 		settings, CONF_KEY_ENABLE_GAIM,
 		gaim_combo_box, "sensitive",
 		G_SETTINGS_BIND_GET);
-	gtk_box_pack_start (GTK_BOX (inner_vbox), gaim_combo_box, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (inner_vbox), gaim_combo_box, FALSE, FALSE, 0);
 	stuff->gaim_combo_box = gaim_combo_box;
 
 	/* Synchronize now button. */
@@ -814,12 +814,12 @@ bbdb_create_config_widget (void)
 	g_signal_connect (
 		button, "clicked",
 		G_CALLBACK (synchronize_button_clicked_cb), stuff);
-	gtk_box_pack_start (GTK_BOX (inner_vbox), button, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (inner_vbox), button, FALSE, FALSE, 0);
 
 	/* Clean up */
 	g_object_set_data_full (G_OBJECT (page), "bbdb-config-data", stuff, g_free);
 
-	gtk_widget_show_all (page);
+	gtk_widget_set_visible (page, TRUE);
 
 	g_object_unref (settings);
 

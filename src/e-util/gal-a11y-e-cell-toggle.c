@@ -90,7 +90,7 @@ toggle_cell_action (GalA11yECell *cell)
 {
 	gint finished;
 	GtkLayout *layout;
-	GdkEventButton event;
+	GdkEvent event;
 	gint x, y, width, height;
 	gint row, col;
 

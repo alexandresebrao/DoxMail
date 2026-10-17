@@ -382,7 +382,7 @@ action_mail_color_assign_cb (EUIAction *action,
 
 	dialog = gtk_color_chooser_dialog_new (NULL, e_mail_reader_get_window (reader));
 
-	if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
+	if (e_gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
 		GdkRGBA rgba;
 		gchar *color;
 
@@ -400,7 +400,7 @@ action_mail_color_assign_cb (EUIAction *action,
 		}
 	}
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 }
 
 static void
@@ -460,7 +460,7 @@ mail_reader_replace_vee_folder_with_real (CamelFolder **inout_folder,
 static void
 mail_reader_copy_message_link (CamelMimeMessage *message)
 {
-	GtkClipboard *clipboard;
+	GdkClipboard *clipboard;
 	gchar *uri;
 
 	if (!message)
@@ -468,9 +468,9 @@ mail_reader_copy_message_link (CamelMimeMessage *message)
 
 	uri = g_strconcat ("mid:", camel_mime_message_get_message_id (message), NULL);
 
-	clipboard = gtk_clipboard_get (GDK_SELECTION_CLIPBOARD);
+	clipboard = e_gtk_clipboard_get (E_GTK_SELECTION_CLIPBOARD);
 
-	gtk_clipboard_set_text (clipboard, uri, -1);
+	e_gtk_clipboard_set_text (clipboard, uri, -1);
 
 	g_free (uri);
 }
@@ -1077,7 +1077,7 @@ action_mail_label_new_cb (EUIAction *action,
 	while (repeat) {
 		repeat = FALSE;
 
-		if (gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_OK)
+		if (e_gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_OK)
 			break;
 
 		label_name = e_mail_label_dialog_get_label_name (label_dialog);
@@ -1129,7 +1129,7 @@ action_mail_label_new_cb (EUIAction *action,
 		g_free (label_tag);
 	}
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 }
 
 static void
@@ -1979,11 +1979,10 @@ action_mail_reply_all_check (CamelFolder *folder,
 		/* Check buttons */
 		check = gtk_check_button_new_with_mnemonic (
 			_("_Do not ask me again."));
-		gtk_box_pack_start (
-			GTK_BOX (container), check, FALSE, FALSE, 0);
+		e_gtk_box_pack_start (GTK_BOX (container), check, FALSE, FALSE, 0);
 		gtk_widget_show (check);
 
-		response = gtk_dialog_run (GTK_DIALOG (dialog));
+		response = e_gtk_dialog_run (GTK_DIALOG (dialog));
 
 		if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (check))) {
 			GSettings *settings;
@@ -1997,7 +1996,7 @@ action_mail_reply_all_check (CamelFolder *folder,
 			g_object_unref (settings);
 		}
 
-		gtk_widget_destroy (dialog);
+		e_gtk_widget_destroy (dialog);
 
 		switch (response) {
 			case GTK_RESPONSE_NO:
@@ -2410,11 +2409,10 @@ action_mail_reply_sender_check (CamelFolder *folder,
 			/* Check buttons */
 			check = gtk_check_button_new_with_mnemonic (
 				_("_Do not ask me again."));
-			gtk_box_pack_start (
-				GTK_BOX (container), check, FALSE, FALSE, 0);
+			e_gtk_box_pack_start (GTK_BOX (container), check, FALSE, FALSE, 0);
 			gtk_widget_show (check);
 
-			response = gtk_dialog_run (GTK_DIALOG (dialog));
+			response = e_gtk_dialog_run (GTK_DIALOG (dialog));
 
 			active = gtk_toggle_button_get_active (
 				GTK_TOGGLE_BUTTON (check));
@@ -2423,7 +2421,7 @@ action_mail_reply_sender_check (CamelFolder *folder,
 				g_settings_set_boolean (settings, key, FALSE);
 			}
 
-			gtk_widget_destroy (dialog);
+			e_gtk_widget_destroy (dialog);
 
 			if (response == GTK_RESPONSE_YES)
 				type = E_MAIL_REPLY_TO_ALL;
@@ -2452,18 +2450,15 @@ action_mail_reply_sender_check (CamelFolder *folder,
 
 		check_again = gtk_check_button_new_with_mnemonic (
 			_("_Do not ask me again."));
-		gtk_box_pack_start (
-			GTK_BOX (container), check_again, FALSE, FALSE, 0);
+		e_gtk_box_pack_start (GTK_BOX (container), check_again, FALSE, FALSE, 0);
 		gtk_widget_show (check_again);
 
 		check_always_ignore = gtk_check_button_new_with_mnemonic (
 			_("_Always ignore Reply-To: for mailing lists."));
-		gtk_box_pack_start (
-			GTK_BOX (container), check_always_ignore,
-			FALSE, FALSE, 0);
+		e_gtk_box_pack_start (GTK_BOX (container), check_always_ignore, FALSE, FALSE, 0);
 		gtk_widget_show (check_always_ignore);
 
-		response = gtk_dialog_run (GTK_DIALOG (dialog));
+		response = e_gtk_dialog_run (GTK_DIALOG (dialog));
 
 		active = gtk_toggle_button_get_active (
 			GTK_TOGGLE_BUTTON (check_again));
@@ -2477,7 +2472,7 @@ action_mail_reply_sender_check (CamelFolder *folder,
 			GTK_TOGGLE_BUTTON (check_always_ignore));
 		g_settings_set_boolean (settings, key, active);
 
-		gtk_widget_destroy (dialog);
+		e_gtk_widget_destroy (dialog);
 
 		switch (response) {
 			case GTK_RESPONSE_NO:
@@ -5207,8 +5202,7 @@ action_mail_label_change_more_cb (EUIAction *action,
 
 		checkbox = gtk_check_button_new_with_mnemonic (label);
 		if (icon_name && *icon_name) {
-			gtk_button_set_image (GTK_BUTTON (checkbox), gtk_image_new_from_icon_name (icon_name, GTK_ICON_SIZE_MENU));
-			gtk_button_set_always_show_image (GTK_BUTTON (checkbox), TRUE);
+			e_gtk_button_set_image (GTK_BUTTON (checkbox), gtk_image_new_from_icon_name (icon_name));
 		}
 		g_object_set_data_full (G_OBJECT (checkbox), "tag", tag, g_free);
 		gtk_widget_show (checkbox);
@@ -5286,7 +5280,7 @@ action_mail_label_change_more_cb (EUIAction *action,
 
 	popover = gtk_popover_new (GTK_WIDGET (e_mail_reader_get_message_list (reader)));
 	gtk_popover_set_position (GTK_POPOVER (popover), GTK_POS_BOTTOM);
-	gtk_container_add (GTK_CONTAINER (popover), GTK_WIDGET (grid));
+	e_gtk_container_add (popover, GTK_WIDGET (grid));
 
 	g_object_set_data_full (G_OBJECT (popover), "more-labels-data", mld, more_labels_data_free);
 
@@ -5299,24 +5293,24 @@ action_mail_label_change_more_cb (EUIAction *action,
 	box = GTK_BOX (widget);
 
 	widget = gtk_button_new_with_mnemonic (_("Set _Selected"));
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 
 	g_signal_connect (widget, "clicked",
 		G_CALLBACK (mail_label_change_more_set_selected_clicked_cb), popover);
 
 	widget = gtk_button_new_with_mnemonic (_("Set _None"));
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 
 	g_signal_connect (widget, "clicked",
 		G_CALLBACK (mail_label_change_more_set_none_clicked_cb), popover);
 
 	widget = gtk_button_new_with_mnemonic (_("_Cancel"));
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 
 	g_signal_connect_swapped (widget, "clicked",
 		G_CALLBACK (gtk_widget_hide), popover);
 
-	gtk_widget_show_all (GTK_WIDGET (box));
+	gtk_widget_set_visible (GTK_WIDGET (box), TRUE);
 	gtk_grid_attach (grid, GTK_WIDGET (box), 0, max_rows + 1, col + 1, 1);
 
 	g_signal_connect (popover, "closed",
@@ -6818,7 +6812,7 @@ e_mail_reader_ignore_accel (EMailReader *reader)
 	    e_web_view_get_need_input (E_WEB_VIEW (mail_display)))
 		return TRUE;
 
-	toplevel = gtk_widget_get_toplevel (GTK_WIDGET (mail_display));
+	toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (mail_display));
 
 	if (GTK_IS_WINDOW (toplevel))
 		return e_util_ignore_accel_for_focused (gtk_window_get_focus (GTK_WINDOW (toplevel)));

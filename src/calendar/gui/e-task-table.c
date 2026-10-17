@@ -54,8 +54,8 @@ struct _ETaskTablePrivate {
 	/* Fields used for cut/copy/paste */
 	ICalComponent *tmp_vcal;
 
-	GtkTargetList *copy_target_list;
-	GtkTargetList *paste_target_list;
+	EGtkTargetList *copy_target_list;
+	EGtkTargetList *paste_target_list;
 
 	gulong notify_highlight_due_today_id;
 	gulong notify_color_due_today_id;
@@ -764,7 +764,7 @@ task_table_key_press (ETable *table,
 {
 	if (event && event->type == GDK_KEY_PRESS &&
 	    (event->key.keyval == GDK_KEY_Return || event->key.keyval == GDK_KEY_KP_Enter) &&
-	    (event->key.state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK)) == 0 &&
+	    (event->key.state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_ALT_MASK)) == 0 &&
 	    !e_table_is_editing (table)) {
 		task_table_open_at_row (table, row);
 		return TRUE;
@@ -783,7 +783,7 @@ task_table_white_space_event (ETable *table,
 	g_return_val_if_fail (event != NULL, FALSE);
 
 	if (event->type == GDK_BUTTON_PRESS &&
-	    gdk_event_get_button (event, &event_button) &&
+	    e_gdk_event_get_button (event, &event_button) &&
 	    event_button == 3) {
 		GtkWidget *table_canvas;
 
@@ -803,12 +803,12 @@ task_table_white_space_event (ETable *table,
 static void
 task_table_update_actions (ESelectable *selectable,
                            EFocusTracker *focus_tracker,
-                           GdkAtom *clipboard_targets,
+                           EGtkAtom *clipboard_targets,
                            gint n_clipboard_targets)
 {
 	ETaskTable *task_table;
 	EUIAction *action;
-	GtkTargetList *target_list;
+	EGtkTargetList *target_list;
 	GSList *list, *iter;
 	gboolean can_paste = FALSE;
 	gboolean sources_are_editable = TRUE;
@@ -836,7 +836,7 @@ task_table_update_actions (ESelectable *selectable,
 
 	target_list = e_selectable_get_paste_target_list (selectable);
 	for (ii = 0; ii < n_clipboard_targets && !can_paste; ii++)
-		can_paste = gtk_target_list_find (
+		can_paste = e_gtk_target_list_find (
 			target_list, clipboard_targets[ii], NULL);
 
 	action = e_focus_tracker_get_cut_clipboard_action (focus_tracker);
@@ -915,7 +915,7 @@ static void
 task_table_copy_clipboard (ESelectable *selectable)
 {
 	ETaskTable *task_table;
-	GtkClipboard *clipboard;
+	GdkClipboard *clipboard;
 	gchar *comp_str;
 
 	task_table = E_TASK_TABLE (selectable);
@@ -927,9 +927,9 @@ task_table_copy_clipboard (ESelectable *selectable)
 		E_TABLE (task_table), copy_row_cb, task_table);
 	comp_str = i_cal_component_as_ical_string (task_table->priv->tmp_vcal);
 
-	clipboard = gtk_clipboard_get (GDK_SELECTION_CLIPBOARD);
+	clipboard = e_gtk_clipboard_get (E_GTK_SELECTION_CLIPBOARD);
 	e_clipboard_set_calendar (clipboard, comp_str, -1);
-	gtk_clipboard_store (clipboard);
+	e_gtk_clipboard_store (clipboard);
 
 	g_free (comp_str);
 
@@ -953,13 +953,13 @@ static void
 task_table_paste_clipboard (ESelectable *selectable)
 {
 	ETaskTable *task_table;
-	GtkClipboard *clipboard;
+	GdkClipboard *clipboard;
 	GnomeCanvasItem *item;
 	GnomeCanvas *table_canvas;
 
 	task_table = E_TASK_TABLE (selectable);
 
-	clipboard = gtk_clipboard_get (GDK_SELECTION_CLIPBOARD);
+	clipboard = e_gtk_clipboard_get (E_GTK_SELECTION_CLIPBOARD);
 
 	table_canvas = E_TABLE (task_table)->table_canvas;
 	item = table_canvas->focused_item;
@@ -967,7 +967,7 @@ task_table_paste_clipboard (ESelectable *selectable)
 	/* XXX Should ECellText implement GtkEditable? */
 
 	/* Paste text into a cell being edited. */
-	if (gtk_clipboard_wait_is_text_available (clipboard) &&
+	if (e_gtk_clipboard_wait_is_text_available (clipboard) &&
 		gtk_widget_has_focus (GTK_WIDGET (table_canvas)) &&
 		E_IS_TABLE_ITEM (item) &&
 		E_TABLE_ITEM (item)->editing_col >= 0 &&
@@ -1225,17 +1225,17 @@ e_task_table_class_init (ETaskTableClass *class)
 static void
 e_task_table_init (ETaskTable *task_table)
 {
-	GtkTargetList *target_list;
+	EGtkTargetList *target_list;
 
 	task_table->priv = e_task_table_get_instance_private (task_table);
 
 	task_table->priv->completed_cancellable = NULL;
 
-	target_list = gtk_target_list_new (NULL, 0);
+	target_list = e_gtk_target_list_new (NULL, 0);
 	e_target_list_add_calendar_targets (target_list, 0);
 	task_table->priv->copy_target_list = target_list;
 
-	target_list = gtk_target_list_new (NULL, 0);
+	target_list = e_gtk_target_list_new (NULL, 0);
 	e_target_list_add_calendar_targets (target_list, 0);
 	task_table->priv->paste_target_list = target_list;
 }
@@ -1338,7 +1338,7 @@ e_task_table_get_selected (ETaskTable *task_table)
 	return closure.objects;
 }
 
-GtkTargetList *
+EGtkTargetList *
 e_task_table_get_copy_target_list (ETaskTable *task_table)
 {
 	g_return_val_if_fail (E_IS_TASK_TABLE (task_table), NULL);
@@ -1346,7 +1346,7 @@ e_task_table_get_copy_target_list (ETaskTable *task_table)
 	return task_table->priv->copy_target_list;
 }
 
-GtkTargetList *
+EGtkTargetList *
 e_task_table_get_paste_target_list (ETaskTable *task_table)
 {
 	g_return_val_if_fail (E_IS_TASK_TABLE (task_table), NULL);

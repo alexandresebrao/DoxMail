@@ -369,7 +369,7 @@ pass_response (GtkDialog *dialog,
 	GList *iter, *trash = NULL;
 
 	if (response == GTK_RESPONSE_OK) {
-		msg->password = g_strdup (gtk_entry_get_text ((GtkEntry *) msg->entry));
+		msg->password = g_strdup (gtk_editable_get_text (GTK_EDITABLE ((GtkEntry *) msg->entry)));
 
 		if (type != E_PASSWORDS_REMEMBER_NEVER) {
 			gint noreply = msg->noreply;
@@ -389,7 +389,7 @@ pass_response (GtkDialog *dialog,
 		}
 	}
 
-	gtk_widget_destroy ((GtkWidget *) dialog);
+	e_gtk_widget_destroy ((GtkWidget *) dialog);
 	password_dialog = NULL;
 
 	/* ok, here things get interesting, we suck up any pending
@@ -440,7 +440,7 @@ update_capslock_state (GtkDialog *dialog,
 
 	device_manager = gdk_display_get_device_manager (gtk_widget_get_display (label));
 	device = gdk_device_manager_get_client_pointer (device_manager);
-	window = gtk_widget_get_window (GTK_WIDGET (dialog));
+	window = e_gtk_widget_get_surface (GTK_WIDGET (dialog));
 	gdk_window_get_device_position (window, device, NULL, NULL, &mask);
 
 	/* The space acts as a vertical placeholder. */
@@ -488,18 +488,17 @@ ep_ask_password (EPassMsg *msg)
 		GTK_DIALOG (widget), GTK_RESPONSE_OK);
 	gtk_window_set_resizable (GTK_WINDOW (widget), FALSE);
 	gtk_window_set_transient_for (GTK_WINDOW (widget), parent);
-	gtk_window_set_position (GTK_WINDOW (widget), GTK_WIN_POS_CENTER_ON_PARENT);
-	gtk_container_set_border_width (GTK_CONTAINER (widget), 12);
+	e_gtk_widget_set_border_width (widget, 12);
 	password_dialog = GTK_DIALOG (widget);
 
-	action_area = gtk_dialog_get_action_area (password_dialog);
+	action_area = e_gtk_dialog_get_action_area (password_dialog);
 	content_area = gtk_dialog_get_content_area (password_dialog);
 
 	/* Override GtkDialog defaults */
 	gtk_box_set_spacing (GTK_BOX (action_area), 12);
-	gtk_container_set_border_width (GTK_CONTAINER (action_area), 0);
+	e_gtk_widget_set_border_width (action_area, 0);
 	gtk_box_set_spacing (GTK_BOX (content_area), 12);
-	gtk_container_set_border_width (GTK_CONTAINER (content_area), 0);
+	e_gtk_widget_set_border_width (content_area, 0);
 
 	/* Grid */
 	container = gtk_grid_new ();
@@ -507,12 +506,10 @@ ep_ask_password (EPassMsg *msg)
 	gtk_grid_set_row_spacing (GTK_GRID (container), 6);
 	gtk_widget_show (container);
 
-	gtk_box_pack_start (
-		GTK_BOX (content_area), container, FALSE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (content_area), container, FALSE, TRUE, 0);
 
 	/* Password Image */
-	widget = gtk_image_new_from_icon_name (
-		"dialog-password", GTK_ICON_SIZE_DIALOG);
+	widget = gtk_image_new_from_icon_name ("dialog-password");
 	g_object_set (
 		G_OBJECT (widget),
 		"halign", GTK_ALIGN_START,
@@ -525,7 +522,7 @@ ep_ask_password (EPassMsg *msg)
 
 	/* Password Label */
 	widget = gtk_label_new (NULL);
-	gtk_label_set_line_wrap (GTK_LABEL (widget), TRUE);
+	gtk_label_set_wrap (GTK_LABEL (widget), TRUE);
 	gtk_label_set_width_chars (GTK_LABEL (widget), 20);
 	gtk_label_set_markup (GTK_LABEL (widget), msg->prompt);
 	gtk_label_set_xalign (GTK_LABEL (widget), 0);
@@ -557,7 +554,7 @@ ep_ask_password (EPassMsg *msg)
 	if ((msg->flags & E_PASSWORDS_REPROMPT)) {
 		ep_get_password (msg);
 		if (msg->password != NULL) {
-			gtk_entry_set_text (GTK_ENTRY (widget), msg->password);
+			gtk_editable_set_text (GTK_EDITABLE (widget), msg->password);
 			g_free (msg->password);
 			msg->password = NULL;
 		}
@@ -623,7 +620,7 @@ ep_ask_password (EPassMsg *msg)
 		G_CALLBACK (pass_response), msg);
 
 	if (parent) {
-		gtk_dialog_run (GTK_DIALOG (password_dialog));
+		e_gtk_dialog_run (GTK_DIALOG (password_dialog));
 	} else {
 		gtk_window_present (GTK_WINDOW (password_dialog));
 		/* workaround GTK+ bug (see Gnome's bugzilla bug #624229) */

@@ -26,6 +26,7 @@
 #define E_ATTACHMENT_VIEW_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-gtk4-compat.h>
 #include <e-util/e-attachment-store.h>
 #include <e-util/e-ui-action.h>
 #include <e-util/e-ui-action-group.h>
@@ -82,11 +83,11 @@ struct _EAttachmentViewInterface {
 	/* Drag and Drop Methods */
 	void		(*drag_source_set)	(EAttachmentView *view,
 						 GdkModifierType start_button_mask,
-						 const GtkTargetEntry *targets,
+						 const EGtkTargetEntry *targets,
 						 gint n_targets,
 						 GdkDragAction actions);
 	void		(*drag_dest_set)	(EAttachmentView *view,
-						 const GtkTargetEntry *targets,
+						 const EGtkTargetEntry *targets,
 						 gint n_targets,
 						 GdkDragAction actions);
 	void		(*drag_source_unset)	(EAttachmentView *view);
@@ -103,7 +104,7 @@ struct _EAttachmentViewInterface {
 struct _EAttachmentViewPrivate {
 
 	/* Drag Destination */
-	GtkTargetList *target_list;
+	EGtkTargetList *target_list;
 	GdkDragAction drag_actions;
 
 	/* Popup Menu Management */
@@ -143,7 +144,7 @@ void		e_attachment_view_set_editable	(EAttachmentView *view,
 gboolean	e_attachment_view_get_allow_uri	(EAttachmentView *view);
 void		e_attachment_view_set_allow_uri	(EAttachmentView *view,
 						 gboolean allow_uri);
-GtkTargetList *	e_attachment_view_get_target_list
+EGtkTargetList *	e_attachment_view_get_target_list
 						(EAttachmentView *view);
 GdkDragAction	e_attachment_view_get_drag_actions
 						(EAttachmentView *view);
@@ -162,16 +163,16 @@ void		e_attachment_view_remove_selected
 /* Event Support */
 gboolean	e_attachment_view_button_press_event
 						(EAttachmentView *view,
-						 GdkEventButton *event);
+						 GdkEvent *event);
 gboolean	e_attachment_view_button_release_event
 						(EAttachmentView *view,
-						 GdkEventButton *event);
+						 GdkEvent *event);
 gboolean	e_attachment_view_motion_notify_event
 						(EAttachmentView *view,
-						 GdkEventMotion *event);
+						 GdkEvent *event);
 gboolean	e_attachment_view_key_press_event
 						(EAttachmentView *view,
-						 GdkEventKey *event);
+						 GdkEvent *event);
 
 /* Selection Management */
 GtkTreePath *	e_attachment_view_get_path_at_pos
@@ -199,12 +200,12 @@ void		e_attachment_view_drag_source_set
 void		e_attachment_view_drag_source_unset
 						(EAttachmentView *view);
 void		e_attachment_view_drag_begin	(EAttachmentView *view,
-						 GdkDragContext *context);
+						 EGtkDragContext *context);
 void		e_attachment_view_drag_end	(EAttachmentView *view,
-						 GdkDragContext *context);
+						 EGtkDragContext *context);
 void		e_attachment_view_drag_data_get	(EAttachmentView *view,
-						 GdkDragContext *context,
-						 GtkSelectionData *selection,
+						 EGtkDragContext *context,
+						 EGtkSelectionData *selection,
 						 guint info,
 						 guint time);
 
@@ -213,21 +214,21 @@ void		e_attachment_view_drag_dest_set	(EAttachmentView *view);
 void		e_attachment_view_drag_dest_unset
 						(EAttachmentView *view);
 gboolean	e_attachment_view_drag_motion	(EAttachmentView *view,
-						 GdkDragContext *context,
+						 EGtkDragContext *context,
 						 gint x,
 						 gint y,
 						 guint time);
 gboolean	e_attachment_view_drag_drop	(EAttachmentView *view,
-						 GdkDragContext *context,
+						 EGtkDragContext *context,
 						 gint x,
 						 gint y,
 						 guint time);
 void		e_attachment_view_drag_data_received
 						(EAttachmentView *view,
-						 GdkDragContext *context,
+						 EGtkDragContext *context,
 						 gint x,
 						 gint y,
-						 GtkSelectionData *selection,
+						 EGtkSelectionData *selection,
 						 guint info,
 						 guint time);
 

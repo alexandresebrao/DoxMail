@@ -391,19 +391,19 @@ add_source_list_with_check (GtkWidget *frame,
 	check = gtk_check_button_new_with_mnemonic (caption);
 	gtk_toggle_button_set_active ((GtkToggleButton *) check, active);
 	g_signal_connect (check, "toggled", toggle_callback, target);
-	gtk_box_pack_start ((GtkBox *) hbox, check, FALSE, FALSE, 0);
+	e_gtk_box_pack_start ((GtkBox *) hbox, check, FALSE, FALSE, 0);
 
 	combo = e_client_combo_box_new (client_cache, extension_name);
 	e_source_combo_box_set_active (E_SOURCE_COMBO_BOX (combo), source);
 
-	gtk_box_pack_end ((GtkBox *) hbox, combo, FALSE, FALSE, 0);
+	e_gtk_box_pack_end ((GtkBox *) hbox, combo, FALSE, FALSE, 0);
 
 	g_signal_connect (
 		check, "toggled",
 		G_CALLBACK (widget_sanitizer_cb), combo);
 	widget_sanitizer_cb (GTK_TOGGLE_BUTTON (check), combo);
 
-	gtk_box_pack_start ((GtkBox *) frame, hbox, FALSE, FALSE, 0);
+	e_gtk_box_pack_start ((GtkBox *) frame, hbox, FALSE, FALSE, 0);
 
 	if (combo) {
 		const gchar *key = get_source_combo_key (extension_name);
@@ -527,7 +527,7 @@ org_credativ_evolution_readpst_getwidget (EImport *ei,
 	g_signal_connect (
 		check, "toggled",
 		G_CALLBACK (checkbox_mail_toggle_cb), target);
-	gtk_box_pack_start ((GtkBox *) hbox, check, FALSE, FALSE, 0);
+	e_gtk_box_pack_start ((GtkBox *) hbox, check, FALSE, FALSE, 0);
 
 	shell = e_shell_get_default ();
 	client_cache = e_shell_get_client_cache (shell);
@@ -545,20 +545,20 @@ org_credativ_evolution_readpst_getwidget (EImport *ei,
 	g_signal_connect (
 		w, "selected",
 		G_CALLBACK (folder_selected), target);
-	gtk_box_pack_end ((GtkBox *) hbox, w, FALSE, FALSE, 0);
+	e_gtk_box_pack_end ((GtkBox *) hbox, w, FALSE, FALSE, 0);
 	g_signal_connect (
 		check, "toggled",
 		G_CALLBACK (widget_sanitizer_cb), w);
 	widget_sanitizer_cb (GTK_TOGGLE_BUTTON (check), w);
 
 	w = gtk_label_new (_("Destination folder:"));
-	gtk_box_pack_end ((GtkBox *) hbox, w, FALSE, TRUE, 6);
+	e_gtk_box_pack_end ((GtkBox *) hbox, w, FALSE, TRUE, 6);
 	g_signal_connect (
 		check, "toggled",
 		G_CALLBACK (widget_sanitizer_cb), w);
 	widget_sanitizer_cb (GTK_TOGGLE_BUTTON (check), w);
 
-	gtk_box_pack_start ((GtkBox *) framebox, hbox, FALSE, FALSE, 0);
+	e_gtk_box_pack_start ((GtkBox *) framebox, hbox, FALSE, FALSE, 0);
 
 	add_source_list_with_check (
 		framebox, _("_Address Book"),
@@ -581,7 +581,7 @@ org_credativ_evolution_readpst_getwidget (EImport *ei,
 		G_CALLBACK (checkbox_journal_toggle_cb), target,
 		GPOINTER_TO_INT (g_datalist_get_data (&target->data, "pst-do-journal")));
 
-	gtk_widget_show_all (framebox);
+	gtk_widget_set_visible (framebox, TRUE);
 
 	g_free (foldername);
 

@@ -103,8 +103,8 @@ enum {
 #define DRAG_TARGET_ACTION "EUICustomizeDialogAction"
 #define DRAG_TARGET_LAYOUT "EUICustomizeDialogLayout"
 
-static GdkAtom drag_target_action_atom = GDK_NONE;
-static GdkAtom drag_target_layout_atom = GDK_NONE;
+static EGtkAtom drag_target_action_atom = E_GTK_ATOM_NONE;
+static EGtkAtom drag_target_layout_atom = E_GTK_ATOM_NONE;
 
 typedef struct _ShortcutInfo {
 	EUICustomizer *customizer;
@@ -581,7 +581,7 @@ customize_shortcuts_entry_icon_press_cb (GtkEntry *entry,
 		"visible", TRUE,
 		"sensitive", FALSE,
 		NULL);
-	gtk_container_add (GTK_CONTAINER (item), widget);
+	e_gtk_container_add (item, widget);
 
 	gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
 
@@ -761,7 +761,7 @@ customize_shortcuts_save_edit_shortcut (EUICustomizeDialog *self,
 
 		gtk_accelerator_parse (shortcut, &key, &mods);
 		label = gtk_accelerator_get_label (key, mods);
-		gtk_entry_set_text (entry, label);
+		gtk_editable_set_text (GTK_EDITABLE (entry), label);
 		g_object_set_data_full (G_OBJECT (entry), SHORTCUTS_ACCEL_NAME_KEY, g_strdup (shortcut), g_free);
 		g_free (label);
 
@@ -814,7 +814,7 @@ shortcuts_data_free (ShortcutsData *sd)
 
 static gboolean
 customize_shortcuts_popover_key_press_cb (GtkWidget *widget,
-					  GdkEventKey *event,
+					  GdkEvent *event,
 					  gpointer user_data)
 {
 	ShortcutsData *sd = user_data;
@@ -842,7 +842,7 @@ customize_shortcuts_popover_key_press_cb (GtkWidget *widget,
 	case GDK_KEY_Return:
 	case GDK_KEY_KP_Enter:
 	case GDK_KEY_ISO_Enter:
-		if (!(event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK))) {
+		if (!(event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_ALT_MASK))) {
 			gtk_button_clicked (GTK_BUTTON (sd->save_button));
 			return TRUE;
 		}
@@ -850,7 +850,7 @@ customize_shortcuts_popover_key_press_cb (GtkWidget *widget,
 	}
 
 	key = event->keyval;
-	mods = (event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK));
+	mods = (event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_ALT_MASK));
 
 	if (key != GDK_KEY_Tab && key != GDK_KEY_ISO_Left_Tab && key != GDK_KEY_KP_Tab && key != GDK_KEY_Escape && (
 	    sd->current_key != key || sd->current_mods != mods)) {
@@ -866,7 +866,7 @@ customize_shortcuts_popover_key_press_cb (GtkWidget *widget,
 		sd->current_mods = mods;
 
 		label = gtk_accelerator_get_label (key, mods);
-		gtk_entry_set_text (sd->entry, label ? label : "");
+		gtk_editable_set_text (GTK_EDITABLE (sd->entry), label ? label : "");
 		g_object_set_data_full (G_OBJECT (sd->entry), SHORTCUTS_ACCEL_NAME_KEY, g_steal_pointer (&name), g_free);
 
 		g_free (label);
@@ -917,7 +917,7 @@ customize_shortcuts_popover_closed_cb (GtkWidget *popover,
 		g_free (shortcut);
 	}
 
-	gtk_widget_destroy (popover);
+	e_gtk_widget_destroy (popover);
 }
 
 static void
@@ -954,7 +954,7 @@ customize_shortcuts_run_popover (EUICustomizeDialog *self,
 	g_object_set (widget,
 		"wrap", TRUE,
 		NULL);
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 
 	widget = gtk_entry_new ();
 	g_object_set (widget,
@@ -962,32 +962,32 @@ customize_shortcuts_run_popover (EUICustomizeDialog *self,
 		"hexpand", TRUE,
 		"editable", FALSE,
 		NULL);
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 	sd->entry = GTK_ENTRY (widget);
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 4);
 	g_object_set (widget,
 		"halign", GTK_ALIGN_CENTER,
 		NULL);
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 	box2 = GTK_BOX (widget);
 
 	widget = gtk_button_new_with_label (_("Save"));
-	gtk_box_pack_start (box2, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box2, widget, FALSE, FALSE, 0);
 	sd->save_button = widget;
 	gtk_widget_set_sensitive (sd->save_button, FALSE);
 	g_signal_connect (widget, "clicked",
 		G_CALLBACK (customize_shortcuts_popover_save_clicked_cb), sd);
 
 	widget = gtk_button_new_with_label (_("Cancel"));
-	gtk_box_pack_start (box2, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box2, widget, FALSE, FALSE, 0);
 	g_signal_connect_object (widget, "clicked",
 		G_CALLBACK (gtk_popover_popdown), popover, G_CONNECT_SWAPPED);
 
-	gtk_container_add (GTK_CONTAINER (popover), GTK_WIDGET (box));
-	gtk_container_set_border_width (GTK_CONTAINER (popover), 6);
+	e_gtk_container_add (popover, GTK_WIDGET (box));
+	e_gtk_widget_set_border_width (popover, 6);
 	gtk_popover_set_position (popover, GTK_POS_BOTTOM);
-	gtk_popover_set_modal (popover, TRUE);
+	gtk_popover_set_autohide (popover, TRUE);
 
 	widget = GTK_WIDGET (popover);
 
@@ -1001,7 +1001,7 @@ customize_shortcuts_run_popover (EUICustomizeDialog *self,
 	g_signal_connect_data (popover, "closed",
 		G_CALLBACK (customize_shortcuts_popover_closed_cb), sd, (GClosureNotify) shortcuts_data_free, 0);
 
-	gtk_widget_show_all (GTK_WIDGET (box));
+	gtk_widget_set_visible (GTK_WIDGET (box), TRUE);
 	gtk_popover_popup (popover);
 }
 
@@ -1080,20 +1080,20 @@ customize_shortcuts_add_no_shortcut_box (EUICustomizeDialog *self)
 	GtkBox *box;
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 4);
-	gtk_box_pack_start (self->shortcuts_box, widget, FALSE, FALSE, 2);
+	e_gtk_box_pack_start (self->shortcuts_box, widget, FALSE, FALSE, 2);
 
 	box = GTK_BOX (widget);
 
 	widget = gtk_label_new (_("No shortcut set"));
 	gtk_widget_set_sensitive (widget, FALSE);
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 4);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 4);
 
 	widget = gtk_button_new_with_mnemonic (_("_Add"));
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 	g_signal_connect (widget, "clicked",
 		G_CALLBACK (customize_shortcuts_add_clicked_cb), self);
 
-	gtk_widget_show_all (GTK_WIDGET (box));
+	gtk_widget_set_visible (GTK_WIDGET (box), TRUE);
 }
 
 static void
@@ -1113,7 +1113,7 @@ customize_shortcuts_remove_clicked_cb (GtkWidget *button,
 	g_return_if_fail (parent != NULL);
 
 	g_ptr_array_remove_index (self->shortcut_entries, index);
-	gtk_container_remove (GTK_CONTAINER (self->shortcuts_box), parent);
+	e_gtk_container_remove (self->shortcuts_box, parent);
 
 	if (customize_shortcuts_dup_customizer_and_action_name (self, &customizer, &action_name)) {
 		GPtrArray *shortcuts;
@@ -1191,27 +1191,27 @@ customize_shortcuts_new_accel_box (EUICustomizeDialog *self,
 
 	customize_shortcuts_check_existing (self, action_name, self->all_shortcuts, key, mods, GTK_ENTRY (widget));
 
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 8);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 8);
 
 	g_ptr_array_add (self->shortcut_entries, widget);
 
 	g_free (accel_label);
 
 	widget = gtk_button_new_with_mnemonic (_("_Edit"));
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 	g_object_set_data (G_OBJECT (widget), SHORTCUTS_INDEX_KEY, GUINT_TO_POINTER (index));
 	g_signal_connect (widget, "clicked",
 		G_CALLBACK (customize_shortcuts_edit_clicked_cb), self);
 
 	widget = gtk_button_new_with_mnemonic (_("_Remove"));
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 	g_object_set_data (G_OBJECT (widget), SHORTCUTS_INDEX_KEY, GUINT_TO_POINTER (index));
 	g_signal_connect (widget, "clicked",
 		G_CALLBACK (customize_shortcuts_remove_clicked_cb), self);
 
 	if (is_last) {
 		widget = gtk_button_new_with_mnemonic (_("_Add"));
-		gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+		e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 		g_signal_connect (widget, "clicked",
 			G_CALLBACK (customize_shortcuts_add_clicked_cb), self);
 	}
@@ -1234,19 +1234,19 @@ customize_shortcuts_fill_accels (EUICustomizeDialog *self,
 
 	if (main_accel) {
 		widget = customize_shortcuts_new_accel_box (self, action_name, main_accel, n_accels <= 1);
-		gtk_box_pack_start (self->shortcuts_box, widget, FALSE, FALSE, 2);
+		e_gtk_box_pack_start (self->shortcuts_box, widget, FALSE, FALSE, 2);
 	}
 
 	for (ii = 0; secondary_accels && ii < secondary_accels->len; ii++) {
 		const gchar *accel = g_ptr_array_index (secondary_accels, ii);
 		widget = customize_shortcuts_new_accel_box (self, action_name, accel, ii + offset + 1 >= n_accels);
-		gtk_box_pack_start (self->shortcuts_box, widget, FALSE, FALSE, 2);
+		e_gtk_box_pack_start (self->shortcuts_box, widget, FALSE, FALSE, 2);
 	}
 
 	if (!n_accels)
 		customize_shortcuts_add_no_shortcut_box (self);
 
-	gtk_widget_show_all (GTK_WIDGET (self->shortcuts_box));
+	gtk_widget_set_visible (GTK_WIDGET (self->shortcuts_box), TRUE);
 }
 
 static void
@@ -1262,9 +1262,9 @@ customize_shortcut_action_selection_changed_cb (GtkTreeSelection *in_selection,
 	GList *children, *link;
 
 	container = GTK_CONTAINER (self->shortcuts_box);
-	children = gtk_container_get_children (container);
+	children = e_gtk_widget_get_children (container);
 	for (link = children; link; link = g_list_next (link)) {
-		gtk_container_remove (container, link->data);
+		e_gtk_container_remove (container, link->data);
 	}
 	g_list_free (children);
 
@@ -1552,7 +1552,7 @@ e_ui_customize_dialog_layout_add_clicked_cb (GtkWidget *button,
 	g_signal_connect (item, "activate", G_CALLBACK (e_ui_customize_dialog_layout_add_separator_activated_cb), self);
 	gtk_menu_shell_append (menu_shell, item);
 
-	gtk_widget_show_all (popup_menu);
+	gtk_widget_set_visible (popup_menu, TRUE);
 
 	gtk_menu_attach_to_widget (GTK_MENU (popup_menu), button, NULL);
 	e_util_connect_menu_detach_after_deactivate (GTK_MENU (popup_menu));
@@ -1941,7 +1941,7 @@ customize_layout_move_iter_to (GtkTreeView *tree_view,
 static void
 customize_layout_tree_finish_drag (EUICustomizeDialog *self,
 				   GtkTreePath *drop_path,
-				   GdkAtom drag_target)
+				   EGtkAtom drag_target)
 {
 	if (drop_path && drag_target == drag_target_layout_atom && self->layout_drag_refs) {
 		GtkTreeRowReference *ref;
@@ -2094,7 +2094,7 @@ customize_layout_tree_autoscroll (gpointer user_data)
 
 static void
 customize_actions_tree_drag_begin_cb (GtkWidget *widget,
-				      GdkDragContext *context,
+				      EGtkDragContext *context,
 				      gpointer user_data)
 {
 	EUICustomizeDialog *self = user_data;
@@ -2110,7 +2110,7 @@ customize_actions_tree_drag_begin_cb (GtkWidget *widget,
 		cairo_surface_t *surface;
 
 		surface = gtk_tree_view_create_row_drag_icon (self->actions_tree_view, selected_paths->data);
-		gtk_drag_set_icon_surface (context, surface);
+		e_gtk_drag_set_icon_surface (context, surface);
 		cairo_surface_destroy (surface);
 	}
 
@@ -2119,8 +2119,8 @@ customize_actions_tree_drag_begin_cb (GtkWidget *widget,
 
 static void
 customize_actions_tree_drag_data_get_cb (GtkWidget *widget,
-					 GdkDragContext *context,
-					 GtkSelectionData *data,
+					 EGtkDragContext *context,
+					 EGtkSelectionData *data,
 					 guint info,
 					 guint time,
 					 gpointer user_data)
@@ -2133,17 +2133,17 @@ customize_actions_tree_drag_data_get_cb (GtkWidget *widget,
 	selection = gtk_tree_view_get_selection (self->actions_tree_view);
 	if (gtk_tree_selection_count_selected_rows (selection) > 0) {
 		/* the dragged data is not important, the selection is read inside the drag-data-received */
-		gtk_selection_data_set (data, drag_target_action_atom, 8, (const guchar *) "-", 1);
+		e_gtk_selection_data_set (data, drag_target_action_atom, 8, (const guchar *) "-", 1);
 	}
 }
 
-static GdkAtom
-customize_layout_get_drag_target (GdkDragContext *context)
+static EGtkAtom
+customize_layout_get_drag_target (EGtkDragContext *context)
 {
 	GList *targets;
-	GdkAtom drag_target = GDK_NONE;
+	EGtkAtom drag_target = E_GTK_ATOM_NONE;
 
-	targets = gdk_drag_context_list_targets (context);
+	targets = e_gtk_drag_context_list_targets (context);
 	/* expects only one target, from the actions or the layout tree view */
 	if (targets && !targets->next)
 		drag_target = targets->data;
@@ -2153,7 +2153,7 @@ customize_layout_get_drag_target (GdkDragContext *context)
 
 static void
 customize_layout_tree_drag_begin_cb (GtkWidget *widget,
-				     GdkDragContext *context,
+				     EGtkDragContext *context,
 				     gpointer user_data)
 {
 	EUICustomizeDialog *self = user_data;
@@ -2161,7 +2161,7 @@ customize_layout_tree_drag_begin_cb (GtkWidget *widget,
 
 	g_return_if_fail (self != NULL);
 
-	customize_layout_tree_finish_drag (self, NULL, GDK_NONE);
+	customize_layout_tree_finish_drag (self, NULL, E_GTK_ATOM_NONE);
 
 	drag_refs = e_ui_customize_dialog_dup_layout_selected_dragables (self);
 
@@ -2177,7 +2177,7 @@ customize_layout_tree_drag_begin_cb (GtkWidget *widget,
 
 		if (path) {
 			surface = gtk_tree_view_create_row_drag_icon (self->layout_tree_view, path);
-			gtk_drag_set_icon_surface (context, surface);
+			e_gtk_drag_set_icon_surface (context, surface);
 			cairo_surface_destroy (surface);
 
 			gtk_tree_path_free (path);
@@ -2187,7 +2187,7 @@ customize_layout_tree_drag_begin_cb (GtkWidget *widget,
 
 static gboolean
 customize_layout_tree_drag_motion_cb (GtkWidget *widget,
-				      GdkDragContext *context,
+				      EGtkDragContext *context,
 				      gint xx,
 				      gint yy,
 				      guint time,
@@ -2198,7 +2198,7 @@ customize_layout_tree_drag_motion_cb (GtkWidget *widget,
 	GtkTreeModel *model;
 	GtkTreeIter iter;
 	GtkTreePath *path = NULL;
-	GdkAtom drag_target = GDK_NONE;
+	EGtkAtom drag_target = E_GTK_ATOM_NONE;
 	gboolean can = FALSE;
 
 	g_return_val_if_fail (self != NULL, FALSE);
@@ -2206,14 +2206,14 @@ customize_layout_tree_drag_motion_cb (GtkWidget *widget,
 	tree_view = self->layout_tree_view;
 
 	if (!gtk_tree_view_get_dest_row_at_pos (tree_view, xx, yy, &path, NULL)) {
-		gdk_drag_status (context, 0, time);
+		e_gtk_drag_status (context, 0, time);
 		return FALSE;
 	}
 
 	drag_target = customize_layout_get_drag_target (context);
 
 	if (drag_target == drag_target_layout_atom && !self->layout_drag_refs) {
-		gdk_drag_status (context, 0, time);
+		e_gtk_drag_status (context, 0, time);
 		return FALSE;
 	}
 
@@ -2259,14 +2259,14 @@ customize_layout_tree_drag_motion_cb (GtkWidget *widget,
 
 	gtk_tree_path_free (path);
 
-	gdk_drag_status (context, can ? GDK_ACTION_MOVE : 0, time);
+	e_gtk_drag_status (context, can ? GDK_ACTION_MOVE : 0, time);
 
 	return TRUE;
 }
 
 static void
 customize_layout_tree_drag_leave_cb (GtkWidget *widget,
-				     GdkDragContext *context,
+				     EGtkDragContext *context,
 				     guint time,
 				     gpointer user_data)
 {
@@ -2283,21 +2283,21 @@ customize_layout_tree_drag_leave_cb (GtkWidget *widget,
 
 static gboolean
 customize_layout_tree_drag_drop_cb (GtkWidget *widget,
-				    GdkDragContext *context,
+				    EGtkDragContext *context,
 				    gint xx,
 				    gint yy,
 				    guint time,
 				    gpointer user_data)
 {
 	EUICustomizeDialog *self = user_data;
-	GdkAtom drag_target;
+	EGtkAtom drag_target;
 
 	g_return_val_if_fail (self != NULL, FALSE);
 
 	drag_target = customize_layout_get_drag_target (context);
 
 	if (drag_target == drag_target_action_atom) {
-		gtk_drag_get_data (widget, context, drag_target, time);
+		e_gtk_drag_get_data (widget, context, drag_target, time);
 		return TRUE;
 	} else {
 		GtkTreePath *path = NULL;
@@ -2316,22 +2316,22 @@ customize_layout_tree_drag_drop_cb (GtkWidget *widget,
 
 static void
 customize_layout_tree_drag_end_cb (GtkWidget *widget,
-				   GdkDragContext *context,
+				   EGtkDragContext *context,
 				   gpointer user_data)
 {
 	EUICustomizeDialog *self = user_data;
 
 	g_return_if_fail (self != NULL);
 
-	customize_layout_tree_finish_drag (self, NULL, GDK_NONE);
+	customize_layout_tree_finish_drag (self, NULL, E_GTK_ATOM_NONE);
 }
 
 static void
 customize_layout_tree_drag_data_received_cb (GtkWidget *widget,
-					     GdkDragContext *context,
+					     EGtkDragContext *context,
 					     gint xx,
 					     gint yy,
-					     GtkSelectionData *data,
+					     EGtkSelectionData *data,
 					     guint info,
 					     guint time,
 					     gpointer user_data)
@@ -2345,7 +2345,7 @@ customize_layout_tree_drag_data_received_cb (GtkWidget *widget,
 
 	layout_model = gtk_tree_view_get_model (self->layout_tree_view);
 
-	if (gtk_selection_data_get_data_type (data) == drag_target_action_atom &&
+	if (e_gtk_selection_data_get_data_type (data) == drag_target_action_atom &&
 	    gtk_tree_view_get_dest_row_at_pos (self->layout_tree_view, xx, yy, &dest_path, NULL) &&
 	    gtk_tree_model_get_iter (layout_model, &dest_iter, dest_path)) {
 		GtkTreeIter *parent = NULL, parent_local, iter;
@@ -2403,11 +2403,11 @@ customize_layout_tree_drag_data_received_cb (GtkWidget *widget,
 		customize_layout_add_actions (self, parent, position);
 	}
 
-	customize_layout_tree_finish_drag (self, NULL, GDK_NONE);
+	customize_layout_tree_finish_drag (self, NULL, E_GTK_ATOM_NONE);
 
 	gtk_tree_path_free (dest_path);
 
-	gtk_drag_finish (context, TRUE, FALSE, time);
+	e_gtk_drag_finish (context, TRUE, FALSE, time);
 }
 
 static GtkWidget *
@@ -2418,7 +2418,7 @@ customize_dialog_new_layout_add_button (EUICustomizeDialog *self)
 	box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
 
 	button = gtk_button_new ();
-	gtk_container_add (GTK_CONTAINER (button), box);
+	e_gtk_container_add (button, box);
 
 	label = gtk_label_new_with_mnemonic (_("_Add"));
 	gtk_label_set_mnemonic_widget (GTK_LABEL (label), button);
@@ -2428,12 +2428,12 @@ customize_dialog_new_layout_add_button (EUICustomizeDialog *self)
 		"xalign", 0.5,
 		NULL);
 
-	gtk_box_pack_start (GTK_BOX (box), label, TRUE, TRUE, 2);
+	e_gtk_box_pack_start (GTK_BOX (box), label, TRUE, TRUE, 2);
 
-	arrow = gtk_image_new_from_icon_name ("pan-down-symbolic", GTK_ICON_SIZE_BUTTON);
-	gtk_box_pack_start (GTK_BOX (box), arrow, FALSE, FALSE, 2);
+	arrow = gtk_image_new_from_icon_name ("pan-down-symbolic");
+	e_gtk_box_pack_start (GTK_BOX (box), arrow, FALSE, FALSE, 2);
 
-	gtk_widget_show_all (button);
+	gtk_widget_set_visible (button, TRUE);
 
 	g_signal_connect_object (button, "clicked",
 		G_CALLBACK (e_ui_customize_dialog_layout_add_clicked_cb), self, 0);
@@ -2466,15 +2466,15 @@ customize_dialog_search_equal_cb (GtkTreeModel *model,
 static void
 e_ui_customize_dialog_constructed (GObject *object)
 {
-	const GtkTargetEntry action_targets[] = {
-		{ (gchar *) DRAG_TARGET_ACTION, GTK_TARGET_SAME_APP, 0 },
+	const EGtkTargetEntry action_targets[] = {
+		{ (gchar *) DRAG_TARGET_ACTION, E_GTK_TARGET_SAME_APP, 0 },
 	};
-	const GtkTargetEntry layout_source_targets[] = {
-		{ (gchar *) DRAG_TARGET_LAYOUT, GTK_TARGET_SAME_WIDGET, 1 }
+	const EGtkTargetEntry layout_source_targets[] = {
+		{ (gchar *) DRAG_TARGET_LAYOUT, E_GTK_TARGET_SAME_WIDGET, 1 }
 	};
-	const GtkTargetEntry layout_dest_targets[] = {
-		{ (gchar *) DRAG_TARGET_ACTION, GTK_TARGET_SAME_APP, 0 },
-		{ (gchar *) DRAG_TARGET_LAYOUT, GTK_TARGET_SAME_WIDGET, 1 }
+	const EGtkTargetEntry layout_dest_targets[] = {
+		{ (gchar *) DRAG_TARGET_ACTION, E_GTK_TARGET_SAME_APP, 0 },
+		{ (gchar *) DRAG_TARGET_LAYOUT, E_GTK_TARGET_SAME_WIDGET, 1 }
 	};
 	EUICustomizeDialog *self = E_UI_CUSTOMIZE_DIALOG (object);
 	GtkTreeViewColumn *column;
@@ -2498,7 +2498,7 @@ e_ui_customize_dialog_constructed (GObject *object)
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (self));
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 4);
-	gtk_container_add (GTK_CONTAINER (content_area), widget);
+	e_gtk_container_add (content_area, widget);
 
 	box1 = GTK_BOX (widget);
 	g_object_set (box1,
@@ -2509,12 +2509,12 @@ e_ui_customize_dialog_constructed (GObject *object)
 		NULL);
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 4);
-	gtk_box_pack_start (box1, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box1, widget, FALSE, FALSE, 0);
 	box2 = GTK_BOX (widget);
 
 	/* Translators: this is like "Part of the user interface" */
 	widget = gtk_label_new_with_mnemonic (_("_Part:"));
-	gtk_box_pack_start (box2, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box2, widget, FALSE, FALSE, 0);
 	label = GTK_LABEL (widget);
 
 	list_store = gtk_list_store_new (N_COL_COMBO,
@@ -2535,23 +2535,23 @@ e_ui_customize_dialog_constructed (GObject *object)
 
 	g_object_unref (list_store);
 
-	gtk_box_pack_start (box2, widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (box2, widget, TRUE, TRUE, 0);
 	gtk_label_set_mnemonic_widget (label, widget);
 
 	self->element_combo = GTK_COMBO_BOX (widget);
 
 	widget = gtk_paned_new (GTK_ORIENTATION_HORIZONTAL);
-	gtk_box_pack_start (box1, widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (box1, widget, TRUE, TRUE, 0);
 
 	paned = GTK_PANED (widget);
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 4);
-	gtk_paned_pack1 (paned, widget, TRUE, FALSE);
+	e_gtk_paned_pack1 (paned, widget, TRUE, FALSE);
 
 	box1 = GTK_BOX (widget);
 
 	widget = gtk_label_new_with_mnemonic (_("Available _Actions"));
-	gtk_box_pack_start (box1, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box1, widget, FALSE, FALSE, 0);
 	label = GTK_LABEL (widget);
 
 	scrolled_window = gtk_scrolled_window_new (NULL, NULL);
@@ -2562,7 +2562,7 @@ e_ui_customize_dialog_constructed (GObject *object)
 		"vscrollbar-policy", GTK_POLICY_AUTOMATIC,
 		NULL);
 
-	gtk_box_pack_start (box1, scrolled_window, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (box1, scrolled_window, TRUE, TRUE, 0);
 
 	list_store = gtk_list_store_new (N_COL_ACTIONS,
 		E_TYPE_UI_ELEMENT,	/* COL_ACTIONS_ELEM_OBJ */
@@ -2585,7 +2585,7 @@ e_ui_customize_dialog_constructed (GObject *object)
 
 	g_object_unref (list_store);
 
-	gtk_container_add (GTK_CONTAINER (scrolled_window), widget);
+	e_gtk_container_add (scrolled_window, widget);
 
 	self->actions_tree_view = GTK_TREE_VIEW (widget);
 
@@ -2603,7 +2603,7 @@ e_ui_customize_dialog_constructed (GObject *object)
 
 	gtk_tree_view_append_column (self->actions_tree_view, column);
 
-	gtk_drag_source_set (GTK_WIDGET (self->actions_tree_view), GDK_BUTTON1_MASK, action_targets, G_N_ELEMENTS (action_targets), GDK_ACTION_MOVE);
+	e_gtk_drag_source_set (GTK_WIDGET (self->actions_tree_view), GDK_BUTTON1_MASK, action_targets, G_N_ELEMENTS (action_targets), GDK_ACTION_MOVE);
 
 	g_signal_connect (self->actions_tree_view, "drag-begin",
 		G_CALLBACK (customize_actions_tree_drag_begin_cb), self);
@@ -2611,7 +2611,7 @@ e_ui_customize_dialog_constructed (GObject *object)
 		G_CALLBACK (customize_actions_tree_drag_data_get_cb), self);
 
 	widget = gtk_notebook_new ();
-	gtk_paned_pack2 (paned, widget, TRUE, FALSE);
+	e_gtk_paned_pack2 (paned, widget, TRUE, FALSE);
 
 	self->notebook = GTK_NOTEBOOK (widget);
 
@@ -2633,7 +2633,7 @@ e_ui_customize_dialog_constructed (GObject *object)
 		"vscrollbar-policy", GTK_POLICY_AUTOMATIC,
 		NULL);
 
-	gtk_box_pack_start (box1, scrolled_window, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (box1, scrolled_window, TRUE, TRUE, 0);
 
 	tree_store = gtk_tree_store_new (N_COL_LAYOUT,
 		E_TYPE_UI_ELEMENT,	/* COL_LAYOUT_ELEM_OBJ */
@@ -2656,7 +2656,7 @@ e_ui_customize_dialog_constructed (GObject *object)
 
 	g_object_unref (tree_store);
 
-	gtk_container_add (GTK_CONTAINER (scrolled_window), widget);
+	e_gtk_container_add (scrolled_window, widget);
 
 	self->layout_tree_view = GTK_TREE_VIEW (widget);
 
@@ -2674,8 +2674,8 @@ e_ui_customize_dialog_constructed (GObject *object)
 
 	gtk_tree_view_append_column (self->layout_tree_view, column);
 
-	gtk_drag_source_set (GTK_WIDGET (self->layout_tree_view), GDK_BUTTON1_MASK, layout_source_targets, G_N_ELEMENTS (layout_source_targets), GDK_ACTION_MOVE);
-	gtk_drag_dest_set (GTK_WIDGET (self->layout_tree_view), GTK_DEST_DEFAULT_MOTION, layout_dest_targets, G_N_ELEMENTS (layout_dest_targets), GDK_ACTION_MOVE);
+	e_gtk_drag_source_set (GTK_WIDGET (self->layout_tree_view), GDK_BUTTON1_MASK, layout_source_targets, G_N_ELEMENTS (layout_source_targets), GDK_ACTION_MOVE);
+	e_gtk_drag_dest_set (GTK_WIDGET (self->layout_tree_view), E_GTK_DEST_DEFAULT_MOTION, layout_dest_targets, G_N_ELEMENTS (layout_dest_targets), GDK_ACTION_MOVE);
 
 	g_signal_connect (self->layout_tree_view, "drag-begin",
 		G_CALLBACK (customize_layout_tree_drag_begin_cb), self);
@@ -2690,55 +2690,55 @@ e_ui_customize_dialog_constructed (GObject *object)
 	g_signal_connect (self->layout_tree_view, "drag-data-received",
 		G_CALLBACK (customize_layout_tree_drag_data_received_cb), self);
 
-	widget = gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
+	widget = e_gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
 	g_object_set (widget,
 		"halign", GTK_ALIGN_FILL,
 		"valign", GTK_ALIGN_FILL,
 		"layout-style", GTK_BUTTONBOX_START,
 		"homogeneous", TRUE,
 		NULL);
-	gtk_box_pack_start (box1, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box1, widget, FALSE, FALSE, 0);
 
 	box2 = GTK_BOX (widget);
 
 	widget = customize_dialog_new_layout_add_button (self);
-	gtk_box_pack_start (box2, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box2, widget, FALSE, FALSE, 0);
 
 	selection = gtk_tree_view_get_selection (self->actions_tree_view);
 	gtk_tree_selection_set_mode (selection, GTK_SELECTION_MULTIPLE);
 
 	widget = gtk_button_new_with_mnemonic (_("_Remove"));
-	gtk_box_pack_start (box2, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box2, widget, FALSE, FALSE, 0);
 	g_signal_connect_object (widget, "clicked",
 		G_CALLBACK (e_ui_customize_dialog_layout_remove_clicked_cb), self, 0);
 	self->remove_button = widget;
 
 	widget = gtk_button_new_with_mnemonic (_("_Top"));
-	gtk_box_pack_start (box2, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box2, widget, FALSE, FALSE, 0);
 	g_signal_connect_object (widget, "clicked",
 		G_CALLBACK (e_ui_customize_dialog_layout_top_clicked_cb), self, 0);
 	self->top_button = widget;
 
 	widget = gtk_button_new_with_mnemonic (_("_Up"));
-	gtk_box_pack_start (box2, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box2, widget, FALSE, FALSE, 0);
 	g_signal_connect_object (widget, "clicked",
 		G_CALLBACK (e_ui_customize_dialog_layout_up_clicked_cb), self, 0);
 	self->up_button = widget;
 
 	widget = gtk_button_new_with_mnemonic (_("_Down"));
-	gtk_box_pack_start (box2, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box2, widget, FALSE, FALSE, 0);
 	g_signal_connect_object (widget, "clicked",
 		G_CALLBACK (e_ui_customize_dialog_layout_down_clicked_cb), self, 0);
 	self->down_button = widget;
 
 	widget = gtk_button_new_with_mnemonic (_("_Bottom"));
-	gtk_box_pack_start (box2, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box2, widget, FALSE, FALSE, 0);
 	g_signal_connect_object (widget, "clicked",
 		G_CALLBACK (e_ui_customize_dialog_layout_bottom_clicked_cb), self, 0);
 	self->bottom_button = widget;
 
 	widget = gtk_button_new_with_mnemonic (_("_Default"));
-	gtk_box_pack_start (box2, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box2, widget, FALSE, FALSE, 0);
 	g_signal_connect_object (widget, "clicked",
 		G_CALLBACK (e_ui_customize_dialog_layout_default_clicked_cb), self, 0);
 	self->layout_default_button = widget;
@@ -2750,7 +2750,7 @@ e_ui_customize_dialog_constructed (GObject *object)
 	e_ui_customize_dialog_layout_tree_view_selection_changed_cb (selection, self);
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 4);
-	gtk_container_set_border_width (GTK_CONTAINER (widget), 8);
+	e_gtk_widget_set_border_width (widget, 8);
 	gtk_notebook_append_page (self->notebook, widget, gtk_label_new_with_mnemonic (_("_Shortcuts")));
 	box1 = GTK_BOX (widget);
 
@@ -2761,10 +2761,10 @@ e_ui_customize_dialog_constructed (GObject *object)
 		"xalign", 0.0f,
 		"wrap", TRUE,
 		NULL);
-	gtk_box_pack_start (box1, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box1, widget, FALSE, FALSE, 0);
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
-	gtk_box_pack_start (box1, widget, FALSE, FALSE, 2);
+	e_gtk_box_pack_start (box1, widget, FALSE, FALSE, 2);
 
 	box2 = GTK_BOX (widget);
 
@@ -2781,13 +2781,13 @@ e_ui_customize_dialog_constructed (GObject *object)
 		"wrap", TRUE,
 		"attributes", attrs,
 		NULL);
-	gtk_box_pack_start (box2, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box2, widget, FALSE, FALSE, 0);
 	self->shortcuts_label = GTK_LABEL (widget);
 
 	g_clear_pointer (&attrs, pango_attr_list_unref);
 
 	widget = gtk_button_new_with_mnemonic (_("_Default"));
-	gtk_box_pack_end (box2, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_end (box2, widget, FALSE, FALSE, 0);
 	self->shortcuts_default_button = widget;
 
 	g_signal_connect (self->shortcuts_default_button, "clicked",
@@ -2805,7 +2805,7 @@ e_ui_customize_dialog_constructed (GObject *object)
 		"wrap", TRUE,
 		"attributes", attrs,
 		NULL);
-	gtk_box_pack_start (box1, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box1, widget, FALSE, FALSE, 0);
 	self->shortcuts_tooltip = GTK_LABEL (widget);
 
 	g_clear_pointer (&attrs, pango_attr_list_unref);
@@ -2819,18 +2819,18 @@ e_ui_customize_dialog_constructed (GObject *object)
 		"hscrollbar-policy", GTK_POLICY_AUTOMATIC,
 		"vscrollbar-policy", GTK_POLICY_AUTOMATIC,
 		NULL);
-	gtk_box_pack_start (box1, scrolled_window, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (box1, scrolled_window, TRUE, TRUE, 0);
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
 	g_object_set (scrolled_window,
 		"margin-top", 8,
 		NULL);
-	gtk_container_add (GTK_CONTAINER (scrolled_window), widget);
+	e_gtk_container_add (scrolled_window, widget);
 	self->shortcuts_box = GTK_BOX (widget);
 
 	gtk_notebook_set_current_page (self->notebook, 0);
 
-	gtk_widget_show_all (content_area);
+	gtk_widget_set_visible (content_area, TRUE);
 }
 
 static void
@@ -2880,8 +2880,8 @@ e_ui_customize_dialog_class_init (EUICustomizeDialogClass *klass)
 {
 	GObjectClass *object_class;
 
-	drag_target_action_atom = gdk_atom_intern_static_string (DRAG_TARGET_ACTION);
-	drag_target_layout_atom = gdk_atom_intern_static_string (DRAG_TARGET_LAYOUT);
+	drag_target_action_atom = e_gtk_atom_intern_static_string (DRAG_TARGET_ACTION);
+	drag_target_layout_atom = e_gtk_atom_intern_static_string (DRAG_TARGET_LAYOUT);
 
 	object_class = G_OBJECT_CLASS (klass);
 	object_class->constructed = e_ui_customize_dialog_constructed;
@@ -2901,7 +2901,7 @@ e_ui_customize_dialog_init (EUICustomizeDialog *self)
  * e_ui_customize_dialog_new:
  * @parent: (nullable): a parent #GtkWindow, or %NULL
  *
- * Creates a new #EUICustomizeDialog. Use gtk_widget_destroy(),
+ * Creates a new #EUICustomizeDialog. Use e_gtk_widget_destroy (),
  * when no longer needed.
  *
  * Returns: (transfer full): a new #EUICustomizeDialog
@@ -3513,7 +3513,7 @@ e_ui_customize_dialog_run (EUICustomizeDialog *self,
 	while (!done) {
 		GError *local_error = NULL;
 
-		gtk_dialog_run (GTK_DIALOG (self));
+		e_gtk_dialog_run (GTK_DIALOG (self));
 
 		done = e_ui_customize_dialog_save_changes (self, &local_error);
 		if (!done) {

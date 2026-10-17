@@ -49,7 +49,7 @@ filter_input_entry_changed (GtkEntry *entry,
 	g_list_foreach (input->values, (GFunc) g_free, NULL);
 	g_list_free (input->values);
 
-	text = gtk_entry_get_text (entry);
+	text = gtk_editable_get_text (GTK_EDITABLE (entry));
 	input->values = g_list_append (NULL, g_strdup (text));
 }
 
@@ -317,8 +317,7 @@ filter_input_get_widget (EFilterElement *element)
 
 	entry = gtk_entry_new ();
 	if (input->values && input->values->data)
-		gtk_entry_set_text (
-			GTK_ENTRY (entry), input->values->data);
+		gtk_editable_set_text (GTK_EDITABLE (entry), input->values->data);
 
 	g_signal_connect (
 		entry, "changed",

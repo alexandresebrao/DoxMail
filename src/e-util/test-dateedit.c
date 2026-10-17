@@ -31,7 +31,7 @@
 #include "e-misc-utils.h"
 
 static void delete_event_cb		(GtkWidget	*widget,
-					 GdkEventAny	*event,
+					 GdkEvent	*event,
 					 GtkWidget	*window);
 static void on_get_date_clicked		(GtkWidget	*button,
 					 EDateEdit	*dedit);
@@ -70,7 +70,7 @@ on_split_set_format_clicked (GtkButton *button,
 	GtkEntry *entry;
 
 	entry = g_object_get_data (G_OBJECT (split_date), "format-entry");
-	e_split_date_edit_set_format (split_date, gtk_entry_get_text (entry));
+	e_split_date_edit_set_format (split_date, gtk_editable_get_text (GTK_EDITABLE (entry)));
 }
 
 static void
@@ -83,21 +83,21 @@ on_split_set_date_clicked (GtkButton *button,
 	guint year, month, day;
 
 	entry = g_object_get_data (G_OBJECT (button), "year-entry");
-	text = gtk_entry_get_text (entry);
+	text = gtk_editable_get_text (GTK_EDITABLE (entry));
 	if (text)
 		year = g_ascii_strtoull (text, NULL, 10);
 	else
 		year = 0;
 
 	entry = g_object_get_data (G_OBJECT (button), "month-entry");
-	text = gtk_entry_get_text (entry);
+	text = gtk_editable_get_text (GTK_EDITABLE (entry));
 	if (text)
 		month = g_ascii_strtoull (text, NULL, 10);
 	else
 		month = 0;
 
 	entry = g_object_get_data (G_OBJECT (button), "day-entry");
-	text = gtk_entry_get_text (entry);
+	text = gtk_editable_get_text (GTK_EDITABLE (entry));
 	if (text)
 		day = g_ascii_strtoull (text, NULL, 10);
 	else
@@ -117,13 +117,13 @@ main (gint argc,
 	GtkGrid *grid;
 	GtkBox *box;
 
-	gtk_init (&argc, &argv);
+	gtk_init ();
 
 	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title (GTK_WINDOW (window), "EDateEdit/ESPlitDateEdit Test");
 	gtk_window_set_default_size (GTK_WINDOW (window), 300, 200);
 	gtk_window_set_resizable (GTK_WINDOW (window), TRUE);
-	gtk_container_set_border_width (GTK_CONTAINER (window), 8);
+	e_gtk_widget_set_border_width (window, 8);
 
 	g_signal_connect (
 		window, "delete_event",
@@ -133,7 +133,7 @@ main (gint argc,
 	gtk_grid_set_row_spacing (grid, 4);
 	gtk_grid_set_column_spacing (grid, 4);
 
-	gtk_container_add (GTK_CONTAINER (window), GTK_WIDGET (grid));
+	e_gtk_container_add (window, GTK_WIDGET (grid));
 
 	/* EDateEdit 1. */
 	dedit = E_DATE_EDIT (e_date_edit_new ());
@@ -239,16 +239,16 @@ main (gint argc,
 
 	widget = gtk_label_new ("Format:");
 	gtk_widget_set_halign (widget, GTK_ALIGN_END);
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 
 	widget = gtk_entry_new ();
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
-	gtk_entry_set_text (GTK_ENTRY (widget), e_split_date_edit_get_format (split_date));
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	gtk_editable_set_text (GTK_EDITABLE (widget), e_split_date_edit_get_format (split_date));
 
 	g_object_set_data (G_OBJECT (split_date), "format-entry", widget);
 
 	widget = gtk_button_new_with_label ("Set format");
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 
 	g_signal_connect (widget, "clicked",
 		G_CALLBACK (on_split_set_format_clicked), split_date);
@@ -263,32 +263,32 @@ main (gint argc,
 	button = widget;
 
 	widget = gtk_label_new ("Year:");
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 
 	widget = gtk_entry_new ();
-	gtk_entry_set_width_chars (GTK_ENTRY (widget), 5);
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	gtk_editable_set_width_chars (GTK_EDITABLE (widget), 5);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 	g_object_set_data (G_OBJECT (button), "year-entry", widget);
 
 	widget = gtk_label_new ("Month:");
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 
 	widget = gtk_entry_new ();
-	gtk_entry_set_width_chars (GTK_ENTRY (widget), 3);
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	gtk_editable_set_width_chars (GTK_EDITABLE (widget), 3);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 	g_object_set_data (G_OBJECT (button), "month-entry", widget);
 
 	widget = gtk_label_new ("Day:");
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 
 	widget = gtk_entry_new ();
-	gtk_entry_set_width_chars (GTK_ENTRY (widget), 3);
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	gtk_editable_set_width_chars (GTK_EDITABLE (widget), 3);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 	g_object_set_data (G_OBJECT (button), "day-entry", widget);
 
-	gtk_box_pack_start (box, button, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, button, FALSE, FALSE, 0);
 
-	gtk_widget_show_all (GTK_WIDGET (grid));
+	gtk_widget_set_visible (GTK_WIDGET (grid), TRUE);
 
 	gtk_widget_show (window);
 
@@ -301,10 +301,10 @@ main (gint argc,
 
 static void
 delete_event_cb (GtkWidget *widget,
-                 GdkEventAny *event,
+                 GdkEvent *event,
                  GtkWidget *window)
 {
-	gtk_widget_destroy (window);
+	e_gtk_widget_destroy (window);
 
 	gtk_main_quit ();
 }

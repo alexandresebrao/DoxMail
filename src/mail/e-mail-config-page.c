@@ -171,14 +171,14 @@ e_mail_config_page_set_content (EMailConfigPage *page,
 	scrolled = GTK_SCROLLED_WINDOW (page);
 
 	if (content)
-		gtk_container_add (GTK_CONTAINER (scrolled), content);
+		e_gtk_container_add (scrolled, content);
 
 	gtk_scrolled_window_set_policy (scrolled, GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_set_shadow_type (scrolled, GTK_SHADOW_NONE);
+	gtk_scrolled_window_set_has_frame (scrolled, FALSE);
 
-	child = gtk_bin_get_child (GTK_BIN (scrolled));
+	child = e_gtk_bin_get_child (scrolled);
 	if (GTK_IS_VIEWPORT (child))
-		gtk_viewport_set_shadow_type (GTK_VIEWPORT (child), GTK_SHADOW_OUT);
+		;
 
 	gtk_widget_show (content);
 

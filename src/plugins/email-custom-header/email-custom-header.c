@@ -172,7 +172,7 @@ epech_header_options_cb (GtkDialog *dialog,
 			/* falls through */
 		case GTK_RESPONSE_CANCEL:
 			gtk_widget_hide (priv->main);
-			gtk_widget_destroy (priv->main);
+			e_gtk_widget_destroy (priv->main);
 			g_object_unref (priv->builder);
 			break;
 		case GTK_RESPONSE_HELP:
@@ -210,7 +210,7 @@ epech_dialog_run (CustomHeaderOptionsDialog *mch,
 	}
 
 	epech_setup_widgets (mch);
-	toplevel = gtk_widget_get_toplevel (priv->main);
+	toplevel = e_gtk_widget_get_toplevel (priv->main);
 
 	if (parent)
 		gtk_window_set_transient_for (GTK_WINDOW (toplevel),GTK_WINDOW (parent));
@@ -737,54 +737,50 @@ e_plugin_lib_get_configure_widget (EPlugin *epl)
 
 	vbox2 = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
 	gtk_widget_show (vbox2);
-	gtk_box_pack_start (GTK_BOX (ech_configuration_box), vbox2, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (ech_configuration_box), vbox2, FALSE, FALSE, 0);
 
 	/* To translators: This string is used while adding a new message header to configuration, to specifying the format of the key values */
 	label1 = gtk_label_new (_("The format for specifying a Custom Header key value is:\nName of the Custom Header key values separated by “;”."));
 	gtk_widget_show (label1);
-	gtk_box_pack_start (GTK_BOX (vbox2), label1, FALSE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox2), label1, FALSE, TRUE, 0);
 	gtk_label_set_justify (GTK_LABEL (label1), GTK_JUSTIFY_CENTER);
-	gtk_label_set_line_wrap (GTK_LABEL (label1), TRUE);
+	gtk_label_set_wrap (GTK_LABEL (label1), TRUE);
 	gtk_label_set_width_chars (GTK_LABEL (label1), 20);
 
 	header_configuration_box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
 	gtk_widget_show (header_configuration_box);
-	gtk_box_pack_start (GTK_BOX (ech_configuration_box), header_configuration_box, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (ech_configuration_box), header_configuration_box, TRUE, TRUE, 0);
 
 	header_container = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 12);
 	gtk_widget_show (header_container);
-	gtk_box_pack_start (GTK_BOX (header_configuration_box), header_container, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (header_configuration_box), header_container, TRUE, TRUE, 0);
 
 	scrolledwindow1 = gtk_scrolled_window_new (NULL, NULL);
 	gtk_widget_show (scrolledwindow1);
-	gtk_box_pack_start (GTK_BOX (header_container), scrolledwindow1, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (header_container), scrolledwindow1, TRUE, TRUE, 0);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow1), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
 	header_treeview = gtk_tree_view_new ();
 	gtk_widget_show (header_treeview);
-	gtk_container_add (GTK_CONTAINER (scrolledwindow1), header_treeview);
-	gtk_container_set_border_width (GTK_CONTAINER (header_treeview), 1);
+	e_gtk_container_add (scrolledwindow1, header_treeview);
+	e_gtk_widget_set_border_width (header_treeview, 1);
 
-	vbuttonbox1 = gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
+	vbuttonbox1 = e_gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
 	gtk_widget_show (vbuttonbox1);
-	gtk_box_pack_start (GTK_BOX (header_container), vbuttonbox1, FALSE, TRUE, 0);
-	gtk_button_box_set_layout (GTK_BUTTON_BOX (vbuttonbox1), GTK_BUTTONBOX_START);
+	e_gtk_box_pack_start (GTK_BOX (header_container), vbuttonbox1, FALSE, TRUE, 0);
 	gtk_box_set_spacing (GTK_BOX (vbuttonbox1), 6);
 
 	header_add = e_dialog_button_new_with_icon ("list-add", _("_Add"));
 	gtk_widget_show (header_add);
-	gtk_container_add (GTK_CONTAINER (vbuttonbox1), header_add);
-	gtk_widget_set_can_default (header_add, TRUE);
+	e_gtk_container_add (vbuttonbox1, header_add);
 
 	header_edit = gtk_button_new_with_mnemonic (_("_Edit"));
 	gtk_widget_show (header_edit);
-	gtk_container_add (GTK_CONTAINER (vbuttonbox1), header_edit);
-	gtk_widget_set_can_default (header_edit, TRUE);
+	e_gtk_container_add (vbuttonbox1, header_edit);
 
 	header_remove = e_dialog_button_new_with_icon ("list-remove", _("_Remove"));
 	gtk_widget_show (header_remove);
-	gtk_container_add (GTK_CONTAINER (vbuttonbox1), header_remove);
-	gtk_widget_set_can_default (header_remove, TRUE);
+	e_gtk_container_add (vbuttonbox1, header_remove);
 
 	cd->treeview = header_treeview;
 
@@ -877,7 +873,7 @@ e_plugin_lib_get_configure_widget (EPlugin *epl)
 
 	hbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
 
-	gtk_box_pack_start (GTK_BOX (hbox), ech_configuration_box, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), ech_configuration_box, TRUE, TRUE, 0);
 
 	/* to let free data properly on destroy of configuration widget */
 	g_object_set_data_full (G_OBJECT (hbox), "mycd-data", cd, destroy_cd_data);

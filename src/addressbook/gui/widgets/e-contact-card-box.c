@@ -26,7 +26,7 @@
    but only those affected when unselecting all. */
 #define TRACK_N_SELECTED 5
 
-static GtkTargetEntry dnd_types[] = {
+static EGtkTargetEntry dnd_types[] = {
 	{ (gchar *) "text/x-source-vcard", 0, E_CONTACT_CARD_BOX_DND_TYPE_SOURCE_VCARD_LIST },
 	{ (gchar *) "text/x-vcard", 0, E_CONTACT_CARD_BOX_DND_TYPE_VCARD_LIST }
 };
@@ -120,7 +120,7 @@ e_contact_card_container_card_popup_menu_cb (GtkWidget *widget,
 
 static void
 e_contact_card_container_card_drag_begin_cb (GtkWidget *widget,
-					     GdkDragContext *context,
+					     EGtkDragContext *context,
 					     gpointer user_data)
 {
 	EContactCardContainer *self = E_CONTACT_CARD_CONTAINER (user_data);
@@ -130,8 +130,8 @@ e_contact_card_container_card_drag_begin_cb (GtkWidget *widget,
 
 static void
 e_contact_card_container_card_drag_data_get_cb (GtkWidget *widget,
-						GdkDragContext *context,
-						GtkSelectionData *selection_data,
+						EGtkDragContext *context,
+						EGtkSelectionData *selection_data,
 						guint info,
 						guint time,
 						gpointer user_data)
@@ -143,7 +143,7 @@ e_contact_card_container_card_drag_data_get_cb (GtkWidget *widget,
 
 static void
 e_contact_card_container_card_drag_end_cb (GtkWidget *widget,
-					   GdkDragContext *context,
+					   EGtkDragContext *context,
 					   gpointer user_data)
 {
 	EContactCardContainer *self = E_CONTACT_CARD_CONTAINER (user_data);
@@ -513,11 +513,11 @@ e_contact_card_container_update (EContactCardContainer *self)
 		is_new_card = TRUE;
 	}
 
-	gtk_widget_get_preferred_width (card, &card_width, NULL);
-	gtk_widget_get_preferred_height (card, &card_height, NULL);
+	e_gtk_widget_get_preferred_width (card, &card_width, NULL);
+	e_gtk_widget_get_preferred_height (card, &card_height, NULL);
 
 	if (is_new_card)
-		gtk_widget_destroy (card);
+		e_gtk_widget_destroy (card);
 	else
 		gtk_widget_set_size_request (card, self->card_width, self->card_height);
 
@@ -592,7 +592,7 @@ e_contact_card_container_update (EContactCardContainer *self)
 		for (ii = self->cards->len; ii < max_cards; ii++) {
 			card = e_contact_card_new (self->css_provider);
 
-			gtk_drag_source_set (card, GDK_BUTTON1_MASK, dnd_types, G_N_ELEMENTS (dnd_types), GDK_ACTION_MOVE | GDK_ACTION_COPY);
+			e_gtk_drag_source_set (card, GDK_BUTTON1_MASK, dnd_types, G_N_ELEMENTS (dnd_types), GDK_ACTION_MOVE | GDK_ACTION_COPY);
 
 			gtk_layout_put (self_layout, card, 0, 0);
 			g_ptr_array_add (self->cards, card);
@@ -798,7 +798,7 @@ e_contact_card_container_class_init (EContactCardContainerClass *klass)
 		0,
 		NULL, NULL, NULL,
 		G_TYPE_NONE, 1,
-		GDK_TYPE_DRAG_CONTEXT);
+		E_GTK_TYPE_DRAG_CONTEXT);
 
 	container_signals[CONTAINER_CARD_DRAG_DATA_GET] = g_signal_new (
 		"card-drag-data-get",
@@ -807,8 +807,8 @@ e_contact_card_container_class_init (EContactCardContainerClass *klass)
 		0,
 		NULL, NULL, NULL,
 		G_TYPE_NONE, 4,
-		GDK_TYPE_DRAG_CONTEXT,
-		GTK_TYPE_SELECTION_DATA | G_SIGNAL_TYPE_STATIC_SCOPE,
+		E_GTK_TYPE_DRAG_CONTEXT,
+		E_GTK_TYPE_SELECTION_DATA | G_SIGNAL_TYPE_STATIC_SCOPE,
 		G_TYPE_UINT,
 		G_TYPE_UINT);
 
@@ -819,7 +819,7 @@ e_contact_card_container_class_init (EContactCardContainerClass *klass)
 		0,
 		NULL, NULL, NULL,
 		G_TYPE_NONE, 1,
-		GDK_TYPE_DRAG_CONTEXT);
+		E_GTK_TYPE_DRAG_CONTEXT);
 }
 
 static void
@@ -838,7 +838,7 @@ e_contact_card_container_init (EContactCardContainer *self)
 
 	g_array_set_clear_func (self->items, item_state_clear);
 
-	gtk_widget_set_can_focus (GTK_WIDGET (self), FALSE);
+	gtk_widget_set_focusable (GTK_WIDGET (self), FALSE);
 }
 
 static EContactCardContainer *
@@ -1118,7 +1118,7 @@ e_contact_card_box_get_current_selection_modifiers (GtkWidget *widget,
 {
 	GdkModifierType state = 0;
 
-	if (gtk_get_current_event_state (&state)) {
+	if (e_gtk_get_current_event_state (&state)) {
 		GdkModifierType mask;
 
 		mask = gtk_widget_get_modifier_mask (widget, GDK_MODIFIER_INTENT_MODIFY_SELECTION);
@@ -1455,7 +1455,7 @@ e_contact_card_box_card_popup_menu_cb (GtkWidget *container,
 
 static void
 e_contact_card_box_card_drag_begin_cb (GtkWidget *widget,
-				       GdkDragContext *context,
+				       EGtkDragContext *context,
 				       gpointer user_data)
 {
 	EContactCardBox *self = E_CONTACT_CARD_BOX (user_data);
@@ -1465,8 +1465,8 @@ e_contact_card_box_card_drag_begin_cb (GtkWidget *widget,
 
 static void
 e_contact_card_box_card_drag_data_get_cb (GtkWidget *widget,
-					  GdkDragContext *context,
-					  GtkSelectionData *selection_data,
+					  EGtkDragContext *context,
+					  EGtkSelectionData *selection_data,
 					  guint info,
 					  guint time,
 					  gpointer user_data)
@@ -1478,7 +1478,7 @@ e_contact_card_box_card_drag_data_get_cb (GtkWidget *widget,
 
 static void
 e_contact_card_box_card_drag_end_cb (GtkWidget *widget,
-				     GdkDragContext *context,
+				     EGtkDragContext *context,
 				     gpointer user_data)
 {
 	EContactCardBox *self = E_CONTACT_CARD_BOX (user_data);
@@ -1629,7 +1629,7 @@ e_contact_card_box_constructed (GObject *object)
 		g_clear_error (&local_error);
 	}
 
-	gtk_style_context_add_class (gtk_widget_get_style_context (GTK_WIDGET (self)), GTK_STYLE_CLASS_VIEW);
+	gtk_widget_add_css_class (GTK_WIDGET (self), GTK_STYLE_CLASS_VIEW);
 	gtk_style_context_add_provider (gtk_widget_get_style_context (GTK_WIDGET (self)),
 		GTK_STYLE_PROVIDER (self->priv->css_provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 
@@ -1642,7 +1642,7 @@ e_contact_card_box_constructed (GObject *object)
 		"valign", GTK_ALIGN_FILL,
 		"visible", TRUE,
 		NULL);
-	gtk_container_add (GTK_CONTAINER (self), GTK_WIDGET (self->priv->container));
+	e_gtk_container_add (self, GTK_WIDGET (self->priv->container));
 
 	g_signal_connect_object (self->priv->container, "card-event",
 		G_CALLBACK (e_contact_card_box_card_event_cb), self, 0);
@@ -1770,7 +1770,7 @@ e_contact_card_box_class_init (EContactCardBoxClass *klass)
 		G_STRUCT_OFFSET (EContactCardBoxClass, card_drag_begin),
 		NULL, NULL, NULL,
 		G_TYPE_NONE, 1,
-		GDK_TYPE_DRAG_CONTEXT);
+		E_GTK_TYPE_DRAG_CONTEXT);
 
 	box_signals[BOX_CARD_DRAG_DATA_GET] = g_signal_new (
 		"card-drag-data-get",
@@ -1779,8 +1779,8 @@ e_contact_card_box_class_init (EContactCardBoxClass *klass)
 		G_STRUCT_OFFSET (EContactCardBoxClass, card_drag_data_get),
 		NULL, NULL, NULL,
 		G_TYPE_NONE, 4,
-		GDK_TYPE_DRAG_CONTEXT,
-		GTK_TYPE_SELECTION_DATA | G_SIGNAL_TYPE_STATIC_SCOPE,
+		E_GTK_TYPE_DRAG_CONTEXT,
+		E_GTK_TYPE_SELECTION_DATA | G_SIGNAL_TYPE_STATIC_SCOPE,
 		G_TYPE_UINT,
 		G_TYPE_UINT);
 
@@ -1791,7 +1791,7 @@ e_contact_card_box_class_init (EContactCardBoxClass *klass)
 		G_STRUCT_OFFSET (EContactCardBoxClass, card_drag_end),
 		NULL, NULL, NULL,
 		G_TYPE_NONE, 1,
-		GDK_TYPE_DRAG_CONTEXT);
+		E_GTK_TYPE_DRAG_CONTEXT);
 
 	box_signals[BOX_COUNT_CHANGED] = g_signal_new (
 		"count-changed",

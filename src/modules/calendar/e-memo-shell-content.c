@@ -109,13 +109,13 @@ static void
 memo_shell_content_table_drag_data_get_cb (EMemoShellContent *memo_shell_content,
                                            gint row,
                                            gint col,
-                                           GdkDragContext *context,
-                                           GtkSelectionData *selection_data,
+                                           EGtkDragContext *context,
+                                           EGtkSelectionData *selection_data,
                                            guint info,
                                            guint time)
 {
 	EMemoTable *memo_table;
-	GdkAtom target;
+	EGtkAtom target;
 
 	struct {
 		ECalModel *model;
@@ -123,7 +123,7 @@ memo_shell_content_table_drag_data_get_cb (EMemoShellContent *memo_shell_content
 	} foreach_data;
 
 	/* Sanity check the selection target. */
-	target = gtk_selection_data_get_target (selection_data);
+	target = e_gtk_selection_data_get_target (selection_data);
 	if (!e_targets_include_calendar (&target, 1))
 		return;
 
@@ -149,7 +149,7 @@ static void
 memo_shell_content_table_drag_data_delete_cb (EMemoShellContent *memo_shell_content,
                                               gint row,
                                               gint col,
-                                              GdkDragContext *context)
+                                              EGtkDragContext *context)
 {
 	/* Moved components are deleted from source immediately when moved,
 	 * because some of them can be part of destination source, and we
@@ -441,8 +441,8 @@ memo_shell_content_constructed (GObject *object)
 	EShellTaskbar *shell_taskbar;
 	ECalModel *model;
 	GalViewInstance *view_instance;
-	GtkTargetList *target_list;
-	GtkTargetEntry *targets;
+	EGtkTargetList *target_list;
+	EGtkTargetEntry *targets;
 	GtkWidget *container;
 	GtkWidget *widget;
 	gint n_targets;
@@ -463,7 +463,7 @@ memo_shell_content_constructed (GObject *object)
 	container = GTK_WIDGET (object);
 
 	widget = e_paned_new (GTK_ORIENTATION_VERTICAL);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	memo_shell_content->priv->paned = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -478,13 +478,13 @@ memo_shell_content_constructed (GObject *object)
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_paned_pack1 (GTK_PANED (container), widget, TRUE, FALSE);
+	e_gtk_paned_pack1 (container, widget, TRUE, FALSE);
 	gtk_widget_show (widget);
 
 	container = widget;
 
 	widget = e_memo_table_new (shell_view, model);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	memo_shell_content->priv->memo_table = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -494,7 +494,7 @@ memo_shell_content_constructed (GObject *object)
 	widget = e_attachment_bar_new (attachment_store);
 	gtk_widget_set_visible (widget, TRUE);
 	attachment_bar = E_ATTACHMENT_BAR (widget);
-	gtk_paned_pack2 (GTK_PANED (container), widget, FALSE, FALSE);
+	e_gtk_paned_pack2 (container, widget, FALSE, FALSE);
 
 	e_binding_bind_property_full (
 		attachment_store, "num-attachments",
@@ -515,7 +515,7 @@ memo_shell_content_constructed (GObject *object)
 		shell_taskbar);
 
 	widget = e_preview_pane_new (E_WEB_VIEW (widget));
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	memo_shell_content->priv->preview_pane = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -524,17 +524,17 @@ memo_shell_content_constructed (GObject *object)
 		attachment_bar, "visible",
 		G_BINDING_SYNC_CREATE);
 
-	target_list = gtk_target_list_new (NULL, 0);
+	target_list = e_gtk_target_list_new (NULL, 0);
 	e_target_list_add_calendar_targets (target_list, 0);
-	targets = gtk_target_table_new_from_list (target_list, &n_targets);
+	targets = e_gtk_target_table_new_from_list (target_list, &n_targets);
 
 	e_table_drag_source_set (
 		E_TABLE (memo_shell_content->priv->memo_table),
 		GDK_BUTTON1_MASK, targets, n_targets,
 		GDK_ACTION_MOVE | GDK_ACTION_COPY | GDK_ACTION_ASK);
 
-	gtk_target_table_free (targets, n_targets);
-	gtk_target_list_unref (target_list);
+	e_gtk_target_table_free (targets, n_targets);
+	e_gtk_target_list_unref (target_list);
 
 	g_signal_connect_swapped (
 		memo_shell_content->priv->memo_table, "table-drag-data-get",

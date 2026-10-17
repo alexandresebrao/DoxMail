@@ -186,7 +186,7 @@ e_bulk_edit_tasks_save_changes_done_cb (gpointer ptr)
 		gtk_dialog_set_response_sensitive (GTK_DIALOG (scd->self), GTK_RESPONSE_APPLY, TRUE);
 
 		if (scd->success)
-			gtk_widget_destroy (GTK_WIDGET (scd->self));
+			e_gtk_widget_destroy (GTK_WIDGET (scd->self));
 	}
 
 	g_clear_object (&scd->self->priv->cancellable);
@@ -262,7 +262,7 @@ e_bulk_edit_tasks_response_cb (GtkDialog *dialog,
 			gtk_dialog_set_response_sensitive (GTK_DIALOG (self), GTK_RESPONSE_APPLY, FALSE);
 		}
 	} else {
-		gtk_widget_destroy (GTK_WIDGET (dialog));
+		e_gtk_widget_destroy (GTK_WIDGET (dialog));
 	}
 }
 
@@ -554,8 +554,8 @@ e_bulk_edit_tasks_set_edit_item (EBulkEditTasks *self,
 		check = gtk_check_button_new ();
 		gtk_widget_show (check);
 
-		gtk_box_pack_start (GTK_BOX (hbox), check, FALSE, FALSE, 0);
-		gtk_box_pack_start (GTK_BOX (hbox), label_widget, FALSE, FALSE, 0);
+		e_gtk_box_pack_start (GTK_BOX (hbox), check, FALSE, FALSE, 0);
+		e_gtk_box_pack_start (GTK_BOX (hbox), label_widget, FALSE, FALSE, 0);
 
 		gtk_widget_show (label_widget);
 
@@ -713,7 +713,7 @@ e_bulk_edit_tasks_fill_content (EBulkEditTasks *self)
 		"use-inconsistent", TRUE,
 		NULL);
 
-	gtk_container_add (GTK_CONTAINER (scrolled_window), widget);
+	e_gtk_container_add (scrolled_window, widget);
 
 	self->priv->categories = E_CATEGORIES_SELECTOR (widget);
 
@@ -726,9 +726,9 @@ e_bulk_edit_tasks_fill_content (EBulkEditTasks *self)
 	gtk_widget_set_margin_bottom (self->priv->activity_bar, 6);
 
 	widget = gtk_dialog_get_content_area (GTK_DIALOG (self));
-	gtk_box_pack_start (GTK_BOX (widget), self->priv->items_grid, TRUE, TRUE, 0);
-	gtk_box_pack_start (GTK_BOX (widget), self->priv->alert_bar, FALSE, FALSE, 0);
-	gtk_box_pack_start (GTK_BOX (widget), self->priv->activity_bar, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (widget), self->priv->items_grid, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (widget), self->priv->alert_bar, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (widget), self->priv->activity_bar, FALSE, FALSE, 0);
 
 	gtk_dialog_add_buttons (GTK_DIALOG (self),
 		_("M_odify"), GTK_RESPONSE_APPLY,

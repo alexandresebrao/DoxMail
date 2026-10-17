@@ -152,10 +152,10 @@ book_config_ldap_port_to_active (GBinding *binding,
 		gchar *text;
 
 		target = g_binding_dup_target (binding);
-		entry = gtk_bin_get_child (GTK_BIN (target));
+		entry = e_gtk_bin_get_child (target);
 
 		text = g_strdup_printf ("%u", port);
-		gtk_entry_set_text (GTK_ENTRY (entry), text);
+		gtk_editable_set_text (GTK_EDITABLE (entry), text);
 		g_free (text);
 		g_clear_object (&target);
 	}
@@ -203,8 +203,8 @@ book_config_ldap_active_to_port (GBinding *binding,
 		glong v_long;
 
 		target = g_binding_dup_target (binding);
-		entry = gtk_bin_get_child (GTK_BIN (target));
-		text = gtk_entry_get_text (GTK_ENTRY (entry));
+		entry = e_gtk_bin_get_child (target);
+		text = gtk_editable_get_text (GTK_EDITABLE (entry));
 		g_clear_object (&target);
 
 		v_long = text ? strtol (text, NULL, 10) : 0;
@@ -279,7 +279,7 @@ search_base_data_free (gpointer ptr)
 
 	if (sbd) {
 		if (sbd->dialog)
-			gtk_widget_destroy (sbd->dialog);
+			e_gtk_widget_destroy (sbd->dialog);
 		g_clear_object (&sbd->search_base_combo);
 		g_clear_object (&sbd->cancellable);
 		g_clear_object (&sbd->source);
@@ -384,7 +384,7 @@ search_base_data_response_cb (GtkWidget *dialog,
 	sbd->dialog = NULL;
 
 	g_cancellable_cancel (sbd->cancellable);
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 }
 
 static void
@@ -402,7 +402,7 @@ book_config_ldap_search_base_button_clicked_cb (GtkButton *button,
 	context = g_object_get_data (G_OBJECT (closure->backend), uid);
 	g_return_if_fail (context != NULL);
 
-	dialog = gtk_widget_get_toplevel (context->search_base_combo);
+	dialog = e_gtk_widget_get_toplevel (context->search_base_combo);
 	parent = GTK_IS_WINDOW (dialog) ? GTK_WINDOW (dialog) : NULL;
 
 	dialog = gtk_dialog_new_with_buttons ("",
@@ -415,17 +415,17 @@ book_config_ldap_search_base_button_clicked_cb (GtkButton *button,
 
 	spinner = e_spinner_new ();
 	e_spinner_start (E_SPINNER (spinner));
-	gtk_box_pack_start (GTK_BOX (box), spinner, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (box), spinner, FALSE, FALSE, 0);
 
 	label = gtk_label_new (_("Looking up server search bases, please wait…"));
-	gtk_box_pack_start (GTK_BOX (box), label, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (box), label, TRUE, TRUE, 0);
 
-	gtk_widget_show_all (box);
+	gtk_widget_set_visible (box, TRUE);
 
 	content = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
 
-	gtk_container_add (GTK_CONTAINER (content), box);
-	gtk_container_set_border_width (GTK_CONTAINER (content), 12);
+	e_gtk_container_add (content, box);
+	e_gtk_widget_set_border_width (content, 12);
 
 	sbd = g_slice_new0 (SearchBaseData);
 	sbd->parent = parent;
@@ -446,7 +446,7 @@ book_config_ldap_search_base_button_clicked_cb (GtkButton *button,
 
 	g_object_unref (result);
 
-	gtk_dialog_run (GTK_DIALOG (dialog));
+	e_gtk_dialog_run (GTK_DIALOG (dialog));
 }
 
 static gboolean
@@ -550,16 +550,16 @@ book_config_ldap_insert_notebook_widget (GtkWidget *vbox,
 	 * but instead adds the widget to the LDAP notebook. */
 
 	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 12);
-	gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, TRUE, 0);
 	gtk_widget_show (hbox);
 
 	label = gtk_label_new (caption);
 	gtk_label_set_xalign (GTK_LABEL (label), 1.0);
-	gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 0);
 	gtk_size_group_add_widget (size_group, label);
 	gtk_widget_show (label);
 
-	gtk_box_pack_start (GTK_BOX (hbox), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, TRUE, TRUE, 0);
 
 	return hbox;
 }
@@ -603,7 +603,7 @@ book_config_ldap_insert_widgets (ESourceConfigBackend *backend,
 
 	widget = gtk_notebook_new ();
 	gtk_widget_set_margin_top (widget, 6);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	notebook = GTK_NOTEBOOK (widget);
@@ -617,7 +617,7 @@ book_config_ldap_insert_widgets (ESourceConfigBackend *backend,
 
 	tab_label = _("Connecting to LDAP");
 	page = gtk_box_new (GTK_ORIENTATION_VERTICAL, 12);
-	gtk_container_set_border_width (GTK_CONTAINER (page), 12);
+	e_gtk_widget_set_border_width (page, 12);
 	gtk_notebook_append_page (notebook, page, NULL);
 	gtk_notebook_set_tab_label_text (notebook, page, tab_label);
 	gtk_widget_show (page);
@@ -627,7 +627,7 @@ book_config_ldap_insert_widgets (ESourceConfigBackend *backend,
 	/* Page 1 : Server Information */
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
-	gtk_box_pack_start (GTK_BOX (page), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (page), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -635,12 +635,12 @@ book_config_ldap_insert_widgets (ESourceConfigBackend *backend,
 	widget = gtk_label_new (_("Server Information"));
 	gtk_label_set_xalign (GTK_LABEL (widget), 0);
 	gtk_label_set_attributes (GTK_LABEL (widget), attr_list);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
 	gtk_widget_set_margin_start (widget, 12);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -657,13 +657,13 @@ book_config_ldap_insert_widgets (ESourceConfigBackend *backend,
 	context->port_combo = g_object_ref (widget);
 	gtk_widget_show (widget);
 
-	widget = gtk_image_new_from_icon_name ("dialog-warning", GTK_ICON_SIZE_BUTTON);
+	widget = gtk_image_new_from_icon_name ("dialog-warning");
 	g_object_set (G_OBJECT (widget),
 		"visible", FALSE,
 		"has-tooltip", TRUE,
 		"tooltip-text", _("Port number is not valid"),
 		NULL);
-	gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 	context->port_error_image = g_object_ref (widget);
 
 	/* This must follow the order of ESourceLDAPSecurity. */
@@ -697,7 +697,7 @@ book_config_ldap_insert_widgets (ESourceConfigBackend *backend,
 	/* Page 1 : Authentication */
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
-	gtk_box_pack_start (GTK_BOX (page), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (page), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -705,12 +705,12 @@ book_config_ldap_insert_widgets (ESourceConfigBackend *backend,
 	widget = gtk_label_new (_("Authentication"));
 	gtk_label_set_xalign (GTK_LABEL (widget), 0);
 	gtk_label_set_attributes (GTK_LABEL (widget), attr_list);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
 	gtk_widget_set_margin_start (widget, 12);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -769,7 +769,7 @@ book_config_ldap_insert_widgets (ESourceConfigBackend *backend,
 
 	tab_label = _("Using LDAP");
 	page = gtk_box_new (GTK_ORIENTATION_VERTICAL, 12);
-	gtk_container_set_border_width (GTK_CONTAINER (page), 12);
+	e_gtk_widget_set_border_width (page, 12);
 	gtk_notebook_append_page (notebook, page, NULL);
 	gtk_notebook_set_tab_label_text (notebook, page, tab_label);
 	gtk_widget_show (page);
@@ -779,7 +779,7 @@ book_config_ldap_insert_widgets (ESourceConfigBackend *backend,
 	/* Page 2 : Searching */
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
-	gtk_box_pack_start (GTK_BOX (page), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (page), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -787,12 +787,12 @@ book_config_ldap_insert_widgets (ESourceConfigBackend *backend,
 	widget = gtk_label_new (_("Searching"));
 	gtk_label_set_xalign (GTK_LABEL (widget), 0);
 	gtk_label_set_attributes (GTK_LABEL (widget), attr_list);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
 	gtk_widget_set_margin_start (widget, 12);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -851,7 +851,7 @@ book_config_ldap_insert_widgets (ESourceConfigBackend *backend,
 	/* Page 2 : Downloading */
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
-	gtk_box_pack_start (GTK_BOX (page), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (page), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -859,12 +859,12 @@ book_config_ldap_insert_widgets (ESourceConfigBackend *backend,
 	widget = gtk_label_new (_("Downloading"));
 	gtk_label_set_xalign (GTK_LABEL (widget), 0);
 	gtk_label_set_attributes (GTK_LABEL (widget), attr_list);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
 	gtk_widget_set_margin_start (widget, 12);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -878,12 +878,12 @@ book_config_ldap_insert_widgets (ESourceConfigBackend *backend,
 
 	widget = gtk_spin_button_new_with_range (0, G_MAXUINT, 1);
 	gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (widget), TRUE);
-	gtk_box_pack_start (GTK_BOX (hbox), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, TRUE, TRUE, 0);
 	context->limit_spinbutton = g_object_ref (widget);
 	gtk_widget_show (widget);
 
 	widget = gtk_label_new (_("contacts"));
-	gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	widget = gtk_check_button_new_with_label (
@@ -951,7 +951,7 @@ book_config_ldap_insert_widgets (ESourceConfigBackend *backend,
 		G_BINDING_BIDIRECTIONAL |
 		G_BINDING_SYNC_CREATE);
 
-	widget = gtk_bin_get_child (GTK_BIN (context->search_base_combo));
+	widget = e_gtk_bin_get_child (context->search_base_combo);
 
 	e_binding_bind_object_text_property (
 		extension, "root-dn",

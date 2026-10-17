@@ -107,9 +107,9 @@ GObject *	e_addressbook_view_get_content_object
 EShellView *	e_addressbook_view_get_shell_view
 						(EAddressbookView *view);
 ESource *	e_addressbook_view_get_source	(EAddressbookView *view);
-GtkTargetList *	e_addressbook_view_get_copy_target_list
+EGtkTargetList *	e_addressbook_view_get_copy_target_list
 						(EAddressbookView *view);
-GtkTargetList *	e_addressbook_view_get_paste_target_list
+EGtkTargetList *	e_addressbook_view_get_paste_target_list
 						(EAddressbookView *view);
 void		e_addressbook_view_view		(EAddressbookView *view);
 void		e_addressbook_view_print	(EAddressbookView *view,

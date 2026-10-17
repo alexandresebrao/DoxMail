@@ -490,8 +490,8 @@ component_interface_grab_focus (AtkComponent *comp)
 	week_view->selection_end_day = cell->row * 7 + cell->column;
 	gtk_widget_queue_draw (week_view->main_canvas);
 
-	toplevel = gtk_widget_get_toplevel (GTK_WIDGET (week_view));
-	if (gtk_widget_is_toplevel (toplevel))
+	toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (week_view));
+	if (e_gtk_widget_is_toplevel (toplevel))
 		gtk_window_present (GTK_WINDOW (toplevel));
 
 	return TRUE;

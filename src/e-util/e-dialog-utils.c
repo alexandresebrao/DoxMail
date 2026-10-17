@@ -53,11 +53,11 @@ e_notice (gpointer parent,
 	va_end (args);
 	g_free (str);
 
-	if (parent && !gtk_widget_is_toplevel (parent))
-		parent = gtk_widget_get_toplevel (parent);
+	if (parent && !e_gtk_widget_is_toplevel (parent))
+		parent = e_gtk_widget_get_toplevel (parent);
 	if (parent)
 		gtk_window_set_transient_for (GTK_WINDOW (dialog), parent);
 
-	gtk_dialog_run (GTK_DIALOG (dialog));
-	gtk_widget_destroy (dialog);
+	e_gtk_dialog_run (GTK_DIALOG (dialog));
+	e_gtk_widget_destroy (dialog);
 }

@@ -536,7 +536,7 @@ action_address_book_map_cb (EUIAction *action,
 		map_window, "show-contact-editor",
 		G_CALLBACK (map_window_show_contact_editor_cb), book_shell_view);
 
-	gtk_widget_show_all (GTK_WIDGET (map_window));
+	gtk_widget_set_visible (GTK_WIDGET (map_window), TRUE);
 
 	g_object_unref (client);
 #endif

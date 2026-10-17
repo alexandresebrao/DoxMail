@@ -114,23 +114,23 @@ mailto_handler_prompt (EMailtoHandler *extension)
 		NULL);
 
 	gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_YES);
-	gtk_container_set_border_width (GTK_CONTAINER (dialog), 5);
+	e_gtk_widget_set_border_width (dialog, 5);
 
 	container = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 12);
-	gtk_container_set_border_width (GTK_CONTAINER (widget), 5);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_widget_set_border_width (widget, 5);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
 
-	widget = gtk_image_new_from_icon_name ("dialog-question", GTK_ICON_SIZE_DIALOG);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	widget = gtk_image_new_from_icon_name ("dialog-question");
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 12);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -139,13 +139,13 @@ mailto_handler_prompt (EMailtoHandler *extension)
 	markup = g_markup_printf_escaped ("<b>%s</b>", text);
 	widget = gtk_label_new (NULL);
 	gtk_label_set_markup (GTK_LABEL (widget), markup);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 	g_free (markup);
 
 	text = _("_Do not show this message again");
 	widget = gtk_check_button_new_with_mnemonic (text);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 12);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 12);
 	gtk_widget_show (widget);
 
 	settings = e_util_ref_settings ("org.gnome.evolution.mail");
@@ -164,9 +164,9 @@ mailto_handler_prompt (EMailtoHandler *extension)
 		GTK_DIALOG (dialog), GTK_RESPONSE_YES);
 	gtk_widget_grab_focus (widget);
 
-	response = gtk_dialog_run (GTK_DIALOG (dialog));
+	response = e_gtk_dialog_run (GTK_DIALOG (dialog));
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 
 	return (response == GTK_RESPONSE_YES);
 }

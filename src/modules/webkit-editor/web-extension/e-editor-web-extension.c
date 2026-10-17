@@ -18,7 +18,7 @@
 
 #include "evolution-config.h"
 
-#include <webkit2/webkit-web-extension.h>
+#include <webkit/webkit-web-process-extension.h>
 
 #include <libedataserver/libedataserver.h>
 

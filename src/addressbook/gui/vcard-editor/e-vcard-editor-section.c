@@ -46,7 +46,7 @@ eve_section_maybe_move_add_button (EVCardEditorSection *self)
 	if (!self->grid || !self->add_button || !self->items || !gtk_widget_get_visible (self->add_button))
 		return;
 
-	gtk_container_remove (GTK_CONTAINER (self->grid), self->add_button);
+	e_gtk_container_remove (self->grid, self->add_button);
 
 	y_pos = self->items->len > 0 ? self->items->len - 1 : 0;
 	gtk_grid_attach (self->grid, self->add_button, 2, y_pos, 1, 1);
@@ -125,8 +125,8 @@ e_vcard_editor_section_init (EVCardEditorSection *self)
 		"visible", TRUE,
 		"margin-start", 12,
 		NULL);
-	gtk_style_context_remove_class (gtk_widget_get_style_context (widget), "vertical");
-	gtk_container_add (GTK_CONTAINER (self), widget);
+	gtk_widget_remove_css_class (widget, "vertical");
+	e_gtk_container_add (self, widget);
 
 	self->top_box = GTK_BOX (widget);
 
@@ -137,12 +137,12 @@ e_vcard_editor_section_init (EVCardEditorSection *self)
 		"column-spacing", 4,
 		"row-spacing", 4,
 		NULL);
-	gtk_box_pack_start (self->top_box, widget, FALSE, TRUE, 0);
+	e_gtk_box_pack_start (self->top_box, widget, FALSE, TRUE, 0);
 
 	self->grid = GTK_GRID (widget);
 
-	widget = gtk_button_new_from_icon_name ("list-add", GTK_ICON_SIZE_BUTTON);
-	gtk_style_context_add_class (gtk_widget_get_style_context (widget), "flat");
+	widget = gtk_button_new_from_icon_name ("list-add");
+	gtk_widget_add_css_class (widget, "flat");
 	g_object_set (widget,
 		"visible", FALSE,
 		"tooltip-text", _("Add"),
@@ -455,9 +455,9 @@ e_vcard_editor_section_take_widget (EVCardEditorSection *self,
 	g_ptr_array_add (self->widgets, widget);
 
 	if (pack_type == GTK_PACK_START)
-		gtk_box_pack_start (self->top_box, widget, FALSE, TRUE, 0);
+		e_gtk_box_pack_start (self->top_box, widget, FALSE, TRUE, 0);
 	else
-		gtk_box_pack_end (self->top_box, widget, FALSE, TRUE, 0);
+		e_gtk_box_pack_end (self->top_box, widget, FALSE, TRUE, 0);
 }
 
 void
@@ -472,7 +472,7 @@ e_vcard_editor_section_remove_widget (EVCardEditorSection *self,
 		return;
 
 	widget = g_ptr_array_index (self->widgets, index);
-	gtk_container_remove (GTK_CONTAINER (self->top_box), widget);
+	e_gtk_container_remove (self->top_box, widget);
 	g_ptr_array_remove_index (self->widgets, index);
 }
 

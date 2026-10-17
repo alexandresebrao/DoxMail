@@ -86,14 +86,14 @@ action_close_cb (EUIAction *action,
 	GdkEvent *event;
 
 	widget = GTK_WIDGET (shell_window);
-	window = gtk_widget_get_window (widget);
+	window = e_gtk_widget_get_surface (widget);
 
 	/* Synthesize a delete_event on this window. */
 	event = gdk_event_new (GDK_DELETE);
 	event->any.window = g_object_ref (window);
 	event->any.send_event = TRUE;
 	gtk_main_do_event (event);
-	gdk_event_free (event);
+	gdk_event_unref (event);
 }
 
 /**
@@ -243,15 +243,14 @@ action_categories_cb (EUIAction *action,
 
 	gtk_window_set_destroy_with_parent (GTK_WINDOW (dialog), TRUE);
 
-	gtk_container_set_border_width (GTK_CONTAINER (dialog), 12);
+	e_gtk_widget_set_border_width (dialog, 12);
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
-	gtk_box_pack_start (
-		GTK_BOX (content_area), GTK_WIDGET (editor), TRUE, TRUE, 6);
+	e_gtk_box_pack_start (GTK_BOX (content_area), GTK_WIDGET (editor), TRUE, TRUE, 6);
 	gtk_box_set_spacing (GTK_BOX (content_area), 12);
 
-	gtk_dialog_run (GTK_DIALOG (dialog));
+	e_gtk_dialog_run (GTK_DIALOG (dialog));
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 }
 
 /**
@@ -380,7 +379,7 @@ shell_window_actions_find_webview (GtkContainer *container)
 	if (!container)
 		return NULL;
 
-	children = gtk_container_get_children (container);
+	children = e_gtk_widget_get_children (container);
 
 	for (link = children; link && !webview; link = g_list_next (link)) {
 		GtkWidget *child = link->data;

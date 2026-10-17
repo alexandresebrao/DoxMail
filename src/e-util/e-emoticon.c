@@ -107,7 +107,7 @@ e_emoticon_dup_uri (const EEmoticon *emoticon)
 	const gchar *filename;
 	gchar *uri = NULL;
 
-	icon_theme = gtk_icon_theme_get_default ();
+	icon_theme = e_gtk_icon_theme_get_default ();
 	icon_info = gtk_icon_theme_lookup_icon (
 		icon_theme, emoticon->icon_name, 16, 0);
 	g_return_val_if_fail (icon_info != NULL, NULL);

@@ -36,7 +36,7 @@ e_alphabet_box_update (EAlphabetBox *self)
 
 	if (!self->indices) {
 		while (child = gtk_list_box_get_row_at_index (GTK_LIST_BOX (self), 0), child) {
-			gtk_widget_destroy (GTK_WIDGET (child));
+			e_gtk_widget_destroy (GTK_WIDGET (child));
 		}
 
 		return;
@@ -46,7 +46,7 @@ e_alphabet_box_update (EAlphabetBox *self)
 		gchar *indice_markup = g_markup_printf_escaped ("<small><b>%s</b></small>", self->indices[ii].chr);
 		child = gtk_list_box_get_row_at_index (GTK_LIST_BOX (self), ii);
 		if (child) {
-			label = gtk_bin_get_child (GTK_BIN (child));
+			label = e_gtk_bin_get_child (child);
 			gtk_label_set_markup (GTK_LABEL (label), indice_markup);
 		} else {
 			GtkStyleContext *style_context;
@@ -78,7 +78,7 @@ e_alphabet_box_update (EAlphabetBox *self)
 	}
 
 	while (child = gtk_list_box_get_row_at_index (GTK_LIST_BOX (self), ii), child) {
-		gtk_widget_destroy (GTK_WIDGET (child));
+		e_gtk_widget_destroy (GTK_WIDGET (child));
 	}
 }
 

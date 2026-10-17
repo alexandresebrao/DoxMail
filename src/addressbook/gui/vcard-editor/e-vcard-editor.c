@@ -241,7 +241,7 @@ eve_update_file_under_choices (EVCardEditor *self)
 	if (self->updating || !self->file_under_combo || !self->full_name_entry)
 		return;
 
-	current_value = gtk_entry_get_text (GTK_ENTRY (gtk_bin_get_child (GTK_BIN (self->file_under_combo))));
+	current_value = gtk_editable_get_text (GTK_EDITABLE (e_gtk_bin_get_child (self->file_under_combo)));
 
 	if (current_value && *current_value)
 		previous_active = gtk_combo_box_get_active (GTK_COMBO_BOX (self->file_under_combo));
@@ -250,8 +250,8 @@ eve_update_file_under_choices (EVCardEditor *self)
 
 	gtk_combo_box_text_remove_all (self->file_under_combo);
 
-	name = e_contact_name_from_string (gtk_entry_get_text (self->full_name_entry));
-	company = self->company_entry ? gtk_entry_get_text (self->company_entry) : NULL;
+	name = e_contact_name_from_string (gtk_editable_get_text (GTK_EDITABLE (self->full_name_entry)));
+	company = self->company_entry ? gtk_editable_get_text (GTK_EDITABLE (self->company_entry)) : NULL;
 
 	#define add_choice_direct(_choice) G_STMT_START { \
 		gtk_combo_box_text_append_text (self->file_under_combo, _choice); \
@@ -307,7 +307,7 @@ eve_update_file_under_choices (EVCardEditor *self)
 	e_contact_name_free (name);
 
 	if (index == -1 && previous_active >= 0) {
-		gtk_entry_set_text (GTK_ENTRY (gtk_bin_get_child (GTK_BIN (self->file_under_combo))), "");
+		gtk_editable_set_text (GTK_EDITABLE (e_gtk_bin_get_child (self->file_under_combo)), "");
 	} else if (select != -1) {
 		gtk_combo_box_set_active (GTK_COMBO_BOX (self->file_under_combo), select);
 	} else if (previous_active >= 0) {
@@ -496,7 +496,7 @@ eve_add_item_attrs_generic (EVCardEditorSection *section,
 	e_vcard_editor_item_add_remove_button (item, section);
 	e_vcard_editor_section_take_item (section, item);
 
-	gtk_widget_show_all (e_vcard_editor_item_get_data_box (item));
+	gtk_widget_set_visible (e_vcard_editor_item_get_data_box (item), TRUE);
 
 	g_signal_connect_object (combo, "changed",
 		G_CALLBACK (e_vcard_editor_item_emit_changed), item, G_CONNECT_SWAPPED);
@@ -564,7 +564,7 @@ eve_write_attrs_generic (EVCardEditorSection *section,
 
 		combo = e_vcard_editor_item_get_data_widget (item, 0);
 		entry = e_vcard_editor_item_get_data_widget (item, 1);
-		value = g_strstrip (g_strdup (gtk_entry_get_text (GTK_ENTRY (entry))));
+		value = g_strstrip (g_strdup (gtk_editable_get_text (GTK_EDITABLE (entry))));
 
 		if (value && *value) {
 			EVCardAttribute *attr;
@@ -647,7 +647,7 @@ eve_read_item_simple (EVCardEditorItem *item,
 	widget = e_vcard_editor_item_get_data_widget (item, 0);
 
 	if (GTK_IS_ENTRY (widget)) {
-		gtk_entry_set_text (GTK_ENTRY (widget), text ? text : "");
+		gtk_editable_set_text (GTK_EDITABLE (widget), text ? text : "");
 	} else if (E_IS_VCARD_EDITOR_NOTES (widget)) {
 		e_vcard_editor_notes_set_text (E_VCARD_EDITOR_NOTES (widget), text);
 	} else {
@@ -678,7 +678,7 @@ eve_write_item_simple (EVCardEditorItem *item,
 	widget = e_vcard_editor_item_get_data_widget (item, 0);
 
 	if (GTK_IS_ENTRY (widget)) {
-		value = g_strstrip (g_strdup (gtk_entry_get_text (GTK_ENTRY (widget))));
+		value = g_strstrip (g_strdup (gtk_editable_get_text (GTK_EDITABLE (widget))));
 	} else if (E_IS_VCARD_EDITOR_NOTES (widget)) {
 		value = e_vcard_editor_notes_get_text (E_VCARD_EDITOR_NOTES (widget));
 
@@ -754,7 +754,7 @@ eve_add_item_simple (EVCardEditorSection *section,
 	if (field_id != E_CONTACT_FULL_NAME)
 		e_vcard_editor_item_add_remove_button (item, section);
 
-	gtk_widget_show_all (e_vcard_editor_item_get_data_box (item));
+	gtk_widget_set_visible (e_vcard_editor_item_get_data_box (item), TRUE);
 
 	g_signal_connect_object (entry, "changed",
 		G_CALLBACK (e_vcard_editor_item_emit_changed), item, G_CONNECT_SWAPPED);
@@ -912,7 +912,7 @@ eve_add_item_date (EVCardEditorSection *section,
 	e_vcard_editor_item_set_field_id (item, field_id);
 	e_vcard_editor_item_add_remove_button (item, section);
 
-	gtk_widget_show_all (e_vcard_editor_item_get_data_box (item));
+	gtk_widget_set_visible (e_vcard_editor_item_get_data_box (item), TRUE);
 
 	g_signal_connect_object (date_edit, "changed",
 		G_CALLBACK (e_vcard_editor_item_emit_changed), item, G_CONNECT_SWAPPED);
@@ -937,14 +937,14 @@ eve_read_item_geo (EVCardEditorItem *item,
 	lon = GTK_ENTRY (e_vcard_editor_item_get_data_widget (item, 1));
 
 	if (geo && e_contact_geo_to_string (geo, &lat_str, &lot_str)) {
-		gtk_entry_set_text (lat, lat_str);
-		gtk_entry_set_text (lon, lot_str);
+		gtk_editable_set_text (GTK_EDITABLE (lat), lat_str);
+		gtk_editable_set_text (GTK_EDITABLE (lon), lot_str);
 
 		g_free (lat_str);
 		g_free (lot_str);
 	} else {
-		gtk_entry_set_text (lat, "");
-		gtk_entry_set_text (lon, "");
+		gtk_editable_set_text (GTK_EDITABLE (lat), "");
+		gtk_editable_set_text (GTK_EDITABLE (lon), "");
 	}
 
 	e_contact_geo_free (geo);
@@ -966,8 +966,8 @@ eve_extract_item_geo (EVCardEditorItem *item,
 	lat_widget = e_vcard_editor_item_get_data_widget (item, 0);
 	lon_widget = e_vcard_editor_item_get_data_widget (item, 1);
 
-	lat = g_strstrip (g_strdup (gtk_entry_get_text (GTK_ENTRY (lat_widget))));
-	lon = g_strstrip (g_strdup (gtk_entry_get_text (GTK_ENTRY (lon_widget))));
+	lat = g_strstrip (g_strdup (gtk_editable_get_text (GTK_EDITABLE (lat_widget))));
+	lon = g_strstrip (g_strdup (gtk_editable_get_text (GTK_EDITABLE (lon_widget))));
 
 	if (!lat || !*lat) {
 		if (!lon || !*lon) {
@@ -1141,7 +1141,7 @@ eve_add_item_geo (EVCardEditorSection *section,
 	g_signal_connect_object (widget, "changed",
 		G_CALLBACK (e_vcard_editor_item_emit_changed), item, G_CONNECT_SWAPPED);
 
-	widget = gtk_button_new_from_icon_name ("emblem-web", GTK_ICON_SIZE_BUTTON);
+	widget = gtk_button_new_from_icon_name ("emblem-web");
 	g_object_set (widget,
 		"halign", GTK_ALIGN_CENTER,
 		"valign", GTK_ALIGN_CENTER,
@@ -1162,7 +1162,7 @@ eve_add_item_geo (EVCardEditorSection *section,
 	e_vcard_editor_item_set_field_id (item, field_id);
 	e_vcard_editor_item_add_remove_button (item, section);
 
-	gtk_widget_show_all (e_vcard_editor_item_get_data_box (item));
+	gtk_widget_set_visible (e_vcard_editor_item_get_data_box (item), TRUE);
 
 	e_vcard_editor_section_take_item (section, item);
 
@@ -1239,14 +1239,14 @@ eve_read_item_tz (EVCardEditorItem *item,
 
 			gtk_tree_model_get (model, &iter, 0, &display_name, -1);
 
-			gtk_entry_set_text (entry, (display_name && *display_name) ? display_name : value);
+			gtk_editable_set_text (GTK_EDITABLE (entry), (display_name && *display_name) ? display_name : value);
 
 			g_free (display_name);
 		} else {
-			gtk_entry_set_text (entry, (value && *value) ? value : "");
+			gtk_editable_set_text (GTK_EDITABLE (entry), (value && *value) ? value : "");
 		}
 	} else {
-		gtk_entry_set_text (entry, "");
+		gtk_editable_set_text (GTK_EDITABLE (entry), "");
 	}
 }
 
@@ -1265,7 +1265,7 @@ eve_write_item_tz (EVCardEditorItem *item,
 
 	entry = GTK_ENTRY (e_vcard_editor_item_get_data_widget (item, 0));
 
-	value = g_strstrip (g_strdup (gtk_entry_get_text (entry)));
+	value = g_strstrip (g_strdup (gtk_editable_get_text (GTK_EDITABLE (entry))));
 	if (value && *value) {
 		GtkTreeModel *model = NULL;
 		GtkTreeIter iter;
@@ -1475,7 +1475,7 @@ eve_add_item_tz (EVCardEditorSection *section,
 
 	e_vcard_editor_item_add_remove_button (item, section);
 
-	gtk_widget_show_all (e_vcard_editor_item_get_data_box (item));
+	gtk_widget_set_visible (e_vcard_editor_item_get_data_box (item), TRUE);
 
 	e_vcard_editor_section_take_item (section, item);
 
@@ -1491,7 +1491,7 @@ eve_name_part_get_value (EVCardEditor *self,
 
 	entry = self->name_parts[part_id - FAKE_CONTACT_NAME_PREFIX];
 	if (entry)
-		return gtk_entry_get_text (entry);
+		return gtk_editable_get_text (GTK_EDITABLE (entry));
 
 	if (fallback) {
 		switch (part_id) {
@@ -1530,7 +1530,7 @@ eve_name_part_set_value (EVCardEditor *self,
 	if (!entry)
 		return;
 
-	gtk_entry_set_text (entry, value ? value : "");
+	gtk_editable_set_text (GTK_EDITABLE (entry), value ? value : "");
 }
 
 static void
@@ -1547,7 +1547,7 @@ eve_full_name_changed_cb (EVCardEditor *self)
 		return;
 	}
 
-	name = e_contact_name_from_string (gtk_entry_get_text (self->full_name_entry));
+	name = e_contact_name_from_string (gtk_editable_get_text (GTK_EDITABLE (self->full_name_entry)));
 
 	self->updating = TRUE;
 	eve_name_part_set_value (self, FAKE_CONTACT_NAME_PREFIX, name ? name->prefixes : NULL);
@@ -1573,7 +1573,7 @@ eve_name_part_changed_cb (EVCardEditor *self)
 
 	memset (&stack_name, 0, sizeof (stack_name));
 
-	name = e_contact_name_from_string (gtk_entry_get_text (self->full_name_entry));
+	name = e_contact_name_from_string (gtk_editable_get_text (GTK_EDITABLE (self->full_name_entry)));
 
 	stack_name.prefixes = (gchar *) eve_name_part_get_value (self, FAKE_CONTACT_NAME_PREFIX, name);
 	stack_name.given = (gchar *) eve_name_part_get_value (self, FAKE_CONTACT_NAME_FIRST, name);
@@ -1583,7 +1583,7 @@ eve_name_part_changed_cb (EVCardEditor *self)
 
 	self->updating = TRUE;
 	full_name = e_contact_name_to_string (&stack_name);
-	gtk_entry_set_text (self->full_name_entry, full_name);
+	gtk_editable_set_text (GTK_EDITABLE (self->full_name_entry), full_name);
 	self->updating = FALSE;
 
 	e_contact_name_free (name);
@@ -1629,11 +1629,11 @@ eve_read_item_name (EVCardEditorItem *item,
 
 	widget = e_vcard_editor_item_get_data_widget (item, 0);
 	if (GTK_IS_COMBO_BOX_TEXT (widget))
-		entry = GTK_ENTRY (gtk_bin_get_child (GTK_BIN (widget)));
+		entry = GTK_ENTRY (e_gtk_bin_get_child (widget));
 	else
 		entry = GTK_ENTRY (widget);
 
-	gtk_entry_set_text (entry, text ? text : "");
+	gtk_editable_set_text (GTK_EDITABLE (entry), text ? text : "");
 
 	if (name)
 		e_contact_name_free (name);
@@ -1656,12 +1656,12 @@ eve_write_item_name (EVCardEditorItem *item,
 
 	widget = e_vcard_editor_item_get_data_widget (item, 0);
 	if (GTK_IS_COMBO_BOX_TEXT (widget))
-		entry = GTK_ENTRY (gtk_bin_get_child (GTK_BIN (widget)));
+		entry = GTK_ENTRY (e_gtk_bin_get_child (widget));
 	else
 		entry = GTK_ENTRY (widget);
-	value = g_strstrip (g_strdup (gtk_entry_get_text (entry)));
+	value = g_strstrip (g_strdup (gtk_editable_get_text (GTK_EDITABLE (entry))));
 
-	full_name_text = editor->full_name_entry ? gtk_entry_get_text (editor->full_name_entry) : NULL;
+	full_name_text = editor->full_name_entry ? gtk_editable_get_text (GTK_EDITABLE (editor->full_name_entry)) : NULL;
 	name = full_name_text ? e_contact_name_from_string (full_name_text) : NULL;
 
 	stack_name.prefixes = name ? name->prefixes : NULL;
@@ -1745,7 +1745,7 @@ eve_add_item_name (EVCardEditorSection *section,
 		guint ii;
 
 		widget = gtk_combo_box_text_new_with_entry ();
-		entry = GTK_ENTRY (gtk_bin_get_child (GTK_BIN (widget)));
+		entry = GTK_ENTRY (e_gtk_bin_get_child (widget));
 
 		text_combo = GTK_COMBO_BOX_TEXT (widget);
 		gtk_combo_box_text_append_text (text_combo, "");
@@ -1770,7 +1770,7 @@ eve_add_item_name (EVCardEditorSection *section,
 		eve_read_item_name, eve_write_item_name);
 	e_vcard_editor_item_set_field_id (item, field_id);
 
-	gtk_widget_show_all (e_vcard_editor_item_get_data_box (item));
+	gtk_widget_set_visible (e_vcard_editor_item_get_data_box (item), TRUE);
 
 	g_signal_connect_object (entry, "changed",
 		G_CALLBACK (e_vcard_editor_item_emit_changed), item, G_CONNECT_SWAPPED);
@@ -1782,10 +1782,10 @@ eve_add_item_name (EVCardEditorSection *section,
 			EContactName *name;
 			const gchar *value;
 
-			name = e_contact_name_from_string (gtk_entry_get_text (editor->full_name_entry));
+			name = e_contact_name_from_string (gtk_editable_get_text (GTK_EDITABLE (editor->full_name_entry)));
 			value = eve_name_part_get_value (editor, field_id, name);
 
-			gtk_entry_set_text (entry, value ? value : "");
+			gtk_editable_set_text (GTK_EDITABLE (entry), value ? value : "");
 
 			e_contact_name_free (name);
 		}
@@ -1871,10 +1871,10 @@ eve_read_item_gender (EVCardEditorItem *item,
 		if (gtk_combo_box_get_active (combo) == -1)
 			gtk_combo_box_set_active_id (combo, "");
 
-		gtk_entry_set_text (entry, gender->identity ? gender->identity : "");
+		gtk_editable_set_text (GTK_EDITABLE (entry), gender->identity ? gender->identity : "");
 	} else {
 		gtk_combo_box_set_active_id (combo, "");
-		gtk_entry_set_text (entry, "");
+		gtk_editable_set_text (GTK_EDITABLE (entry), "");
 	}
 
 	e_contact_gender_free (gender);
@@ -1901,7 +1901,7 @@ eve_write_item_gender (EVCardEditorItem *item,
 	else
 		gender.sex = e_contact_gender_sex_from_string (active_id);
 
-	gender.identity = g_strstrip (g_strdup (gtk_entry_get_text (entry)));
+	gender.identity = g_strstrip (g_strdup (gtk_editable_get_text (GTK_EDITABLE (entry))));
 	if (gender.identity && !*gender.identity)
 		g_clear_pointer (&gender.identity, g_free);
 
@@ -1963,7 +1963,7 @@ eve_add_item_gender (EVCardEditorSection *section,
 	e_vcard_editor_item_add_data_widget (item, entry, TRUE);
 	e_vcard_editor_item_add_remove_button (item, section);
 
-	gtk_widget_show_all (e_vcard_editor_item_get_data_box (item));
+	gtk_widget_set_visible (e_vcard_editor_item_get_data_box (item), TRUE);
 
 	g_signal_connect_object (combo, "changed",
 		G_CALLBACK (e_vcard_editor_item_emit_changed), item, G_CONNECT_SWAPPED);
@@ -2270,12 +2270,12 @@ eve_read_ims (EVCardEditorSection *section,
 		} else if (service_type == -1 && cut_scheme[0]) {
 			GtkWidget *entry;
 
-			entry = gtk_bin_get_child (GTK_BIN (widget));
-			gtk_entry_set_text (GTK_ENTRY (entry), cut_scheme);
+			entry = e_gtk_bin_get_child (widget);
+			gtk_editable_set_text (GTK_EDITABLE (entry), cut_scheme);
 		}
 
 		widget = e_vcard_editor_item_get_data_widget (item, 1);
-		gtk_entry_set_text (GTK_ENTRY (widget), scheme_len ? value + scheme_len : value);
+		gtk_editable_set_text (GTK_EDITABLE (widget), scheme_len ? value + scheme_len : value);
 	}
 
 	g_list_free_full (values, g_free);
@@ -2303,7 +2303,7 @@ eve_write_ims (EVCardEditorSection *section,
 
 		combo = e_vcard_editor_item_get_data_widget (item, 0);
 		entry = e_vcard_editor_item_get_data_widget (item, 1);
-		value = g_strstrip (g_strdup (gtk_entry_get_text (GTK_ENTRY (entry))));
+		value = g_strstrip (g_strdup (gtk_editable_get_text (GTK_EDITABLE (entry))));
 
 		if (value && *value) {
 			const gchar *scheme;
@@ -2312,7 +2312,7 @@ eve_write_ims (EVCardEditorSection *section,
 			if (gtk_combo_box_get_active (GTK_COMBO_BOX (combo)) >= 0) {
 				scheme = gtk_combo_box_get_active_id (GTK_COMBO_BOX (combo));
 			} else {
-				scheme = gtk_entry_get_text (GTK_ENTRY (gtk_bin_get_child (GTK_BIN (combo))));
+				scheme = gtk_editable_get_text (GTK_EDITABLE (e_gtk_bin_get_child (combo)));
 			}
 
 			if (scheme && *scheme) {
@@ -2369,7 +2369,7 @@ eve_add_item_web (EVCardEditorSection *section,
 	e_vcard_editor_item_add_remove_button (item, section);
 	e_vcard_editor_section_take_item (section, item);
 
-	gtk_widget_show_all (e_vcard_editor_item_get_data_box (item));
+	gtk_widget_set_visible (e_vcard_editor_item_get_data_box (item), TRUE);
 
 	g_signal_connect_object (entry, "changed",
 		G_CALLBACK (e_vcard_editor_item_emit_changed), item, G_CONNECT_SWAPPED);
@@ -2419,7 +2419,7 @@ eve_read_webs (EVCardEditorSection *section,
 
 				item = eve_add_item_web (section, webs[ii].field_id, webs[ii].label);
 				entry = e_vcard_editor_item_get_data_widget (item, 0);
-				gtk_entry_set_text (GTK_ENTRY (entry), value);
+				gtk_editable_set_text (GTK_EDITABLE (entry), value);
 			}
 
 			g_free (value);
@@ -2466,7 +2466,7 @@ eve_write_webs (EVCardEditorSection *section,
 		}
 
 		entry = e_vcard_editor_item_get_data_widget (item, 0);
-		value = g_strstrip (g_strdup (gtk_entry_get_text (GTK_ENTRY (entry))));
+		value = g_strstrip (g_strdup (gtk_editable_get_text (GTK_EDITABLE (entry))));
 
 		if (value && *value) {
 			EVCardAttribute *attr;
@@ -2532,7 +2532,7 @@ eve_add_item_addr (EVCardEditorSection *section,
 
 	e_vcard_editor_section_take_item (section, item);
 
-	gtk_widget_show_all (e_vcard_editor_item_get_data_box (item));
+	gtk_widget_set_visible (e_vcard_editor_item_get_data_box (item), TRUE);
 
 	g_signal_connect_object (addr_widget, "changed",
 		G_CALLBACK (e_vcard_editor_item_emit_changed), item, G_CONNECT_SWAPPED);
@@ -2734,7 +2734,7 @@ eve_add_item_cert_to_section (EVCardEditorSection *section,
 
 	item = e_vcard_editor_item_new (NULL, widget, TRUE, NULL, NULL);
 
-	gtk_widget_show_all (e_vcard_editor_item_get_data_box (item));
+	gtk_widget_set_visible (e_vcard_editor_item_get_data_box (item), TRUE);
 
 	g_signal_connect_object (widget, "changed",
 		G_CALLBACK (e_vcard_editor_item_emit_changed), item, G_CONNECT_SWAPPED);
@@ -2920,7 +2920,7 @@ eve_add_item_notes (EVCardEditorSection *section,
 	e_vcard_editor_item_set_field_id (item, field_id);
 	e_vcard_editor_item_add_remove_button (item, section);
 
-	gtk_widget_show_all (e_vcard_editor_item_get_data_box (item));
+	gtk_widget_set_visible (e_vcard_editor_item_get_data_box (item), TRUE);
 
 	g_signal_connect_object (widget, "changed",
 		G_CALLBACK (e_vcard_editor_item_emit_changed), item, G_CONNECT_SWAPPED);
@@ -3147,7 +3147,7 @@ eve_item_logo_photo_file_chooser_response_cb (GtkFileChooserNative *file_chooser
 	if (response == GTK_RESPONSE_ACCEPT) {
 		gchar *file_name;
 
-		file_name = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (file_chooser));
+		file_name = e_gtk_file_chooser_get_filename (file_chooser);
 
 		if (file_name)
 			e_image_chooser_set_from_file (image_chooser, file_name);
@@ -3174,10 +3174,10 @@ eve_item_logo_photo_clicked_cb (GtkButton *button,
 
 	filter = gtk_file_filter_new ();
 	gtk_file_filter_add_mime_type (filter, "image/*");
-	gtk_file_chooser_set_filter (GTK_FILE_CHOOSER (file_chooser), filter);
+	e_gtk_file_chooser_set_filter (file_chooser, filter);
 
 	g_signal_connect_object (file_chooser, "response",
-		G_CALLBACK (eve_item_logo_photo_file_chooser_response_cb), gtk_bin_get_child (GTK_BIN (button)), 0);
+		G_CALLBACK (eve_item_logo_photo_file_chooser_response_cb), e_gtk_bin_get_child (button), 0);
 
 	gtk_native_dialog_set_modal (GTK_NATIVE_DIALOG (file_chooser), TRUE);
 	gtk_native_dialog_show (GTK_NATIVE_DIALOG (file_chooser));
@@ -3209,7 +3209,7 @@ eve_fill_item_logo_photo (EVCardEditorItem *item,
 	widget = e_vcard_editor_item_get_data_widget (item, 0);
 	g_warn_if_fail (widget != NULL);
 
-	chooser = E_IMAGE_CHOOSER (gtk_bin_get_child (GTK_BIN (widget)));
+	chooser = E_IMAGE_CHOOSER (e_gtk_bin_get_child (widget));
 
 	photo = e_contact_get (contact, field_id);
 	if (!photo)
@@ -3252,7 +3252,7 @@ eve_fill_contact_logo_photo (EVCardEditorItem *item,
 	widget = e_vcard_editor_item_get_data_widget (item, 0);
 	g_warn_if_fail (widget != NULL);
 
-	chooser = E_IMAGE_CHOOSER (gtk_bin_get_child (GTK_BIN (widget)));
+	chooser = E_IMAGE_CHOOSER (e_gtk_bin_get_child (widget));
 
 	photo.type = E_CONTACT_PHOTO_TYPE_INLINED;
 	photo.data.inlined.mime_type = NULL;
@@ -3351,17 +3351,17 @@ eve_new_item_logo_photo (EVCardEditor *self)
 		"width-request", 148,
 		"height-request", 148,
 		NULL);
-	gtk_style_context_add_class (gtk_widget_get_style_context (button), "flat");
-	gtk_container_add (GTK_CONTAINER (button), chooser);
+	gtk_widget_add_css_class (button, "flat");
+	e_gtk_container_add (button, chooser);
 
-	trash = gtk_button_new_from_icon_name ("user-trash", GTK_ICON_SIZE_SMALL_TOOLBAR);
+	trash = gtk_button_new_from_icon_name ("user-trash");
 	g_object_set (trash,
 		"halign", GTK_ALIGN_START,
 		"valign", GTK_ALIGN_END,
 		"margin-end", 8, /* to have a gap between the trash icon and the item on the right */
 		"tooltip-text", _("Remove image"),
 		NULL);
-	gtk_style_context_add_class (gtk_widget_get_style_context (trash), "flat");
+	gtk_widget_add_css_class (trash, "flat");
 
 	item = e_vcard_editor_item_new (NULL, button, FALSE, eve_fill_item_logo_photo, eve_fill_contact_logo_photo);
 	e_vcard_editor_item_add_data_widget (item, trash, FALSE);
@@ -3613,7 +3613,7 @@ eve_file_under_entry_changed_cb (EVCardEditor *self,
 {
 	const gchar *text;
 
-	text = gtk_entry_get_text (file_under_entry);
+	text = gtk_editable_get_text (GTK_EDITABLE (file_under_entry));
 
 	if (text && *text) {
 		gchar *str;
@@ -3638,11 +3638,11 @@ eve_fill_item_file_under (EVCardEditorItem *item,
 	widget = e_vcard_editor_item_get_data_widget (item, 0);
 	g_warn_if_fail (widget != NULL);
 
-	entry = GTK_ENTRY (gtk_bin_get_child (GTK_BIN (widget)));
+	entry = GTK_ENTRY (e_gtk_bin_get_child (widget));
 
 	value = e_contact_get (contact, E_CONTACT_FILE_AS);
 
-	gtk_entry_set_text (entry, value ? value : "");
+	gtk_editable_set_text (GTK_EDITABLE (entry), value ? value : "");
 
 	g_free (value);
 }
@@ -3661,8 +3661,8 @@ eve_fill_contact_file_under (EVCardEditorItem *item,
 	widget = e_vcard_editor_item_get_data_widget (item, 0);
 	g_warn_if_fail (widget != NULL);
 
-	entry = GTK_ENTRY (gtk_bin_get_child (GTK_BIN (widget)));
-	value = gtk_entry_get_text (entry);
+	entry = GTK_ENTRY (e_gtk_bin_get_child (widget));
+	value = gtk_editable_get_text (GTK_EDITABLE (entry));
 
 	e_contact_set (contact, E_CONTACT_FILE_AS, value);
 
@@ -3687,14 +3687,14 @@ eve_new_item_file_under (EVCardEditor *self)
 	g_signal_connect_object (widget, "changed",
 		G_CALLBACK (e_vcard_editor_item_emit_changed), item, G_CONNECT_SWAPPED);
 
-	g_signal_connect_object (gtk_bin_get_child (GTK_BIN (widget)), "changed",
+	g_signal_connect_object (e_gtk_bin_get_child (widget), "changed",
 		G_CALLBACK (eve_file_under_entry_changed_cb), self, G_CONNECT_SWAPPED);
 
 	widget = e_vcard_editor_item_get_label_widget (item);
 	gtk_widget_set_halign (widget, GTK_ALIGN_END);
 
 	widget = e_vcard_editor_item_get_data_box (item);
-	gtk_widget_show_all (widget);
+	gtk_widget_set_visible (widget, TRUE);
 
 	return item;
 }
@@ -3709,7 +3709,7 @@ eve_item_categories_button_clicked_cb (GtkWidget *button,
 	GtkWindow *window;
 
 	entry = GTK_ENTRY (e_vcard_editor_item_get_data_widget (item, 0));
-	dialog = e_categories_dialog_new (gtk_entry_get_text (entry));
+	dialog = e_categories_dialog_new (gtk_editable_get_text (GTK_EDITABLE (entry)));
 
 	widget = gtk_widget_get_ancestor (button, GTK_TYPE_WINDOW);
 
@@ -3721,17 +3721,17 @@ eve_item_categories_button_clicked_cb (GtkWidget *button,
 	if (GTK_IS_WINDOW (widget))
 		gtk_window_set_transient_for (window, GTK_WINDOW (widget));
 
-	if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
+	if (e_gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
 		gchar *categories;
 
 		categories = e_categories_dialog_get_categories (E_CATEGORIES_DIALOG (dialog));
 
-		gtk_entry_set_text (entry, categories);
+		gtk_editable_set_text (GTK_EDITABLE (entry), categories);
 
 		g_free (categories);
 	}
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 }
 
 static void
@@ -3750,7 +3750,7 @@ eve_fill_item_categories (EVCardEditorItem *item,
 
 	value = e_contact_get (contact, E_CONTACT_CATEGORIES);
 
-	gtk_entry_set_text (entry, value ? value : "");
+	gtk_editable_set_text (GTK_EDITABLE (entry), value ? value : "");
 
 	g_free (value);
 }
@@ -3770,7 +3770,7 @@ eve_fill_contact_categories (EVCardEditorItem *item,
 	g_warn_if_fail (widget != NULL);
 
 	entry = GTK_ENTRY (widget);
-	value = gtk_entry_get_text (entry);
+	value = gtk_editable_get_text (GTK_EDITABLE (entry));
 
 	e_contact_set (contact, E_CONTACT_CATEGORIES, value);
 
@@ -3932,7 +3932,7 @@ eve_update_add_menu (EVCardEditor *self)
 		gtk_menu_shell_append (submenu_shell ? submenu_shell : menu_shell, menu_item);
 	}
 
-	gtk_widget_show_all (menu);
+	gtk_widget_set_visible (menu, TRUE);
 
 	gtk_menu_button_set_popup (GTK_MENU_BUTTON (self->add_menu_button), menu);
 
@@ -4040,7 +4040,7 @@ eve_fill_widgets (EVCardEditor *self)
 	eve_update (self);
 
 	if (self->file_under_combo)
-		eve_file_under_entry_changed_cb (self, GTK_ENTRY (gtk_bin_get_child (GTK_BIN (self->file_under_combo))));
+		eve_file_under_entry_changed_cb (self, GTK_ENTRY (e_gtk_bin_get_child (self->file_under_combo)));
 
 	e_vcard_editor_set_changed (self, FALSE);
 }
@@ -4050,7 +4050,7 @@ eve_finish_save (EVCardEditor *self)
 {
 	g_signal_emit (self, signals[AFTER_SAVE], 0, e_vcard_editor_get_target_client (self), self->contact, NULL);
 
-	gtk_widget_destroy (GTK_WIDGET (self));
+	e_gtk_widget_destroy (GTK_WIDGET (self));
 }
 
 static void
@@ -4246,7 +4246,7 @@ eve_cancel_clicked_cb (GtkButton *button,
 {
 	EVCardEditor *self = user_data;
 
-	gtk_widget_destroy (GTK_WIDGET (self));
+	e_gtk_widget_destroy (GTK_WIDGET (self));
 }
 
 static void
@@ -4335,10 +4335,10 @@ eve_event_after_cb (EVCardEditor *self,
 		    gpointer user_data)
 {
 	if (event->type == GDK_KEY_PRESS) {
-		GdkEventKey *key_event;
+		GdkEvent *key_event;
 		gboolean has_modifier_pressed;
 
-		key_event = (GdkEventKey *) event;
+		key_event = (GdkEvent *) event;
 		has_modifier_pressed = (key_event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK |
 					GDK_SUPER_MASK | GDK_HYPER_MASK |
 					GDK_META_MASK)) != 0;
@@ -4401,7 +4401,7 @@ eve_add_button_with_menu_clicked_cb (GtkWidget *button,
 		"anchor-hints", GDK_ANCHOR_FLIP_Y | GDK_ANCHOR_SLIDE | GDK_ANCHOR_RESIZE,
 		NULL);
 
-	event = gtk_get_current_event ();
+	event = e_gtk_get_current_event ();
 
 	gtk_menu_popup_at_widget (menu, button, GDK_GRAVITY_SOUTH_WEST, GDK_GRAVITY_NORTH_WEST, event);
 
@@ -4565,7 +4565,7 @@ e_vcard_editor_constructed (GObject *object)
 		G_CALLBACK (eve_delete_event_cb), NULL);
 
 	self->add_menu_button = gtk_menu_button_new ();
-	gtk_button_set_image (GTK_BUTTON (self->add_menu_button), gtk_image_new_from_icon_name ("list-add", GTK_ICON_SIZE_SMALL_TOOLBAR));
+	e_gtk_button_set_image (GTK_BUTTON (self->add_menu_button), gtk_image_new_from_icon_name ("list-add"));
 	g_object_set (self->add_menu_button,
 		"visible", TRUE,
 		"tooltip-text", _("Add"),
@@ -4582,18 +4582,18 @@ e_vcard_editor_constructed (GObject *object)
 
 		widget = gtk_button_new_with_mnemonic (_("_Save"));
 		gtk_widget_set_visible (widget, TRUE);
-		gtk_style_context_add_class (gtk_widget_get_style_context (widget), "suggested-action");
+		gtk_widget_add_css_class (widget, "suggested-action");
 		gtk_header_bar_pack_start (header_bar, widget);
 
 		self->button_save = widget;
 
-		widget = gtk_button_new_from_icon_name ("help-browser", GTK_ICON_SIZE_SMALL_TOOLBAR);
+		widget = gtk_button_new_from_icon_name ("help-browser");
 		g_object_set (widget,
 			"visible", TRUE,
 			"use-underline", TRUE,
 			"tooltip-text", _("Help"),
 			NULL);
-		gtk_style_context_add_class (gtk_widget_get_style_context (widget), "image-button");
+		gtk_widget_add_css_class (widget, "image-button");
 		gtk_header_bar_pack_end (header_bar, widget);
 
 		button_help = widget;
@@ -4612,17 +4612,17 @@ e_vcard_editor_constructed (GObject *object)
 		widget = gtk_button_new_with_mnemonic (_("_Save"));
 		gtk_widget_set_visible (widget, TRUE);
 		gtk_widget_set_valign (widget, GTK_ALIGN_FILL);
-		gtk_style_context_add_class (gtk_widget_get_style_context (widget), "suggested-action");
+		gtk_widget_add_css_class (widget, "suggested-action");
 		gtk_dialog_add_action_widget (dialog, widget, GTK_RESPONSE_OK);
 
 		self->button_save = widget;
 
-		widget = gtk_button_new_from_icon_name ("help-browser", GTK_ICON_SIZE_SMALL_TOOLBAR);
+		widget = gtk_button_new_from_icon_name ("help-browser");
 		gtk_button_set_label (GTK_BUTTON (widget), _("_Help"));
 		gtk_widget_set_visible (widget, TRUE);
 		gtk_widget_set_valign (widget, GTK_ALIGN_FILL);
 		gtk_button_set_use_underline (GTK_BUTTON (widget), TRUE);
-		gtk_style_context_remove_class (gtk_widget_get_style_context (widget), "image-button");
+		gtk_widget_remove_css_class (widget, "image-button");
 		gtk_dialog_add_action_widget (dialog, widget, GTK_RESPONSE_HELP);
 
 		/* it's not a 'help' response, it makes it packed beside the Help button, on the other
@@ -4642,16 +4642,16 @@ e_vcard_editor_constructed (GObject *object)
 	g_signal_connect (self->button_save, "clicked", G_CALLBACK (eve_save_clicked_cb), self);
 	g_signal_connect (button_help, "clicked", G_CALLBACK (eve_help_clicked_cb), self);
 
-	container = gtk_dialog_get_action_area (GTK_DIALOG (self));
-	gtk_container_set_border_width (GTK_CONTAINER (container), 12);
+	container = e_gtk_dialog_get_action_area (GTK_DIALOG (self));
+	e_gtk_widget_set_border_width (container, 12);
 	container = gtk_dialog_get_content_area (GTK_DIALOG (self));
-	gtk_container_set_border_width (GTK_CONTAINER (container), 0);
+	e_gtk_widget_set_border_width (container, 0);
 
 	widget = gtk_overlay_new ();
 	g_object_set (widget,
 		"visible", TRUE,
 		NULL);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 
 	overlay = GTK_OVERLAY (widget);
 
@@ -4689,10 +4689,10 @@ e_vcard_editor_constructed (GObject *object)
 		"wrap", TRUE,
 		NULL);
 
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 4);
-	gtk_container_add (GTK_CONTAINER (overlay), widget);
+	e_gtk_container_add (overlay, widget);
 
 	self->top_box = widget;
 
@@ -4700,7 +4700,7 @@ e_vcard_editor_constructed (GObject *object)
 
 	item = eve_new_item_logo_photo (self);
 	widget = e_vcard_editor_item_get_data_box (item);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	g_signal_connect_swapped (item, "changed", G_CALLBACK (eve_changed_cb), self);
 	g_ptr_array_add (self->items, item);
 
@@ -4712,7 +4712,7 @@ e_vcard_editor_constructed (GObject *object)
 		"column-spacing", 4,
 		"row-spacing", 4,
 		NULL);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 
 	grid = GTK_GRID (widget);
 
@@ -4748,7 +4748,7 @@ e_vcard_editor_constructed (GObject *object)
 	g_signal_connect_swapped (item, "changed", G_CALLBACK (eve_changed_cb), self);
 	g_ptr_array_add (self->items, item);
 
-	gtk_widget_show_all (container);
+	gtk_widget_set_visible (container, TRUE);
 
 	container = gtk_dialog_get_content_area (GTK_DIALOG (self));
 
@@ -4758,7 +4758,7 @@ e_vcard_editor_constructed (GObject *object)
 		"margin-bottom", 6,
 		"visible", TRUE,
 		NULL);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	self->top_separator = widget;
 
 	widget = gtk_scrolled_window_new (NULL, NULL);
@@ -4775,7 +4775,7 @@ e_vcard_editor_constructed (GObject *object)
 		"propagate-natural-height", TRUE,
 		"propagate-natural-width", TRUE,
 		NULL);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 
 	container = widget;
 
@@ -4786,7 +4786,7 @@ e_vcard_editor_constructed (GObject *object)
 		"valign", GTK_ALIGN_FILL,
 		"vexpand", TRUE,
 		NULL);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 
 	self->section_box = widget;
 
@@ -4794,7 +4794,7 @@ e_vcard_editor_constructed (GObject *object)
 
 	e_section_box_connect_parent_container (section_box, container);
 
-	gtk_widget_show_all (container);
+	gtk_widget_set_visible (container, TRUE);
 
 	for (ii = 0; ii < G_N_ELEMENTS (sections); ii++) {
 		g_warn_if_fail (!g_hash_table_contains (self->sections, GINT_TO_POINTER (sections[ii].kind)));
@@ -4847,7 +4847,7 @@ e_vcard_editor_constructed (GObject *object)
 
 		/* notes are always at the bottom, using full width */
 		if (sections[ii].kind == SECTION_KIND_NOTES)
-			gtk_box_pack_start (GTK_BOX (section_box), widget, FALSE, FALSE, 0);
+			e_gtk_box_pack_start (GTK_BOX (section_box), widget, FALSE, FALSE, 0);
 		else
 			e_section_box_add (section_box, widget);
 
@@ -4886,7 +4886,7 @@ e_vcard_editor_constructed (GObject *object)
 				gtk_menu_shell_append (menu_shell, menu_item);
 			}
 
-			gtk_widget_show_all (menu);
+			gtk_widget_set_visible (menu, TRUE);
 
 			gtk_menu_attach_to_widget (GTK_MENU (menu), GTK_WIDGET (button), NULL);
 
@@ -5330,7 +5330,7 @@ e_vcard_editor_validate (EVCardEditor *self,
 		gchar *text;
 		gboolean filled;
 
-		text = g_strstrip (g_strdup (gtk_entry_get_text (self->full_name_entry)));
+		text = g_strstrip (g_strdup (gtk_editable_get_text (GTK_EDITABLE (self->full_name_entry))));
 		filled = text && *text;
 		g_free (text);
 		if (!filled) {
@@ -5347,7 +5347,7 @@ e_vcard_editor_validate (EVCardEditor *self,
 		gchar *text;
 		gboolean filled;
 
-		text = g_strstrip (g_strdup (gtk_entry_get_text (GTK_ENTRY (gtk_bin_get_child (GTK_BIN (self->file_under_combo))))));
+		text = g_strstrip (g_strdup (gtk_editable_get_text (GTK_EDITABLE (e_gtk_bin_get_child (self->file_under_combo)))));
 		filled = text && *text;
 		g_free (text);
 		if (!filled) {

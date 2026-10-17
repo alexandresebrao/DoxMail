@@ -86,9 +86,9 @@ shell_taskbar_remove_proxy_container (EShellTaskbar *shell_taskbar,
 	GtkContainer *container;
 
 	container = GTK_CONTAINER (shell_taskbar->priv->hbox);
-	gtk_container_remove (container, proxy);
+	e_gtk_container_remove (container, proxy);
 
-	children = gtk_container_get_children (container);
+	children = e_gtk_widget_get_children (container);
 
 	if (children == NULL)
 		gtk_widget_hide (GTK_WIDGET (container));
@@ -160,8 +160,8 @@ shell_taskbar_activity_add (EShellTaskbar *shell_taskbar,
 	 * Don't call gtk_widget_show() on it here. */
 	proxy = e_activity_proxy_new (activity);
 	box = GTK_BOX (shell_taskbar->priv->hbox);
-	gtk_box_pack_start (box, proxy, TRUE, TRUE, 0);
-	gtk_box_reorder_child (box, proxy, 0);
+	e_gtk_box_pack_start (box, proxy, TRUE, TRUE, 0);
+	e_gtk_box_reorder_child (box, proxy, 0);
 	gtk_widget_show (GTK_WIDGET (box));
 
 	/* The proxy widget also holds a weak reference to the activity,
@@ -478,13 +478,13 @@ e_shell_taskbar_init (EShellTaskbar *shell_taskbar)
 
 	widget = gtk_label_new (NULL);
 	gtk_label_set_ellipsize (GTK_LABEL (widget), PANGO_ELLIPSIZE_END);
-	gtk_box_pack_start (GTK_BOX (shell_taskbar), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (shell_taskbar), widget, TRUE, TRUE, 0);
 	gtk_label_set_xalign (GTK_LABEL (widget), 0);
 	shell_taskbar->priv->label = g_object_ref (widget);
 	gtk_widget_hide (widget);
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 3);
-	gtk_box_pack_start (GTK_BOX (shell_taskbar), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (shell_taskbar), widget, TRUE, TRUE, 0);
 	shell_taskbar->priv->hbox = g_object_ref (widget);
 	gtk_widget_hide (widget);
 }

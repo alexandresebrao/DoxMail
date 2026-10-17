@@ -233,7 +233,7 @@ shell_switcher_dispose (GObject *object)
 
 	while (self->priv->proxies != NULL) {
 		GtkWidget *widget = self->priv->proxies->data;
-		gtk_container_remove (GTK_CONTAINER (object), widget);
+		e_gtk_container_remove (object, widget);
 	}
 
 	/* Chain up to parent's dispose() method. */
@@ -251,9 +251,9 @@ shell_switcher_get_preferred_width (GtkWidget *widget,
 
 	*minimum = *natural = 0;
 
-	child = gtk_bin_get_child (GTK_BIN (widget));
+	child = e_gtk_bin_get_child (widget);
 	if (child != NULL)
-		gtk_widget_get_preferred_width (child, minimum, natural);
+		e_gtk_widget_get_preferred_width (child, minimum, natural);
 
 	if (!self->priv->toolbar_visible)
 		return;
@@ -262,8 +262,7 @@ shell_switcher_get_preferred_width (GtkWidget *widget,
 		GtkWidget *widget_proxy = iter->data;
 		gint child_min, child_nat;
 
-		gtk_widget_get_preferred_width (
-			widget_proxy, &child_min, &child_nat);
+		e_gtk_widget_get_preferred_width (widget_proxy, &child_min, &child_nat);
 
 		child_min += H_PADDING;
 		child_nat += H_PADDING;
@@ -284,9 +283,9 @@ shell_switcher_get_preferred_height (GtkWidget *switcher_widget,
 
 	*minimum = *natural = 0;
 
-	child = gtk_bin_get_child (GTK_BIN (switcher_widget));
+	child = e_gtk_bin_get_child (switcher_widget);
 	if (child != NULL)
-		gtk_widget_get_preferred_height (child, minimum, natural);
+		e_gtk_widget_get_preferred_height (child, minimum, natural);
 
 	if (!self->priv->toolbar_visible)
 		return;
@@ -295,8 +294,7 @@ shell_switcher_get_preferred_height (GtkWidget *switcher_widget,
 		GtkWidget *widget = iter->data;
 		gint child_min, child_nat;
 
-		gtk_widget_get_preferred_height (
-			widget, &child_min, &child_nat);
+		e_gtk_widget_get_preferred_height (widget, &child_min, &child_nat);
 
 		child_min += V_PADDING;
 		child_nat += V_PADDING;
@@ -329,7 +327,7 @@ shell_switcher_size_allocate (GtkWidget *widget,
 	child_allocation.width = allocation->width;
 	child_allocation.height = height;
 
-	child = gtk_bin_get_child (GTK_BIN (widget));
+	child = e_gtk_bin_get_child (widget);
 	if (child != NULL)
 		gtk_widget_size_allocate (child, &child_allocation);
 }
@@ -393,7 +391,7 @@ shell_switcher_remove (GtkContainer *container,
 static void
 shell_switcher_forall (GtkContainer *container,
                        gboolean include_internals,
-                       GtkCallback callback,
+                       EGtkCallback callback,
                        gpointer callback_data)
 {
 	EShellSwitcher *self = E_SHELL_SWITCHER (container);
@@ -537,7 +535,6 @@ e_shell_switcher_init (EShellSwitcher *switcher)
 {
 	switcher->priv = e_shell_switcher_get_instance_private (switcher);
 
-	gtk_widget_set_has_window (GTK_WIDGET (switcher), FALSE);
 
 	e_extensible_load_extensions (E_EXTENSIBLE (switcher));
 }
@@ -576,7 +573,7 @@ tool_item_get_button (GtkWidget *widget)
 
 	g_return_val_if_fail (GTK_IS_TOOL_ITEM (widget), NULL);
 
-	child = gtk_bin_get_child (GTK_BIN (widget));
+	child = e_gtk_bin_get_child (widget);
 	if (child != NULL && GTK_IS_BUTTON (child))
 		return GTK_BUTTON (child);
 	else
@@ -588,15 +585,15 @@ tool_item_button_release_cb (GtkWidget *button,
 			     GdkEvent *button_event,
 			     EUIAction *action)
 {
-	guint32 my_mods = GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK |
+	guint32 my_mods = GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_ALT_MASK |
 		GDK_SUPER_MASK | GDK_HYPER_MASK | GDK_META_MASK;
 	GdkModifierType event_state = 0;
 	guint event_button = 0;
 
 	g_return_val_if_fail (E_IS_UI_ACTION (action), FALSE);
 
-	gdk_event_get_button (button_event, &event_button);
-	gdk_event_get_state (button_event, &event_state);
+	e_gdk_event_get_button (button_event, &event_button);
+	e_gdk_event_get_state (button_event, &event_state);
 
 	if (event_button == 2 || (event_button == 1 && (event_state & my_mods) == GDK_SHIFT_MASK)) {
 		GVariant *target;

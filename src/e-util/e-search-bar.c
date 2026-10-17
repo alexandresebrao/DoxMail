@@ -463,7 +463,7 @@ search_bar_hide (GtkWidget *widget)
 
 static gboolean
 search_bar_key_press_event (GtkWidget *widget,
-                            GdkEventKey *event)
+                            GdkEvent *event)
 {
 	GtkWidgetClass *widget_class;
 
@@ -484,7 +484,7 @@ search_bar_clear (ESearchBar *search_bar)
 	g_free (search_bar->priv->active_search);
 	search_bar->priv->active_search = NULL;
 
-	gtk_entry_set_text (GTK_ENTRY (search_bar->priv->entry), "");
+	gtk_editable_set_text (GTK_EDITABLE (search_bar->priv->entry), "");
 
 	gtk_widget_hide (search_bar->priv->wrapped_next_box);
 	gtk_widget_hide (search_bar->priv->wrapped_prev_box);
@@ -596,24 +596,22 @@ e_search_bar_init (ESearchBar *search_bar)
 	search_bar->priv->can_hide = TRUE;
 
 	gtk_box_set_spacing (GTK_BOX (search_bar), 12);
-	gtk_container_set_border_width (GTK_CONTAINER (search_bar), 6);
+	e_gtk_widget_set_border_width (search_bar, 6);
 	gtk_orientable_set_orientation (GTK_ORIENTABLE (search_bar), GTK_ORIENTATION_HORIZONTAL);
 
 	container = GTK_WIDGET (search_bar);
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 1);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
 
 	widget = gtk_button_new ();
-	gtk_button_set_image (
-		GTK_BUTTON (widget), gtk_image_new_from_icon_name (
-		"window-close", GTK_ICON_SIZE_MENU));
-	gtk_button_set_relief (GTK_BUTTON (widget), GTK_RELIEF_NONE);
+	e_gtk_button_set_image (GTK_BUTTON (widget), gtk_image_new_from_icon_name ("window-close"));
+	gtk_button_set_has_frame (GTK_BUTTON (widget), FALSE);
 	gtk_widget_set_tooltip_text (widget, _("Close the find bar"));
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	search_bar->priv->hide_button = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -622,7 +620,7 @@ e_search_bar_init (ESearchBar *search_bar)
 		G_CALLBACK (gtk_widget_hide), search_bar);
 
 	widget = gtk_label_new_with_mnemonic (_("Fin_d:"));
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 3);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 3);
 	gtk_widget_show (widget);
 
 	label = widget;
@@ -636,7 +634,7 @@ e_search_bar_init (ESearchBar *search_bar)
 		_("Clear the search"));
 	gtk_label_set_mnemonic_widget (GTK_LABEL (label), widget);
 	gtk_widget_set_size_request (widget, 200, -1);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	search_bar->priv->entry = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -658,10 +656,10 @@ e_search_bar_init (ESearchBar *search_bar)
 		G_CALLBACK (search_bar_icon_release_cb), search_bar);
 
 	widget = e_dialog_button_new_with_icon ("go-previous", _("_Previous"));
-	gtk_button_set_relief (GTK_BUTTON (widget), GTK_RELIEF_NONE);
+	gtk_button_set_has_frame (GTK_BUTTON (widget), FALSE);
 	gtk_widget_set_tooltip_text (
 		widget, _("Find the previous occurrence of the phrase"));
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	search_bar->priv->prev_button = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -670,10 +668,10 @@ e_search_bar_init (ESearchBar *search_bar)
 		G_CALLBACK (search_bar_find_previous_cb), search_bar);
 
 	widget = e_dialog_button_new_with_icon ("go-next", _("_Next"));
-	gtk_button_set_relief (GTK_BUTTON (widget), GTK_RELIEF_NONE);
+	gtk_button_set_has_frame (GTK_BUTTON (widget), FALSE);
 	gtk_widget_set_tooltip_text (
 		widget, _("Find the next occurrence of the phrase"));
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	search_bar->priv->next_button = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -682,7 +680,7 @@ e_search_bar_init (ESearchBar *search_bar)
 		G_CALLBACK (search_bar_find_next_cb), search_bar);
 
 	widget = gtk_check_button_new_with_mnemonic (_("Mat_ch case"));
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	search_bar->priv->case_sensitive_button = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -697,15 +695,14 @@ e_search_bar_init (ESearchBar *search_bar)
 	container = GTK_WIDGET (search_bar);
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	search_bar->priv->wrapped_next_box = g_object_ref (widget);
 	gtk_widget_hide (widget);
 
 	container = widget;
 
-	widget = gtk_image_new_from_icon_name (
-		"wrapped", GTK_ICON_SIZE_MENU);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	widget = gtk_image_new_from_icon_name ("wrapped");
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	widget = gtk_label_new (
@@ -713,21 +710,20 @@ e_search_bar_init (ESearchBar *search_bar)
 	gtk_label_set_ellipsize (
 		GTK_LABEL (widget), PANGO_ELLIPSIZE_END);
 	gtk_label_set_xalign (GTK_LABEL (widget), 0);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	container = GTK_WIDGET (search_bar);
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	search_bar->priv->wrapped_prev_box = g_object_ref (widget);
 	gtk_widget_hide (widget);
 
 	container = widget;
 
-	widget = gtk_image_new_from_icon_name (
-		"wrapped", GTK_ICON_SIZE_MENU);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	widget = gtk_image_new_from_icon_name ("wrapped");
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	widget = gtk_label_new (
@@ -735,13 +731,13 @@ e_search_bar_init (ESearchBar *search_bar)
 	gtk_label_set_ellipsize (
 		GTK_LABEL (widget), PANGO_ELLIPSIZE_END);
 	gtk_label_set_xalign (GTK_LABEL (widget), 0);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	container = GTK_WIDGET (search_bar);
 
 	widget = gtk_label_new (NULL);
-	gtk_box_pack_end (GTK_BOX (container), widget, FALSE, FALSE, 12);
+	e_gtk_box_pack_end (GTK_BOX (container), widget, FALSE, FALSE, 12);
 	search_bar->priv->matches_label = g_object_ref (widget);
 	gtk_widget_show (widget);
 }
@@ -823,7 +819,7 @@ e_search_bar_get_text (ESearchBar *search_bar)
 	g_return_val_if_fail (E_IS_SEARCH_BAR (search_bar), NULL);
 
 	entry = GTK_ENTRY (search_bar->priv->entry);
-	text = gtk_entry_get_text (entry);
+	text = gtk_editable_get_text (GTK_EDITABLE (entry));
 
 	return g_strstrip (g_strdup (text));
 }
@@ -842,7 +838,7 @@ e_search_bar_set_text (ESearchBar *search_bar,
 		text = "";
 
 	/* This will trigger a "notify::text" signal. */
-	gtk_entry_set_text (entry, text);
+	gtk_editable_set_text (GTK_EDITABLE (entry), text);
 }
 
 gboolean

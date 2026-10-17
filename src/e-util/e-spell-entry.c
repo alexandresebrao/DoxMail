@@ -68,7 +68,7 @@ word_misspelled (ESpellEntry *entry,
 	if (start == end)
 		return FALSE;
 
-	text = gtk_entry_get_text (GTK_ENTRY (entry));
+	text = gtk_editable_get_text (GTK_EDITABLE (entry));
 	word = g_new0 (gchar, end - start + 2);
 
 	g_strlcpy (word, text + start, end - start + 1);
@@ -191,7 +191,7 @@ get_word_extents_from_position (ESpellEntry *entry,
 	if (entry->priv->words == NULL)
 		return;
 
-	text = gtk_entry_get_text (GTK_ENTRY (entry));
+	text = gtk_editable_get_text (GTK_EDITABLE (entry));
 	bytes_pos = (gint) (g_utf8_offset_to_pointer (text, position) - text);
 
 	for (i = 0; entry->priv->words[i]; i++) {
@@ -248,7 +248,7 @@ entry_strsplit_utf8 (ESpellEntry *entry,
 	guint n_languages, ii;
 	gboolean has_en_language = FALSE;
 
-	text = gtk_entry_get_text (GTK_ENTRY (entry));
+	text = gtk_editable_get_text (GTK_EDITABLE (entry));
 	g_return_if_fail (g_utf8_validate (text, -1, NULL));
 
 	active_languages = e_spell_checker_list_active_languages (entry->priv->spell_checker, &n_languages);
@@ -305,7 +305,7 @@ spell_entry_get_chars_from_byte_pos (ESpellEntry *entry,
 	g_return_val_if_fail (E_IS_SPELL_ENTRY (entry), NULL);
 	g_return_val_if_fail (byte_pos_start <= byte_pos_end, NULL);
 
-	text = gtk_entry_get_text (GTK_ENTRY (entry));
+	text = gtk_editable_get_text (GTK_EDITABLE (entry));
 	if (!text)
 		return NULL;
 
@@ -338,7 +338,7 @@ spell_entry_byte_pos_to_char_pos (ESpellEntry *entry,
 	if (byte_pos <= 0)
 		return;
 
-	text = gtk_entry_get_text (GTK_ENTRY (entry));
+	text = gtk_editable_get_text (GTK_EDITABLE (entry));
 	if (!text || !g_utf8_validate (text, -1, NULL))
 		return;
 
@@ -429,14 +429,14 @@ replace_word (GtkWidget *menuitem,
 		entry, &start, &end, entry->priv->mark_character);
 	oldword = spell_entry_get_chars_from_byte_pos (entry, start, end);
 	newword = gtk_label_get_text (
-		GTK_LABEL (gtk_bin_get_child (GTK_BIN (menuitem))));
+		GTK_LABEL (e_gtk_bin_get_child (menuitem)));
 
 	spell_entry_byte_pos_to_char_pos (entry, start, &start);
 	spell_entry_byte_pos_to_char_pos (entry, end, &end);
 
 	cursor = gtk_editable_get_position (GTK_EDITABLE (entry));
 	/* is the cursor at the end? If so, restore it there */
-	if (g_utf8_strlen (gtk_entry_get_text (GTK_ENTRY (entry)), -1) == cursor)
+	if (g_utf8_strlen (gtk_editable_get_text (GTK_EDITABLE (entry)), -1) == cursor)
 		cursor = -1;
 	else if (cursor > start && cursor <= end)
 		cursor = start;
@@ -480,8 +480,8 @@ build_suggestion_menu (ESpellEntry *entry,
 		pango_attr_list_unref (attribute_list);
 
 		mi = gtk_separator_menu_item_new ();
-		gtk_container_add (GTK_CONTAINER (mi), label);
-		gtk_widget_show_all (mi);
+		e_gtk_container_add (mi, label);
+		gtk_widget_set_visible (mi, TRUE);
 		gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), mi);
 	} else {
 		gint ii = 0;
@@ -584,7 +584,7 @@ build_spelling_menu (ESpellEntry *entry,
 
 	gtk_image_menu_item_set_image (
 		GTK_IMAGE_MENU_ITEM (mi),
-		gtk_image_new_from_icon_name ("list-add", GTK_ICON_SIZE_MENU));
+		gtk_image_new_from_icon_name ("list-add"));
 
 	if (n_active_languages == 1) {
 		dict = g_queue_peek_head (&queue);
@@ -623,16 +623,16 @@ build_spelling_menu (ESpellEntry *entry,
 		}
 	}
 
-	gtk_widget_show_all (mi);
+	gtk_widget_set_visible (mi, TRUE);
 	gtk_menu_shell_append (GTK_MENU_SHELL (topmenu), mi);
 
 	/* - Ignore All */
 	mi = gtk_image_menu_item_new_with_label (_("Ignore All"));
 	gtk_image_menu_item_set_image (
 		GTK_IMAGE_MENU_ITEM (mi),
-		gtk_image_new_from_icon_name ("list-remove", GTK_ICON_SIZE_MENU));
+		gtk_image_new_from_icon_name ("list-remove"));
 	g_signal_connect (mi, "activate", G_CALLBACK (ignore_all), entry);
-	gtk_widget_show_all (mi);
+	gtk_widget_set_visible (mi, TRUE);
 	gtk_menu_shell_append (GTK_MENU_SHELL (topmenu), mi);
 
 exit:
@@ -658,13 +658,13 @@ spell_entry_add_suggestions_menu (ESpellEntry *entry,
 	gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), mi);
 
 	/* Above the separator, show the suggestions menu */
-	icon = gtk_image_new_from_icon_name ("tools-check-spelling", GTK_ICON_SIZE_MENU);
+	icon = gtk_image_new_from_icon_name ("tools-check-spelling");
 	mi = gtk_image_menu_item_new_with_label (_("Spelling Suggestions"));
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (mi), icon);
 
 	gtk_menu_item_set_submenu (GTK_MENU_ITEM (mi), build_spelling_menu (entry, word));
 
-	gtk_widget_show_all (mi);
+	gtk_widget_set_visible (mi, TRUE);
 	gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), mi);
 }
 
@@ -909,7 +909,7 @@ spell_entry_draw (GtkWidget *widget,
 
 static gboolean
 spell_entry_button_press (GtkWidget *widget,
-                          GdkEventButton *event)
+                          GdkEvent *event)
 {
 	ESpellEntry *spell_entry = E_SPELL_ENTRY (widget);
 

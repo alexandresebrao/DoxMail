@@ -344,7 +344,7 @@ action_calendar_purge_cb (EUIAction *action,
 	container = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, FALSE, 6);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, FALSE, 6);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -352,12 +352,12 @@ action_calendar_purge_cb (EUIAction *action,
 	/* Translators: This is the first part of the sentence:
 	 * "Purge events older than <<spin-button>> days" */
 	widget = gtk_label_new (_("Purge events older than"));
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, FALSE, 6);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, FALSE, 6);
 	gtk_widget_show (widget);
 
 	widget = gtk_spin_button_new_with_range (0.0, 1000.0, 1.0);
 	gtk_spin_button_set_value (GTK_SPIN_BUTTON (widget), 60.0);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 6);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 6);
 	gtk_widget_show (widget);
 
 	spin_button = GTK_SPIN_BUTTON (widget);
@@ -365,10 +365,10 @@ action_calendar_purge_cb (EUIAction *action,
 	/* Translators: This is the last part of the sentence:
 	 * "Purge events older than <<spin-button>> days" */
 	widget = gtk_label_new (_("days"));
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, FALSE, 6);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, FALSE, 6);
 	gtk_widget_show (widget);
 
-	if (gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_OK)
+	if (e_gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_OK)
 		goto exit;
 
 	days = gtk_spin_button_get_value_as_int (spin_button);
@@ -379,7 +379,7 @@ action_calendar_purge_cb (EUIAction *action,
 	e_cal_ops_purge_components (e_cal_base_shell_content_get_model (E_CAL_BASE_SHELL_CONTENT (cal_shell_content)), tt);
 
  exit:
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 }
 
 static void
@@ -1348,11 +1348,11 @@ quit_calendar_cb (EUIAction *action,
 
 	/* Synthesize a delete_event on this window. */
 	event = gdk_event_new (GDK_DELETE);
-	window = gtk_widget_get_window (GTK_WIDGET (shell_window));
+	window = e_gtk_widget_get_surface (GTK_WIDGET (shell_window));
 	event->any.window = g_object_ref (window);
 	event->any.send_event = TRUE;
 	gtk_main_do_event (event);
-	gdk_event_free (event);
+	gdk_event_unref (event);
 
 }
 

@@ -696,7 +696,7 @@ move_selection (ESelectionModel *model,
  */
 gboolean
 e_selection_model_key_press (ESelectionModel *model,
-                             GdkEventKey *key)
+                             GnomeCanvasEventKey *key)
 {
 	g_return_val_if_fail (E_IS_SELECTION_MODEL (model), FALSE);
 	g_return_val_if_fail (key != NULL, FALSE);

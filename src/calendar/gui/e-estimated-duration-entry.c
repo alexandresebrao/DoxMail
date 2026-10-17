@@ -65,7 +65,7 @@ estimated_duration_entry_update_entry (EEstimatedDurationEntry *self)
 			tmp = e_cal_util_seconds_to_string (seconds);
 	}
 
-	gtk_entry_set_text (GTK_ENTRY (self->priv->entry), tmp ? tmp : C_("estimated-duration", "None"));
+	gtk_editable_set_text (GTK_EDITABLE (self->priv->entry), tmp ? tmp : C_("estimated-duration", "None"));
 
 	g_free (tmp);
 }
@@ -204,7 +204,7 @@ estimated_duration_entry_button_clicked_cb (EEstimatedDurationEntry *self)
 		vbox = GTK_BOX (gtk_box_new (GTK_ORIENTATION_VERTICAL, 2));
 
 		widget = gtk_label_new (_("Set an estimated duration for"));
-		gtk_box_pack_start (vbox, widget, FALSE, FALSE, 0);
+		e_gtk_box_pack_start (vbox, widget, FALSE, FALSE, 0);
 
 		box = GTK_BOX (gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 2));
 		g_object_set (G_OBJECT (box),
@@ -214,13 +214,13 @@ estimated_duration_entry_button_clicked_cb (EEstimatedDurationEntry *self)
 			"vexpand", FALSE,
 			NULL);
 
-		gtk_box_pack_start (box, self->priv->days_spin, FALSE, FALSE, 4);
+		e_gtk_box_pack_start (box, self->priv->days_spin, FALSE, FALSE, 4);
 		/* Translators: this is part of: "Set an estimated duration for [nnn] days [nnn] hours [nnn] minutes", where the text in "[]" means a separate widget */
 		widget = gtk_label_new_with_mnemonic (C_("estimated-duration", "_days"));
 		gtk_label_set_mnemonic_widget (GTK_LABEL (widget), self->priv->days_spin);
-		gtk_box_pack_start (box, widget, FALSE, FALSE, 4);
+		e_gtk_box_pack_start (box, widget, FALSE, FALSE, 4);
 
-		gtk_box_pack_start (vbox, GTK_WIDGET (box), FALSE, FALSE, 0);
+		e_gtk_box_pack_start (vbox, GTK_WIDGET (box), FALSE, FALSE, 0);
 
 		box = GTK_BOX (gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 2));
 		g_object_set (G_OBJECT (box),
@@ -230,13 +230,13 @@ estimated_duration_entry_button_clicked_cb (EEstimatedDurationEntry *self)
 			"vexpand", FALSE,
 			NULL);
 
-		gtk_box_pack_start (box, self->priv->hours_spin, FALSE, FALSE, 4);
+		e_gtk_box_pack_start (box, self->priv->hours_spin, FALSE, FALSE, 4);
 		/* Translators: this is part of: "Set an estimated duration for [nnn] days [nnn] hours [nnn] minutes", where the text in "[]" means a separate widget */
 		widget = gtk_label_new_with_mnemonic (C_("estimated-duration", "_hours"));
 		gtk_label_set_mnemonic_widget (GTK_LABEL (widget), self->priv->hours_spin);
-		gtk_box_pack_start (box, widget, FALSE, FALSE, 4);
+		e_gtk_box_pack_start (box, widget, FALSE, FALSE, 4);
 
-		gtk_box_pack_start (vbox, GTK_WIDGET (box), FALSE, FALSE, 0);
+		e_gtk_box_pack_start (vbox, GTK_WIDGET (box), FALSE, FALSE, 0);
 
 		box = GTK_BOX (gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 2));
 		g_object_set (G_OBJECT (box),
@@ -246,13 +246,13 @@ estimated_duration_entry_button_clicked_cb (EEstimatedDurationEntry *self)
 			"vexpand", FALSE,
 			NULL);
 
-		gtk_box_pack_start (box, self->priv->minutes_spin, FALSE, FALSE, 4);
+		e_gtk_box_pack_start (box, self->priv->minutes_spin, FALSE, FALSE, 4);
 		/* Translators: this is part of: "Set an estimated duration for [nnn] days [nnn] hours [nnn] minutes", where the text in "[]" means a separate widget */
 		widget = gtk_label_new_with_mnemonic (C_("estimated-duration", "_minutes"));
 		gtk_label_set_mnemonic_widget (GTK_LABEL (widget), self->priv->minutes_spin);
-		gtk_box_pack_start (box, widget, FALSE, FALSE, 4);
+		e_gtk_box_pack_start (box, widget, FALSE, FALSE, 4);
 
-		gtk_box_pack_start (vbox, GTK_WIDGET (box), FALSE, FALSE, 0);
+		e_gtk_box_pack_start (vbox, GTK_WIDGET (box), FALSE, FALSE, 0);
 
 		box = GTK_BOX (gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 2));
 		g_object_set (G_OBJECT (box),
@@ -267,27 +267,27 @@ estimated_duration_entry_button_clicked_cb (EEstimatedDurationEntry *self)
 			"halign", GTK_ALIGN_CENTER,
 			NULL);
 
-		gtk_box_pack_start (box, self->priv->unset_button, FALSE, FALSE, 1);
+		e_gtk_box_pack_start (box, self->priv->unset_button, FALSE, FALSE, 1);
 
 		self->priv->set_button = gtk_button_new_with_mnemonic (_("_Set"));
 		g_object_set (G_OBJECT (self->priv->set_button),
 			"halign", GTK_ALIGN_CENTER,
 			NULL);
 
-		gtk_box_pack_start (box, self->priv->set_button, FALSE, FALSE, 1);
+		e_gtk_box_pack_start (box, self->priv->set_button, FALSE, FALSE, 1);
 
-		gtk_box_pack_start (vbox, GTK_WIDGET (box), FALSE, FALSE, 0);
+		e_gtk_box_pack_start (vbox, GTK_WIDGET (box), FALSE, FALSE, 0);
 
 		self->priv->size_group = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 		gtk_size_group_add_widget (self->priv->size_group, self->priv->unset_button);
 		gtk_size_group_add_widget (self->priv->size_group, self->priv->set_button);
 
-		gtk_widget_show_all (GTK_WIDGET (vbox));
+		gtk_widget_set_visible (GTK_WIDGET (vbox), TRUE);
 
 		self->priv->popover = gtk_popover_new (GTK_WIDGET (self));
 		gtk_popover_set_position (GTK_POPOVER (self->priv->popover), GTK_POS_BOTTOM);
-		gtk_container_add (GTK_CONTAINER (self->priv->popover), GTK_WIDGET (vbox));
-		gtk_container_set_border_width (GTK_CONTAINER (vbox), 6);
+		e_gtk_container_add (self->priv->popover, GTK_WIDGET (vbox));
+		e_gtk_widget_set_border_width (vbox, 6);
 
 		g_signal_connect (self->priv->set_button, "clicked",
 			G_CALLBACK (estimated_duration_set_button_clicked_cb), self);
@@ -379,7 +379,7 @@ estimated_duration_entry_mnemonic_activate (GtkWidget *widget,
 {
 	EEstimatedDurationEntry *self = E_ESTIMATED_DURATION_ENTRY (widget);
 
-	if (gtk_widget_get_can_focus (widget)) {
+	if (gtk_widget_get_focusable (widget)) {
 		if (self->priv->button != NULL)
 			gtk_widget_grab_focus (self->priv->button);
 	}
@@ -461,12 +461,12 @@ e_estimated_duration_entry_init (EEstimatedDurationEntry *self)
 
 	self->priv = e_estimated_duration_entry_get_instance_private (self);
 
-	gtk_widget_set_can_focus (GTK_WIDGET (self), TRUE);
+	gtk_widget_set_focusable (GTK_WIDGET (self), TRUE);
 	gtk_orientable_set_orientation (GTK_ORIENTABLE (self), GTK_ORIENTATION_HORIZONTAL);
 
 	widget = gtk_entry_new ();
 	gtk_editable_set_editable (GTK_EDITABLE (widget), FALSE);
-	gtk_box_pack_start (GTK_BOX (self), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (self), widget, TRUE, TRUE, 0);
 	self->priv->entry = widget;
 	gtk_widget_show (widget);
 
@@ -475,7 +475,7 @@ e_estimated_duration_entry_init (EEstimatedDurationEntry *self)
 		G_CALLBACK (estimated_duration_entry_emit_changed), self);
 
 	widget = gtk_button_new_with_mnemonic (_("Chan_ge…"));
-	gtk_box_pack_start (GTK_BOX (self), widget, FALSE, FALSE, 6);
+	e_gtk_box_pack_start (GTK_BOX (self), widget, FALSE, FALSE, 6);
 	self->priv->button = widget;
 	gtk_widget_show (widget);
 

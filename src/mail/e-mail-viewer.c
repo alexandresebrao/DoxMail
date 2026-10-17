@@ -226,10 +226,10 @@ mail_viewer_select_folder_uri (EMailViewer *self)
 
 	em_folder_selector_maybe_collapse_archive_folders (selector);
 
-	if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK)
+	if (e_gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK)
 		folder_uri = g_strdup (em_folder_selector_get_selected_uri (selector));
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 
 	return folder_uri;
 }
@@ -591,7 +591,6 @@ open_activated_cb (EUIAction *action,
 
 	file_chooser = GTK_FILE_CHOOSER (native);
 
-	gtk_file_chooser_set_local_only (file_chooser, FALSE);
 
 	e_util_load_file_chooser_folder (file_chooser);
 
@@ -601,17 +600,17 @@ open_activated_cb (EUIAction *action,
 	gtk_file_filter_set_name (filter, _("Mail Messages"));
 	gtk_file_filter_add_mime_type (filter, "application/mbox");
 	gtk_file_filter_add_mime_type (filter, "message/rfc822");
-	gtk_file_chooser_add_filter (file_chooser, filter);
+	e_gtk_file_chooser_add_filter (file_chooser, filter);
 
 	filter = gtk_file_filter_new ();
 	gtk_file_filter_add_pattern (filter, "*");
 	gtk_file_filter_set_name (filter, _("All Files (*)"));
-	gtk_file_chooser_add_filter (file_chooser, filter);
+	e_gtk_file_chooser_add_filter (file_chooser, filter);
 
-	if (gtk_native_dialog_run (GTK_NATIVE_DIALOG (native)) == GTK_RESPONSE_ACCEPT) {
+	if (e_gtk_native_dialog_run (GTK_NATIVE_DIALOG (native)) == GTK_RESPONSE_ACCEPT) {
 		e_util_save_file_chooser_folder (file_chooser);
 
-		chosen_file = gtk_file_chooser_get_file (file_chooser);
+		chosen_file = e_gtk_file_chooser_get_file (file_chooser);
 	}
 
 	g_object_unref (native);
@@ -2083,13 +2082,13 @@ mail_viewer_constructed (GObject *object)
 	gtk_application_add_window (GTK_APPLICATION (shell), GTK_WINDOW (object));
 
 	content_box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 2);
-	gtk_container_add (GTK_CONTAINER (self), content_box);
+	e_gtk_container_add (self, content_box);
 	gtk_widget_show (content_box);
 
 	mail_viewer_init_ui_manager (self);
 
 	widget = gtk_statusbar_new ();
-	gtk_box_pack_end (GTK_BOX (content_box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_end (GTK_BOX (content_box), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 	self->priv->statusbar = widget;
 
@@ -2097,18 +2096,18 @@ mail_viewer_constructed (GObject *object)
 	widget = gtk_menu_bar_new_from_model (G_MENU_MODEL (ui_item));
 	self->priv->main_menu = E_UI_MENU (ui_item);
 
-	gtk_box_pack_start (GTK_BOX (content_box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (content_box), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 	self->priv->e_menu_bar = e_menu_bar_new (GTK_MENU_BAR (widget), GTK_WINDOW (self), &self->priv->menu_button);
 
 	widget = e_alert_bar_new ();
 	gtk_widget_set_margin_bottom (widget, 6);
-	gtk_box_pack_start (GTK_BOX (content_box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (content_box), widget, FALSE, FALSE, 0);
 	self->priv->alert_bar = E_ALERT_BAR (widget);
 
 	widget = e_activity_bar_new ();
 	gtk_widget_set_margin_bottom (widget, 6);
-	gtk_box_pack_start (GTK_BOX (content_box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (content_box), widget, FALSE, FALSE, 0);
 	self->priv->activity_bar = E_ACTIVITY_BAR (widget);
 
 	if (e_util_get_use_header_bar ()) {
@@ -2164,10 +2163,10 @@ mail_viewer_constructed (GObject *object)
 
 	attachment_store = e_mail_display_get_attachment_store (self->priv->mail_display);
 	widget = GTK_WIDGET (e_mail_display_get_attachment_view (self->priv->mail_display));
-	gtk_box_pack_start (GTK_BOX (content_box), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (content_box), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
-	gtk_box_pack_start (GTK_BOX (e_attachment_bar_get_content_area (E_ATTACHMENT_BAR (widget))), self->priv->webview_preview, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (e_attachment_bar_get_content_area (E_ATTACHMENT_BAR (widget))), self->priv->webview_preview, TRUE, TRUE, 0);
 
 	e_binding_bind_property_full (
 		attachment_store, "num-attachments",
@@ -2177,11 +2176,11 @@ mail_viewer_constructed (GObject *object)
 		NULL, NULL, NULL);
 
 	g_signal_connect_object (
-		gtk_clipboard_get (GDK_SELECTION_PRIMARY), "owner-change",
+		e_gtk_clipboard_get (E_GTK_SELECTION_PRIMARY), "owner-change",
 		G_CALLBACK (mail_viewer_update_clipboard_actions), self, G_CONNECT_SWAPPED);
 
 	g_signal_connect_object (
-		gtk_clipboard_get (GDK_SELECTION_CLIPBOARD), "owner-change",
+		e_gtk_clipboard_get (E_GTK_SELECTION_CLIPBOARD), "owner-change",
 		G_CALLBACK (mail_viewer_update_clipboard_actions), self, G_CONNECT_SWAPPED);
 
 	g_signal_connect_object (

@@ -259,7 +259,7 @@ subscription_editor_get_folder_info_done (CamelStore *store,
 	gtk_widget_set_sensitive (editor->priv->refresh_button, TRUE);
 	gtk_widget_set_sensitive (editor->priv->stop_button, FALSE);
 
-	window = gtk_widget_get_window (GTK_WIDGET (editor));
+	window = e_gtk_widget_get_surface (GTK_WIDGET (editor));
 	gdk_window_set_cursor (window, NULL);
 
 	/* XXX Do something smarter with errors. */
@@ -370,7 +370,7 @@ exit:
 	gtk_widget_set_sensitive (context->editor->priv->refresh_button, TRUE);
 	gtk_widget_set_sensitive (context->editor->priv->stop_button, FALSE);
 
-	window = gtk_widget_get_window (GTK_WIDGET (context->editor));
+	window = e_gtk_widget_get_surface (GTK_WIDGET (context->editor));
 	gdk_window_set_cursor (window, NULL);
 
 	/* Update the Subscription/Unsubscription buttons. */
@@ -419,7 +419,7 @@ subscription_editor_subscribe_many (EMSubscriptionEditor *editor,
 	if (cursor) {
 		GdkWindow *window;
 
-		window = gtk_widget_get_window (GTK_WIDGET (editor));
+		window = e_gtk_widget_get_surface (GTK_WIDGET (editor));
 		gdk_window_set_cursor (window, cursor);
 		g_object_unref (cursor);
 	}
@@ -503,7 +503,7 @@ exit:
 	gtk_widget_set_sensitive (context->editor->priv->refresh_button, TRUE);
 	gtk_widget_set_sensitive (context->editor->priv->stop_button, FALSE);
 
-	window = gtk_widget_get_window (GTK_WIDGET (context->editor));
+	window = e_gtk_widget_get_surface (GTK_WIDGET (context->editor));
 	gdk_window_set_cursor (window, NULL);
 
 	/* Update the Subscription/Unsubscription buttons. */
@@ -551,7 +551,7 @@ subscription_editor_unsubscribe_many (EMSubscriptionEditor *editor,
 	if (cursor) {
 		GdkWindow *window;
 
-		window = gtk_widget_get_window (GTK_WIDGET (editor));
+		window = e_gtk_widget_get_surface (GTK_WIDGET (editor));
 		gdk_window_set_cursor (window, cursor);
 		g_object_unref (cursor);
 	}
@@ -1008,7 +1008,7 @@ subscription_editor_refresh (EMSubscriptionEditor *editor)
 	if (cursor) {
 		GdkWindow *window;
 
-		window = gtk_widget_get_window (GTK_WIDGET (editor));
+		window = e_gtk_widget_get_surface (GTK_WIDGET (editor));
 		gdk_window_set_cursor (window, cursor);
 		g_object_unref (cursor);
 	}
@@ -1043,7 +1043,7 @@ subscription_editor_stop (EMSubscriptionEditor *editor)
 	gtk_widget_set_sensitive (editor->priv->stop_button, FALSE);
 	gtk_widget_grab_focus (GTK_WIDGET (editor->priv->active->tree_view));
 
-	window = gtk_widget_get_window (GTK_WIDGET (editor));
+	window = e_gtk_widget_get_surface (GTK_WIDGET (editor));
 	gdk_window_set_cursor (window, NULL);
 }
 
@@ -1087,7 +1087,7 @@ subscription_editor_update_view (EMSubscriptionEditor *editor)
 
 	editor->priv->timeout_id = 0;
 
-	text = gtk_entry_get_text (entry);
+	text = gtk_editable_get_text (GTK_EDITABLE (entry));
 
 	if (text != NULL && *text != '\0') {
 		g_free (editor->priv->search_string);
@@ -1206,7 +1206,7 @@ subscription_editor_entry_changed_cb (GtkEntry *entry,
 		editor->priv->timeout_id = 0;
 	}
 
-	text = gtk_entry_get_text (entry);
+	text = gtk_editable_get_text (GTK_EDITABLE (entry));
 
 	if (text != NULL && *text != '\0') {
 		editor->priv->timeout_id = e_named_timeout_add_seconds (
@@ -1223,7 +1223,7 @@ subscription_editor_icon_release_cb (GtkEntry *entry,
                                      EMSubscriptionEditor *editor)
 {
 	if (icon_pos == GTK_ENTRY_ICON_SECONDARY)
-		gtk_entry_set_text (entry, "");
+		gtk_editable_set_text (GTK_EDITABLE (entry), "");
 }
 
 static void
@@ -1373,8 +1373,7 @@ subscription_editor_add_store (EMSubscriptionEditor *editor,
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_set_shadow_type (
-		GTK_SCROLLED_WINDOW (widget), GTK_SHADOW_IN);
+	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (widget), TRUE);
 	gtk_notebook_append_page (GTK_NOTEBOOK (container), widget, NULL);
 	gtk_container_child_set (
 		GTK_CONTAINER (container), widget,
@@ -1386,10 +1385,9 @@ subscription_editor_add_store (EMSubscriptionEditor *editor,
 	widget = gtk_tree_view_new_with_model (GTK_TREE_MODEL (tree_store));
 	gtk_tree_view_set_enable_search (GTK_TREE_VIEW (widget), TRUE);
 	gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (widget), FALSE);
-	gtk_tree_view_set_rules_hint (GTK_TREE_VIEW (widget), TRUE);
 	gtk_tree_view_set_search_column (
 		GTK_TREE_VIEW (widget), COL_FOLDER_NAME);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	gtk_widget_show (widget);
 
 	column = gtk_tree_view_column_new ();
@@ -1719,7 +1717,7 @@ em_subscription_editor_init (EMSubscriptionEditor *editor)
 	editor->priv->stores = g_ptr_array_new_with_free_func (
 		(GDestroyNotify) store_data_free);
 
-	gtk_container_set_border_width (GTK_CONTAINER (editor), 5);
+	e_gtk_widget_set_border_width (editor, 5);
 	gtk_window_set_title (GTK_WINDOW (editor), _("Folder Subscriptions"));
 	gtk_window_set_default_size (GTK_WINDOW (editor), 600, 400);
 
@@ -1737,8 +1735,8 @@ em_subscription_editor_init (EMSubscriptionEditor *editor)
 	container = gtk_dialog_get_content_area (GTK_DIALOG (editor));
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 12);
-	gtk_container_set_border_width (GTK_CONTAINER (widget), 5);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_widget_set_border_width (widget, 5);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	container = box = widget;
@@ -1746,7 +1744,7 @@ em_subscription_editor_init (EMSubscriptionEditor *editor)
 	widget = gtk_grid_new ();
 	gtk_grid_set_row_spacing (GTK_GRID (widget), 6);
 	gtk_grid_set_column_spacing (GTK_GRID (widget), 6);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -1797,7 +1795,7 @@ em_subscription_editor_init (EMSubscriptionEditor *editor)
 	container = box;
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -1805,7 +1803,7 @@ em_subscription_editor_init (EMSubscriptionEditor *editor)
 	widget = gtk_notebook_new ();
 	gtk_notebook_set_show_tabs (GTK_NOTEBOOK (widget), FALSE);
 	gtk_notebook_set_show_border (GTK_NOTEBOOK (widget), FALSE);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	editor->priv->notebook = widget;
 	gtk_widget_show (widget);
 
@@ -1821,18 +1819,16 @@ em_subscription_editor_init (EMSubscriptionEditor *editor)
 			G_CALLBACK (emse_notebook_sensitive_changed_cb), editor);
 	}
 
-	widget = gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
+	widget = e_gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
 	gtk_box_set_spacing (GTK_BOX (widget), 6);
-	gtk_button_box_set_layout (
-		GTK_BUTTON_BOX (widget), GTK_BUTTONBOX_START);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	container = box = widget;
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, TRUE, 0);
-	gtk_style_context_add_class (gtk_widget_get_style_context (widget), "linked");
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, TRUE, 0);
+	gtk_widget_add_css_class (widget, "linked");
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -1848,7 +1844,7 @@ em_subscription_editor_init (EMSubscriptionEditor *editor)
 		widget, "clicked",
 		G_CALLBACK (subscription_editor_subscribe), editor);
 
-	widget = gtk_button_new_from_icon_name ("pan-down-symbolic", GTK_ICON_SIZE_BUTTON);
+	widget = gtk_button_new_from_icon_name ("pan-down-symbolic");
 	editor->priv->subscribe_arrow = widget;
 	gtk_widget_show (widget);
 
@@ -1857,26 +1853,18 @@ em_subscription_editor_init (EMSubscriptionEditor *editor)
 		G_CALLBACK (subscription_editor_subscribe_popup_cb), editor);
 
 	if (gtk_widget_get_direction (container) == GTK_TEXT_DIR_LTR) {
-		gtk_box_pack_start (
-			GTK_BOX (container),
-			editor->priv->subscribe_button, TRUE, TRUE, 0);
-		gtk_box_pack_start (
-			GTK_BOX (container),
-			editor->priv->subscribe_arrow, FALSE, FALSE, 0);
+		e_gtk_box_pack_start (GTK_BOX (container), editor->priv->subscribe_button, TRUE, TRUE, 0);
+		e_gtk_box_pack_start (GTK_BOX (container), editor->priv->subscribe_arrow, FALSE, FALSE, 0);
 	} else {
-		gtk_box_pack_start (
-			GTK_BOX (container),
-			editor->priv->subscribe_arrow, FALSE, FALSE, 0);
-		gtk_box_pack_start (
-			GTK_BOX (container),
-			editor->priv->subscribe_button, TRUE, TRUE, 0);
+		e_gtk_box_pack_start (GTK_BOX (container), editor->priv->subscribe_arrow, FALSE, FALSE, 0);
+		e_gtk_box_pack_start (GTK_BOX (container), editor->priv->subscribe_button, TRUE, TRUE, 0);
 	}
 
 	container = box;
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
-	gtk_style_context_add_class (gtk_widget_get_style_context (widget), "linked");
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, TRUE, 0);
+	gtk_widget_add_css_class (widget, "linked");
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -1892,7 +1880,7 @@ em_subscription_editor_init (EMSubscriptionEditor *editor)
 		widget, "clicked",
 		G_CALLBACK (subscription_editor_unsubscribe), editor);
 
-	widget = gtk_button_new_from_icon_name ("pan-down-symbolic", GTK_ICON_SIZE_BUTTON);
+	widget = gtk_button_new_from_icon_name ("pan-down-symbolic");
 	editor->priv->unsubscribe_arrow = widget;
 	gtk_widget_show (widget);
 
@@ -1901,19 +1889,11 @@ em_subscription_editor_init (EMSubscriptionEditor *editor)
 		G_CALLBACK (subscription_editor_unsubscribe_popup_cb), editor);
 
 	if (gtk_widget_get_direction (container) == GTK_TEXT_DIR_LTR) {
-		gtk_box_pack_start (
-			GTK_BOX (container),
-			editor->priv->unsubscribe_button, TRUE, TRUE, 0);
-		gtk_box_pack_start (
-			GTK_BOX (container),
-			editor->priv->unsubscribe_arrow, FALSE, FALSE, 0);
+		e_gtk_box_pack_start (GTK_BOX (container), editor->priv->unsubscribe_button, TRUE, TRUE, 0);
+		e_gtk_box_pack_start (GTK_BOX (container), editor->priv->unsubscribe_arrow, FALSE, FALSE, 0);
 	} else {
-		gtk_box_pack_start (
-			GTK_BOX (container),
-			editor->priv->unsubscribe_arrow, FALSE, FALSE, 0);
-		gtk_box_pack_start (
-			GTK_BOX (container),
-			editor->priv->unsubscribe_button, TRUE, TRUE, 0);
+		e_gtk_box_pack_start (GTK_BOX (container), editor->priv->unsubscribe_arrow, FALSE, FALSE, 0);
+		e_gtk_box_pack_start (GTK_BOX (container), editor->priv->unsubscribe_button, TRUE, TRUE, 0);
 	}
 
 	container = box;
@@ -1921,7 +1901,7 @@ em_subscription_editor_init (EMSubscriptionEditor *editor)
 	tooltip = _("Collapse all folders");
 	widget = gtk_button_new_with_mnemonic (_("C_ollapse All"));
 	gtk_widget_set_tooltip_text (widget, tooltip);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	editor->priv->collapse_all_button = widget;
 	gtk_widget_show (widget);
 
@@ -1932,7 +1912,7 @@ em_subscription_editor_init (EMSubscriptionEditor *editor)
 	tooltip = _("Expand all folders");
 	widget = gtk_button_new_with_mnemonic (_("E_xpand All"));
 	gtk_widget_set_tooltip_text (widget, tooltip);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	editor->priv->expand_all_button = widget;
 	gtk_widget_show (widget);
 
@@ -1943,7 +1923,7 @@ em_subscription_editor_init (EMSubscriptionEditor *editor)
 	tooltip = _("Refresh the folder list");
 	widget = e_dialog_button_new_with_icon ("view-refresh", _("_Refresh"));
 	gtk_widget_set_tooltip_text (widget, tooltip);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_set_sensitive (widget, FALSE);
 	editor->priv->refresh_button = widget;
 	gtk_widget_show (widget);
@@ -1955,7 +1935,7 @@ em_subscription_editor_init (EMSubscriptionEditor *editor)
 	tooltip = _("Stop the current operation");
 	widget = e_dialog_button_new_with_icon ("process-stop", _("_Stop"));
 	gtk_widget_set_tooltip_text (widget, tooltip);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_set_sensitive (widget, FALSE);
 	editor->priv->stop_button = widget;
 	gtk_widget_show (widget);

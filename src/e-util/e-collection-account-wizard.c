@@ -30,7 +30,7 @@
 #include <glib/gi18n-lib.h>
 #include <gtk/gtk.h>
 #include <libedataserver/libedataserver.h>
-#include <libedataserverui/libedataserverui.h>
+#include <libedataserverui4/libedataserverui4.h>
 
 #include "e-config-lookup.h"
 #include "e-dialog-widgets.h"
@@ -120,7 +120,7 @@ collection_wizard_window_cancel_button_clicked_cb (GtkButton *button,
 	g_return_if_fail (wwd != NULL);
 
 	e_collection_account_wizard_abort (wwd->collection_wizard);
-	gtk_widget_destroy (wwd->window);
+	e_gtk_widget_destroy (wwd->window);
 }
 
 static void
@@ -133,7 +133,7 @@ collection_wizard_window_back_button_clicked_cb (GtkButton *button,
 
 	if (!e_collection_account_wizard_prev (wwd->collection_wizard)) {
 		e_collection_account_wizard_abort (wwd->collection_wizard);
-		gtk_widget_destroy (wwd->window);
+		e_gtk_widget_destroy (wwd->window);
 	} else {
 		collection_wizard_window_update_button_captions (wwd);
 	}
@@ -152,7 +152,7 @@ collection_wizard_window_next_button_clicked_cb (GtkButton *button,
 
 	if (e_collection_account_wizard_next (wwd->collection_wizard)) {
 		if (is_finish_page) {
-			gtk_widget_destroy (wwd->window);
+			e_gtk_widget_destroy (wwd->window);
 		} else {
 			collection_wizard_window_update_button_captions (wwd);
 		}
@@ -166,7 +166,7 @@ collection_wizard_window_done (WizardWindowData *wwd,
 	g_return_if_fail (wwd != NULL);
 
 	e_collection_account_wizard_abort (wwd->collection_wizard);
-	gtk_widget_destroy (wwd->window);
+	e_gtk_widget_destroy (wwd->window);
 }
 
 static GtkWindow *
@@ -181,9 +181,7 @@ collection_account_wizard_create_window (GtkWindow *parent,
 	window = GTK_WINDOW (gtk_window_new (GTK_WINDOW_TOPLEVEL));
 	gtk_window_set_default_size (window, 480, 410);
 	gtk_window_set_title (window, _("New Collection Account"));
-	gtk_window_set_position (window, parent ? GTK_WIN_POS_CENTER_ON_PARENT : GTK_WIN_POS_CENTER);
-	gtk_window_set_type_hint (window, GDK_WINDOW_TYPE_HINT_DIALOG);
-	gtk_container_set_border_width (GTK_CONTAINER (window), 12);
+	e_gtk_widget_set_border_width (window, 12);
 
 	if (parent) {
 		gtk_window_set_transient_for (window, parent);
@@ -197,16 +195,16 @@ collection_account_wizard_create_window (GtkWindow *parent,
 
 	widget = gtk_scrolled_window_new (NULL, NULL);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (widget), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (widget), GTK_SHADOW_NONE);
+	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (widget), FALSE);
 	gtk_widget_set_hexpand (widget, TRUE);
 	gtk_widget_set_vexpand (widget, TRUE);
-	gtk_container_add (GTK_CONTAINER (window), widget);
+	e_gtk_container_add (window, widget);
 	gtk_widget_show (widget);
 
 	scrolled_window = widget;
 
 	vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-	gtk_container_add (GTK_CONTAINER (widget), vbox);
+	e_gtk_container_add (widget, vbox);
 	gtk_widget_show (vbox);
 
 	widget = wizard;
@@ -217,7 +215,7 @@ collection_account_wizard_create_window (GtkWindow *parent,
 		"valign", GTK_ALIGN_FILL,
 		"visible", TRUE,
 		NULL);
-	gtk_box_pack_start (GTK_BOX (vbox), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), widget, TRUE, TRUE, 0);
 	wwd->collection_wizard = E_COLLECTION_ACCOUNT_WIZARD (widget);
 
 	g_signal_connect_swapped (wwd->collection_wizard, "done",
@@ -234,7 +232,7 @@ collection_account_wizard_create_window (GtkWindow *parent,
 		"valign", GTK_ALIGN_START,
 		"visible", TRUE,
 		NULL);
-	gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
 
 	widget = e_dialog_button_new_with_icon ("window-close", _("_Cancel"));
 	g_object_set (G_OBJECT (widget),
@@ -244,7 +242,7 @@ collection_account_wizard_create_window (GtkWindow *parent,
 		"valign", GTK_ALIGN_START,
 		"visible", TRUE,
 		NULL);
-	gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 
 	accel_group = gtk_accel_group_new ();
 	gtk_widget_add_accelerator (
@@ -264,7 +262,7 @@ collection_account_wizard_create_window (GtkWindow *parent,
 		"valign", GTK_ALIGN_START,
 		"visible", TRUE,
 		NULL);
-	gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 
 	wwd->prev_button = widget;
 
@@ -285,7 +283,7 @@ collection_account_wizard_create_window (GtkWindow *parent,
 		"visible", TRUE,
 		"can-default", TRUE,
 		NULL);
-	gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, FALSE, FALSE, 0);
 
 	wwd->next_button = GTK_BUTTON (widget);
 
@@ -297,7 +295,7 @@ collection_account_wizard_create_window (GtkWindow *parent,
 	g_signal_connect (widget, "clicked",
 		G_CALLBACK (collection_wizard_window_next_button_clicked_cb), wwd);
 
-	gtk_widget_grab_default (GTK_WIDGET (wwd->next_button));
+	e_gtk_widget_grab_default (GTK_WIDGET (wwd->next_button));
 
 	e_collection_account_wizard_reset (wwd->collection_wizard);
 	collection_wizard_window_update_button_captions (wwd);
@@ -648,11 +646,11 @@ collection_account_wizard_try_again_clicked_cb (GtkButton *button,
 
 	wd->remember_password = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ppd->remember_check));
 
-	gtk_entry_set_text (GTK_ENTRY (ppd->wizard->priv->email_entry), gtk_entry_get_text (GTK_ENTRY (ppd->user_entry)));
+	gtk_editable_set_text (GTK_EDITABLE (ppd->wizard->priv->email_entry), gtk_editable_get_text (GTK_EDITABLE (ppd->user_entry)));
 
-	e_named_parameters_set (params, E_CONFIG_LOOKUP_PARAM_EMAIL_ADDRESS, gtk_entry_get_text (GTK_ENTRY (ppd->wizard->priv->email_entry)));
-	e_named_parameters_set (params, E_CONFIG_LOOKUP_PARAM_SERVERS, gtk_entry_get_text (GTK_ENTRY (ppd->wizard->priv->servers_entry)));
-	e_named_parameters_set (params, E_CONFIG_LOOKUP_PARAM_PASSWORD, gtk_entry_get_text (GTK_ENTRY (ppd->password_entry)));
+	e_named_parameters_set (params, E_CONFIG_LOOKUP_PARAM_EMAIL_ADDRESS, gtk_editable_get_text (GTK_EDITABLE (ppd->wizard->priv->email_entry)));
+	e_named_parameters_set (params, E_CONFIG_LOOKUP_PARAM_SERVERS, gtk_editable_get_text (GTK_EDITABLE (ppd->wizard->priv->servers_entry)));
+	e_named_parameters_set (params, E_CONFIG_LOOKUP_PARAM_PASSWORD, gtk_editable_get_text (GTK_EDITABLE (ppd->password_entry)));
 	e_named_parameters_set (params, E_CONFIG_LOOKUP_PARAM_REMEMBER_PASSWORD, wd->remember_password ? "1" : NULL);
 
 	e_config_lookup_run_worker (ppd->wizard->priv->config_lookup, ppd->worker, params, NULL);
@@ -665,7 +663,7 @@ collection_account_wizard_try_again_clicked_cb (GtkButton *button,
 static void
 collection_account_wizard_update_entry_hint (GtkWidget *entry)
 {
-	const gchar *user = gtk_entry_get_text (GTK_ENTRY (entry));
+	const gchar *user = gtk_editable_get_text (GTK_EDITABLE (entry));
 
 	e_util_set_entry_issue_hint (entry, (!user || !*user || camel_string_is_all_ascii (user)) ? NULL :
 		_("User name contains letters, which can prevent log in. Make sure the server accepts such written user name."));
@@ -696,7 +694,7 @@ collection_account_wizard_show_password_prompt (ECollectionAccountWizard *wizard
 
 	widget = gtk_entry_new ();
 	gtk_entry_set_activates_default (GTK_ENTRY (widget), TRUE);
-	gtk_entry_set_text (GTK_ENTRY (widget), gtk_entry_get_text (GTK_ENTRY (wizard->priv->email_entry)));
+	gtk_editable_set_text (GTK_EDITABLE (widget), gtk_editable_get_text (GTK_EDITABLE (wizard->priv->email_entry)));
 	gtk_label_set_mnemonic_widget (GTK_LABEL (label), widget);
 	gtk_grid_attach (grid, widget, 1, 0, 1, 1);
 	user_entry = widget;
@@ -725,17 +723,16 @@ collection_account_wizard_show_password_prompt (ECollectionAccountWizard *wizard
 
 	widget = gtk_button_new_with_mnemonic (_("_Try Again"));
 	gtk_widget_set_halign (widget, GTK_ALIGN_END);
-	gtk_widget_set_can_default (widget, TRUE);
 	gtk_grid_attach (grid, widget, 0, 3, 2, 1);
 	button = widget;
 
-	gtk_widget_show_all (GTK_WIDGET (grid));
+	gtk_widget_set_visible (GTK_WIDGET (grid), TRUE);
 
 	widget = gtk_popover_new (wd->running_label);
 	gtk_popover_set_position (GTK_POPOVER (widget), GTK_POS_BOTTOM);
 	gtk_popover_set_default_widget (GTK_POPOVER (widget), button);
-	gtk_container_add (GTK_CONTAINER (widget), GTK_WIDGET (grid));
-	gtk_container_set_border_width (GTK_CONTAINER (widget), 6);
+	e_gtk_container_add (widget, GTK_WIDGET (grid));
+	e_gtk_widget_set_border_width (widget, 6);
 
 	g_signal_connect_data (button, "clicked",
 		G_CALLBACK (collection_account_wizard_try_again_clicked_cb),
@@ -747,7 +744,7 @@ collection_account_wizard_show_password_prompt (ECollectionAccountWizard *wizard
 
 	gtk_widget_show (widget);
 
-	text = gtk_entry_get_text (GTK_ENTRY (user_entry));
+	text = gtk_editable_get_text (GTK_EDITABLE (user_entry));
 
 	if (!text || !*text)
 		gtk_widget_grab_focus (user_entry);
@@ -771,7 +768,7 @@ collection_account_wizard_view_certificate (ECollectionAccountWizard *wizard,
 	g_return_if_fail (e_named_parameters_exists (wd->restart_params, E_CONFIG_LOOKUP_PARAM_CERTIFICATE_PEM));
 	g_return_if_fail (e_named_parameters_exists (wd->restart_params, E_CONFIG_LOOKUP_PARAM_CERTIFICATE_HOST));
 
-	toplevel = gtk_widget_get_toplevel (GTK_WIDGET (wizard));
+	toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (wizard));
 	if (GTK_IS_WINDOW (toplevel))
 		parent = GTK_WINDOW (toplevel);
 
@@ -786,8 +783,8 @@ collection_account_wizard_view_certificate (ECollectionAccountWizard *wizard,
 		params = e_named_parameters_new_clone (wd->restart_params);
 		g_return_if_fail (params != NULL);
 
-		e_named_parameters_set (params, E_CONFIG_LOOKUP_PARAM_EMAIL_ADDRESS, gtk_entry_get_text (GTK_ENTRY (wizard->priv->email_entry)));
-		e_named_parameters_set (params, E_CONFIG_LOOKUP_PARAM_SERVERS, gtk_entry_get_text (GTK_ENTRY (wizard->priv->servers_entry)));
+		e_named_parameters_set (params, E_CONFIG_LOOKUP_PARAM_EMAIL_ADDRESS, gtk_editable_get_text (GTK_EDITABLE (wizard->priv->email_entry)));
+		e_named_parameters_set (params, E_CONFIG_LOOKUP_PARAM_SERVERS, gtk_editable_get_text (GTK_EDITABLE (wizard->priv->servers_entry)));
 		e_named_parameters_set (params, E_CONFIG_LOOKUP_PARAM_CERTIFICATE_TRUST, e_config_lookup_encode_certificate_trust (response));
 
 		e_config_lookup_run_worker (wizard->priv->config_lookup, worker, params, NULL);
@@ -908,7 +905,7 @@ collection_account_wizard_fill_results (ECollectionAccountWizard *wizard)
 
 		if (results_info[ii].kind == E_CONFIG_LOOKUP_RESULT_MAIL_RECEIVE ||
 		    results_info[ii].kind == E_CONFIG_LOOKUP_RESULT_MAIL_SEND) {
-			group_enabled = e_util_strcmp0 (gtk_entry_get_text (GTK_ENTRY (wizard->priv->email_entry)), NULL) != 0;
+			group_enabled = e_util_strcmp0 (gtk_editable_get_text (GTK_EDITABLE (wizard->priv->email_entry)), NULL) != 0;
 		}
 
 		gtk_tree_store_append (tree_store, &parent, NULL);
@@ -1491,7 +1488,7 @@ collection_account_wizard_save_sources (ECollectionAccountWizard *wizard)
 		} while (gtk_tree_model_iter_next (model, &iter));
 	}
 
-	display_name = gtk_entry_get_text (GTK_ENTRY (wizard->priv->display_name_entry));
+	display_name = gtk_editable_get_text (GTK_EDITABLE (wizard->priv->display_name_entry));
 
 	if (wizard->priv->sources[E_CONFIG_LOOKUP_RESULT_MAIL_RECEIVE] ||
 	    wizard->priv->sources[E_CONFIG_LOOKUP_RESULT_MAIL_SEND]) {
@@ -1503,14 +1500,14 @@ collection_account_wizard_save_sources (ECollectionAccountWizard *wizard)
 
 		source = collection_account_wizard_get_source (wizard, FAKE_E_CONFIG_LOOKUP_RESULT_MAIL_IDENTITY);
 		identity_extension = e_source_get_extension (source, E_SOURCE_EXTENSION_MAIL_IDENTITY);
-		e_source_mail_identity_set_address (identity_extension, gtk_entry_get_text (GTK_ENTRY (wizard->priv->email_entry)));
+		e_source_mail_identity_set_address (identity_extension, gtk_editable_get_text (GTK_EDITABLE (wizard->priv->email_entry)));
 	} else {
 		g_clear_object (&wizard->priv->sources[E_CONFIG_LOOKUP_RESULT_MAIL_RECEIVE]);
 		g_clear_object (&wizard->priv->sources[E_CONFIG_LOOKUP_RESULT_MAIL_SEND]);
 		g_clear_object (&wizard->priv->sources[FAKE_E_CONFIG_LOOKUP_RESULT_MAIL_IDENTITY]);
 	}
 
-	user = gtk_entry_get_text (GTK_ENTRY (wizard->priv->email_entry));
+	user = gtk_editable_get_text (GTK_EDITABLE (wizard->priv->email_entry));
 
 	for (ii = 0; ii <= E_CONFIG_LOOKUP_RESULT_LAST_KIND; ii++) {
 		source = wizard->priv->sources[ii];
@@ -1719,9 +1716,9 @@ collection_account_wizard_constructed (GObject *object)
 		"visible", TRUE,
 		NULL);
 
-	gtk_container_add (GTK_CONTAINER (widget), GTK_WIDGET (grid));
+	e_gtk_container_add (widget, GTK_WIDGET (grid));
 
-	gtk_box_pack_start (vbox, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (vbox, widget, FALSE, FALSE, 0);
 
 	label = gtk_label_new_with_mnemonic (_("_Email Address or User name:"));
 	g_object_set (G_OBJECT (label),
@@ -1802,7 +1799,7 @@ collection_account_wizard_constructed (GObject *object)
 		"vscrollbar-policy", GTK_POLICY_AUTOMATIC,
 		NULL);
 
-	gtk_box_pack_start (vbox, widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (vbox, widget, TRUE, TRUE, 0);
 
 	scrolled_window = widget;
 
@@ -1819,7 +1816,7 @@ collection_account_wizard_constructed (GObject *object)
 		"wrap", TRUE,
 		NULL);
 
-	gtk_box_pack_start (vbox, label, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (vbox, label, FALSE, FALSE, 0);
 
 	wizard->priv->results_label = label;
 
@@ -1834,7 +1831,7 @@ collection_account_wizard_constructed (GObject *object)
 		"visible", TRUE,
 		NULL);
 
-	gtk_container_add (GTK_CONTAINER (widget), GTK_WIDGET (vbox));
+	e_gtk_container_add (widget, GTK_WIDGET (vbox));
 
 	workers = e_config_lookup_dup_registered_workers (wizard->priv->config_lookup);
 
@@ -1866,7 +1863,7 @@ collection_account_wizard_constructed (GObject *object)
 		g_signal_connect_swapped (wd->enabled_check, "toggled",
 			G_CALLBACK (collection_account_wizard_mark_changed), wizard);
 
-		gtk_box_pack_start (vbox, widget, TRUE, TRUE, 0);
+		e_gtk_box_pack_start (vbox, widget, TRUE, TRUE, 0);
 
 		widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 4);
 		g_object_set (G_OBJECT (widget),
@@ -1877,7 +1874,7 @@ collection_account_wizard_constructed (GObject *object)
 			"margin-start", 12,
 			"visible", TRUE,
 			NULL);
-		gtk_box_pack_start (vbox, widget, TRUE, TRUE, 0);
+		e_gtk_box_pack_start (vbox, widget, TRUE, TRUE, 0);
 
 		hbox = GTK_BOX (widget);
 
@@ -1891,7 +1888,7 @@ collection_account_wizard_constructed (GObject *object)
 			"margin-start", 12,
 			"visible", TRUE,
 			NULL);
-		gtk_box_pack_start (hbox, widget, FALSE, FALSE, 0);
+		e_gtk_box_pack_start (hbox, widget, FALSE, FALSE, 0);
 
 		widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 4);
 		g_object_set (G_OBJECT (widget),
@@ -1904,7 +1901,7 @@ collection_account_wizard_constructed (GObject *object)
 			NULL);
 		wd->running_box = widget;
 
-		gtk_box_pack_start (hbox, widget, TRUE, TRUE, 0);
+		e_gtk_box_pack_start (hbox, widget, TRUE, TRUE, 0);
 
 		hbox = GTK_BOX (widget);
 
@@ -1918,7 +1915,7 @@ collection_account_wizard_constructed (GObject *object)
 			NULL);
 		wd->spinner = widget;
 
-		gtk_box_pack_start (hbox, widget, FALSE, FALSE, 0);
+		e_gtk_box_pack_start (hbox, widget, FALSE, FALSE, 0);
 
 		label = gtk_label_new (NULL);
 		g_object_set (G_OBJECT (label),
@@ -1932,7 +1929,7 @@ collection_account_wizard_constructed (GObject *object)
 			NULL);
 		wd->running_label = label;
 
-		gtk_box_pack_start (hbox, label, FALSE, FALSE, 0);
+		e_gtk_box_pack_start (hbox, label, FALSE, FALSE, 0);
 
 		g_signal_connect (wd->running_label, "activate-link",
 			G_CALLBACK (collection_account_wizard_activate_link_cb), wizard);
@@ -1952,7 +1949,7 @@ collection_account_wizard_constructed (GObject *object)
 		g_signal_connect (wd->cancel_button, "clicked",
 			G_CALLBACK (collection_account_wizard_worker_cancel_clicked_cb), wd);
 
-		gtk_box_pack_start (hbox, widget, FALSE, FALSE, 0);
+		e_gtk_box_pack_start (hbox, widget, FALSE, FALSE, 0);
 
 		g_hash_table_insert (wizard->priv->workers, g_object_ref (worker), wd);
 	}
@@ -1986,7 +1983,7 @@ collection_account_wizard_constructed (GObject *object)
 		"visible", TRUE,
 		NULL);
 
-	gtk_box_pack_start (vbox, label, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (vbox, label, FALSE, FALSE, 0);
 
 	widget = gtk_scrolled_window_new (NULL, NULL);
 	g_object_set (G_OBJECT (widget),
@@ -2002,7 +1999,7 @@ collection_account_wizard_constructed (GObject *object)
 
 	scrolled_window = widget;
 
-	gtk_box_pack_start (vbox, widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (vbox, widget, TRUE, TRUE, 0);
 
 	tree_store = gtk_tree_store_new (PART_N_COLUMNS,
 		G_TYPE_BOOLEAN,	/* PART_COLUMN_BOOL_ENABLED */
@@ -2029,7 +2026,7 @@ collection_account_wizard_constructed (GObject *object)
 
 	gtk_label_set_mnemonic_widget (GTK_LABEL (label), widget);
 
-	gtk_container_add (GTK_CONTAINER (scrolled_window), widget);
+	e_gtk_container_add (scrolled_window, widget);
 
 	gtk_notebook_append_page (GTK_NOTEBOOK (wizard), GTK_WIDGET (vbox), NULL);
 
@@ -2142,7 +2139,7 @@ collection_account_wizard_constructed (GObject *object)
 		"visible", TRUE,
 		NULL);
 
-	gtk_box_pack_end (vbox, GTK_WIDGET (grid), FALSE, FALSE, 0);
+	e_gtk_box_pack_end (vbox, GTK_WIDGET (grid), FALSE, FALSE, 0);
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 4);
 	g_object_set (G_OBJECT (widget),
@@ -2170,7 +2167,7 @@ collection_account_wizard_constructed (GObject *object)
 		NULL);
 	wizard->priv->finish_spinner = widget;
 
-	gtk_box_pack_start (hbox, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (hbox, widget, FALSE, FALSE, 0);
 
 	label = gtk_label_new (NULL);
 	g_object_set (G_OBJECT (label),
@@ -2184,7 +2181,7 @@ collection_account_wizard_constructed (GObject *object)
 		NULL);
 	wizard->priv->finish_label = label;
 
-	gtk_box_pack_start (hbox, label, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (hbox, label, FALSE, FALSE, 0);
 
 	widget = e_dialog_button_new_with_icon ("process-stop", _("_Cancel"));
 	g_object_set (G_OBJECT (widget),
@@ -2199,7 +2196,7 @@ collection_account_wizard_constructed (GObject *object)
 	g_signal_connect (wizard->priv->finish_cancel_button, "clicked",
 		G_CALLBACK (collection_account_wizard_finish_cancel_clicked_cb), wizard);
 
-	gtk_box_pack_start (hbox, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (hbox, widget, FALSE, FALSE, 0);
 
 	gtk_notebook_append_page (GTK_NOTEBOOK (wizard), GTK_WIDGET (vbox), NULL);
 
@@ -2434,8 +2431,8 @@ e_collection_account_wizard_get_can_run (ECollectionAccountWizard *wizard)
 	    wizard->priv->finish_cancellable)
 		return FALSE;
 
-	email = gtk_entry_get_text (GTK_ENTRY (wizard->priv->email_entry));
-	servers = gtk_entry_get_text (GTK_ENTRY (wizard->priv->servers_entry));
+	email = gtk_editable_get_text (GTK_EDITABLE (wizard->priv->email_entry));
+	servers = gtk_editable_get_text (GTK_EDITABLE (wizard->priv->servers_entry));
 
 	if ((!email || !*email) && (!servers || !*servers))
 		return FALSE;
@@ -2483,7 +2480,7 @@ e_collection_account_wizard_get_can_run (ECollectionAccountWizard *wizard)
 		gchar *display_name;
 		gboolean can_run;
 
-		display_name = g_strdup (gtk_entry_get_text (GTK_ENTRY (wizard->priv->display_name_entry)));
+		display_name = g_strdup (gtk_editable_get_text (GTK_EDITABLE (wizard->priv->display_name_entry)));
 		if (!display_name)
 			return FALSE;
 
@@ -2543,10 +2540,10 @@ e_collection_account_wizard_reset (ECollectionAccountWizard *wizard)
 		wd->remember_password = TRUE;
 	}
 
-	gtk_entry_set_text (GTK_ENTRY (wizard->priv->email_entry), "");
-	gtk_entry_set_text (GTK_ENTRY (wizard->priv->servers_entry), "");
+	gtk_editable_set_text (GTK_EDITABLE (wizard->priv->email_entry), "");
+	gtk_editable_set_text (GTK_EDITABLE (wizard->priv->servers_entry), "");
 	gtk_label_set_text (GTK_LABEL (wizard->priv->results_label), "");
-	gtk_entry_set_text (GTK_ENTRY (wizard->priv->display_name_entry), "");
+	gtk_editable_set_text (GTK_EDITABLE (wizard->priv->display_name_entry), "");
 	gtk_expander_set_expanded (GTK_EXPANDER (wizard->priv->advanced_expander), FALSE);
 	e_config_lookup_clear_results (wizard->priv->config_lookup);
 
@@ -2611,14 +2608,14 @@ e_collection_account_wizard_next (ECollectionAccountWizard *wizard)
 	case 1: /* Parts page */
 		g_warn_if_fail (wizard->priv->sources[E_CONFIG_LOOKUP_RESULT_COLLECTION] != NULL);
 
-		text = gtk_entry_get_text (GTK_ENTRY (wizard->priv->display_name_entry));
+		text = gtk_editable_get_text (GTK_EDITABLE (wizard->priv->display_name_entry));
 		if (!text || !*text) {
 			gchar *tmp = NULL;
 
-			text = gtk_entry_get_text (GTK_ENTRY (wizard->priv->email_entry));
+			text = gtk_editable_get_text (GTK_EDITABLE (wizard->priv->email_entry));
 
 			if (!text || !*text) {
-				text = gtk_entry_get_text (GTK_ENTRY (wizard->priv->servers_entry));
+				text = gtk_editable_get_text (GTK_EDITABLE (wizard->priv->servers_entry));
 
 				if (text && *text) {
 					gchar *ptr;
@@ -2642,7 +2639,7 @@ e_collection_account_wizard_next (ECollectionAccountWizard *wizard)
 			}
 
 			if (text && *text)
-				gtk_entry_set_text (GTK_ENTRY (wizard->priv->display_name_entry), text);
+				gtk_editable_set_text (GTK_EDITABLE (wizard->priv->display_name_entry), text);
 
 			g_free (tmp);
 		}
@@ -2754,8 +2751,8 @@ e_collection_account_wizard_run (ECollectionAccountWizard *wizard,
 			params = e_named_parameters_new_clone (wd->restart_params);
 			if (!params)
 				params = e_named_parameters_new ();
-			e_named_parameters_set (params, E_CONFIG_LOOKUP_PARAM_EMAIL_ADDRESS, gtk_entry_get_text (GTK_ENTRY (wizard->priv->email_entry)));
-			e_named_parameters_set (params, E_CONFIG_LOOKUP_PARAM_SERVERS, gtk_entry_get_text (GTK_ENTRY (wizard->priv->servers_entry)));
+			e_named_parameters_set (params, E_CONFIG_LOOKUP_PARAM_EMAIL_ADDRESS, gtk_editable_get_text (GTK_EDITABLE (wizard->priv->email_entry)));
+			e_named_parameters_set (params, E_CONFIG_LOOKUP_PARAM_SERVERS, gtk_editable_get_text (GTK_EDITABLE (wizard->priv->servers_entry)));
 
 			any_worker = TRUE;
 			e_config_lookup_run_worker (wizard->priv->config_lookup, worker, params, NULL);

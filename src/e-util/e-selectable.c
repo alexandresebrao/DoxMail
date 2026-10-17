@@ -36,7 +36,7 @@ e_selectable_default_init (ESelectableInterface *iface)
 			"copy-target-list",
 			"Copy Target List",
 			NULL,
-			GTK_TYPE_TARGET_LIST,
+			E_GTK_TYPE_TARGET_LIST,
 			G_PARAM_READABLE));
 
 	g_object_interface_install_property (
@@ -45,14 +45,14 @@ e_selectable_default_init (ESelectableInterface *iface)
 			"paste-target-list",
 			"Paste Target List",
 			NULL,
-			GTK_TYPE_TARGET_LIST,
+			E_GTK_TYPE_TARGET_LIST,
 			G_PARAM_READABLE));
 }
 
 void
 e_selectable_update_actions (ESelectable *selectable,
                              EFocusTracker *focus_tracker,
-                             GdkAtom *clipboard_targets,
+                             EGtkAtom *clipboard_targets,
                              gint n_clipboard_targets)
 {
 	ESelectableInterface *iface;
@@ -158,10 +158,10 @@ e_selectable_redo (ESelectable *selectable)
 		iface->redo (selectable);
 }
 
-GtkTargetList *
+EGtkTargetList *
 e_selectable_get_copy_target_list (ESelectable *selectable)
 {
-	GtkTargetList *target_list;
+	EGtkTargetList *target_list;
 
 	g_return_val_if_fail (E_IS_SELECTABLE (selectable), NULL);
 
@@ -169,15 +169,15 @@ e_selectable_get_copy_target_list (ESelectable *selectable)
 
 	/* We want to return a borrowed reference to the target
 	 * list, so undo the reference that g_object_get() added. */
-	gtk_target_list_unref (target_list);
+	e_gtk_target_list_unref (target_list);
 
 	return target_list;
 }
 
-GtkTargetList *
+EGtkTargetList *
 e_selectable_get_paste_target_list (ESelectable *selectable)
 {
-	GtkTargetList *target_list;
+	EGtkTargetList *target_list;
 
 	g_return_val_if_fail (E_IS_SELECTABLE (selectable), NULL);
 
@@ -185,7 +185,7 @@ e_selectable_get_paste_target_list (ESelectable *selectable)
 
 	/* We want to return a borrowed reference to the target
 	 * list, so undo the reference that g_object_get() added. */
-	gtk_target_list_unref (target_list);
+	e_gtk_target_list_unref (target_list);
 
 	return target_list;
 }

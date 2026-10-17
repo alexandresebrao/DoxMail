@@ -73,7 +73,7 @@ save_gicon_to_stream (GIcon *icon,
 	if (size < 16)
 		size = 16;
 
-	icon_info = gtk_icon_theme_lookup_by_gicon (gtk_icon_theme_get_default (), icon, size, GTK_ICON_LOOKUP_FORCE_SIZE);
+	icon_info = gtk_icon_theme_lookup_by_gicon (e_gtk_icon_theme_get_default (), icon, size, GTK_ICON_LOOKUP_FORCE_SIZE);
 	if (!icon_info)
 		return;
 

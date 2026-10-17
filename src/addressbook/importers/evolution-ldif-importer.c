@@ -585,12 +585,12 @@ ldif_getwidget (EImport *ei,
 		"hscrollbar-policy", GTK_POLICY_AUTOMATIC,
 		"vscrollbar-policy", GTK_POLICY_AUTOMATIC,
 		NULL);
-	gtk_box_pack_start (GTK_BOX (vbox), scrolled_window, TRUE, TRUE, 6);
+	e_gtk_box_pack_start (GTK_BOX (vbox), scrolled_window, TRUE, TRUE, 6);
 
 	selector = e_source_selector_new (registry, extension_name);
 	e_source_selector_set_show_toggles (
 		E_SOURCE_SELECTOR (selector), FALSE);
-	gtk_container_add (GTK_CONTAINER (scrolled_window), selector);
+	e_gtk_container_add (scrolled_window, selector);
 
 	primary = g_datalist_get_data (&target->data, "ldif-source");
 	if (primary == NULL) {
@@ -613,7 +613,7 @@ ldif_getwidget (EImport *ei,
 		selector, "primary_selection_changed",
 		G_CALLBACK (primary_selection_changed_cb), target);
 
-	gtk_widget_show_all (vbox);
+	gtk_widget_set_visible (vbox, TRUE);
 
 	return vbox;
 }

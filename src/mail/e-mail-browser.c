@@ -311,7 +311,7 @@ e_mail_browser_customize_toolbar_activate_cb (GtkWidget *toolbar,
 	e_ui_customize_dialog_add_customizer (dialog, e_ui_manager_get_customizer (self->priv->ui_manager));
 	e_ui_customize_dialog_run (dialog, id);
 
-	gtk_widget_destroy (GTK_WIDGET (dialog));
+	e_gtk_widget_destroy (GTK_WIDGET (dialog));
 }
 
 static void
@@ -528,7 +528,7 @@ mail_browser_dispose (GObject *object)
 
 	if (self->priv->message_list != NULL) {
 		/* This will cancel a regen operation. */
-		gtk_widget_destroy (self->priv->message_list);
+		e_gtk_widget_destroy (self->priv->message_list);
 		g_clear_object (&self->priv->message_list);
 	}
 
@@ -759,13 +759,13 @@ mail_browser_constructed (GObject *object)
 	/* Construct window widgets. */
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-	gtk_container_add (GTK_CONTAINER (object), widget);
+	e_gtk_container_add (object, widget);
 	gtk_widget_show (widget);
 
 	container = widget;
 
 	widget = gtk_statusbar_new ();
-	gtk_box_pack_end (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_end (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	browser->priv->statusbar = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -776,7 +776,7 @@ mail_browser_constructed (GObject *object)
 	g_clear_object (&ui_item);
 
 	browser->priv->menu_bar = e_menu_bar_new (GTK_MENU_BAR (widget), GTK_WINDOW (browser), &browser->priv->menu_button);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 
 	e_ui_customizer_register (customizer, "main-menu", NULL);
 
@@ -794,7 +794,7 @@ mail_browser_constructed (GObject *object)
 
 	ui_item = e_ui_manager_create_item (browser->priv->ui_manager, toolbar_id);
 	widget = GTK_WIDGET (ui_item);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	browser->priv->main_toolbar = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -804,12 +804,12 @@ mail_browser_constructed (GObject *object)
 
 	attachment_store = e_mail_display_get_attachment_store (E_MAIL_DISPLAY (display));
 	widget = GTK_WIDGET (e_mail_display_get_attachment_view (E_MAIL_DISPLAY (display)));
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	container = e_attachment_bar_get_content_area (E_ATTACHMENT_BAR (widget));
 
-	gtk_box_pack_start (GTK_BOX (container), browser->priv->preview_pane, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), browser->priv->preview_pane, TRUE, TRUE, 0);
 
 	e_binding_bind_property_full (
 		attachment_store, "num-attachments",
@@ -1157,7 +1157,7 @@ e_mail_browser_close (EMailBrowser *browser)
 {
 	g_return_if_fail (E_IS_MAIL_BROWSER (browser));
 
-	gtk_widget_destroy (GTK_WIDGET (browser));
+	e_gtk_widget_destroy (GTK_WIDGET (browser));
 }
 
 void

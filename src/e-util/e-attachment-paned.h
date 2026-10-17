@@ -26,6 +26,8 @@
 #define E_ATTACHMENT_PANED_H
 
 #include <gtk/gtk.h>
+#include <e-util/e-paned.h>
+#include <e-util/e-gtk4-compat.h>
 
 /* Standard GObject macros */
 #define E_TYPE_ATTACHMENT_PANED \
@@ -53,12 +55,12 @@ typedef struct _EAttachmentPanedClass EAttachmentPanedClass;
 typedef struct _EAttachmentPanedPrivate EAttachmentPanedPrivate;
 
 struct _EAttachmentPaned {
-	GtkVPaned parent;
+	EPaned parent;
 	EAttachmentPanedPrivate *priv;
 };
 
 struct _EAttachmentPanedClass {
-	GtkVPanedClass parent_class;
+	EPanedClass parent_class;
 };
 
 GType		e_attachment_paned_get_type	(void) G_GNUC_CONST;
@@ -80,10 +82,10 @@ void		e_attachment_paned_set_resize_toplevel
 						 gboolean resize_toplevel);
 void		e_attachment_paned_drag_data_received
 						(EAttachmentPaned *paned,
-						 GdkDragContext *context,
+						 EGtkDragContext *context,
 						 gint x,
 						 gint y,
-						 GtkSelectionData *selection,
+						 EGtkSelectionData *selection,
 						 guint info,
 						 guint time);
 GtkWidget *	e_attachment_paned_get_controls_container

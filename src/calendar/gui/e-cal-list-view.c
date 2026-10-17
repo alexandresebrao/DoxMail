@@ -359,7 +359,7 @@ setup_e_table (ECalListView *cal_list_view)
 
 	widget = e_table_new (E_TABLE_MODEL (model), extras, specification);
 	g_object_set (G_OBJECT (widget), "uniform-row-height", TRUE, NULL);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	cal_list_view->priv->table = E_TABLE (widget);
 	gtk_widget_show (widget);
 
@@ -420,7 +420,7 @@ e_cal_list_view_dispose (GObject *object)
 	cal_list_view = E_CAL_LIST_VIEW (object);
 
 	if (cal_list_view->priv->table) {
-		gtk_widget_destroy (GTK_WIDGET (cal_list_view->priv->table));
+		e_gtk_widget_destroy (GTK_WIDGET (cal_list_view->priv->table));
 		cal_list_view->priv->table = NULL;
 	}
 
@@ -495,7 +495,7 @@ e_cal_list_view_on_table_key_press (ETable *table,
 {
 	if (event && event->type == GDK_KEY_PRESS &&
 	    (event->key.keyval == GDK_KEY_Return || event->key.keyval == GDK_KEY_KP_Enter) &&
-	    (event->key.state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK)) == 0 &&
+	    (event->key.state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_ALT_MASK)) == 0 &&
 	    !e_table_is_editing (table)) {
 		e_cal_list_view_open_at_row (data, row);
 		return TRUE;
@@ -516,7 +516,7 @@ e_cal_list_view_on_table_white_space_event (ETable *table,
 	g_return_val_if_fail (event != NULL, FALSE);
 
 	if (event->type == GDK_BUTTON_PRESS &&
-	    gdk_event_get_button (event, &event_button) &&
+	    e_gdk_event_get_button (event, &event_button) &&
 	    event_button == 3) {
 		GtkWidget *table_canvas;
 

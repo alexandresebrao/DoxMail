@@ -296,10 +296,10 @@ emla_list_action_cb (CamelFolder *folder,
 			goto exit;
 		} else if (url && *url) {
 			if (context->action == EMLA_ACTION_ARCHIVED_AT) {
-				GtkClipboard *clipboard;
+				GdkClipboard *clipboard;
 
-				clipboard = gtk_clipboard_get (GDK_SELECTION_CLIPBOARD);
-				gtk_clipboard_set_text (clipboard, url, -1);
+				clipboard = e_gtk_clipboard_get (E_GTK_SELECTION_CLIPBOARD);
+				e_gtk_clipboard_set_text (clipboard, url, -1);
 			} else {
 				e_show_uri (window, url);
 			}

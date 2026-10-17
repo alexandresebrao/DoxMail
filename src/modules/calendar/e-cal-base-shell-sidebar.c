@@ -237,7 +237,7 @@ cal_base_shell_sidebar_check_state (EShellSidebar *shell_sidebar)
 
 static gboolean
 cal_base_shell_sidebar_date_navigator_scroll_event_cb (ECalBaseShellSidebar *cal_base_shell_sidebar,
-						       GdkEventScroll *event,
+						       GdkEvent *event,
 						       ECalendar *date_navigator)
 {
 	ECalendarItem *calitem;
@@ -524,7 +524,7 @@ cal_base_shell_sidebar_transfer_thread (EAlertSinkThreadJobData *job_data,
 
 static gboolean
 e_cal_base_shell_sidebar_selector_data_dropped (ESourceSelector *selector,
-						GtkSelectionData *selection_data,
+						EGtkSelectionData *selection_data,
 						ESource *destination,
 						GdkDragAction action,
 						guint info,
@@ -548,7 +548,7 @@ e_cal_base_shell_sidebar_selector_data_dropped (ESourceSelector *selector,
 	g_return_val_if_fail (E_IS_SOURCE (destination), FALSE);
 	g_return_val_if_fail (E_IS_CAL_BASE_SHELL_SIDEBAR (sidebar), FALSE);
 
-	data = gtk_selection_data_get_data (selection_data);
+	data = e_gtk_selection_data_get_data (selection_data);
 	g_return_val_if_fail (data != NULL, FALSE);
 
 	segments = g_strsplit ((const gchar *) data, "\n", 2);
@@ -723,13 +723,13 @@ cal_base_shell_sidebar_constructed (GObject *object)
 	container = GTK_WIDGET (object);
 
 	widget = e_paned_new (GTK_ORIENTATION_VERTICAL);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	cal_base_shell_sidebar->priv->paned = widget;
 
 	container = widget;
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
-	gtk_paned_pack1 (GTK_PANED (container), widget, TRUE, TRUE);
+	e_gtk_paned_pack1 (container, widget, TRUE, TRUE);
 
 	container = widget;
 
@@ -737,7 +737,7 @@ cal_base_shell_sidebar_constructed (GObject *object)
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 
 	container = widget;
 
@@ -745,7 +745,7 @@ cal_base_shell_sidebar_constructed (GObject *object)
 	a11y = gtk_widget_get_accessible (widget);
 	atk_object_set_name (a11y, selector_name);
 	cal_base_shell_sidebar->priv->selector = E_SOURCE_SELECTOR (widget);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 
 	e_source_selector_load_groups_setup (cal_base_shell_sidebar->priv->selector,
 		e_shell_view_get_state_key_file (shell_view));
@@ -758,7 +758,7 @@ cal_base_shell_sidebar_constructed (GObject *object)
 		widget = gtk_scrolled_window_new (NULL, NULL);
 		gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (widget), GTK_POLICY_AUTOMATIC, GTK_POLICY_NEVER);
 		gtk_scrolled_window_set_overlay_scrolling (GTK_SCROLLED_WINDOW (widget), FALSE);
-		gtk_paned_pack2 (GTK_PANED (container), widget, FALSE, FALSE);
+		e_gtk_paned_pack2 (container, widget, FALSE, FALSE);
 		gtk_widget_show (widget);
 
 		container = widget;
@@ -770,7 +770,7 @@ cal_base_shell_sidebar_constructed (GObject *object)
 		calitem = e_calendar_get_item (E_CALENDAR (widget));
 		e_calendar_item_set_days_start_week_sel (calitem, 9);
 		e_calendar_item_set_max_days_sel (calitem, 42);
-		gtk_container_add (GTK_CONTAINER (container), widget);
+		e_gtk_container_add (container, widget);
 		cal_base_shell_sidebar->priv->date_navigator = E_CALENDAR (widget);
 		gtk_widget_show (widget);
 
@@ -789,10 +789,10 @@ cal_base_shell_sidebar_constructed (GObject *object)
 			G_CALLBACK (cal_base_shell_sidebar_date_navigator_scroll_event_cb), cal_base_shell_sidebar);
 	}
 
-	gtk_widget_show_all (GTK_WIDGET (object));
+	gtk_widget_set_visible (GTK_WIDGET (object), TRUE);
 
-	gtk_drag_dest_set (
-		GTK_WIDGET (cal_base_shell_sidebar->priv->selector), GTK_DEST_DEFAULT_ALL,
+	e_gtk_drag_dest_set (
+		GTK_WIDGET (cal_base_shell_sidebar->priv->selector), E_GTK_DEST_DEFAULT_ALL,
 		NULL, 0, GDK_ACTION_COPY | GDK_ACTION_MOVE);
 
 	e_drag_dest_add_calendar_targets (GTK_WIDGET (cal_base_shell_sidebar->priv->selector));

@@ -25,7 +25,13 @@
 #include "e-categories-config.h"
 #include "e-category-completion.h"
 
+/* GtkEntryCompletion is final with GTK 4, thus ECategoryCompletion is a
+ * helper object living as data on the completion it sets up. */
+#define HELPER_KEY "e-category-completion"
+
 struct _ECategoryCompletionPrivate {
+	GtkEntryCompletion *completion; /* not referenced, it owns us */
+	GtkEventController *focus_controller;
 	GtkWidget *last_known_entry;
 	gchar *create;
 	gchar *prefix;
@@ -41,7 +47,13 @@ enum {
 	NUM_COLUMNS
 };
 
-G_DEFINE_TYPE_WITH_PRIVATE (ECategoryCompletion, e_category_completion, GTK_TYPE_ENTRY_COMPLETION)
+G_DEFINE_TYPE_WITH_PRIVATE (ECategoryCompletion, e_category_completion, G_TYPE_OBJECT)
+
+static ECategoryCompletion *
+category_completion_get (GtkEntryCompletion *completion)
+{
+	return g_object_get_data (G_OBJECT (completion), HELPER_KEY);
+}
 
 /* Forward Declarations */
 
@@ -121,7 +133,7 @@ category_completion_complete (GtkEntryCompletion *completion,
 	entry = gtk_entry_completion_get_entry (completion);
 
 	editable = GTK_EDITABLE (entry);
-	text = gtk_entry_get_text (GTK_ENTRY (entry));
+	text = gtk_editable_get_text (GTK_EDITABLE (entry));
 
 	/* Get the cursor position as a character offset. */
 	offset = gtk_editable_get_position (editable);
@@ -174,7 +186,7 @@ category_completion_is_match (GtkEntryCompletion *completion,
 	GValue value = { 0, };
 	gboolean match;
 
-	self = E_CATEGORY_COMPLETION (completion);
+	self = category_completion_get (completion);
 	entry = gtk_entry_completion_get_entry (completion);
 	model = gtk_entry_completion_get_model (completion);
 
@@ -209,7 +221,7 @@ category_completion_update_prefix (GtkEntryCompletion *completion)
 	gchar *input;
 	glong offset;
 
-	self = E_CATEGORY_COMPLETION (completion);
+	self = category_completion_get (completion);
 	entry = gtk_entry_completion_get_entry (completion);
 	model = gtk_entry_completion_get_model (completion);
 
@@ -221,7 +233,7 @@ category_completion_update_prefix (GtkEntryCompletion *completion)
 	}
 
 	editable = GTK_EDITABLE (entry);
-	text = gtk_entry_get_text (GTK_ENTRY (entry));
+	text = gtk_editable_get_text (GTK_EDITABLE (entry));
 
 	/* Get the cursor position as a character offset. */
 	offset = gtk_editable_get_position (editable);
@@ -249,9 +261,6 @@ category_completion_update_prefix (GtkEntryCompletion *completion)
 		end = text + strlen (text);
 	else
 		end = cp;
-
-	if (self->priv->create != NULL)
-		gtk_entry_completion_delete_action (completion, 0);
 
 	g_clear_pointer (&self->priv->create, g_free);
 	g_clear_pointer (&self->priv->prefix, g_free);
@@ -287,22 +296,21 @@ category_completion_update_prefix (GtkEntryCompletion *completion)
 		valid = gtk_tree_model_iter_next (model, &iter);
 	}
 
-	input = g_strdup_printf (_("Create category “%s”"), self->priv->create);
-	gtk_entry_completion_insert_action_text (completion, 0, input);
-	g_free (input);
+	/* FIXME-GTK4: GtkEntryCompletion has no actions anymore, thus no
+	 * "Create category" item; new categories come from the editor. */
 }
 
-static gboolean
-category_completion_sanitize_suffix (GtkEntry *entry,
-                                     GdkEventFocus *event,
+static void
+category_completion_sanitize_suffix (GtkEventControllerFocus *controller,
                                      GtkEntryCompletion *completion)
 {
+	GtkWidget *entry;
 	const gchar *text;
 
-	g_return_val_if_fail (entry != NULL, FALSE);
-	g_return_val_if_fail (completion != NULL, FALSE);
+	entry = gtk_event_controller_get_widget (GTK_EVENT_CONTROLLER (controller));
+	g_return_if_fail (entry != NULL);
 
-	text = gtk_entry_get_text (entry);
+	text = gtk_editable_get_text (GTK_EDITABLE (entry));
 	if (text) {
 		gint len = strlen (text), old_len = len;
 
@@ -312,28 +320,32 @@ category_completion_sanitize_suffix (GtkEntry *entry,
 		if (old_len != len) {
 			gchar *tmp = g_strndup (text, len);
 
-			gtk_entry_set_text (entry, tmp);
+			gtk_editable_set_text (GTK_EDITABLE (entry), tmp);
 
 			g_free (tmp);
 		}
 	}
+}
 
-	return FALSE;
+static void
+category_completion_untrack_entry (ECategoryCompletion *self)
+{
+	if (self->priv->last_known_entry != NULL) {
+		e_signal_disconnect_notify_handler (self->priv->last_known_entry, &self->priv->notify_cursor_position_id);
+		e_signal_disconnect_notify_handler (self->priv->last_known_entry, &self->priv->notify_text_id);
+		if (self->priv->focus_controller)
+			gtk_widget_remove_controller (self->priv->last_known_entry, self->priv->focus_controller);
+		self->priv->focus_controller = NULL;
+		g_clear_object (&self->priv->last_known_entry);
+	}
 }
 
 static void
 category_completion_track_entry (GtkEntryCompletion *completion)
 {
-	ECategoryCompletion *self = E_CATEGORY_COMPLETION (completion);
+	ECategoryCompletion *self = category_completion_get (completion);
 
-	if (self->priv->last_known_entry != NULL) {
-		g_signal_handlers_disconnect_matched (
-			self->priv->last_known_entry, G_SIGNAL_MATCH_DATA,
-			0, 0, NULL, NULL, completion);
-		e_signal_disconnect_notify_handler (self->priv->last_known_entry, &self->priv->notify_cursor_position_id);
-		e_signal_disconnect_notify_handler (self->priv->last_known_entry, &self->priv->notify_text_id);
-		g_clear_object (&self->priv->last_known_entry);
-	}
+	category_completion_untrack_entry (self);
 
 	g_clear_pointer (&self->priv->prefix, g_free);
 
@@ -351,44 +363,13 @@ category_completion_track_entry (GtkEntryCompletion *completion)
 		self->priv->last_known_entry, "notify::text",
 		G_CALLBACK (category_completion_update_prefix), completion);
 
+	self->priv->focus_controller = gtk_event_controller_focus_new ();
 	g_signal_connect (
-		self->priv->last_known_entry, "focus-out-event",
+		self->priv->focus_controller, "leave",
 		G_CALLBACK (category_completion_sanitize_suffix), completion);
+	gtk_widget_add_controller (self->priv->last_known_entry, self->priv->focus_controller);
 
 	category_completion_update_prefix (completion);
-}
-
-static void
-category_completion_constructed (GObject *object)
-{
-	GtkCellRenderer *renderer;
-	GtkEntryCompletion *completion;
-
-	/* Chain up to parent's constructed() method. */
-	G_OBJECT_CLASS (e_category_completion_parent_class)->constructed (object);
-
-	completion = GTK_ENTRY_COMPLETION (object);
-
-	gtk_entry_completion_set_match_func (
-		completion, (GtkEntryCompletionMatchFunc)
-		category_completion_is_match, NULL, NULL);
-
-	gtk_entry_completion_set_text_column (completion, COLUMN_CATEGORY);
-
-	renderer = gtk_cell_renderer_pixbuf_new ();
-	gtk_cell_layout_pack_start (
-		GTK_CELL_LAYOUT (completion), renderer, FALSE);
-	gtk_cell_layout_add_attribute (
-		GTK_CELL_LAYOUT (completion),
-		renderer, "pixbuf", COLUMN_PIXBUF);
-	gtk_cell_layout_reorder (
-		GTK_CELL_LAYOUT (completion), renderer, 0);
-
-	e_categories_register_change_listener (
-		G_CALLBACK (category_completion_categories_changed_cb),
-		completion);
-
-	category_completion_build_model (completion);
 }
 
 static void
@@ -396,14 +377,7 @@ category_completion_dispose (GObject *object)
 {
 	ECategoryCompletion *self = E_CATEGORY_COMPLETION (object);
 
-	if (self->priv->last_known_entry != NULL) {
-		g_signal_handlers_disconnect_matched (
-			self->priv->last_known_entry, G_SIGNAL_MATCH_DATA,
-			0, 0, NULL, NULL, object);
-		e_signal_disconnect_notify_handler (self->priv->last_known_entry, &self->priv->notify_cursor_position_id);
-		e_signal_disconnect_notify_handler (self->priv->last_known_entry, &self->priv->notify_text_id);
-		g_clear_object (&self->priv->last_known_entry);
-	}
+	category_completion_untrack_entry (self);
 
 	/* Chain up to parent's dispose() method. */
 	G_OBJECT_CLASS (e_category_completion_parent_class)->dispose (object);
@@ -419,7 +393,7 @@ category_completion_finalize (GObject *object)
 
 	e_categories_unregister_change_listener (
 		G_CALLBACK (category_completion_categories_changed_cb),
-		object);
+		self->priv->completion);
 
 	/* Chain up to parent's finalize() method. */
 	G_OBJECT_CLASS (e_category_completion_parent_class)->finalize (object);
@@ -428,7 +402,8 @@ category_completion_finalize (GObject *object)
 static gboolean
 category_completion_match_selected (GtkEntryCompletion *completion,
                                     GtkTreeModel *model,
-                                    GtkTreeIter *iter)
+                                    GtkTreeIter *iter,
+                                    gpointer user_data)
 {
 	GValue value = { 0, };
 
@@ -440,34 +415,13 @@ category_completion_match_selected (GtkEntryCompletion *completion,
 }
 
 static void
-category_completion_action_activated (GtkEntryCompletion *completion,
-                                      gint index)
-{
-	ECategoryCompletion *self;
-	gchar *category;
-
-	self = E_CATEGORY_COMPLETION (completion);
-
-	category = g_strdup (self->priv->create);
-	e_categories_add (category, NULL, NULL, TRUE);
-	category_completion_complete (completion, category);
-	g_free (category);
-}
-
-static void
 e_category_completion_class_init (ECategoryCompletionClass *class)
 {
 	GObjectClass *object_class;
-	GtkEntryCompletionClass *entry_completion_class;
 
 	object_class = G_OBJECT_CLASS (class);
-	object_class->constructed = category_completion_constructed;
 	object_class->dispose = category_completion_dispose;
 	object_class->finalize = category_completion_finalize;
-
-	entry_completion_class = GTK_ENTRY_COMPLETION_CLASS (class);
-	entry_completion_class->match_selected = category_completion_match_selected;
-	entry_completion_class->action_activated = category_completion_action_activated;
 }
 
 static void
@@ -484,5 +438,43 @@ e_category_completion_init (ECategoryCompletion *category_completion)
 GtkEntryCompletion *
 e_category_completion_new (void)
 {
-	return g_object_new (E_TYPE_CATEGORY_COMPLETION, NULL);
+	ECategoryCompletion *self;
+	GtkEntryCompletion *completion;
+	GtkCellRenderer *renderer;
+
+	G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+
+	completion = gtk_entry_completion_new ();
+
+	self = g_object_new (E_TYPE_CATEGORY_COMPLETION, NULL);
+	self->priv->completion = completion;
+	g_object_set_data_full (G_OBJECT (completion), HELPER_KEY, self, g_object_unref);
+
+	gtk_entry_completion_set_match_func (
+		completion, (GtkEntryCompletionMatchFunc)
+		category_completion_is_match, NULL, NULL);
+
+	gtk_entry_completion_set_text_column (completion, COLUMN_CATEGORY);
+
+	renderer = gtk_cell_renderer_pixbuf_new ();
+	gtk_cell_layout_pack_start (
+		GTK_CELL_LAYOUT (completion), renderer, FALSE);
+	gtk_cell_layout_add_attribute (
+		GTK_CELL_LAYOUT (completion),
+		renderer, "pixbuf", COLUMN_PIXBUF);
+	gtk_cell_layout_reorder (
+		GTK_CELL_LAYOUT (completion), renderer, 0);
+
+	g_signal_connect (completion, "match-selected",
+		G_CALLBACK (category_completion_match_selected), NULL);
+
+	G_GNUC_END_IGNORE_DEPRECATIONS
+
+	e_categories_register_change_listener (
+		G_CALLBACK (category_completion_categories_changed_cb),
+		completion);
+
+	category_completion_build_model (completion);
+
+	return completion;
 }

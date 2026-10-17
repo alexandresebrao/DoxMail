@@ -271,7 +271,7 @@ dialog_response (GtkDialog *gd,
 		d (printf ("hiding dialog\n"));
 		g_hash_table_foreach (data->active, (GHFunc) hide_send_info, NULL);
 		data->gd = NULL;
-		/*gtk_widget_destroy((GtkWidget *)gd);*/
+		/*e_gtk_widget_destroy ((GtkWidget *)gd);*/
 		break;
 	}
 }
@@ -781,11 +781,11 @@ build_dialog (GtkWindow *parent,
 		"/org/gnome/evolution/mail/send-recv-window/",
 		E_RESTORE_WINDOW_SIZE);
 
-	container = gtk_dialog_get_action_area (gd);
-	gtk_container_set_border_width (GTK_CONTAINER (container), 6);
+	container = e_gtk_dialog_get_action_area (gd);
+	e_gtk_widget_set_border_width (container, 6);
 
 	container = gtk_dialog_get_content_area (gd);
-	gtk_container_set_border_width (GTK_CONTAINER (container), 0);
+	e_gtk_widget_set_border_width (container, 0);
 
 	cancel_button = e_dialog_button_new_with_icon ("process-stop", _("Cancel _All"));
 	gtk_widget_show (cancel_button);
@@ -793,21 +793,19 @@ build_dialog (GtkWindow *parent,
 
 	wgrid = gtk_grid_new ();
 	grid = GTK_GRID (wgrid);
-	gtk_container_set_border_width (GTK_CONTAINER (grid), 6);
+	e_gtk_widget_set_border_width (grid, 6);
 	gtk_grid_set_column_spacing (grid, 6);
 
 	scrolled_window = gtk_scrolled_window_new (NULL, NULL);
-	gtk_container_set_border_width (
-		GTK_CONTAINER (scrolled_window), 6);
+	e_gtk_widget_set_border_width (scrolled_window, 6);
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (scrolled_window),
 		GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 	gtk_widget_set_size_request (scrolled_window, 50, 50);
 
 	container = gtk_dialog_get_content_area (gd);
-	gtk_container_add (GTK_CONTAINER (scrolled_window), wgrid);
-	gtk_box_pack_start (
-		GTK_BOX (container), scrolled_window, TRUE, TRUE, 0);
+	e_gtk_container_add (scrolled_window, wgrid);
+	e_gtk_box_pack_start (GTK_BOX (container), scrolled_window, TRUE, TRUE, 0);
 	gtk_widget_show (scrolled_window);
 
 	/* must bet setup after send_recv_dialog as it may re-trigger send-recv button */
@@ -858,8 +856,7 @@ build_dialog (GtkWindow *parent,
 				STATUS_TIMEOUT, operation_status_timeout, info);
 		}
 
-		recv_icon = gtk_image_new_from_icon_name (
-			"mail-inbox", SEND_RECV_ICON_SIZE);
+		recv_icon = gtk_image_new_from_icon_name ("mail-inbox");
 		gtk_widget_set_valign (recv_icon, GTK_ALIGN_START);
 
 		pretty_url = format_service_name (service);
@@ -941,8 +938,7 @@ build_dialog (GtkWindow *parent,
 				STATUS_TIMEOUT, operation_status_timeout, info);
 		}
 
-		send_icon = gtk_image_new_from_icon_name (
-			"mail-outbox", SEND_RECV_ICON_SIZE);
+		send_icon = gtk_image_new_from_icon_name ("mail-outbox");
 		gtk_widget_set_valign (send_icon, GTK_ALIGN_START);
 
 		pretty_url = format_service_name (transport);
@@ -982,7 +978,7 @@ build_dialog (GtkWindow *parent,
 			G_CALLBACK (receive_cancel), info);
 	}
 
-	gtk_widget_show_all (wgrid);
+	gtk_widget_set_visible (wgrid, TRUE);
 
 	g_signal_connect (
 		gd, "response",
@@ -1181,7 +1177,7 @@ receive_done (gpointer data)
 
 	if (g_hash_table_size (info->data->active) == 0) {
 		if (info->data->gd)
-			gtk_widget_destroy ((GtkWidget *) info->data->gd);
+			e_gtk_widget_destroy ((GtkWidget *) info->data->gd);
 		free_send_data ();
 	}
 
@@ -1846,7 +1842,7 @@ send_receive (GtkWindow *parent,
 
 	if (send_data && g_hash_table_size (send_data->active) == 0) {
 		if (send_data->gd)
-			gtk_widget_destroy ((GtkWidget *) send_data->gd);
+			e_gtk_widget_destroy ((GtkWidget *) send_data->gd);
 		free_send_data ();
 	}
 

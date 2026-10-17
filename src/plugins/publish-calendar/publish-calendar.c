@@ -406,7 +406,7 @@ ask_question (GMountOperation *op,
 		}
 	}
 
-	res = gtk_dialog_run (GTK_DIALOG (dialog));
+	res = e_gtk_dialog_run (GTK_DIALOG (dialog));
 	if (res >= 0) {
 		g_mount_operation_set_choice (op, res);
 		g_mount_operation_reply (op, G_MOUNT_OPERATION_HANDLED);
@@ -414,7 +414,7 @@ ask_question (GMountOperation *op,
 		g_mount_operation_reply (op, G_MOUNT_OPERATION_ABORTED);
 	}
 
-	gtk_widget_destroy (GTK_WIDGET (dialog));
+	e_gtk_widget_destroy (GTK_WIDGET (dialog));
 }
 
 static void
@@ -715,7 +715,7 @@ url_add_clicked (GtkButton *button,
 			g_free (uri);
 		}
 	}
-	gtk_widget_destroy (url_editor);
+	e_gtk_widget_destroy (url_editor);
 }
 
 static void
@@ -750,7 +750,7 @@ url_edit_clicked (GtkButton *button,
 			publish_uri_async (uri);
 		}
 
-		gtk_widget_destroy (url_editor);
+		e_gtk_widget_destroy (url_editor);
 	}
 }
 
@@ -788,8 +788,8 @@ url_remove_clicked (GtkButton *button,
 	gtk_dialog_add_button (GTK_DIALOG (confirm), _("_Remove"), GTK_RESPONSE_YES);
 	gtk_dialog_set_default_response (GTK_DIALOG (confirm), GTK_RESPONSE_CANCEL);
 
-	response = gtk_dialog_run (GTK_DIALOG (confirm));
-	gtk_widget_destroy (confirm);
+	response = e_gtk_dialog_run (GTK_DIALOG (confirm));
+	e_gtk_widget_destroy (confirm);
 
 	if (response == GTK_RESPONSE_YES) {
 		gint len;
@@ -901,8 +901,8 @@ publish_calendar_locations (EPlugin *epl,
 		gtk_tree_selection_select_iter (selection, &iter);
 
 	toplevel = e_builder_get_widget (builder, "toplevel");
-	gtk_widget_show_all (toplevel);
-	gtk_box_pack_start (GTK_BOX (data->parent), toplevel, FALSE, TRUE, 0);
+	gtk_widget_set_visible (toplevel, TRUE);
+	e_gtk_box_pack_start (GTK_BOX (data->parent), toplevel, FALSE, TRUE, 0);
 
 	g_object_unref (builder);
 

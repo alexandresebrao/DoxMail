@@ -300,7 +300,7 @@ entry_changed (EWeatherLocationEntry *entry)
 	gtk_entry_completion_set_match_func (gtk_entry_get_completion (GTK_ENTRY (entry)), matcher, NULL, NULL);
 	gtk_entry_completion_set_model (gtk_entry_get_completion (GTK_ENTRY (entry)), entry->priv->model);
 
-	text = gtk_entry_get_text (GTK_ENTRY (entry));
+	text = gtk_editable_get_text (GTK_EDITABLE (entry));
 
 	if (text && *text)
 		entry->priv->custom_text = TRUE;
@@ -329,16 +329,16 @@ set_location_internal (EWeatherLocationEntry *entry,
 				    LOC_E_WEATHER_LOCATION_ENTRY_COL_DISPLAY_NAME, &name,
 				    LOC_E_WEATHER_LOCATION_ENTRY_COL_LOCATION, &priv->location,
 				    -1);
-		gtk_entry_set_text (GTK_ENTRY (entry), name);
+		gtk_editable_set_text (GTK_EDITABLE (entry), name);
 		priv->custom_text = FALSE;
 		g_free (name);
 	} else if (loc) {
 		priv->location = g_object_ref (loc);
-		gtk_entry_set_text (GTK_ENTRY (entry), gweather_location_get_name (loc));
+		gtk_editable_set_text (GTK_EDITABLE (entry), gweather_location_get_name (loc));
 		priv->custom_text = FALSE;
 	} else {
 		priv->location = NULL;
-		gtk_entry_set_text (GTK_ENTRY (entry), "");
+		gtk_editable_set_text (GTK_EDITABLE (entry), "");
 		priv->custom_text = TRUE;
 	}
 
@@ -881,7 +881,7 @@ static void
 _no_matches (GtkEntryCompletion *completion,
 	     EWeatherLocationEntry *entry)
 {
-	const gchar *key = gtk_entry_get_text (GTK_ENTRY (entry));
+	const gchar *key = gtk_editable_get_text (GTK_EDITABLE (entry));
 	GeocodeForward *forward;
 
 	if (entry->priv->cancellable) {

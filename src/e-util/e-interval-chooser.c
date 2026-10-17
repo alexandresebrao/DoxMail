@@ -118,7 +118,7 @@ e_interval_chooser_init (EIntervalChooser *chooser)
 	gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (widget), TRUE);
 	gtk_spin_button_set_update_policy (
 		GTK_SPIN_BUTTON (widget), GTK_UPDATE_IF_VALID);
-	gtk_box_pack_start (GTK_BOX (chooser), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (chooser), widget, TRUE, TRUE, 0);
 	chooser->priv->spin_button = GTK_SPIN_BUTTON (widget);
 	gtk_widget_show (widget);
 
@@ -133,7 +133,7 @@ e_interval_chooser_init (EIntervalChooser *chooser)
 		GTK_COMBO_BOX_TEXT (widget), _("hours"));
 	gtk_combo_box_text_append_text (
 		GTK_COMBO_BOX_TEXT (widget), _("days"));
-	gtk_box_pack_start (GTK_BOX (chooser), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (chooser), widget, FALSE, FALSE, 0);
 	chooser->priv->combo_box = GTK_COMBO_BOX (widget);
 	gtk_widget_show (widget);
 

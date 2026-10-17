@@ -87,7 +87,7 @@ mail_shell_sidebar_selection_changed_cb (EShellSidebar *shell_sidebar,
 	widget = e_shell_sidebar_get_image_widget (shell_sidebar);
 
 	if (custom_icon) {
-		gtk_image_set_from_gicon (GTK_IMAGE (widget), custom_icon, GTK_ICON_SIZE_MENU);
+		gtk_image_set_from_gicon (GTK_IMAGE (widget), custom_icon);
 	} else if (gtk_image_get_storage_type (GTK_IMAGE (widget)) == GTK_IMAGE_GICON &&
 		   g_strcmp0 (icon_name, e_shell_sidebar_get_icon_name (shell_sidebar)) == 0) {
 		/* When the custom icon is unset and the icon name matches, emit the signal here,
@@ -123,14 +123,14 @@ mail_shell_sidebar_model_row_changed_cb (GtkTreeModel *model,
 
 static gboolean
 mail_shell_sidebar_tree_view_key_press_cb (GtkWidget *widget,
-					   GdkEventKey *key_event,
+					   GdkEvent *key_event,
 					   gpointer user_data)
 {
 	EMailShellSidebar *mail_shell_sidebar = user_data;
 
 	g_return_val_if_fail (E_IS_MAIL_SHELL_SIDEBAR (mail_shell_sidebar), FALSE);
 
-	if ((key_event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK)) == 0 &&
+	if ((key_event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_ALT_MASK)) == 0 &&
 	    (key_event->keyval == GDK_KEY_Return || key_event->keyval == GDK_KEY_KP_Enter) &&
 	    gtk_widget_has_focus (widget)) {
 		EShellView *shell_view;
@@ -226,13 +226,13 @@ mail_shell_sidebar_constructed (GObject *object)
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	gtk_widget_show (widget);
 
 	container = widget;
 
 	widget = e_mail_sidebar_new (session, alert_sink);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	mail_shell_sidebar->priv->folder_tree = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -278,12 +278,12 @@ guess_screen_width (EMailShellSidebar *sidebar)
 	GdkRectangle rect;
 
 	display = gtk_widget_get_display (widget);
-	toplevel = gtk_widget_get_toplevel (widget);
+	toplevel = e_gtk_widget_get_toplevel (widget);
 	if (toplevel && gtk_widget_get_realized (toplevel)) {
 		GdkMonitor *monitor;
 
 		monitor = gdk_display_get_monitor_at_window (
-			display, gtk_widget_get_window (toplevel));
+			display, e_gtk_widget_get_surface (toplevel));
 		gdk_monitor_get_workarea (monitor, &rect);
 
 		return rect.width;

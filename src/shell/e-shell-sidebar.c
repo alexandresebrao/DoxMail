@@ -160,7 +160,7 @@ shell_sidebar_dispose (GObject *object)
 
 	if (self->priv->event_box != NULL) {
 		gtk_widget_unparent (self->priv->event_box);
-		gtk_widget_destroy (self->priv->event_box);
+		e_gtk_widget_destroy (self->priv->event_box);
 	}
 
 	g_clear_object (&self->priv->event_box);
@@ -215,8 +215,8 @@ shell_sidebar_get_preferred_width (GtkWidget *widget,
 {
 	GtkWidget *child;
 
-	child = gtk_bin_get_child (GTK_BIN (widget));
-	gtk_widget_get_preferred_width (child, minimum, natural);
+	child = e_gtk_bin_get_child (widget);
+	e_gtk_widget_get_preferred_width (child, minimum, natural);
 
 	/* Do not use priv->event_box here, otherwise it won't ellipsize. */
 }
@@ -230,11 +230,11 @@ shell_sidebar_get_preferred_height (GtkWidget *widget,
 	gint child_min, child_nat;
 	GtkWidget *child;
 
-	child = gtk_bin_get_child (GTK_BIN (widget));
-	gtk_widget_get_preferred_height (child, minimum, natural);
+	child = e_gtk_bin_get_child (widget);
+	e_gtk_widget_get_preferred_height (child, minimum, natural);
 
 	child = self->priv->event_box;
-	gtk_widget_get_preferred_height (child, &child_min, &child_nat);
+	e_gtk_widget_get_preferred_height (child, &child_min, &child_nat);
 
 	*minimum += child_min;
 	*natural += child_nat;
@@ -265,7 +265,7 @@ shell_sidebar_size_allocate (GtkWidget *widget,
 	child_allocation.height =
 		allocation->height - child_requisition.height;
 
-	child = gtk_bin_get_child (GTK_BIN (widget));
+	child = e_gtk_bin_get_child (widget);
 	if (child != NULL)
 		gtk_widget_size_allocate (child, &child_allocation);
 }
@@ -273,7 +273,7 @@ shell_sidebar_size_allocate (GtkWidget *widget,
 static void
 shell_sidebar_forall (GtkContainer *container,
                       gboolean include_internals,
-                      GtkCallback callback,
+                      EGtkCallback callback,
                       gpointer callback_data)
 {
 	EShellSidebar *self = E_SHELL_SIDEBAR (container);
@@ -410,7 +410,6 @@ e_shell_sidebar_init (EShellSidebar *shell_sidebar)
 
 	shell_sidebar->priv = e_shell_sidebar_get_instance_private (shell_sidebar);
 
-	gtk_widget_set_has_window (GTK_WIDGET (shell_sidebar), FALSE);
 
 	widget = gtk_event_box_new ();
 	gtk_widget_set_parent (widget, GTK_WIDGET (shell_sidebar));
@@ -420,8 +419,8 @@ e_shell_sidebar_init (EShellSidebar *shell_sidebar)
 	container = widget;
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
-	gtk_style_context_add_class (gtk_widget_get_style_context (widget), "header-box");
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	gtk_widget_add_css_class (widget, "header-box");
+	e_gtk_container_add (container, widget);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -429,9 +428,9 @@ e_shell_sidebar_init (EShellSidebar *shell_sidebar)
 	/* Pick a bogus icon name just to get the storage type set. */
 	icon_name = "evolution";
 	e_shell_sidebar_set_icon_name (shell_sidebar, icon_name);
-	widget = gtk_image_new_from_icon_name (icon_name, GTK_ICON_SIZE_MENU);
+	widget = gtk_image_new_from_icon_name (icon_name);
 	shell_sidebar->priv->image_widget = widget;
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	e_binding_bind_property (
@@ -442,7 +441,7 @@ e_shell_sidebar_init (EShellSidebar *shell_sidebar)
 	widget = gtk_label_new (NULL);
 	gtk_label_set_ellipsize (GTK_LABEL (widget), PANGO_ELLIPSIZE_END);
 	gtk_label_set_xalign (GTK_LABEL (widget), 0);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	attribute_list = pango_attr_list_new ();
@@ -458,7 +457,7 @@ e_shell_sidebar_init (EShellSidebar *shell_sidebar)
 
 	widget = gtk_label_new (NULL);
 	gtk_label_set_xalign (GTK_LABEL (widget), 1.0);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	attribute_list = pango_attr_list_new ();

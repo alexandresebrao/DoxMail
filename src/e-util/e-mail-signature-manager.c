@@ -62,7 +62,7 @@ enum {
 
 static guint signals[LAST_SIGNAL];
 
-G_DEFINE_TYPE_WITH_PRIVATE (EMailSignatureManager, e_mail_signature_manager, GTK_TYPE_PANED)
+G_DEFINE_TYPE_WITH_PRIVATE (EMailSignatureManager, e_mail_signature_manager, E_TYPE_PANED)
 
 static void
 mail_signature_manager_emit_editor_created (EMailSignatureManager *manager,
@@ -75,7 +75,7 @@ mail_signature_manager_emit_editor_created (EMailSignatureManager *manager,
 
 static gboolean
 mail_signature_manager_key_press_event_cb (EMailSignatureManager *manager,
-                                           GdkEventKey *event)
+                                           GdkEvent *event)
 {
 	if (event->keyval == GDK_KEY_Delete) {
 		e_mail_signature_manager_remove_signature (manager);
@@ -96,13 +96,13 @@ mail_signature_manager_run_script_dialog (EMailSignatureManager *manager,
 
 	registry = e_mail_signature_manager_get_registry (manager);
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (manager));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (manager));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	dialog = e_mail_signature_script_dialog_new (registry, parent, source);
 	gtk_window_set_title (GTK_WINDOW (dialog), title);
 
-	if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
+	if (e_gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
 		EAsyncClosure *closure;
 		GAsyncResult *result;
 		GError *error = NULL;
@@ -129,7 +129,7 @@ mail_signature_manager_run_script_dialog (EMailSignatureManager *manager,
 		}
 	}
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 }
 
 static void
@@ -257,7 +257,7 @@ mail_signature_manager_constructed (GObject *object)
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
 	gtk_widget_set_margin_bottom (widget, 12);
-	gtk_paned_pack1 (GTK_PANED (container), widget, TRUE, FALSE);
+	e_gtk_paned_pack1 (container, widget, TRUE, FALSE);
 	gtk_widget_show (widget);
 
 	container = hbox = widget;
@@ -266,15 +266,14 @@ mail_signature_manager_constructed (GObject *object)
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_set_shadow_type (
-		GTK_SCROLLED_WINDOW (widget), GTK_SHADOW_IN);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (widget), TRUE);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
 
 	widget = e_mail_signature_tree_view_new (registry);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	manager->priv->tree_view = widget;  /* not referenced */
 	gtk_widget_show (widget);
 
@@ -297,17 +296,15 @@ mail_signature_manager_constructed (GObject *object)
 
 	container = hbox;
 
-	widget = gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
-	gtk_button_box_set_layout (
-		GTK_BUTTON_BOX (widget), GTK_BUTTONBOX_START);
+	widget = e_gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
 	gtk_box_set_spacing (GTK_BOX (widget), 6);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
 
 	widget = e_dialog_button_new_with_icon ("list-add", _("_Add"));
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	manager->priv->add_button = widget;  /* not referenced */
 	gtk_widget_show (widget);
 
@@ -317,7 +314,7 @@ mail_signature_manager_constructed (GObject *object)
 		manager);
 
 	widget = e_dialog_button_new_with_icon ("system-run", _("Add _Script"));
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	manager->priv->add_script_button = widget;  /* not referenced */
 	gtk_widget_show (widget);
 
@@ -337,7 +334,7 @@ mail_signature_manager_constructed (GObject *object)
 		manager);
 
 	widget = gtk_button_new_with_mnemonic (_("_Edit"));
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	manager->priv->edit_button = widget;  /* not referenced */
 	gtk_widget_show (widget);
 
@@ -347,7 +344,7 @@ mail_signature_manager_constructed (GObject *object)
 		manager);
 
 	widget = e_dialog_button_new_with_icon ("list-remove", _("_Remove"));
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	manager->priv->remove_button = widget;  /* not referenced */
 	gtk_widget_show (widget);
 
@@ -359,19 +356,18 @@ mail_signature_manager_constructed (GObject *object)
 	container = GTK_WIDGET (manager);
 
 	widget = gtk_frame_new (NULL);
-	gtk_frame_set_shadow_type (GTK_FRAME (widget), GTK_SHADOW_IN);
-	gtk_paned_pack2 (GTK_PANED (container), widget, FALSE, FALSE);
+	e_gtk_paned_pack2 (container, widget, FALSE, FALSE);
 	manager->priv->preview_frame = widget;  /* not referenced */
 	gtk_widget_show (widget);
 
 	container = widget;
 
 	widget = e_mail_signature_preview_new (registry);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	manager->priv->preview = widget;  /* not referenced */
 	gtk_widget_show (widget);
 
-	gtk_paned_set_position (GTK_PANED (manager), PREVIEW_HEIGHT);
+	e_gtk_paned_set_position (manager, PREVIEW_HEIGHT);
 }
 
 static void
@@ -434,11 +430,10 @@ mail_signature_manager_editor_created (EMailSignatureManager *manager,
 	gpointer parent;
 
 	position = GTK_WIN_POS_CENTER_ON_PARENT;
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (manager));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (manager));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	gtk_window_set_transient_for (GTK_WINDOW (editor), parent);
-	gtk_window_set_position (GTK_WINDOW (editor), position);
 	gtk_widget_set_size_request (GTK_WIDGET (editor), 450, 300);
 	gtk_widget_show (GTK_WIDGET (editor));
 }

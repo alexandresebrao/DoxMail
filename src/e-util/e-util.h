@@ -158,6 +158,7 @@
 #include <e-util/e-menu-bar.h>
 #include <e-util/e-menu-tool-button.h>
 #include <e-util/e-message-popover.h>
+#include <e-util/e-gtk4-compat.h>
 #include <e-util/e-misc-utils.h>
 #include <e-util/e-mktemp.h>
 #include <e-util/e-month-widget.h>
@@ -280,8 +281,6 @@
 #endif
 #include <e-util/e-widget-undo.h>
 #include <e-util/e-xml-utils.h>
-#include <e-util/ea-cell-table.h>
-#include <e-util/ea-factory.h>
 #include <e-util/gal-view-collection.h>
 #include <e-util/gal-view-etable.h>
 #include <e-util/gal-view-instance-save-as-dialog.h>

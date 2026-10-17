@@ -74,8 +74,8 @@ struct _EAddressbookViewPrivate {
 	gint search_id;
 	EFilterRule *advanced_search;
 
-	GtkTargetList *copy_target_list;
-	GtkTargetList *paste_target_list;
+	EGtkTargetList *copy_target_list;
+	EGtkTargetList *paste_target_list;
 
 	GSList *previous_selection; /* EContact * */
 	EContact *cursor_contact;
@@ -105,7 +105,7 @@ enum {
 	DND_TARGET_TYPE_VCARD
 };
 
-static GtkTargetEntry drag_types[] = {
+static EGtkTargetEntry drag_types[] = {
 	{ (gchar *) "text/x-source-vcard", 0, DND_TARGET_TYPE_SOURCE_VCARD },
 	{ (gchar *) "text/x-vcard", 0, DND_TARGET_TYPE_VCARD }
 };
@@ -135,7 +135,7 @@ e_addressbook_view_get_selection_model (EAddressbookView *view)
 	if (GAL_IS_VIEW_ETABLE (gal_view)) {
 		GtkWidget *child;
 
-		child = gtk_bin_get_child (GTK_BIN (view));
+		child = e_gtk_bin_get_child (view);
 		model = e_table_get_selection_model (E_TABLE (child));
 
 	} else if (GAL_IS_VIEW_MINICARD (gal_view)) {
@@ -162,7 +162,7 @@ addressbook_view_emit_popup_event (EAddressbookView *view,
 	GtkWidget *focused_widget = NULL;
 	GtkWidget *toplevel;
 
-	toplevel = gtk_widget_get_toplevel (GTK_WIDGET (view));
+	toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (view));
 	if (GTK_IS_WINDOW (toplevel))
 		focused_widget = gtk_window_get_focus (GTK_WINDOW (toplevel));
 
@@ -261,7 +261,7 @@ addressbook_view_card_event_cb (EContactCardBox *box,
 
 	switch (event->type) {
 	case GDK_2BUTTON_PRESS:
-		gdk_event_get_button (event, &event_button);
+		e_gdk_event_get_button (event, &event_button);
 		if (event_button == GDK_BUTTON_PRIMARY) {
 			if (e_addressbook_view_get_editable (view)) {
 				if (child_index < e_contact_card_box_get_n_items (box)) {
@@ -278,7 +278,7 @@ addressbook_view_card_event_cb (EContactCardBox *box,
 		}
 		break;
 	case GDK_BUTTON_PRESS:
-		gdk_event_get_button (event, &event_button);
+		e_gdk_event_get_button (event, &event_button);
 		if (event_button == GDK_BUTTON_SECONDARY) {
 			if (child_index != G_MAXUINT && !e_contact_card_box_get_selected (box, child_index)) {
 				e_contact_card_box_set_selected_all (box, FALSE);
@@ -291,7 +291,7 @@ addressbook_view_card_event_cb (EContactCardBox *box,
 		break;
 	case GDK_KEY_PRESS:
 		if (((event->key.state & GDK_SHIFT_MASK) != 0 && event->key.keyval == GDK_KEY_F10) ||
-		    ((event->key.state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK)) == 0 && event->key.keyval == GDK_KEY_Menu)) {
+		    ((event->key.state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_ALT_MASK)) == 0 && event->key.keyval == GDK_KEY_Menu)) {
 			addressbook_view_emit_popup_event (view, event);
 			return TRUE;
 		}
@@ -408,7 +408,7 @@ table_white_space_event (ETable *table,
 {
 	guint event_button = 0;
 
-	gdk_event_get_button (event, &event_button);
+	e_gdk_event_get_button (event, &event_button);
 
 	if (event->type == GDK_BUTTON_PRESS && event_button == 3) {
 		addressbook_view_emit_popup_event (view, event);
@@ -422,8 +422,8 @@ static void
 table_drag_data_get (ETable *table,
                      gint row,
                      gint col,
-                     GdkDragContext *context,
-                     GtkSelectionData *selection_data,
+                     EGtkDragContext *context,
+                     EGtkSelectionData *selection_data,
                      guint info,
                      guint time,
                      gpointer user_data)
@@ -431,7 +431,7 @@ table_drag_data_get (ETable *table,
 	EAddressbookView *view = user_data;
 	EBookClient *book_client;
 	GPtrArray *contacts;
-	GdkAtom target;
+	EGtkAtom target;
 	gchar *value;
 
 	if (!E_IS_ADDRESSBOOK_TABLE_ADAPTER (view->priv->object))
@@ -441,13 +441,13 @@ table_drag_data_get (ETable *table,
 	g_return_if_fail (contacts != NULL);
 
 	book_client = e_addressbook_view_get_client (view);
-	target = gtk_selection_data_get_target (selection_data);
+	target = e_gtk_selection_data_get_target (selection_data);
 
 	switch (info) {
 		case DND_TARGET_TYPE_VCARD:
 			value = eab_contact_array_to_string (contacts);
 
-			gtk_selection_data_set (
+			e_gtk_selection_data_set (
 				selection_data, target, 8,
 				(guchar *) value, strlen (value));
 
@@ -458,7 +458,7 @@ table_drag_data_get (ETable *table,
 			value = eab_book_and_contact_array_to_string (
 				book_client, contacts);
 
-			gtk_selection_data_set (
+			e_gtk_selection_data_set (
 				selection_data, target, 8,
 				(guchar *) value, strlen (value));
 
@@ -504,7 +504,7 @@ addressbook_view_create_table_view (EAddressbookView *view,
 	 * initial layout.  It does the rest.  */
 	widget = e_table_new (adapter, extras, specification);
 	g_object_set (G_OBJECT (widget), "uniform-row-height", TRUE, NULL);
-	gtk_container_add (GTK_CONTAINER (view), widget);
+	e_gtk_container_add (view, widget);
 
 	g_object_unref (specification);
 	g_object_unref (extras);
@@ -604,7 +604,7 @@ addressbook_view_create_minicard_view (EAddressbookView *view,
 
 	view->priv->object = G_OBJECT (card_view);
 
-	gtk_container_add (GTK_CONTAINER (view), card_view);
+	e_gtk_container_add (view, card_view);
 	gtk_widget_show (card_view);
 
 	gal_view_minicard_attach (gal_view, view);
@@ -635,9 +635,9 @@ addressbook_view_display_view_cb (GalViewInstance *view_instance,
 	if (book_client)
 		g_object_ref (book_client);
 
-	child = gtk_bin_get_child (GTK_BIN (view));
+	child = e_gtk_bin_get_child (view);
 	if (child != NULL)
-		gtk_container_remove (GTK_CONTAINER (view), child);
+		e_gtk_container_remove (view, child);
 	view->priv->object = NULL;
 
 	if (GAL_IS_VIEW_ETABLE (gal_view))
@@ -767,7 +767,7 @@ address_book_view_focus_in_cb (EAddressbookView *view,
 
 	g_return_val_if_fail (E_IS_ADDRESSBOOK_VIEW (view), FALSE);
 
-	child = gtk_bin_get_child (GTK_BIN (view));
+	child = e_gtk_bin_get_child (view);
 	if (child)
 		gtk_widget_grab_focus (child);
 
@@ -954,12 +954,12 @@ addressbook_view_constructed (GObject *object)
 static void
 addressbook_view_update_actions (ESelectable *selectable,
                                  EFocusTracker *focus_tracker,
-                                 GdkAtom *clipboard_targets,
+                                 EGtkAtom *clipboard_targets,
                                  gint n_clipboard_targets)
 {
 	EAddressbookView *view;
 	EUIAction *action;
-	GtkTargetList *target_list;
+	EGtkTargetList *target_list;
 	gboolean can_paste = FALSE;
 	gboolean source_is_editable;
 	gboolean sensitive;
@@ -976,7 +976,7 @@ addressbook_view_update_actions (ESelectable *selectable,
 
 	target_list = e_selectable_get_paste_target_list (selectable);
 	for (ii = 0; ii < n_clipboard_targets && !can_paste; ii++)
-		can_paste = gtk_target_list_find (
+		can_paste = e_gtk_target_list_find (
 			target_list, clipboard_targets[ii], NULL);
 
 	action = e_focus_tracker_get_cut_clipboard_action (focus_tracker);
@@ -1015,10 +1015,10 @@ addressbook_view_fill_clipboard_run (EAddressbookView *view,
 				     GPtrArray *contacts,
 				     gboolean is_cut)
 {
-	GtkClipboard *clipboard;
+	GdkClipboard *clipboard;
 	gchar *str;
 
-	clipboard = gtk_clipboard_get (GDK_SELECTION_CLIPBOARD);
+	clipboard = e_gtk_clipboard_get (E_GTK_SELECTION_CLIPBOARD);
 
 	str = eab_contact_array_to_string (contacts);
 	e_clipboard_set_directory (clipboard, str, -1);
@@ -1085,12 +1085,12 @@ addressbook_view_paste_clipboard (ESelectable *selectable)
 	EBookClient *book_client;
 	EAddressbookView *view;
 	ESourceRegistry *registry;
-	GtkClipboard *clipboard;
+	GdkClipboard *clipboard;
 	GSList *contact_list, *iter;
 	gchar *string;
 
 	view = E_ADDRESSBOOK_VIEW (selectable);
-	clipboard = gtk_clipboard_get (GDK_SELECTION_CLIPBOARD);
+	clipboard = e_gtk_clipboard_get (E_GTK_SELECTION_CLIPBOARD);
 
 	if (!e_clipboard_wait_is_directory_available (clipboard))
 		return;
@@ -1243,15 +1243,15 @@ e_addressbook_view_class_init (EAddressbookViewClass *class)
 static void
 e_addressbook_view_init (EAddressbookView *view)
 {
-	GtkTargetList *target_list;
+	EGtkTargetList *target_list;
 
 	view->priv = e_addressbook_view_get_instance_private (view);
 
-	target_list = gtk_target_list_new (NULL, 0);
+	target_list = e_gtk_target_list_new (NULL, 0);
 	e_target_list_add_directory_targets (target_list, 0);
 	view->priv->copy_target_list = target_list;
 
-	target_list = gtk_target_list_new (NULL, 0);
+	target_list = e_gtk_target_list_new (NULL, 0);
 	e_target_list_add_directory_targets (target_list, 0);
 	view->priv->paste_target_list = target_list;
 
@@ -1276,7 +1276,7 @@ update_empty_message (EAddressbookView *view)
 {
 	GtkWidget *widget;
 
-	widget = gtk_bin_get_child (GTK_BIN (view));
+	widget = e_gtk_bin_get_child (view);
 
 	if (E_IS_TABLE (widget)) {
 		const gchar *msg = NULL;
@@ -1587,7 +1587,7 @@ e_addressbook_view_get_source (EAddressbookView *view)
 	return view->priv->source;
 }
 
-GtkTargetList *
+EGtkTargetList *
 e_addressbook_view_get_copy_target_list (EAddressbookView *view)
 {
 	g_return_val_if_fail (E_IS_ADDRESSBOOK_VIEW (view), NULL);
@@ -1595,7 +1595,7 @@ e_addressbook_view_get_copy_target_list (EAddressbookView *view)
 	return view->priv->copy_target_list;
 }
 
-GtkTargetList *
+EGtkTargetList *
 e_addressbook_view_get_paste_target_list (EAddressbookView *view)
 {
 	g_return_val_if_fail (E_IS_ADDRESSBOOK_VIEW (view), NULL);
@@ -1748,7 +1748,7 @@ e_addressbook_view_print (EAddressbookView *view,
 		EPrintable *printable;
 		GtkWidget *widget;
 
-		widget = gtk_bin_get_child (GTK_BIN (view));
+		widget = e_gtk_bin_get_child (view);
 		printable = e_table_get_printable (E_TABLE (widget));
 		g_object_ref_sink (printable);
 
@@ -1858,8 +1858,8 @@ addressbook_view_confirm_delete (GtkWindow *parent,
 		_("_Delete"), GTK_RESPONSE_ACCEPT,
 		NULL);
 	gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_ACCEPT);
-	response = gtk_dialog_run (GTK_DIALOG (dialog));
-	gtk_widget_destroy (dialog);
+	response = e_gtk_dialog_run (GTK_DIALOG (dialog));
+	e_gtk_widget_destroy (dialog);
 
 	g_free (message);
 
@@ -1901,7 +1901,7 @@ e_addressbook_view_delete_selection_run (EAddressbookView *view,
 	if (e_contact_get (contact, E_CONTACT_IS_LIST))
 		is_list = TRUE;
 
-	widget = gtk_bin_get_child (GTK_BIN (view));
+	widget = e_gtk_bin_get_child (view);
 
 	if (GAL_IS_VIEW_MINICARD (gal_view)) {
 		card_box = e_card_view_get_card_box (E_CARD_VIEW (view->priv->object));
@@ -1913,7 +1913,7 @@ e_addressbook_view_delete_selection_run (EAddressbookView *view,
 
 	/* confirm delete */
 	if (is_delete && !addressbook_view_confirm_delete (
-			GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (view))),
+			GTK_WINDOW (e_gtk_widget_get_toplevel (GTK_WIDGET (view))),
 			plural, is_list, name)) {
 		g_free (name);
 		return;
@@ -2048,8 +2048,8 @@ addressbook_view_view_run (EAddressbookView *view,
 			_("_Don’t Display"), GTK_RESPONSE_NO,
 			_("Display _All Contacts"), GTK_RESPONSE_YES,
 			NULL);
-		response = gtk_dialog_run (GTK_DIALOG (dialog));
-		gtk_widget_destroy (dialog);
+		response = e_gtk_dialog_run (GTK_DIALOG (dialog));
+		e_gtk_widget_destroy (dialog);
 	}
 
 	if (response == GTK_RESPONSE_YES) {

@@ -457,7 +457,7 @@ dialog_response (GtkWidget *dialog,
 	if (id == GTK_RESPONSE_OK) {
 		gal_view_instance_save_as_dialog_save (GAL_VIEW_INSTANCE_SAVE_AS_DIALOG (dialog));
 	}
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 }
 
 void

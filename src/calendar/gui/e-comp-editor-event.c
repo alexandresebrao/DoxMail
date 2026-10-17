@@ -1308,7 +1308,7 @@ e_comp_editor_event_constructed (GObject *object)
 	e_signal_connect_notify_object (widget, "notify::timezone",
 		G_CALLBACK (e_comp_editor_event_day_column_timezone_notify_cb), event_editor, 0);
 
-	gtk_container_add (GTK_CONTAINER (scrolled_window), widget);
+	e_gtk_container_add (scrolled_window, widget);
 
 	e_binding_bind_property (widget, "visible",
 		scrolled_window, "visible",
@@ -1321,8 +1321,8 @@ e_comp_editor_event_constructed (GObject *object)
 
 	paned = gtk_paned_new (GTK_ORIENTATION_HORIZONTAL);
 	gtk_widget_set_visible (paned, TRUE);
-	gtk_paned_pack1 (GTK_PANED (paned), GTK_WIDGET (page), TRUE, FALSE);
-	gtk_paned_pack2 (GTK_PANED (paned), scrolled_window, FALSE, FALSE);
+	e_gtk_paned_pack1 (paned, GTK_WIDGET (page), TRUE, FALSE);
+	e_gtk_paned_pack2 (paned, scrolled_window, FALSE, FALSE);
 
 	e_comp_editor_add_encapsulated_page (comp_editor, C_("ECompEditorPage", "General"), page, paned);
 
@@ -1367,7 +1367,7 @@ e_comp_editor_event_constructed (GObject *object)
 
 		if (g_settings_get_int (settings, "editor-event-window-width") > width) {
 			width = g_settings_get_int (settings, "editor-event-window-width");
-			gtk_window_resize (GTK_WINDOW (event_editor), width, height);
+			gtk_window_set_default_size (GTK_WINDOW (event_editor), width, height);
 		}
 
 		g_settings_bind (

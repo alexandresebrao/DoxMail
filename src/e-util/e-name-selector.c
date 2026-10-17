@@ -296,7 +296,7 @@ name_selector_dispose (GObject *object)
 	g_array_set_size (self->priv->sections, 0);
 
 	if (self->priv->dialog) {
-		gtk_widget_destroy (GTK_WIDGET (self->priv->dialog));
+		e_gtk_widget_destroy (GTK_WIDGET (self->priv->dialog));
 		self->priv->dialog = NULL;
 	}
 
@@ -520,7 +520,7 @@ e_name_selector_show_dialog (ENameSelector *name_selector,
 
 	dialog = e_name_selector_peek_dialog (name_selector);
 	if (for_transient_widget)
-		top = GTK_WINDOW (gtk_widget_get_toplevel (for_transient_widget));
+		top = GTK_WINDOW (e_gtk_widget_get_toplevel (for_transient_widget));
 	if (top)
 		gtk_window_set_transient_for (GTK_WINDOW (dialog), top);
 

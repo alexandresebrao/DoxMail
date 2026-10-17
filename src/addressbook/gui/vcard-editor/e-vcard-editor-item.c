@@ -104,7 +104,7 @@ e_vcard_editor_item_new (GtkWidget *label_widget, /* nullable, transfer full */
 	if (self->label_widget)
 		gtk_widget_set_visible (self->label_widget, TRUE);
 
-	gtk_box_pack_start (GTK_BOX (self->data_box), data_widget, expand_data_widget, expand_data_widget, 0);
+	e_gtk_box_pack_start (GTK_BOX (self->data_box), data_widget, expand_data_widget, expand_data_widget, 0);
 
 	if (expand_data_widget) {
 		g_object_set (self->data_box,
@@ -140,7 +140,7 @@ e_vcard_editor_item_add_data_widget (EVCardEditorItem *self,
 	g_return_if_fail (GTK_IS_WIDGET (data_widget));
 
 	g_ptr_array_add (self->data_widgets, g_object_ref_sink (data_widget));
-	gtk_box_pack_start (GTK_BOX (self->data_box), data_widget, expand, expand, 0);
+	e_gtk_box_pack_start (GTK_BOX (self->data_box), data_widget, expand, expand, 0);
 }
 
 guint
@@ -191,13 +191,13 @@ e_vcard_editor_item_add_remove_button (EVCardEditorItem *self,
 
 	g_return_if_fail (E_IS_VCARD_EDITOR_ITEM (self));
 
-	trash = gtk_button_new_from_icon_name ("user-trash", GTK_ICON_SIZE_SMALL_TOOLBAR);
+	trash = gtk_button_new_from_icon_name ("user-trash");
 	g_object_set (trash,
 		"halign", GTK_ALIGN_START,
 		"valign", e_vcard_editor_section_get_single_line (section) ? GTK_ALIGN_CENTER : GTK_ALIGN_END,
 		"tooltip-text", _("Remove"),
 		NULL);
-	gtk_style_context_add_class (gtk_widget_get_style_context (trash), "flat");
+	gtk_widget_add_css_class (trash, "flat");
 
 	g_object_set_data (G_OBJECT (trash), ITEM_KEY, self);
 

@@ -33,7 +33,7 @@
 #include <gdk/gdkkeysyms.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 
-#include <libedataserverui/libedataserverui.h>
+#include <libedataserverui4/libedataserverui4.h>
 
 #include "shell/e-shell.h"
 #include "e-util/e-util.h"
@@ -497,8 +497,7 @@ static gint
 file_as_get_style (EContactEditor *editor)
 {
 	GtkEntry *file_as = GTK_ENTRY (
-		gtk_bin_get_child (GTK_BIN (
-		e_builder_get_widget (editor->priv->builder, "combo-file-as"))));
+		e_gtk_bin_get_child (e_builder_get_widget (editor->priv->builder, "combo-file-as")));
 	GtkEntry *company_w = GTK_ENTRY (
 		e_builder_get_widget (editor->priv->builder, "entry-company"));
 	const gchar *filestring;
@@ -510,8 +509,8 @@ file_as_get_style (EContactEditor *editor)
 	if (!(file_as && GTK_IS_ENTRY (file_as)))
 		return -1;
 
-	company = gtk_entry_get_text (GTK_ENTRY (company_w));
-	filestring = gtk_entry_get_text (file_as);
+	company = gtk_editable_get_text (GTK_EDITABLE (company_w));
+	filestring = gtk_editable_get_text (GTK_EDITABLE (file_as));
 
 	for (i = 0; i < 6; i++) {
 		trystring = name_to_style (name, company, i);
@@ -540,14 +539,14 @@ file_as_set_style (EContactEditor *editor,
 	if (!(combo_file_as && GTK_IS_COMBO_BOX (combo_file_as)))
 		return;
 
-	company = gtk_entry_get_text (GTK_ENTRY (company_w));
+	company = gtk_editable_get_text (GTK_EDITABLE (company_w));
 
 	if (style == -1) {
 		GtkWidget *entry;
 
-		entry = gtk_bin_get_child (GTK_BIN (combo_file_as));
+		entry = e_gtk_bin_get_child (combo_file_as);
 		if (entry) {
-			string = g_strdup (gtk_entry_get_text (GTK_ENTRY (entry)));
+			string = g_strdup (gtk_editable_get_text (GTK_EDITABLE (entry)));
 			strings = g_list_append (strings, string);
 		}
 	}
@@ -585,8 +584,7 @@ file_as_set_style (EContactEditor *editor,
 	if (style != -1) {
 		string = name_to_style (editor->priv->name, company, style);
 		set_entry_text (
-			editor, GTK_ENTRY (gtk_bin_get_child (
-			GTK_BIN (combo_file_as))), string);
+			editor, GTK_ENTRY (e_gtk_bin_get_child (combo_file_as)), string);
 		g_free (string);
 	}
 }
@@ -600,7 +598,7 @@ name_entry_changed (GtkWidget *widget,
 
 	style = file_as_get_style (editor);
 	e_contact_name_free (editor->priv->name);
-	string = gtk_entry_get_text (GTK_ENTRY (widget));
+	string = gtk_editable_get_text (GTK_EDITABLE (widget));
 	editor->priv->name = e_contact_name_from_string (string);
 	file_as_set_style (editor, style);
 
@@ -619,9 +617,9 @@ file_as_combo_changed (GtkWidget *widget,
 	GtkWidget *entry;
 	gchar *string = NULL;
 
-	entry = gtk_bin_get_child (GTK_BIN (widget));
+	entry = e_gtk_bin_get_child (widget);
 	if (entry)
-		string = g_strdup (gtk_entry_get_text (GTK_ENTRY (entry)));
+		string = g_strdup (gtk_editable_get_text (GTK_EDITABLE (entry)));
 
 	if (string && *string) {
 		gchar *title;
@@ -678,16 +676,15 @@ sensitize_ok (EContactEditor *ce)
 	GtkWidget *entry_fullname =
 		e_builder_get_widget (ce->priv->builder, "entry-fullname");
 	GtkWidget *entry_file_as =
-		gtk_bin_get_child (GTK_BIN (
-		e_builder_get_widget (ce->priv->builder, "combo-file-as")));
+		e_gtk_bin_get_child (e_builder_get_widget (ce->priv->builder, "combo-file-as"));
 	GtkWidget *company_name =
 		e_builder_get_widget (ce->priv->builder, "entry-company");
 	const gchar *name_entry_string =
-		gtk_entry_get_text (GTK_ENTRY (entry_fullname));
+		gtk_editable_get_text (GTK_EDITABLE (entry_fullname));
 	const gchar *file_as_entry_string =
-		gtk_entry_get_text (GTK_ENTRY (entry_file_as));
+		gtk_editable_get_text (GTK_EDITABLE (entry_file_as));
 	const gchar *company_name_string =
-		gtk_entry_get_text (GTK_ENTRY (company_name));
+		gtk_editable_get_text (GTK_EDITABLE (company_name));
 
 	allow_save = ce->priv->target_editable && ce->priv->changed;
 
@@ -744,7 +741,7 @@ set_entry_text (EContactEditor *editor,
                 GtkEntry *entry,
                 const gchar *string)
 {
-	const gchar *oldstring = gtk_entry_get_text (entry);
+	const gchar *oldstring = gtk_editable_get_text (GTK_EDITABLE (entry));
 
 	if (!string)
 		string = "";
@@ -752,7 +749,7 @@ set_entry_text (EContactEditor *editor,
 	if (strcmp (string, oldstring)) {
 		g_signal_handlers_block_matched (
 			entry, G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, editor);
-		gtk_entry_set_text (entry, string);
+		gtk_editable_set_text (GTK_EDITABLE (entry), string);
 		g_signal_handlers_unblock_matched (
 			entry, G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, editor);
 	}
@@ -1421,7 +1418,7 @@ extract_address_field (EContactEditor *editor,
 	entry = e_builder_get_widget (editor->priv->builder, entry_name);
 	g_free (entry_name);
 
-	return g_strdup (gtk_entry_get_text (GTK_ENTRY (entry)));
+	return g_strdup (gtk_editable_get_text (GTK_EDITABLE (entry)));
 }
 
 static void
@@ -1467,11 +1464,11 @@ check_web_for_data (EContactEditor *editor)
 {
 	GtkBuilder *b = editor->priv->builder;
 
-	return  !STRING_IS_EMPTY (gtk_entry_get_text (GTK_ENTRY (e_builder_get_widget (b, "entry-homepage")))) ||
-		!STRING_IS_EMPTY (gtk_entry_get_text (GTK_ENTRY (e_builder_get_widget (b, "entry-weblog"))))   ||
-		!STRING_IS_EMPTY (gtk_entry_get_text (GTK_ENTRY (e_builder_get_widget (b, "entry-caluri"))))   ||
-		!STRING_IS_EMPTY (gtk_entry_get_text (GTK_ENTRY (e_builder_get_widget (b, "entry-fburl"))))    ||
-		!STRING_IS_EMPTY (gtk_entry_get_text (GTK_ENTRY (e_builder_get_widget (b, "entry-videourl")))) ;
+	return  !STRING_IS_EMPTY (gtk_editable_get_text (GTK_EDITABLE (e_builder_get_widget (b, "entry-homepage")))) ||
+		!STRING_IS_EMPTY (gtk_editable_get_text (GTK_EDITABLE (e_builder_get_widget (b, "entry-weblog"))))   ||
+		!STRING_IS_EMPTY (gtk_editable_get_text (GTK_EDITABLE (e_builder_get_widget (b, "entry-caluri"))))   ||
+		!STRING_IS_EMPTY (gtk_editable_get_text (GTK_EDITABLE (e_builder_get_widget (b, "entry-fburl"))))    ||
+		!STRING_IS_EMPTY (gtk_editable_get_text (GTK_EDITABLE (e_builder_get_widget (b, "entry-videourl")))) ;
 }
 
 static gboolean
@@ -1479,14 +1476,14 @@ check_job_for_data (EContactEditor *editor)
 {
 	GtkBuilder *b = editor->priv->builder;
 
-	return  !STRING_IS_EMPTY (gtk_entry_get_text (GTK_ENTRY (e_builder_get_widget (b, "entry-manager"))))    ||
-		!STRING_IS_EMPTY (gtk_entry_get_text (GTK_ENTRY (e_builder_get_widget (b, "entry-assistant"))))  ||
-		!STRING_IS_EMPTY (gtk_entry_get_text (GTK_ENTRY (e_builder_get_widget (b, "entry-profession")))) ||
-		!STRING_IS_EMPTY (gtk_entry_get_text (GTK_ENTRY (e_builder_get_widget (b, "entry-jobtitle"))))   ||
-		!STRING_IS_EMPTY (gtk_entry_get_text (GTK_ENTRY (e_builder_get_widget (b, "entry-company"))))    ||
-		!STRING_IS_EMPTY (gtk_entry_get_text (GTK_ENTRY (e_builder_get_widget (b, "entry-department")))) ||
-		!STRING_IS_EMPTY (gtk_entry_get_text (GTK_ENTRY (e_builder_get_widget (b, "entry-office")))) ||
-		!STRING_IS_EMPTY (gtk_entry_get_text (GTK_ENTRY (e_builder_get_widget (b, "entry-orgdir"))));
+	return  !STRING_IS_EMPTY (gtk_editable_get_text (GTK_EDITABLE (e_builder_get_widget (b, "entry-manager"))))    ||
+		!STRING_IS_EMPTY (gtk_editable_get_text (GTK_EDITABLE (e_builder_get_widget (b, "entry-assistant"))))  ||
+		!STRING_IS_EMPTY (gtk_editable_get_text (GTK_EDITABLE (e_builder_get_widget (b, "entry-profession")))) ||
+		!STRING_IS_EMPTY (gtk_editable_get_text (GTK_EDITABLE (e_builder_get_widget (b, "entry-jobtitle"))))   ||
+		!STRING_IS_EMPTY (gtk_editable_get_text (GTK_EDITABLE (e_builder_get_widget (b, "entry-company"))))    ||
+		!STRING_IS_EMPTY (gtk_editable_get_text (GTK_EDITABLE (e_builder_get_widget (b, "entry-department")))) ||
+		!STRING_IS_EMPTY (gtk_editable_get_text (GTK_EDITABLE (e_builder_get_widget (b, "entry-office")))) ||
+		!STRING_IS_EMPTY (gtk_editable_get_text (GTK_EDITABLE (e_builder_get_widget (b, "entry-orgdir"))));
 }
 
 static gboolean
@@ -1504,8 +1501,8 @@ check_dates_for_data (EContactEditor *editor)
 {
 	GtkBuilder *b = editor->priv->builder;
 
-	return  !STRING_IS_EMPTY (gtk_entry_get_text (GTK_ENTRY (e_builder_get_widget (b, "entry-birthplace")))) ||
-		!STRING_IS_EMPTY (gtk_entry_get_text (GTK_ENTRY (e_builder_get_widget (b, "entry-deathplace")))) ||
+	return  !STRING_IS_EMPTY (gtk_editable_get_text (GTK_EDITABLE (e_builder_get_widget (b, "entry-birthplace")))) ||
+		!STRING_IS_EMPTY (gtk_editable_get_text (GTK_EDITABLE (e_builder_get_widget (b, "entry-deathplace")))) ||
 		!date_empty (E_SPLIT_DATE_EDIT (e_builder_get_widget (b, "dateedit-anniversary"))) ||
 		!date_empty (E_SPLIT_DATE_EDIT (e_builder_get_widget (b, "dateedit-birthday"))) ||
 		!date_empty (E_SPLIT_DATE_EDIT (e_builder_get_widget (b, "dateedit-deathday")));
@@ -1516,7 +1513,7 @@ check_misc_for_data (EContactEditor *editor)
 {
 	GtkBuilder *b = editor->priv->builder;
 
-	return  !STRING_IS_EMPTY (gtk_entry_get_text (GTK_ENTRY (e_builder_get_widget (b, "entry-spouse"))));
+	return  !STRING_IS_EMPTY (gtk_editable_get_text (GTK_EDITABLE (e_builder_get_widget (b, "entry-spouse"))));
 }
 
 static gboolean
@@ -2478,7 +2475,7 @@ init_simple_field (EContactEditor *editor,
 	} else if (GTK_IS_COMBO_BOX (widget)) {
 		changed_object = G_OBJECT (widget);
 		g_signal_connect_swapped (
-			gtk_bin_get_child (GTK_BIN (widget)), "activate",
+			e_gtk_bin_get_child (widget), "activate",
 			G_CALLBACK (entry_activated), editor);
 
 	} else if (GTK_IS_TEXT_VIEW (widget)) {
@@ -2526,14 +2523,12 @@ fill_in_simple_field (EContactEditor *editor,
 
 	if (GTK_IS_ENTRY (widget)) {
 		gchar *text = e_contact_get (contact, field_id);
-		gtk_entry_set_text (GTK_ENTRY (widget), STRING_MAKE_NON_NULL (text));
+		gtk_editable_set_text (GTK_EDITABLE (widget), STRING_MAKE_NON_NULL (text));
 		g_free (text);
 
 	} else if (GTK_IS_COMBO_BOX (widget)) {
 		gchar *text = e_contact_get (contact, field_id);
-		gtk_entry_set_text (
-			GTK_ENTRY (gtk_bin_get_child (GTK_BIN (widget))),
-			STRING_MAKE_NON_NULL (text));
+		gtk_editable_set_text (GTK_EDITABLE (e_gtk_bin_get_child (widget)), STRING_MAKE_NON_NULL (text));
 		g_free (text);
 
 	} else if (GTK_IS_TEXT_VIEW (widget)) {
@@ -2544,8 +2539,7 @@ fill_in_simple_field (EContactEditor *editor,
 
 	} else if (E_IS_URL_ENTRY (widget)) {
 		gchar *text = e_contact_get (contact, field_id);
-		gtk_entry_set_text (
-			GTK_ENTRY (widget), STRING_MAKE_NON_NULL (text));
+		gtk_editable_set_text (GTK_EDITABLE (widget), STRING_MAKE_NON_NULL (text));
 		g_free (text);
 
 	} else if (E_IS_SPLIT_DATE_EDIT (widget)) {
@@ -2611,16 +2605,16 @@ extract_simple_field (EContactEditor *editor,
 	contact = editor->priv->contact;
 
 	if (GTK_IS_ENTRY (widget)) {
-		const gchar *text = gtk_entry_get_text (GTK_ENTRY (widget));
+		const gchar *text = gtk_editable_get_text (GTK_EDITABLE (widget));
 		e_contact_set (contact, field_id, (text && *text) ? (gchar *) text : NULL);
 
 	} else if (GTK_IS_COMBO_BOX_TEXT (widget)) {
 		gchar *text = NULL;
 
 		if (gtk_combo_box_get_has_entry (GTK_COMBO_BOX (widget))) {
-			GtkWidget *entry = gtk_bin_get_child (GTK_BIN (widget));
+			GtkWidget *entry = e_gtk_bin_get_child (widget);
 
-			text = g_strdup (gtk_entry_get_text (GTK_ENTRY (entry)));
+			text = g_strdup (gtk_editable_get_text (GTK_EDITABLE (entry)));
 		}
 
 		if (!text)
@@ -2634,9 +2628,9 @@ extract_simple_field (EContactEditor *editor,
 		gchar *text = NULL;
 
 		if (gtk_combo_box_get_has_entry (GTK_COMBO_BOX (widget))) {
-			GtkWidget *entry = gtk_bin_get_child (GTK_BIN (widget));
+			GtkWidget *entry = e_gtk_bin_get_child (widget);
 
-			text = g_strdup (gtk_entry_get_text (GTK_ENTRY (entry)));
+			text = g_strdup (gtk_editable_get_text (GTK_EDITABLE (entry)));
 		}
 
 		if (!text && gtk_combo_box_get_active_iter (GTK_COMBO_BOX (widget), &iter)) {
@@ -2668,7 +2662,7 @@ extract_simple_field (EContactEditor *editor,
 		g_free (text);
 
 	} else if (E_IS_URL_ENTRY (widget)) {
-		const gchar *text = gtk_entry_get_text (GTK_ENTRY (widget));
+		const gchar *text = gtk_editable_get_text (GTK_EDITABLE (widget));
 		e_contact_set (contact, field_id, (text && *text) ? (gchar *) text : NULL);
 
 	} else if (E_IS_SPLIT_DATE_EDIT (widget)) {
@@ -2885,9 +2879,9 @@ fill_in_simple (EContactEditor *editor)
 
 	widget = e_builder_get_widget (editor->priv->builder, "entry-gender");
 	if (gender && gender->identity)
-		gtk_entry_set_text (GTK_ENTRY (widget), gender->identity);
+		gtk_editable_set_text (GTK_EDITABLE (widget), gender->identity);
 	else
-		gtk_entry_set_text (GTK_ENTRY (widget), "");
+		gtk_editable_set_text (GTK_EDITABLE (widget), "");
 
 	g_clear_pointer (&gender, e_contact_gender_free);
 
@@ -2961,7 +2955,7 @@ extract_simple (EContactEditor *editor)
 			gender.sex = E_CONTACT_GENDER_SEX_NOT_SET;
 
 		widget = e_builder_get_widget (editor->priv->builder, "entry-gender");
-		gender.identity = widget ? g_strstrip (g_strdup (gtk_entry_get_text (GTK_ENTRY (widget)))) : NULL;
+		gender.identity = widget ? g_strstrip (g_strdup (gtk_editable_get_text (GTK_EDITABLE (widget)))) : NULL;
 		if (gender.identity && !*gender.identity)
 			g_clear_pointer (&gender.identity, g_free);
 
@@ -3082,7 +3076,7 @@ fill_in_multival_field (EContactEditor *editor,
 			}
 		}
 
-		gtk_entry_set_text (GTK_ENTRY (widget), str->str);
+		gtk_editable_set_text (GTK_EDITABLE (widget), str->str);
 
 		g_list_free_full (list, g_free);
 		g_string_free (str, TRUE);
@@ -3123,7 +3117,7 @@ extract_multival_field (EContactEditor *editor,
 	contact = editor->priv->contact;
 
 	if (GTK_IS_ENTRY (widget)) {
-		const gchar *text = gtk_entry_get_text (GTK_ENTRY (widget));
+		const gchar *text = gtk_editable_get_text (GTK_EDITABLE (widget));
 		gchar **split_text = g_strsplit (text, ",", -1);
 		GList *values = NULL;
 		guint ii;
@@ -3230,10 +3224,10 @@ cert_tab_selection_changed_cb (GtkTreeSelection *selection,
 	gtk_widget_set_sensitive (widget, has_selected);
 
 	widget = e_builder_get_widget (editor->priv->builder, "cert-preview-scw");
-	widget = gtk_bin_get_child (GTK_BIN (widget));
+	widget = e_gtk_bin_get_child (widget);
 
 	if (GTK_IS_VIEWPORT (widget))
-		widget = gtk_bin_get_child (GTK_BIN (widget));
+		widget = e_gtk_bin_get_child (widget);
 
 	g_return_if_fail (E_IS_CERTIFICATE_WIDGET (widget));
 
@@ -3263,18 +3257,18 @@ cert_add_filters_for_kind (GtkFileChooser *file_chooser,
 		filter = gtk_file_filter_new ();
 		gtk_file_filter_set_name (filter, _("X.509 certificates"));
 		gtk_file_filter_add_mime_type (filter, "application/x-x509-user-cert");
-		gtk_file_chooser_add_filter (file_chooser, filter);
+		e_gtk_file_chooser_add_filter (file_chooser, filter);
 	} else {
 		filter = gtk_file_filter_new ();
 		gtk_file_filter_set_name (filter, _("PGP keys"));
 		gtk_file_filter_add_mime_type (filter, "application/pgp-keys");
-		gtk_file_chooser_add_filter (file_chooser, filter);
+		e_gtk_file_chooser_add_filter (file_chooser, filter);
 	}
 
 	filter = gtk_file_filter_new ();
 	gtk_file_filter_set_name (filter, _("All files"));
 	gtk_file_filter_add_pattern (filter, "*");
-	gtk_file_chooser_add_filter (file_chooser, filter);
+	e_gtk_file_chooser_add_filter (file_chooser, filter);
 }
 
 static EContactCert *
@@ -3297,17 +3291,16 @@ cert_load_for_kind (EContactEditor *editor,
 		_("_Open"), _("_Cancel"));
 
 	file_chooser = GTK_FILE_CHOOSER (native);
-	gtk_file_chooser_set_local_only (file_chooser, TRUE);
 	gtk_file_chooser_set_select_multiple (file_chooser, FALSE);
 
 	cert_add_filters_for_kind (file_chooser, kind);
 
-	if (gtk_native_dialog_run (GTK_NATIVE_DIALOG (native)) == GTK_RESPONSE_ACCEPT) {
+	if (e_gtk_native_dialog_run (GTK_NATIVE_DIALOG (native)) == GTK_RESPONSE_ACCEPT) {
 		gchar *filename;
 		gchar *content = NULL;
 		gsize length = 0;
 
-		filename = gtk_file_chooser_get_filename (file_chooser);
+		filename = e_gtk_file_chooser_get_filename (file_chooser);
 		if (!filename) {
 			g_set_error_literal (&error, G_IO_ERROR, G_IO_ERROR_NOT_SUPPORTED, _("Chosen file is not a local file."));
 		} else if (g_file_get_contents (filename, &content, &length, &error) && length > 0) {
@@ -3571,15 +3564,14 @@ cert_save_btn_clicked_cb (GtkWidget *button,
 		_("_Save"), _("_Cancel"));
 
 	file_chooser = GTK_FILE_CHOOSER (native);
-	gtk_file_chooser_set_local_only (file_chooser, TRUE);
 	gtk_file_chooser_set_select_multiple (file_chooser, FALSE);
 
 	cert_add_filters_for_kind (file_chooser, kind);
 
-	if (gtk_native_dialog_run (GTK_NATIVE_DIALOG (native)) == GTK_RESPONSE_ACCEPT) {
+	if (e_gtk_native_dialog_run (GTK_NATIVE_DIALOG (native)) == GTK_RESPONSE_ACCEPT) {
 		gchar *filename;
 
-		filename = gtk_file_chooser_get_filename (file_chooser);
+		filename = e_gtk_file_chooser_get_filename (file_chooser);
 		if (!filename) {
 			g_set_error_literal (&error, G_IO_ERROR, G_IO_ERROR_NOT_SUPPORTED, _("Chosen file is not a local file."));
 		} else {
@@ -3640,7 +3632,7 @@ init_certs (EContactEditor *editor)
 	certificate_widget = e_certificate_widget_new ();
 	gtk_widget_show (certificate_widget);
 	widget = e_builder_get_widget (editor->priv->builder, "cert-preview-scw");
-	gtk_container_add (GTK_CONTAINER (widget), certificate_widget);
+	e_gtk_container_add (widget, certificate_widget);
 
 	selection = gtk_tree_view_get_selection (tree_view);
 	gtk_tree_selection_set_mode (selection, GTK_SELECTION_SINGLE);
@@ -4134,7 +4126,7 @@ full_name_editor_closed_cb (GtkWidget *widget,
 			    gpointer data)
 {
 	if (GTK_IS_WIDGET (widget))
-		gtk_widget_destroy (widget);
+		e_gtk_widget_destroy (widget);
 }
 
 static void
@@ -4163,10 +4155,10 @@ full_name_response (GtkDialog *dialog,
 			const gchar *old_full_name;
 
 			entry = GTK_ENTRY (fname_widget);
-			old_full_name = gtk_entry_get_text (entry);
+			old_full_name = gtk_editable_get_text (GTK_EDITABLE (entry));
 
 			if (strcmp (full_name, old_full_name))
-				gtk_entry_set_text (entry, full_name);
+				gtk_editable_set_text (GTK_EDITABLE (entry), full_name);
 			g_free (full_name);
 		}
 
@@ -4178,7 +4170,7 @@ full_name_response (GtkDialog *dialog,
 
 	g_signal_handlers_disconnect_by_func (editor, G_CALLBACK (full_name_editor_closed_cb), dialog);
 
-	gtk_widget_destroy (GTK_WIDGET (dialog));
+	e_gtk_widget_destroy (GTK_WIDGET (dialog));
 	editor->priv->fullname_dialog = NULL;
 }
 
@@ -4230,8 +4222,7 @@ categories_response (GtkDialog *dialog,
 		categories = e_categories_dialog_get_categories (
 			E_CATEGORIES_DIALOG (dialog));
 		if (GTK_IS_ENTRY (entry))
-			gtk_entry_set_text (
-				GTK_ENTRY (entry), categories);
+			gtk_editable_set_text (GTK_EDITABLE (entry), categories);
 		else
 			e_contact_set (
 				editor->priv->contact,
@@ -4240,7 +4231,7 @@ categories_response (GtkDialog *dialog,
 		g_free (categories);
 	}
 
-	gtk_widget_destroy (GTK_WIDGET (dialog));
+	e_gtk_widget_destroy (GTK_WIDGET (dialog));
 	editor->priv->categories_dialog = NULL;
 }
 
@@ -4254,7 +4245,7 @@ categories_clicked (GtkWidget *button,
 	GtkWidget *entry = e_builder_get_widget (editor->priv->builder, "entry-categories");
 
 	if (entry && GTK_IS_ENTRY (entry))
-		categories = g_strdup (gtk_entry_get_text (GTK_ENTRY (entry)));
+		categories = g_strdup (gtk_editable_get_text (GTK_EDITABLE (entry)));
 	else if (editor->priv->contact)
 		categories = e_contact_get (editor->priv->contact, E_CONTACT_CATEGORIES);
 
@@ -4294,9 +4285,9 @@ image_selected (EContactEditor *editor)
 	GtkWidget *image_chooser;
 
 	if (editor->priv->image_selector)
-		file_name = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (editor->priv->image_selector));
+		file_name = e_gtk_file_chooser_get_filename (editor->priv->image_selector);
 	else
-		file_name = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (editor->priv->image_selector_native));
+		file_name = e_gtk_file_chooser_get_filename (editor->priv->image_selector_native);
 
 	if (!file_name)
 		return;
@@ -4382,12 +4373,10 @@ update_preview_cb (GtkFileChooser *file_chooser,
 	preview = GTK_WIDGET (data);
 	filename = gtk_file_chooser_get_preview_filename (file_chooser);
 	if (!e_util_can_preview_filename (filename)) {
-		gtk_file_chooser_set_preview_widget_active (file_chooser, FALSE);
 		g_free (filename);
 		return;
 	}
 
-	gtk_file_chooser_set_preview_widget_active (file_chooser, TRUE);
 
 	pixbuf = gdk_pixbuf_new_from_file_at_size (filename, 128, 128, NULL);
 
@@ -4435,15 +4424,10 @@ image_clicked (GtkWidget *button,
 
 		filter = gtk_file_filter_new ();
 		gtk_file_filter_add_mime_type (filter, "image/*");
-		gtk_file_chooser_set_filter (
-			editor->priv->image_selector ? GTK_FILE_CHOOSER (editor->priv->image_selector) : GTK_FILE_CHOOSER (editor->priv->image_selector_native),
-			filter);
+		e_gtk_file_chooser_set_filter (editor->priv->image_selector ? GTK_FILE_CHOOSER (editor->priv->image_selector) : GTK_FILE_CHOOSER (editor->priv->image_selector_native), filter);
 
 		if (editor->priv->image_selector) {
 			preview = GTK_IMAGE (gtk_image_new ());
-			gtk_file_chooser_set_preview_widget (
-				GTK_FILE_CHOOSER (editor->priv->image_selector),
-				GTK_WIDGET (preview));
 			g_signal_connect (
 				editor->priv->image_selector, "update-preview",
 				G_CALLBACK (update_preview_cb), preview);
@@ -4693,22 +4677,17 @@ save_contact (EContactEditor *ce,
 	}
 
 	entry_fullname = e_builder_get_widget (ce->priv->builder, "entry-fullname");
-	entry_file_as = gtk_bin_get_child (
-		GTK_BIN (e_builder_get_widget (ce->priv->builder, "combo-file-as")));
+	entry_file_as = e_gtk_bin_get_child (e_builder_get_widget (ce->priv->builder, "combo-file-as"));
 	company_name = e_builder_get_widget (ce->priv->builder, "entry-company");
-	name_entry_string = gtk_entry_get_text (GTK_ENTRY (entry_fullname));
-	file_as_entry_string = gtk_entry_get_text (GTK_ENTRY (entry_file_as));
-	company_name_string = gtk_entry_get_text (GTK_ENTRY (company_name));
+	name_entry_string = gtk_editable_get_text (GTK_EDITABLE (entry_fullname));
+	file_as_entry_string = gtk_editable_get_text (GTK_EDITABLE (entry_file_as));
+	company_name_string = gtk_editable_get_text (GTK_EDITABLE (company_name));
 
 	if (strcmp (company_name_string , "")) {
 		if (!strcmp (name_entry_string, ""))
-			gtk_entry_set_text (
-				GTK_ENTRY (entry_fullname),
-				company_name_string);
+			gtk_editable_set_text (GTK_EDITABLE (entry_fullname), company_name_string);
 		if (!strcmp (file_as_entry_string, ""))
-			gtk_entry_set_text (
-				GTK_ENTRY (entry_file_as),
-				company_name_string);
+			gtk_editable_set_text (GTK_EDITABLE (entry_file_as), company_name_string);
 	}
 
 	extract_all (ce);
@@ -4741,7 +4720,7 @@ e_contact_editor_close (EABEditor *editor)
 	EContactEditor *ce = E_CONTACT_EDITOR (editor);
 
 	if (ce->priv->app != NULL) {
-		gtk_widget_destroy (ce->priv->app);
+		e_gtk_widget_destroy (ce->priv->app);
 		ce->priv->app = NULL;
 		eab_editor_emit_closed (editor);
 	}
@@ -5165,13 +5144,12 @@ e_contact_editor_init (EContactEditor *e_contact_editor)
 		"use-header-bar", e_util_get_use_header_bar (),
 		NULL);
 
-	gtk_window_set_type_hint (GTK_WINDOW (e_contact_editor->priv->app), GDK_WINDOW_TYPE_HINT_NORMAL);
-	container = gtk_dialog_get_action_area (GTK_DIALOG (e_contact_editor->priv->app));
-	gtk_container_set_border_width (GTK_CONTAINER (container), 12);
+	container = e_gtk_dialog_get_action_area (GTK_DIALOG (e_contact_editor->priv->app));
+	e_gtk_widget_set_border_width (container, 12);
 	container = gtk_dialog_get_content_area (GTK_DIALOG (e_contact_editor->priv->app));
-	gtk_container_set_border_width (GTK_CONTAINER (container), 0);
+	e_gtk_widget_set_border_width (container, 0);
 	widget = e_builder_get_widget (builder, "contact-editor-box");
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 
 	if (e_util_get_use_header_bar ()) {
 		container = gtk_dialog_get_header_bar (GTK_DIALOG (e_contact_editor->priv->app));
@@ -5185,10 +5163,10 @@ e_contact_editor_init (EContactEditor *e_contact_editor)
 		widget = e_builder_get_widget (builder, "button-help");
 		gtk_header_bar_pack_end (GTK_HEADER_BAR (container), widget);
 	} else {
-		container = gtk_dialog_get_action_area (GTK_DIALOG (e_contact_editor->priv->app));
+		container = e_gtk_dialog_get_action_area (GTK_DIALOG (e_contact_editor->priv->app));
 
 		widget = e_builder_get_widget (builder, "button-config");
-		gtk_box_pack_end (GTK_BOX (container), widget, FALSE, FALSE, 0);
+		e_gtk_box_pack_end (GTK_BOX (container), widget, FALSE, FALSE, 0);
 		gtk_widget_set_valign (widget, GTK_ALIGN_FILL);
 
 		widget = e_builder_get_widget (builder, "button-cancel");
@@ -5201,14 +5179,14 @@ e_contact_editor_init (EContactEditor *e_contact_editor)
 
 		widget = e_builder_get_widget (builder, "button-help");
 		gtk_button_set_label (GTK_BUTTON (widget), _("_Help"));
-		gtk_style_context_remove_class (gtk_widget_get_style_context (widget), "image-button");
+		gtk_widget_remove_css_class (widget, "image-button");
 		gtk_dialog_add_action_widget (GTK_DIALOG (e_contact_editor->priv->app), widget, GTK_RESPONSE_HELP);
 		gtk_widget_set_valign (widget, GTK_ALIGN_FILL);
 	}
 
 	accel_group = gtk_accel_group_new ();
 	widget = e_builder_get_widget (builder, "button-ok");
-	gtk_widget_grab_default (widget);
+	e_gtk_widget_grab_default (widget);
 	gtk_widget_add_accelerator (
 		widget, "clicked", accel_group,
 		's', GDK_CONTROL_MASK, 0);
@@ -5246,9 +5224,7 @@ e_contact_editor_init (EContactEditor *e_contact_editor)
 		e_contact_editor->priv->builder, "button-ok");
 	if (e_util_get_use_header_bar ()) {
 		/* Already set in the .ui file, but does not work */
-		gtk_style_context_add_class (
-			gtk_widget_get_style_context (widget),
-			"suggested-action");
+		gtk_widget_add_css_class (widget, "suggested-action");
 	}
 	g_signal_connect (
 		widget, "clicked",
@@ -5818,7 +5794,7 @@ e_contact_editor_raise (EABEditor *editor)
 	EContactEditor *ce = E_CONTACT_EDITOR (editor);
 	GdkWindow *window;
 
-	window = gtk_widget_get_window (ce->priv->app);
+	window = e_gtk_widget_get_surface (ce->priv->app);
 
 	if (window != NULL)
 		gdk_window_raise (window);

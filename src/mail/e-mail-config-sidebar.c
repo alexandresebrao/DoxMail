@@ -82,9 +82,9 @@ mail_config_sidebar_notebook_page_added (GtkNotebook *notebook,
 	button = gtk_radio_button_new_with_label_from_widget (
 		group_member, tab_label);
 	g_object_set (button, "draw-indicator", FALSE, NULL);
-	gtk_button_set_relief (GTK_BUTTON (button), GTK_RELIEF_NONE);
-	gtk_box_pack_start (GTK_BOX (sidebar), button, FALSE, FALSE, 0);
-	gtk_box_reorder_child (GTK_BOX (sidebar), button, page_num);
+	gtk_button_set_has_frame (GTK_BUTTON (button), FALSE);
+	e_gtk_box_pack_start (GTK_BOX (sidebar), button, FALSE, FALSE, 0);
+	e_gtk_box_reorder_child (GTK_BOX (sidebar), button, page_num);
 	gtk_widget_show (button);
 
 	g_signal_connect (
@@ -115,7 +115,7 @@ mail_config_sidebar_notebook_page_removed (GtkNotebook *notebook,
 	button = g_hash_table_lookup (hash_table, page);
 	g_return_if_fail (GTK_IS_WIDGET (button));
 
-	gtk_container_remove (GTK_CONTAINER (sidebar), button);
+	e_gtk_container_remove (sidebar, button);
 
 	g_hash_table_remove (sidebar->priv->pages_to_buttons, page);
 	g_hash_table_remove (sidebar->priv->buttons_to_pages, button);
@@ -134,7 +134,7 @@ mail_config_sidebar_notebook_page_reordered (GtkNotebook *notebook,
 	button = g_hash_table_lookup (hash_table, page);
 	g_return_if_fail (GTK_IS_WIDGET (button));
 
-	gtk_box_reorder_child (GTK_BOX (sidebar), button, page_num);
+	e_gtk_box_reorder_child (GTK_BOX (sidebar), button, page_num);
 }
 
 static void
@@ -245,8 +245,6 @@ mail_config_sidebar_constructed (GObject *object)
 	gtk_orientable_set_orientation (
 		GTK_ORIENTABLE (sidebar), GTK_ORIENTATION_VERTICAL);
 
-	gtk_button_box_set_layout (
-		GTK_BUTTON_BOX (sidebar), GTK_BUTTONBOX_START);
 
 	gtk_box_set_homogeneous (GTK_BOX (sidebar), TRUE);
 	gtk_box_set_spacing (GTK_BOX (sidebar), 6);

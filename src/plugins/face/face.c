@@ -279,7 +279,6 @@ update_preview_cb (GtkFileChooser *file_chooser,
 	if (pixbuf)
 		g_object_unref (pixbuf);
 
-	gtk_file_chooser_set_preview_widget_active (file_chooser, have_preview);
 }
 
 static GdkPixbuf *
@@ -300,19 +299,18 @@ choose_new_face (GtkWidget *parent,
 	filter = gtk_file_filter_new ();
 	gtk_file_filter_set_name (filter, _("Image files"));
 	gtk_file_filter_add_mime_type (filter, "image/*");
-	gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (native), filter);
+	e_gtk_file_chooser_add_filter (native, filter);
 
 	preview = gtk_image_new ();
-	gtk_file_chooser_set_preview_widget (GTK_FILE_CHOOSER (native), preview);
 	g_signal_connect (
 		native, "update-preview",
 		G_CALLBACK (update_preview_cb), preview);
 
-	if (GTK_RESPONSE_ACCEPT == gtk_native_dialog_run (GTK_NATIVE_DIALOG (native))) {
+	if (GTK_RESPONSE_ACCEPT == e_gtk_native_dialog_run (GTK_NATIVE_DIALOG (native))) {
 		gchar *image_filename, *file_contents = NULL;
 		gsize length = 0;
 
-		image_filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (native));
+		image_filename = e_gtk_file_chooser_get_filename (native);
 		g_object_unref (native);
 
 		if (prepare_image (image_filename, &file_contents, &length, &res, TRUE)) {
@@ -361,7 +359,7 @@ click_load_face_cb (GtkButton *butt,
 	alert_bar = g_object_get_data (G_OBJECT (butt), "alert-bar");
 	e_alert_bar_clear (alert_bar);
 
-	face = choose_new_face (gtk_widget_get_toplevel (GTK_WIDGET (butt)), &image_data_length);
+	face = choose_new_face (e_gtk_widget_get_toplevel (GTK_WIDGET (butt)), &image_data_length);
 
 	if (face) {
 		gtk_image_set_from_pixbuf (image, face);
@@ -392,7 +390,7 @@ get_cfg_widget (void)
 		check, "toggled",
 		G_CALLBACK (toggled_check_include_by_default_cb), NULL);
 
-	gtk_box_pack_start (GTK_BOX (vbox), check, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), check, FALSE, FALSE, 0);
 
 	face = get_active_face (&image_data_length);
 	img = gtk_image_new_from_pixbuf (face);
@@ -407,11 +405,11 @@ get_cfg_widget (void)
 	alert_bar = e_alert_bar_new ();
 	g_object_set_data (G_OBJECT (butt), "alert-bar", alert_bar);
 
-	gtk_box_pack_start (GTK_BOX (vbox), butt, FALSE, FALSE, 0);
-	gtk_box_pack_start (GTK_BOX (vbox), img, FALSE, FALSE, 0);
-	gtk_box_pack_end (GTK_BOX (vbox), alert_bar, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), butt, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), img, FALSE, FALSE, 0);
+	e_gtk_box_pack_end (GTK_BOX (vbox), alert_bar, FALSE, FALSE, 0);
 
-	gtk_widget_show_all (vbox);
+	gtk_widget_set_visible (vbox, TRUE);
 	gtk_widget_hide (alert_bar);
 
 	if (image_data_length > MAX_PNG_DATA_LENGTH) {

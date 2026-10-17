@@ -67,7 +67,7 @@ action_close_cb (EUIAction *action,
 
 	if (e_msg_composer_can_close (composer, TRUE)) {
 		e_composer_emit_before_destroy (composer);
-		gtk_widget_destroy (GTK_WIDGET (composer));
+		e_gtk_widget_destroy (GTK_WIDGET (composer));
 	}
 }
 
@@ -134,9 +134,6 @@ action_preferences_cb (EUIAction *action,
 	gtk_window_set_transient_for (
 		GTK_WINDOW (preferences_window),
 		GTK_WINDOW (composer));
-	gtk_window_set_position (
-		GTK_WINDOW (preferences_window),
-		GTK_WIN_POS_CENTER_ON_PARENT);
 	gtk_window_present (GTK_WINDOW (preferences_window));
 
 	e_preferences_window_show_page (
@@ -258,16 +255,15 @@ action_save_as_cb (EUIAction *action,
 		GTK_FILE_CHOOSER_ACTION_SAVE,
 		_("_Save"), _("_Cancel"));
 
-	gtk_file_chooser_set_local_only (GTK_FILE_CHOOSER (native), FALSE);
 	if (GTK_IS_WINDOW (native))
 		gtk_window_set_icon_name (GTK_WINDOW (native), "mail-message-new");
 
 	e_util_load_file_chooser_folder (GTK_FILE_CHOOSER (native));
-	if (gtk_native_dialog_run (GTK_NATIVE_DIALOG (native)) == GTK_RESPONSE_ACCEPT) {
+	if (e_gtk_native_dialog_run (GTK_NATIVE_DIALOG (native)) == GTK_RESPONSE_ACCEPT) {
 		e_util_save_file_chooser_folder (GTK_FILE_CHOOSER (native));
 
 		editor = e_msg_composer_get_editor (composer);
-		filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (native));
+		filename = e_gtk_file_chooser_get_filename (native);
 		e_html_editor_set_filename (editor, filename);
 		g_free (filename);
 

@@ -102,12 +102,12 @@ static void e_calendar_get_preferred_height (GtkWidget *widget,
 static void e_calendar_size_allocate	(GtkWidget	*widget,
 					 GtkAllocation	*allocation);
 static gint e_calendar_drag_motion	(GtkWidget      *widget,
-					 GdkDragContext *context,
+					 EGtkDragContext *context,
 					 gint            x,
 					 gint            y,
 					 guint           time);
 static void e_calendar_drag_leave	(GtkWidget      *widget,
-					 GdkDragContext *context,
+					 EGtkDragContext *context,
 					 guint           time);
 static gboolean e_calendar_button_has_focus (ECalendar	*cal);
 static gboolean e_calendar_focus (GtkWidget *widget,
@@ -159,7 +159,7 @@ e_calendar_create_button (gboolean start_arrow)
 	else
 		icon_name = "pan-end-symbolic";
 
-	button = gtk_button_new_from_icon_name (icon_name, GTK_ICON_SIZE_BUTTON);
+	button = gtk_button_new_from_icon_name (icon_name);
 	gtk_widget_show (button);
 
 	css_provider = gtk_css_provider_new ();
@@ -825,7 +825,7 @@ e_calendar_on_next_year_clicked (ECalendar *cal)
 
 static gint
 e_calendar_drag_motion (GtkWidget *widget,
-                        GdkDragContext *context,
+                        EGtkDragContext *context,
                         gint x,
                         gint y,
                         guint time)
@@ -835,7 +835,7 @@ e_calendar_drag_motion (GtkWidget *widget,
 
 static void
 e_calendar_drag_leave (GtkWidget *widget,
-                       GdkDragContext *context,
+                       EGtkDragContext *context,
                        guint time)
 {
 }
@@ -871,7 +871,7 @@ e_calendar_focus (GtkWidget *widget,
 	cal = E_CALENDAR (widget);
 	canvas = GNOME_CANVAS (widget);
 
-	if (!gtk_widget_get_can_focus (widget))
+	if (!gtk_widget_get_focusable (widget))
 		return FALSE;
 
 	children[0] = GNOME_CANVAS_ITEM (cal->priv->calitem);

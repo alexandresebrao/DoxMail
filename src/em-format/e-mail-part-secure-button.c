@@ -189,7 +189,7 @@ secure_button_view_certificate_clicked_cb (EWebView *web_view,
 	if (info) {
 		GtkWidget *toplevel;
 
-		toplevel = gtk_widget_get_toplevel (GTK_WIDGET (web_view));
+		toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (web_view));
 
 		secure_button_view_certificate (GTK_IS_WINDOW (toplevel) ? GTK_WINDOW (toplevel) : NULL, info);
 	}
@@ -217,7 +217,7 @@ secure_button_import_certificate_clicked_cb (EWebView *web_view,
 	if (info) {
 		GtkWidget *toplevel;
 
-		toplevel = gtk_widget_get_toplevel (GTK_WIDGET (web_view));
+		toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (web_view));
 
 		secure_button_import_certificate (GTK_IS_WINDOW (toplevel) ? GTK_WINDOW (toplevel) : NULL, info, web_view, iframe_id, element_id);
 	}

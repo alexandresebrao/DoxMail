@@ -86,7 +86,7 @@ main (gint argc,
 {
 	GtkWidget *window;
 
-	gtk_init (&argc, &argv);
+	gtk_init ();
 
 	window = e_preferences_window_new (NULL);
 	gtk_window_set_default_size (GTK_WINDOW (window), 400, 300);
@@ -102,7 +102,7 @@ main (gint argc,
 
 	gtk_main ();
 
-	gtk_widget_destroy (window);
+	e_gtk_widget_destroy (window);
 	e_misc_util_free_global_memory ();
 
 	return 0;

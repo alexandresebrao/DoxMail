@@ -416,17 +416,17 @@ etfci_get_property (GObject *object,
 
 static void
 etfci_drag_data_get (GtkWidget *widget,
-                     GdkDragContext *context,
-                     GtkSelectionData *selection_data,
+                     EGtkDragContext *context,
+                     EGtkSelectionData *selection_data,
                      guint info,
                      guint time,
                      ETableFieldChooserItem *etfci)
 {
 	if (etfci->drag_col != -1) {
 		gchar *string = g_strdup_printf ("%d", etfci->drag_col);
-		gtk_selection_data_set (
+		e_gtk_selection_data_set (
 			selection_data,
-			GDK_SELECTION_TYPE_STRING,
+			E_GTK_SELECTION_TYPE_STRING,
 			sizeof (string[0]),
 			(guchar *) string,
 			strlen (string));
@@ -436,7 +436,7 @@ etfci_drag_data_get (GtkWidget *widget,
 
 static void
 etfci_drag_end (GtkWidget *canvas,
-                GdkDragContext *context,
+                EGtkDragContext *context,
                 ETableFieldChooserItem *etfci)
 {
 	etfci->drag_col = -1;
@@ -570,15 +570,15 @@ etfci_start_drag (ETableFieldChooserItem *etfci,
 {
 	GtkWidget *widget = GTK_WIDGET (GNOME_CANVAS_ITEM (etfci)->canvas);
 	GtkStyleContext *style_context;
-	GtkTargetList *list;
-	GdkDragContext *context;
+	EGtkTargetList *list;
+	EGtkDragContext *context;
 	ETableCol *ecol;
 	cairo_surface_t *cs;
 	cairo_t *cr;
 	gint drag_col;
 	gint button_height;
 
-	GtkTargetEntry  etfci_drag_types[] = {
+	EGtkTargetEntry  etfci_drag_types[] = {
 		{ (gchar *) TARGET_ETABLE_COL_TYPE, 0, TARGET_ETABLE_COL_HEADER },
 	};
 
@@ -600,8 +600,8 @@ etfci_start_drag (ETableFieldChooserItem *etfci,
 	etfci_drag_types[0].target = g_strdup_printf (
 		"%s-%s", etfci_drag_types[0].target, etfci->dnd_code);
 	d (g_print ("etfci - %s\n", etfci_drag_types[0].target));
-	list = gtk_target_list_new (etfci_drag_types, G_N_ELEMENTS (etfci_drag_types));
-	context = gtk_drag_begin (widget, list, GDK_ACTION_MOVE, 1, event);
+	list = e_gtk_target_list_new (etfci_drag_types, G_N_ELEMENTS (etfci_drag_types));
+	context = e_gtk_drag_begin (widget, list, GDK_ACTION_MOVE, 1, event);
 	g_free ((gpointer) etfci_drag_types[0].target);
 
 	button_height = e_table_header_compute_height (ecol, widget);
@@ -624,7 +624,7 @@ etfci_start_drag (ETableFieldChooserItem *etfci,
 		E_TABLE_COL_ARROW_NONE);
 
 	gtk_style_context_restore (style_context);
-	gtk_drag_set_icon_surface (context, cs);
+	e_gtk_drag_set_icon_surface (context, cs);
 
 	cairo_surface_destroy (cs);
 	cairo_destroy (cr);

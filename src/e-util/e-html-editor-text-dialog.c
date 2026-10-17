@@ -261,7 +261,7 @@ e_html_editor_text_dialog_init (EHTMLEditorTextDialog *dialog)
 	gtk_label_set_mnemonic_widget (GTK_LABEL (widget), dialog->priv->size_check);
 	gtk_grid_attach (main_layout, widget, 2, 1, 1, 1);
 
-	gtk_widget_show_all (GTK_WIDGET (main_layout));
+	gtk_widget_set_visible (GTK_WIDGET (main_layout), TRUE);
 }
 
 GtkWidget *

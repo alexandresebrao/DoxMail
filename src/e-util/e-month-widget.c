@@ -311,7 +311,7 @@ e_month_widget_style_updated (GtkWidget *widget)
 
 		gtk_label_set_text (label, buffer);
 
-		gtk_widget_get_preferred_width (label_widget, &value, NULL);
+		e_gtk_widget_get_preferred_width (label_widget, &value, NULL);
 		if (value > max_day_name_width)
 			max_day_name_width = value;
 	}
@@ -333,7 +333,7 @@ e_month_widget_style_updated (GtkWidget *widget)
 
 		gtk_label_set_text (label, buffer);
 
-		gtk_widget_get_preferred_height (label_widget, &value, NULL);
+		e_gtk_widget_get_preferred_height (label_widget, &value, NULL);
 		if (value > max_week_num_height)
 			max_week_num_height = value;
 	}
@@ -354,11 +354,11 @@ e_month_widget_style_updated (GtkWidget *widget)
 
 		gtk_label_set_text (label, buffer);
 
-		gtk_widget_get_preferred_width (label_widget, &value, NULL);
+		e_gtk_widget_get_preferred_width (label_widget, &value, NULL);
 		if (value > max_day_num_width)
 			max_day_num_width = value;
 
-		gtk_widget_get_preferred_height (label_widget, &value, NULL);
+		e_gtk_widget_get_preferred_height (label_widget, &value, NULL);
 		if (value > max_day_num_height)
 			max_day_num_height = value;
 	}
@@ -393,7 +393,7 @@ e_month_widget_show_all (GtkWidget *widget)
 
 static gboolean
 e_month_widget_button_press_event_cb (GtkWidget *widget,
-				      GdkEventButton *event,
+				      GdkEvent *event,
 				      gpointer user_data)
 {
 	EMonthWidget *self = E_MONTH_WIDGET (widget);
@@ -406,7 +406,7 @@ e_month_widget_button_press_event_cb (GtkWidget *widget,
 
 static gboolean
 e_month_widget_button_release_event_cb (GtkWidget *widget,
-					GdkEventButton *event,
+					GdkEvent *event,
 					gpointer user_data)
 {
 	EMonthWidget *self = E_MONTH_WIDGET (widget);
@@ -510,7 +510,7 @@ e_month_widget_constructed (GObject *object)
 		"visible", TRUE,
 		NULL);
 
-	gtk_container_add (GTK_CONTAINER (self), GTK_WIDGET (self->priv->grid));
+	e_gtk_container_add (self, GTK_WIDGET (self->priv->grid));
 
 	self->priv->css_provider = gtk_css_provider_new ();
 

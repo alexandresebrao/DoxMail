@@ -42,7 +42,7 @@ e_table_col_ensure_surface (ETableCol *etc,
 	g_return_if_fail (E_IS_TABLE_COL (etc));
 	g_return_if_fail (GTK_IS_WIDGET (widget));
 
-	icon_theme = gtk_icon_theme_get_default ();
+	icon_theme = e_gtk_icon_theme_get_default ();
 	gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, &width, &height);
 
 	style_context = gtk_widget_get_style_context (widget);

@@ -109,7 +109,7 @@ proxy_preferences_commit_stash (EProxyPreferences *preferences,
 		if (!preferences->priv->toplevel) {
 			GtkWidget *toplevel;
 
-			toplevel = gtk_widget_get_toplevel (GTK_WIDGET (preferences));
+			toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (preferences));
 
 			if (toplevel) {
 				g_object_weak_ref (G_OBJECT (toplevel),
@@ -437,7 +437,7 @@ proxy_preferences_constructed (GObject *object)
 	widget = gtk_grid_new ();
 	gtk_grid_set_row_spacing (GTK_GRID (widget), 12);
 	gtk_grid_set_column_spacing (GTK_GRID (widget), 12);
-	gtk_box_pack_start (GTK_BOX (preferences), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (preferences), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -502,22 +502,21 @@ proxy_preferences_constructed (GObject *object)
 	widget = gtk_label_new (
 		_("Apply custom proxy settings to these accounts:"));
 	gtk_widget_set_halign (widget, GTK_ALIGN_START);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	widget = gtk_scrolled_window_new (NULL, NULL);
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_set_shadow_type (
-		GTK_SCROLLED_WINDOW (widget), GTK_SHADOW_IN);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (widget), TRUE);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	container2 = widget;
 
 	widget = e_proxy_link_selector_new (registry);
-	gtk_container_add (GTK_CONTAINER (container2), widget);
+	e_gtk_container_add (container2, widget);
 	gtk_widget_show (widget);
 
 	e_binding_bind_property (
@@ -538,7 +537,7 @@ proxy_preferences_constructed (GObject *object)
 		"<b>Advanced Proxy Preferences</b> lets you "
 		"define alternate network proxies and apply "
 		"them to specific accounts"));
-	gtk_box_pack_start (GTK_BOX (preferences), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (preferences), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	e_binding_bind_property_full (

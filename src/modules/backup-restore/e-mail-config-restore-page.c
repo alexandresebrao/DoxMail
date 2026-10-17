@@ -66,7 +66,7 @@ mail_config_restore_page_update_filename (EMailConfigRestorePage *page)
 	e_alert_bar_clear (E_ALERT_BAR (page->priv->alert_bar));
 
 	if (gtk_toggle_button_get_active (toggle_button))
-		filename = gtk_file_chooser_get_filename (file_chooser);
+		filename = e_gtk_file_chooser_get_filename (file_chooser);
 
 	if (!evolution_backup_restore_validate_backup_file (filename, &local_error)) {
 		if (filename != NULL) {
@@ -172,21 +172,21 @@ mail_config_restore_page_constructed (GObject *object)
 		 "This will restore all your personal data, settings "
 		 "mail filters, etc.");
 	widget = gtk_label_new (text);
-	gtk_label_set_line_wrap (GTK_LABEL (widget), TRUE);
+	gtk_label_set_wrap (GTK_LABEL (widget), TRUE);
 	gtk_label_set_width_chars (GTK_LABEL (widget), 20);
 	gtk_label_set_xalign (GTK_LABEL (widget), 0);
-	gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
-	gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
 
 	text = _("_Restore from a backup file:");
 	widget = gtk_check_button_new_with_mnemonic (text);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	page->priv->toggle_button = widget;  /* not referenced */
 	gtk_widget_show (widget);
 
@@ -194,26 +194,23 @@ mail_config_restore_page_constructed (GObject *object)
 		widget, "toggled",
 		G_CALLBACK (mail_config_restore_page_toggled_cb), page);
 
-	widget = gtk_file_chooser_button_new (
-		_("Choose a backup file to restore"),
-		GTK_FILE_CHOOSER_ACTION_OPEN);
-	gtk_file_chooser_set_local_only (GTK_FILE_CHOOSER (widget), TRUE);
+	widget = e_gtk_file_chooser_button_new (_("Choose a backup file to restore"), GTK_FILE_CHOOSER_ACTION_OPEN);
 
 	backup_filter = gtk_file_filter_new ();
 	gtk_file_filter_add_pattern (backup_filter, "*.tar.gz");
 	if (is_xz_available ())
 		gtk_file_filter_add_pattern (backup_filter, "*.tar.xz");
 	gtk_file_filter_set_name (backup_filter, _("Backup Files"));
-	gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (widget), backup_filter);
+	e_gtk_file_chooser_add_filter (widget, backup_filter);
 
 	filter = gtk_file_filter_new ();
 	gtk_file_filter_add_pattern (filter, "*");
 	gtk_file_filter_set_name (filter, _("All Files (*)"));
-	gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (widget), filter);
+	e_gtk_file_chooser_add_filter (widget, filter);
 
-	gtk_file_chooser_set_filter (GTK_FILE_CHOOSER (widget), backup_filter);
+	e_gtk_file_chooser_set_filter (widget, backup_filter);
 
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	page->priv->file_chooser = widget;  /* not referenced */
 	gtk_widget_show (widget);
 
@@ -222,14 +219,13 @@ mail_config_restore_page_constructed (GObject *object)
 		G_CALLBACK (mail_config_restore_page_file_set_cb), page);
 
 	widget = gtk_frame_new (NULL);
-	gtk_frame_set_shadow_type (GTK_FRAME (widget), GTK_SHADOW_IN);
-	gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (main_box), widget, FALSE, FALSE, 0);
 	/* Visibility is bound to the EActivityBar. */
 
 	container = widget;
 
 	widget = e_alert_bar_new ();
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	page->priv->alert_bar = widget;  /* not referenced */
 	/* EActivityBar controls its own visibility. */
 

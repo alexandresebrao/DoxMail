@@ -36,6 +36,9 @@ set(DEPENDENCIES
 	gnomecanvas
 )
 
+# DoxMail: the ATK accessibility code (gal-a11y-*, ea-*) is out of the
+# GTK 4 build; it needs rewriting with GtkAccessible.
+
 set(SOURCES
 	e-accounts-window.c
 	e-action-combo-box.c
@@ -175,6 +178,9 @@ set(SOURCES
 	e-menu-bar.c
 	e-menu-tool-button.c
 	e-message-popover.c
+	e-gtk-dnd-compat.c
+	e-gtk-file-chooser-compat.c
+	e-gtk4-compat.c
 	e-misc-utils.c
 	e-mktemp.c
 	e-month-widget.c
@@ -288,27 +294,6 @@ set(SOURCES
 	e-web-view-preview.c
 	e-widget-undo.c
 	e-xml-utils.c
-	ea-calendar-cell.c
-	ea-calendar-item.c
-	ea-cell-table.c
-	ea-widgets.c
-	gal-a11y-e-cell-popup.c
-	gal-a11y-e-cell-registry.c
-	gal-a11y-e-cell-text.c
-	gal-a11y-e-cell-toggle.c
-	gal-a11y-e-cell-tree.c
-	gal-a11y-e-cell-vbox.c
-	gal-a11y-e-cell.c
-	gal-a11y-e-table-click-to-add-factory.c
-	gal-a11y-e-table-click-to-add.c
-	gal-a11y-e-table-column-header.c
-	gal-a11y-e-table-item-factory.c
-	gal-a11y-e-table-item.c
-	gal-a11y-e-table.c
-	gal-a11y-e-text-factory.c
-	gal-a11y-e-text.c
-	gal-a11y-e-tree.c
-	gal-a11y-util.c
 	gal-view-collection.c
 	gal-view-etable.c
 	gal-view-instance-save-as-dialog.c
@@ -455,6 +440,9 @@ set(HEADERS
 	e-menu-bar.h
 	e-menu-tool-button.h
 	e-message-popover.h
+	e-gtk-dnd-compat.h
+	e-gtk-file-chooser-compat.h
+	e-gtk4-compat.h
 	e-misc-utils.h
 	e-mktemp.h
 	e-month-widget.h
@@ -570,29 +558,6 @@ set(HEADERS
 	e-web-view-preview.h
 	e-widget-undo.h
 	e-xml-utils.h
-	ea-calendar-cell.h
-	ea-calendar-item.h
-	ea-cell-table.h
-	ea-factory.h
-	ea-widgets.h
-	gal-a11y-e-cell-popup.h
-	gal-a11y-e-cell-registry.h
-	gal-a11y-e-cell-text.h
-	gal-a11y-e-cell-toggle.h
-	gal-a11y-e-cell-tree.h
-	gal-a11y-e-cell-vbox.h
-	gal-a11y-e-cell.h
-	gal-a11y-e-table-click-to-add-factory.h
-	gal-a11y-e-table-click-to-add.h
-	gal-a11y-e-table-column-header.h
-	gal-a11y-e-table-item-factory.h
-	gal-a11y-e-table-item.h
-	gal-a11y-e-table.h
-	gal-a11y-e-text-factory.h
-	gal-a11y-e-text.h
-	gal-a11y-e-tree.h
-	gal-a11y-factory.h
-	gal-a11y-util.h
 	gal-view-collection.h
 	gal-view-etable.h
 	gal-view-instance-save-as-dialog.h

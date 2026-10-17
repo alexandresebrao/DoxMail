@@ -109,7 +109,7 @@ main (gint argc,
 	GtkWidget *signature_combo;
 	GError *error = NULL;
 
-	gtk_init (&argc, &argv);
+	gtk_init ();
 
 	registry = e_source_registry_new_sync (NULL, &error);
 
@@ -123,7 +123,7 @@ main (gint argc,
 	widget = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title (GTK_WINDOW (widget), "Mail Signatures");
 	gtk_window_set_default_size (GTK_WINDOW (widget), 400, 400);
-	gtk_container_set_border_width (GTK_CONTAINER (widget), 12);
+	e_gtk_widget_set_border_width (widget, 12);
 	gtk_widget_show (widget);
 
 	g_signal_connect (
@@ -133,7 +133,7 @@ main (gint argc,
 	container = widget;
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 12);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	gtk_widget_show (widget);
 
 	container = vbox = widget;
@@ -141,23 +141,23 @@ main (gint argc,
 	widget = gtk_label_new ("<b>EMailSignatureComboBox</b>");
 	gtk_label_set_use_markup (GTK_LABEL (widget), TRUE);
 	gtk_label_set_xalign (GTK_LABEL (widget), 0);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
 	gtk_widget_set_margin_start (widget, 12);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
 
 	widget = e_mail_signature_combo_box_new (registry);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	signature_combo = widget;
 	gtk_widget_show (widget);
 
 	widget = e_mail_identity_combo_box_new (registry);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	identity_combo = widget;
 	gtk_widget_show (widget);
 
@@ -165,15 +165,14 @@ main (gint argc,
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_set_shadow_type (
-		GTK_SCROLLED_WINDOW (widget), GTK_SHADOW_IN);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (widget), TRUE);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
 
 	widget = e_web_view_new ();
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	gtk_widget_show (widget);
 
 	g_signal_connect (
@@ -185,12 +184,12 @@ main (gint argc,
 	widget = gtk_label_new ("<b>EMailSignatureManager</b>");
 	gtk_label_set_use_markup (GTK_LABEL (widget), TRUE);
 	gtk_label_set_xalign (GTK_LABEL (widget), 0);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	widget = e_mail_signature_manager_new (registry);
 	gtk_widget_set_margin_start (widget, 12);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	e_binding_bind_property (

@@ -47,7 +47,8 @@ enum {
 	PROP_ACTIVITY
 };
 
-G_DEFINE_TYPE_WITH_PRIVATE (EActivityBar, e_activity_bar, GTK_TYPE_INFO_BAR)
+/* GtkInfoBar cannot be subclassed with GTK 4; the bar is a box holding one */
+G_DEFINE_TYPE_WITH_PRIVATE (EActivityBar, e_activity_bar, GTK_TYPE_BOX)
 
 typedef struct _EActivityBarTimeoutData {
 	EActivityBar *bar;
@@ -173,14 +174,10 @@ activity_bar_update (EActivityBar *bar)
 		icon_name = COMPLETED_ICON_NAME;
 
 	if (state == E_ACTIVITY_CANCELLED) {
-		gtk_image_set_from_icon_name (
-			GTK_IMAGE (bar->priv->image),
-			"process-stop", GTK_ICON_SIZE_BUTTON);
+		gtk_image_set_from_icon_name (GTK_IMAGE (bar->priv->image), "process-stop");
 		gtk_widget_show (bar->priv->image);
 	} else if (icon_name != NULL) {
-		gtk_image_set_from_icon_name (
-			GTK_IMAGE (bar->priv->image),
-			icon_name, GTK_ICON_SIZE_BUTTON);
+		gtk_image_set_from_icon_name (GTK_IMAGE (bar->priv->image), icon_name);
 		gtk_widget_show (bar->priv->image);
 	} else {
 		gtk_widget_hide (bar->priv->image);
@@ -256,22 +253,6 @@ activity_bar_get_property (GObject *object,
 }
 
 static void
-activity_bar_constructed (GObject *object)
-{
-	GObject *revealer;
-
-	/* Chain up to parent's method. */
-	G_OBJECT_CLASS (e_activity_bar_parent_class)->constructed (object);
-
-	/* Disable animation of the revealer, until GtkInfoBar's bug #710888 is fixed */
-	revealer = gtk_widget_get_template_child (GTK_WIDGET (object), GTK_TYPE_INFO_BAR, "revealer");
-	if (revealer) {
-		gtk_revealer_set_transition_type (GTK_REVEALER (revealer), GTK_REVEALER_TRANSITION_TYPE_NONE);
-		gtk_revealer_set_transition_duration (GTK_REVEALER (revealer), 0);
-	}
-}
-
-static void
 activity_bar_dispose (GObject *object)
 {
 	EActivityBar *self = E_ACTIVITY_BAR (object);
@@ -300,7 +281,6 @@ e_activity_bar_class_init (EActivityBarClass *class)
 	object_class = G_OBJECT_CLASS (class);
 	object_class->set_property = activity_bar_set_property;
 	object_class->get_property = activity_bar_get_property;
-	object_class->constructed = activity_bar_constructed;
 	object_class->dispose = activity_bar_dispose;
 
 	g_object_class_install_property (
@@ -318,26 +298,31 @@ e_activity_bar_class_init (EActivityBarClass *class)
 static void
 e_activity_bar_init (EActivityBar *bar)
 {
+	GtkWidget *info_bar;
 	GtkWidget *container;
 	GtkWidget *widget;
 
 	bar->priv = e_activity_bar_get_instance_private (bar);
 
-	container = gtk_info_bar_get_content_area (GTK_INFO_BAR (bar));
+	G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+	info_bar = gtk_info_bar_new ();
+	gtk_widget_set_hexpand (info_bar, TRUE);
+	gtk_box_append (GTK_BOX (bar), info_bar);
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 12);
-	gtk_container_add (GTK_CONTAINER (container), widget);
-	gtk_widget_show (widget);
+	gtk_widget_set_hexpand (widget, TRUE);
+	gtk_info_bar_add_child (GTK_INFO_BAR (info_bar), widget);
+	G_GNUC_END_IGNORE_DEPRECATIONS
 
 	container = widget;
 
 	widget = gtk_image_new ();
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	bar->priv->image = widget;
 
 	widget = e_spinner_new ();
 	e_spinner_start (E_SPINNER (widget));
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	bar->priv->spinner = widget;
 
 	/* The spinner is only visible when the image is not. */
@@ -351,14 +336,16 @@ e_activity_bar_init (EActivityBar *bar)
 	widget = gtk_label_new (NULL);
 	gtk_label_set_xalign (GTK_LABEL (widget), 0);
 	gtk_label_set_ellipsize (GTK_LABEL (widget), PANGO_ELLIPSIZE_END);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	bar->priv->label = widget;
 	gtk_widget_show (widget);
 
 	/* This is only shown if the EActivity has a GCancellable. */
 	widget = e_dialog_button_new_with_icon ("process-stop", _("_Cancel"));
+	G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 	gtk_info_bar_add_action_widget (
-		GTK_INFO_BAR (bar), widget, GTK_RESPONSE_CANCEL);
+		GTK_INFO_BAR (info_bar), widget, GTK_RESPONSE_CANCEL);
+	G_GNUC_END_IGNORE_DEPRECATIONS
 	bar->priv->cancel = widget;
 	gtk_widget_hide (widget);
 

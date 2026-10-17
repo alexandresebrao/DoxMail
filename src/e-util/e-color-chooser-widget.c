@@ -44,7 +44,7 @@ static guint signals[LAST_SIGNAL];
 
 G_DEFINE_TYPE_WITH_PRIVATE (EColorChooserWidget, e_color_chooser_widget, GTK_TYPE_COLOR_CHOOSER_WIDGET);
 
-static gboolean (* origin_swatch_button_press_event) (GtkWidget *widget, GdkEventButton *event);
+static gboolean (* origin_swatch_button_press_event) (GtkWidget *widget, GdkEvent *event);
 
 /* UGLY UGLY UGLY!
  * GtkColorChooserWidget sends "color-activated" signal
@@ -62,7 +62,7 @@ static gboolean (* origin_swatch_button_press_event) (GtkWidget *widget, GdkEven
  */
 static gboolean
 color_chooser_widget_button_press_event (GtkWidget *widget,
-                                         GdkEventButton *event)
+                                         GdkEvent *event)
 {
 	GtkWidget *parent;
 
@@ -110,7 +110,7 @@ run_color_chooser_dialog (gpointer user_data)
 
 	parent_window = g_object_get_data (G_OBJECT (parent_chooser), "window");
 	if (!GTK_IS_WINDOW (parent_window))
-		parent_window = gtk_widget_get_toplevel (parent_chooser);
+		parent_window = e_gtk_widget_get_toplevel (parent_chooser);
 	dialog = gtk_dialog_new_with_buttons (
 		N_("Choose custom color"),
 		GTK_WINDOW (parent_window),
@@ -120,13 +120,11 @@ run_color_chooser_dialog (gpointer user_data)
 
 	chooser = gtk_color_chooser_widget_new ();
 	g_object_set (G_OBJECT (chooser), "show-editor", TRUE, NULL);
-	gtk_box_pack_start (
-		GTK_BOX (gtk_dialog_get_content_area (GTK_DIALOG (dialog))),
-		chooser, TRUE, TRUE, 5);
+	e_gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area (GTK_DIALOG (dialog))), chooser, TRUE, TRUE, 5);
 
-	gtk_widget_show_all (chooser);
+	gtk_widget_set_visible (chooser, TRUE);
 
-	if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT) {
+	if (e_gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT) {
 		GdkRGBA color;
 
 		gtk_color_chooser_get_rgba (GTK_COLOR_CHOOSER (chooser), &color);
@@ -135,7 +133,7 @@ run_color_chooser_dialog (gpointer user_data)
 		g_signal_emit_by_name (parent_chooser, "color-activated", &color);
 	}
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 
 	self = E_COLOR_CHOOSER_WIDGET (parent_chooser);
 	self->priv->showing_editor = FALSE;
@@ -187,7 +185,7 @@ find_swatch (GtkContainer *container)
 {
 	GList *children, *child;
 
-	children = gtk_container_get_children (container);
+	children = e_gtk_widget_get_children (container);
 	for (child = children; child; child = g_list_next (child)) {
 		GtkWidget *widget = child->data;
 		GtkWidget *swatch;

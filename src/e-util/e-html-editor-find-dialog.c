@@ -130,7 +130,7 @@ html_editor_find_dialog_find_cb (EHTMLEditorFindDialog *dialog)
 	e_content_editor_find (
 		dialog->priv->cnt_editor,
 		flags,
-		gtk_entry_get_text (GTK_ENTRY (dialog->priv->entry)));
+		gtk_editable_get_text (GTK_EDITABLE (dialog->priv->entry)));
 }
 
 static gboolean
@@ -138,7 +138,7 @@ entry_key_release_event (GtkWidget *widget,
                          GdkEvent *event,
                          gpointer user_data)
 {
-	GdkEventKey *key = &event->key;
+	GdkEvent *key = &event->key;
 	EHTMLEditorFindDialog *dialog = user_data;
 
 	if (key->keyval == GDK_KEY_Return || key->keyval == GDK_KEY_KP_Enter) {
@@ -203,21 +203,21 @@ e_html_editor_find_dialog_init (EHTMLEditorFindDialog *dialog)
 	gtk_grid_attach (main_layout, GTK_WIDGET (box), 0, 1, 1, 1);
 
 	widget = gtk_check_button_new_with_mnemonic (N_("Search _backwards"));
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 	dialog->priv->backwards = widget;
 	g_signal_connect_swapped (
 		widget, "toggled",
 		G_CALLBACK (reset_dialog), dialog);
 
 	widget = gtk_check_button_new_with_mnemonic (N_("Case _Sensitive"));
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 	dialog->priv->case_sensitive = widget;
 	g_signal_connect_swapped (
 		widget, "toggled",
 		G_CALLBACK (reset_dialog), dialog);
 
 	widget = gtk_check_button_new_with_mnemonic (N_("_Wrap Search"));
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget), TRUE);
 	dialog->priv->wrap_search = widget;
 	g_signal_connect_swapped (
@@ -228,18 +228,18 @@ e_html_editor_find_dialog_init (EHTMLEditorFindDialog *dialog)
 	gtk_grid_attach (main_layout, GTK_WIDGET (box), 0, 2, 1, 1);
 
 	widget = gtk_label_new ("");
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 	dialog->priv->result_label = widget;
 
 	box = e_html_editor_dialog_get_button_box (E_HTML_EDITOR_DIALOG (dialog));
 	widget = e_dialog_button_new_with_icon ("edit-find", _("_Find"));
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 5);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 5);
 	g_signal_connect_swapped (
 		widget, "clicked",
 		G_CALLBACK (html_editor_find_dialog_find_cb), dialog);
 	dialog->priv->find_button = widget;
 
-	gtk_widget_show_all (GTK_WIDGET (main_layout));
+	gtk_widget_set_visible (GTK_WIDGET (main_layout), TRUE);
 }
 
 GtkWidget *

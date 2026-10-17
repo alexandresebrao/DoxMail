@@ -137,18 +137,18 @@ gchar *		e_composer_get_default_charset	(void);
 gchar *		e_composer_decode_clue_value	(const gchar *encoded_value);
 gchar *		e_composer_encode_clue_value	(const gchar *decoded_value);
 gboolean	e_composer_paste_image		(EMsgComposer *composer,
-						 GtkClipboard *clipboard);
+						 GdkClipboard *clipboard);
 gboolean	e_composer_paste_uris		(EMsgComposer *composer,
-						 GtkClipboard *clipboard);
+						 GdkClipboard *clipboard);
 gboolean	e_composer_selection_is_base64_uris
 						(EMsgComposer *composer,
-						 GtkSelectionData *selection);
+						 EGtkSelectionData *selection);
 gboolean	e_composer_selection_is_image_uris
 						(EMsgComposer *composer,
-						 GtkSelectionData *selection);
+						 EGtkSelectionData *selection);
 gboolean	e_composer_selection_is_moz_url_image
 						(EMsgComposer *composer,
-						 GtkSelectionData *selection,
+						 EGtkSelectionData *selection,
 						 gchar **out_moz_url);
 void		e_composer_update_signature	(EMsgComposer *composer);
 void		e_composer_emit_before_destroy	(EMsgComposer *composer);

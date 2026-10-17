@@ -43,7 +43,7 @@
 #include <pkcs11.h>
 #include <pk11func.h>
 
-#include <libedataserverui/libedataserverui.h>
+#include <libedataserverui4/libedataserverui4.h>
 
 #include "shell/e-shell.h"
 
@@ -344,7 +344,7 @@ report_and_free_error (CertPage *cp,
 	g_return_if_fail (cp != NULL);
 
 	e_notice (
-		gtk_widget_get_toplevel (GTK_WIDGET (cp->treeview)),
+		e_gtk_widget_get_toplevel (GTK_WIDGET (cp->treeview)),
 		GTK_MESSAGE_ERROR, "%s: %s", where,
 		error ? error->message : _("Unknown error"));
 
@@ -360,12 +360,12 @@ treeview_header_clicked (GtkWidget *widget,
 	GtkMenu *menu = user_data;
 	guint event_button = 0;
 
-	gdk_event_get_button (button_event, &event_button);
+	e_gdk_event_get_button (button_event, &event_button);
 
 	if (event_button != 3)
 		return FALSE;
 
-	gtk_widget_show_all (GTK_WIDGET (menu));
+	gtk_widget_set_visible (GTK_WIDGET (menu), TRUE);
 
 	if (!gtk_menu_get_attach_widget (menu))
 		gtk_menu_attach_to_widget (menu, widget, NULL);
@@ -548,7 +548,7 @@ open_cert_viewer (GtkWidget *widget,
 {
 	GtkWidget *dialog, *parent;
 
-	parent = gtk_widget_get_toplevel (widget);
+	parent = e_gtk_widget_get_toplevel (widget);
 	if (!parent || !GTK_IS_WINDOW (parent))
 		parent = NULL;
 
@@ -590,8 +590,8 @@ cert_backup_dialog_sensitize (GtkWidget *widget,
 	const gchar *txt1, *txt2;
 	gboolean is_sensitive = TRUE;
 
-	txt1 = gtk_entry_get_text (GTK_ENTRY (data->entry1));
-	txt2 = gtk_entry_get_text (GTK_ENTRY (data->entry2));
+	txt1 = gtk_editable_get_text (GTK_EDITABLE (data->entry1));
+	txt2 = gtk_editable_get_text (GTK_EDITABLE (data->entry2));
 
 	if (*data->file == NULL)
 		is_sensitive = FALSE;
@@ -634,13 +634,12 @@ run_cert_backup_dialog_file_chooser (GtkButton *file_button,
 	GtkWidget *toplevel;
 	gchar *filename;
 
-	toplevel = gtk_widget_get_toplevel (GTK_WIDGET (file_button));
+	toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (file_button));
 	native = gtk_file_chooser_native_new (
 		_("Select a file to backup your key and certificate…"),
 		GTK_IS_WINDOW (toplevel) ? GTK_WINDOW (toplevel) : NULL,
 		GTK_FILE_CHOOSER_ACTION_SAVE,
 		_("_Save"), _("_Cancel"));
-	gtk_file_chooser_set_do_overwrite_confirmation (GTK_FILE_CHOOSER (native), TRUE);
 	/* To Translators:
 	 * %s-backup.p12 is the default file name suggested by the file selection dialog,
 	 * when a user wants to backup one of her/his private keys/certificates.
@@ -651,26 +650,26 @@ run_cert_backup_dialog_file_chooser (GtkButton *file_button,
 	g_free (filename);
 
 	if (*data->file) {
-		gtk_file_chooser_set_file (GTK_FILE_CHOOSER (native), *data->file, NULL);
+		e_gtk_file_chooser_set_file (native, *data->file, NULL);
 	}
 
 	filter = gtk_file_filter_new ();
 	gtk_file_filter_set_name (filter, data->cp->cert_filter_name);
 	gtk_file_filter_add_mime_type (filter, "application/x-pkcs12");
-	gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (native), filter);
+	e_gtk_file_chooser_add_filter (native, filter);
 
 	filter = gtk_file_filter_new ();
 	gtk_file_filter_set_name (filter, _("All files"));
 	gtk_file_filter_add_pattern (filter, "*");
-	gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (native), filter);
+	e_gtk_file_chooser_add_filter (native, filter);
 
-	if (gtk_native_dialog_run (GTK_NATIVE_DIALOG (native)) == GTK_RESPONSE_ACCEPT) {
+	if (e_gtk_native_dialog_run (GTK_NATIVE_DIALOG (native)) == GTK_RESPONSE_ACCEPT) {
 		gchar *basename;
 
 		cert_backup_dialog_maybe_correct_extension (GTK_FILE_CHOOSER (native));
 
 		g_clear_object (&(*data->file));
-		*data->file = gtk_file_chooser_get_file (GTK_FILE_CHOOSER (native));
+		*data->file = e_gtk_file_chooser_get_file (native);
 
 		basename = g_file_get_basename (*data->file);
 		gtk_button_set_label (file_button, basename);
@@ -796,17 +795,17 @@ run_cert_backup_dialog (CertPage *cp,
 	gtk_grid_attach (grid, label, col, row++, 2, 1);
 
 	/* add widget to dialog and show all */
-	gtk_widget_show_all (GTK_WIDGET (grid));
-	gtk_container_add (GTK_CONTAINER (content_area), GTK_WIDGET (grid));
+	gtk_widget_set_visible (GTK_WIDGET (grid), TRUE);
+	e_gtk_container_add (content_area, GTK_WIDGET (grid));
 
 	data.save_button = gtk_dialog_get_widget_for_response (GTK_DIALOG (dialog), GTK_RESPONSE_OK);
 	gtk_widget_set_sensitive (data.save_button, FALSE);
 
-	response = gtk_dialog_run (GTK_DIALOG (dialog));
-	*password = strdup (gtk_entry_get_text (GTK_ENTRY (data.entry1)));
+	response = e_gtk_dialog_run (GTK_DIALOG (dialog));
+	*password = strdup (gtk_editable_get_text (GTK_EDITABLE (data.entry1)));
 	*save_chain = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (chain));
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 
 	return response;
 }
@@ -832,10 +831,10 @@ backup_cert (GtkWidget *button,
 			gchar *password = NULL;
 			gboolean save_chain = FALSE;
 
-			if (run_cert_backup_dialog (cp, gtk_widget_get_toplevel (button), cert, &file, &password, &save_chain) == GTK_RESPONSE_OK) {
+			if (run_cert_backup_dialog (cp, e_gtk_widget_get_toplevel (button), cert, &file, &password, &save_chain) == GTK_RESPONSE_OK) {
 				if (!file) {
 					e_notice (
-						gtk_widget_get_toplevel (GTK_WIDGET (cp->treeview)),
+						e_gtk_widget_get_toplevel (GTK_WIDGET (cp->treeview)),
 						GTK_MESSAGE_ERROR, "%s", _("No file name provided"));
 				} else if (cp->cert_type == E_CERT_USER) {
 					GError *error = NULL;
@@ -896,7 +895,7 @@ edit_cert (GtkWidget *button,
 					return;
 			}
 
-			if ((gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) &&
+			if ((e_gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) &&
 			    (cp->cert_type == E_CERT_CA)) {
 				gboolean trust_ssl, trust_email, trust_objsign;
 				CERTCertTrust trust;
@@ -914,7 +913,7 @@ edit_cert (GtkWidget *button,
 				e_cert_db_change_cert_trust (icert, &trust);
 			}
 
-			gtk_widget_destroy (dialog);
+			e_gtk_widget_destroy (dialog);
 			g_object_unref (cert);
 		}
 	}
@@ -929,7 +928,7 @@ import_cert (GtkWidget *button,
 	GtkWidget *toplevel;
 	gint i;
 
-	toplevel = gtk_widget_get_toplevel (button);
+	toplevel = e_gtk_widget_get_toplevel (button);
 
 	native = gtk_file_chooser_native_new (
 		_("Select a certificate to import…"),
@@ -942,15 +941,15 @@ import_cert (GtkWidget *button,
 	for (i = 0; cp->cert_mime_types[i] != NULL; i++) {
 		gtk_file_filter_add_mime_type (filter, cp->cert_mime_types[i]);
 	}
-	gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (native), filter);
+	e_gtk_file_chooser_add_filter (native, filter);
 
 	filter = gtk_file_filter_new ();
 	gtk_file_filter_set_name (filter, _("All files"));
 	gtk_file_filter_add_pattern (filter, "*");
-	gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (native), filter);
+	e_gtk_file_chooser_add_filter (native, filter);
 
-	if (gtk_native_dialog_run (GTK_NATIVE_DIALOG (native)) == GTK_RESPONSE_ACCEPT) {
-		gchar *filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (native));
+	if (e_gtk_native_dialog_run (GTK_NATIVE_DIALOG (native)) == GTK_RESPONSE_ACCEPT) {
+		gchar *filename = e_gtk_file_chooser_get_filename (native);
 		GSList *imported_certs = NULL;
 		GError *error = NULL;
 		gboolean import;
@@ -1274,7 +1273,7 @@ mail_cert_edit_trust (GtkWidget *parent,
 		_("_OK"), GTK_RESPONSE_OK,
 		NULL);
 
-	gtk_container_set_border_width (GTK_CONTAINER (dialog), 5);
+	e_gtk_widget_set_border_width (dialog, 5);
 	gtk_window_set_default_size (GTK_WINDOW (dialog), 400, 300);
 
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
@@ -1337,14 +1336,14 @@ mail_cert_edit_trust (GtkWidget *parent,
 		"vexpand", FALSE,
 		"margin", 6,
 		NULL);
-	gtk_container_add (GTK_CONTAINER (expander), certificate_widget);
+	e_gtk_container_add (expander, certificate_widget);
 	gtk_grid_attach (grid, expander, 0, row, 1, 1);
 	row++;
 
-	gtk_container_add (GTK_CONTAINER (content_area), GTK_WIDGET (grid));
-	gtk_widget_show_all (content_area);
+	e_gtk_container_add (content_area, GTK_WIDGET (grid));
+	gtk_widget_set_visible (content_area, TRUE);
 
-	if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
+	if (e_gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
 		CamelCertTrust trust = CAMEL_CERT_TRUST_UNKNOWN;
 
 		if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rnever)))
@@ -1363,7 +1362,7 @@ mail_cert_edit_trust (GtkWidget *parent,
 			camel_cert->trust = trust;
 	}
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 
 	return changed;
 }
@@ -1395,7 +1394,7 @@ mail_cert_edit_trust_cb (GtkWidget *button,
 	certdb = camel_certdb_get_default ();
 	g_return_if_fail (certdb != NULL);
 
-	parent_window = gtk_widget_get_toplevel (button);
+	parent_window = e_gtk_widget_get_toplevel (button);
 	if (!parent_window || !GTK_IS_WINDOW (parent_window))
 		parent_window = NULL;
 
@@ -1562,7 +1561,7 @@ cm_add_mail_certificate_page (ECertManagerConfig *ecmc,
 		"hscrollbar-policy", GTK_POLICY_AUTOMATIC,
 		"vscrollbar-policy", GTK_POLICY_AUTOMATIC,
 		NULL);
-	gtk_container_add (GTK_CONTAINER (scrolled_window), tree_view);
+	e_gtk_container_add (scrolled_window, tree_view);
 	gtk_grid_attach (grid, scrolled_window, 0, 1, 1, 1);
 
 	cm_add_text_column (GTK_TREE_VIEW (tree_view), _("Host name"), MAIL_CERT_COLUMN_HOSTNAME, TRUE);
@@ -1571,7 +1570,7 @@ cm_add_mail_certificate_page (ECertManagerConfig *ecmc,
 	cm_add_text_column (GTK_TREE_VIEW (tree_view), _("Fingerprint"), MAIL_CERT_COLUMN_FINGERPRINT, FALSE);
 	cm_add_text_column (GTK_TREE_VIEW (tree_view), _("Trust"), MAIL_CERT_COLUMN_TRUST, FALSE);
 
-	button_box = gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
+	button_box = e_gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
 	g_object_set (G_OBJECT (button_box),
 		"hexpand", FALSE,
 		"vexpand", TRUE,
@@ -1586,25 +1585,25 @@ cm_add_mail_certificate_page (ECertManagerConfig *ecmc,
 	gtk_tree_selection_set_mode (selection, GTK_SELECTION_SINGLE);
 
 	button = gtk_button_new_with_mnemonic (_("_View"));
-	gtk_container_add (GTK_CONTAINER (button_box), button);
+	e_gtk_container_add (button_box, button);
 	g_signal_connect_object (selection, "changed", G_CALLBACK (selection_changed_has_one_row_cb), button, 0);
 	g_signal_connect_object (button, "clicked", G_CALLBACK (mail_cert_view_cb), tree_view, 0);
 
 	button = gtk_button_new_with_mnemonic (_("_Edit Trust"));
-	gtk_container_add (GTK_CONTAINER (button_box), button);
+	e_gtk_container_add (button_box, button);
 	g_signal_connect_object (selection, "changed", G_CALLBACK (selection_changed_has_one_row_cb), button, 0);
 	g_signal_connect_object (button, "clicked", G_CALLBACK (mail_cert_edit_trust_cb), tree_view, 0);
 
 	button = gtk_button_new_with_mnemonic (_("_Delete"));
-	gtk_container_add (GTK_CONTAINER (button_box), button);
+	e_gtk_container_add (button_box, button);
 	g_signal_connect_object (selection, "changed", G_CALLBACK (selection_changed_has_one_row_cb), button, 0);
 	g_signal_connect_object (button, "clicked", G_CALLBACK (mail_cert_delete_cb), tree_view, 0);
 
 	button = gtk_button_new_with_mnemonic (_("_Update"));
-	gtk_container_add (GTK_CONTAINER (button_box), button);
+	e_gtk_container_add (button_box, button);
 	g_signal_connect_object (button, "clicked", G_CALLBACK (mail_cert_update_cb), ecmc, 0);
 
-	gtk_widget_show_all (GTK_WIDGET (grid));
+	gtk_widget_set_visible (GTK_WIDGET (grid), TRUE);
 	gtk_notebook_append_page (notebook, GTK_WIDGET (grid), gtk_label_new (_("Mail")));
 
 	ecmc->priv->mail_tree_view = GTK_TREE_VIEW (tree_view);
@@ -2074,9 +2073,9 @@ e_cert_manager_config_init (ECertManagerConfig *ecmc)
 	 * to this ECertManagerConfig */
 	widget = e_builder_get_widget (ecmc->priv->builder, "cert-manager-notebook");
 	parent = gtk_widget_get_parent (widget);
-	gtk_container_remove (GTK_CONTAINER (parent), widget);
-	gtk_box_pack_start (GTK_BOX (ecmc), widget, TRUE, TRUE, 0);
-	gtk_widget_show_all (widget);
+	e_gtk_container_remove (parent, widget);
+	e_gtk_box_pack_start (GTK_BOX (ecmc), widget, TRUE, TRUE, 0);
+	gtk_widget_set_visible (widget, TRUE);
 
 	/* FIXME: remove when implemented */
 	gtk_widget_set_visible (ecmc->priv->yourcerts_page->backup_all_button, FALSE);
@@ -2124,15 +2123,15 @@ e_cert_manager_new_certificate_viewer (GtkWindow *parent,
 		_("_Close"), GTK_RESPONSE_CLOSE,
 		NULL);
 
-	gtk_container_set_border_width (GTK_CONTAINER (dialog), 5);
+	e_gtk_widget_set_border_width (dialog, 5);
 	gtk_window_set_default_size (GTK_WINDOW (dialog), 400, 300);
 
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
 
 	widget = GTK_WIDGET (certificate_widget);
-	gtk_container_set_border_width (GTK_CONTAINER (widget), 5);
-	gtk_box_pack_start (GTK_BOX (content_area), widget, TRUE, TRUE, 0);
-	gtk_widget_show_all (widget);
+	e_gtk_widget_set_border_width (widget, 5);
+	e_gtk_box_pack_start (GTK_BOX (content_area), widget, TRUE, TRUE, 0);
+	gtk_widget_set_visible (widget, TRUE);
 
 	return dialog;
 }

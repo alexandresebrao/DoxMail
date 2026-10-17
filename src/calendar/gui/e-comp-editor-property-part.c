@@ -395,10 +395,10 @@ ecepp_string_create_widgets (ECompEditorPropertyPart *property_part,
 
 		scrolled_window = GTK_SCROLLED_WINDOW (gtk_scrolled_window_new (NULL, NULL));
 		gtk_scrolled_window_set_policy (scrolled_window, GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-		gtk_scrolled_window_set_shadow_type (scrolled_window, GTK_SHADOW_IN);
+		gtk_scrolled_window_set_has_frame (scrolled_window, TRUE);
 		gtk_widget_show (GTK_WIDGET (scrolled_window));
 
-		gtk_container_add (GTK_CONTAINER (scrolled_window), *out_edit_widget);
+		e_gtk_container_add (scrolled_window, *out_edit_widget);
 
 		g_object_set (G_OBJECT (*out_edit_widget),
 			"hexpand", TRUE,
@@ -477,7 +477,7 @@ ecepp_string_fill_widget (ECompEditorPropertyPart *property_part,
 	}
 
 	if (GTK_IS_ENTRY (edit_widget)) {
-		gtk_entry_set_text (GTK_ENTRY (edit_widget), text ? text : "");
+		gtk_editable_set_text (GTK_EDITABLE (edit_widget), text ? text : "");
 	} else /* if (GTK_IS_TEXT_VIEW (edit_widget)) */ {
 		GtkTextBuffer *buffer;
 
@@ -512,7 +512,7 @@ ecepp_string_fill_component (ECompEditorPropertyPart *property_part,
 	g_return_if_fail (klass->i_cal_set_func != NULL);
 
 	if (GTK_IS_ENTRY (edit_widget)) {
-		value = g_strdup (gtk_entry_get_text (GTK_ENTRY (edit_widget)));
+		value = g_strdup (gtk_editable_get_text (GTK_EDITABLE (edit_widget)));
 	} else /* if (GTK_IS_TEXT_VIEW (edit_widget)) */ {
 		GtkTextBuffer *buffer;
 		GtkTextIter text_iter_start, text_iter_end;
@@ -673,7 +673,7 @@ e_comp_editor_property_part_string_get_real_edit_widget (ECompEditorPropertyPart
 	edit_widget = klass->get_real_edit_widget (part_string);
 
 	if (GTK_IS_SCROLLED_WINDOW (edit_widget))
-		edit_widget = gtk_bin_get_child (GTK_BIN (edit_widget));
+		edit_widget = e_gtk_bin_get_child (edit_widget);
 
 	return edit_widget;
 }

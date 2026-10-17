@@ -53,16 +53,17 @@ typedef struct _EPanedClass EPanedClass;
 typedef struct _EPanedPrivate EPanedPrivate;
 
 struct _EPaned {
-	GtkPaned parent;
+	GtkWidget parent;
 	EPanedPrivate *priv;
 };
 
 struct _EPanedClass {
-	GtkPanedClass parent_class;
+	GtkWidgetClass parent_class;
 };
 
 GType		e_paned_get_type		(void) G_GNUC_CONST;
 GtkWidget *	e_paned_new			(GtkOrientation orientation);
+GtkPaned *	e_paned_get_paned		(EPaned *paned);
 gint		e_paned_get_hposition		(EPaned *paned);
 void		e_paned_set_hposition		(EPaned *paned,
 						 gint hposition);

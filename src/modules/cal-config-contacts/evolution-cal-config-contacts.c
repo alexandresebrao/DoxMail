@@ -71,8 +71,7 @@ cal_config_contacts_insert_widgets (ESourceConfigBackend *backend,
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_set_shadow_type (
-		GTK_SCROLLED_WINDOW (widget), GTK_SHADOW_IN);
+	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (widget), TRUE);
 	gtk_widget_set_size_request (widget, 320, 200);
 	e_source_config_insert_widget (config, scratch_source, NULL, widget);
 	gtk_widget_show (widget);
@@ -80,7 +79,7 @@ cal_config_contacts_insert_widgets (ESourceConfigBackend *backend,
 	container = widget;
 
 	widget = e_contacts_selector_new (registry);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	gtk_widget_show (widget);
 }
 

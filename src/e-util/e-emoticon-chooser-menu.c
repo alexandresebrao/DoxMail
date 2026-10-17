@@ -96,7 +96,7 @@ emoticon_chooser_menu_set_current_emoticon (EEmoticonChooser *chooser,
 {
 	GList *list, *iter;
 
-	list = gtk_container_get_children (GTK_CONTAINER (chooser));
+	list = e_gtk_widget_get_children (chooser);
 
 	for (iter = list; iter != NULL; iter = iter->next) {
 		GtkWidget *item = iter->data;
@@ -155,8 +155,7 @@ e_emoticon_chooser_menu_init (EEmoticonChooserMenu *chooser_menu)
 		item = gtk_image_menu_item_new_with_mnemonic (_(emoticon->label));
 		gtk_image_menu_item_set_image (
 			GTK_IMAGE_MENU_ITEM (item),
-			gtk_image_new_from_icon_name (
-			emoticon->icon_name, GTK_ICON_SIZE_MENU));
+			gtk_image_new_from_icon_name (emoticon->icon_name));
 		gtk_widget_show (item);
 
 		g_object_set_data_full (

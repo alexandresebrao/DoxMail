@@ -248,7 +248,7 @@ mail_config_yahoo_summary_constructed (GObject *object)
 	widget = gtk_grid_new ();
 	gtk_grid_set_row_spacing (GTK_GRID (widget), 6);
 	gtk_grid_set_column_spacing (GTK_GRID (widget), 6);
-	gtk_box_pack_start (main_box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (main_box, widget, FALSE, FALSE, 0);
 
 	e_binding_bind_property (
 		extension, "applicable",

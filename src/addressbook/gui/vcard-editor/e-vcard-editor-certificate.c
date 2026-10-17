@@ -9,7 +9,7 @@
 #include <gtk/gtk.h>
 #include <camel/camel.h>
 #include <libebook-contacts/libebook-contacts.h>
-#include <libedataserverui/libedataserverui.h>
+#include <libedataserverui4/libedataserverui4.h>
 
 #ifdef ENABLE_SMIME
 #include "smime/lib/e-cert.h"
@@ -370,31 +370,30 @@ eve_certificate_save_clicked_cb (GtkWidget *button,
 		_("_Save"), _("_Cancel"));
 
 	file_chooser = GTK_FILE_CHOOSER (native);
-	gtk_file_chooser_set_local_only (file_chooser, TRUE);
 	gtk_file_chooser_set_select_multiple (file_chooser, FALSE);
 
 	if (self->field_id == E_CONTACT_PGP_CERT) {
 		filter = gtk_file_filter_new ();
 		gtk_file_filter_set_name (filter, _("PGP keys"));
 		gtk_file_filter_add_mime_type (filter, "application/pgp-keys");
-		gtk_file_chooser_add_filter (file_chooser, filter);
+		e_gtk_file_chooser_add_filter (file_chooser, filter);
 	} else {
 		filter = gtk_file_filter_new ();
 		gtk_file_filter_set_name (filter, _("X.509 certificates"));
 		gtk_file_filter_add_mime_type (filter, "application/x-x509-user-cert");
-		gtk_file_chooser_add_filter (file_chooser, filter);
+		e_gtk_file_chooser_add_filter (file_chooser, filter);
 	}
 
 	filter = gtk_file_filter_new ();
 	gtk_file_filter_set_name (filter, _("All files"));
 	gtk_file_filter_add_pattern (filter, "*");
-	gtk_file_chooser_add_filter (file_chooser, filter);
+	e_gtk_file_chooser_add_filter (file_chooser, filter);
 
-	if (gtk_native_dialog_run (GTK_NATIVE_DIALOG (native)) == GTK_RESPONSE_ACCEPT) {
+	if (e_gtk_native_dialog_run (GTK_NATIVE_DIALOG (native)) == GTK_RESPONSE_ACCEPT) {
 		gchar *filename;
 		GError *local_error = NULL;
 
-		filename = gtk_file_chooser_get_filename (file_chooser);
+		filename = e_gtk_file_chooser_get_filename (file_chooser);
 		if (!filename) {
 			g_set_error_literal (&local_error, G_IO_ERROR, G_IO_ERROR_NOT_SUPPORTED, _("Chosen file is not a local file."));
 		} else if (self->cert_data) {
@@ -447,16 +446,16 @@ eve_certificate_notify_expanded_cb (EVCardEditorCertificate *self)
 
 		expanded = gtk_expander_get_expanded (GTK_EXPANDER (self->expander));
 		/* to not step in when not expanded with Tab */
-		gtk_widget_set_sensitive (gtk_bin_get_child (GTK_BIN (self->expander)), expanded);
+		gtk_widget_set_sensitive (e_gtk_bin_get_child (self->expander), expanded);
 
 		if (expanded) {
 			gtk_orientable_set_orientation (GTK_ORIENTABLE (self->button_box), GTK_ORIENTATION_VERTICAL);
-			gtk_style_context_remove_class (gtk_widget_get_style_context (self->button_box), "vertical");
+			gtk_widget_remove_css_class (self->button_box, "vertical");
 			gtk_widget_set_valign (self->button_box, GTK_ALIGN_END);
 			gtk_widget_set_visible (self->add_placeholder, FALSE);
 		} else {
 			gtk_orientable_set_orientation (GTK_ORIENTABLE (self->button_box), GTK_ORIENTATION_HORIZONTAL);
-			gtk_style_context_remove_class (gtk_widget_get_style_context (self->button_box), "horizontal");
+			gtk_widget_remove_css_class (self->button_box, "horizontal");
 			gtk_widget_set_valign (self->button_box, GTK_ALIGN_CENTER);
 			gtk_widget_set_visible (self->add_placeholder, !gtk_widget_get_visible (self->add_button));
 		}
@@ -513,7 +512,7 @@ e_vcard_editor_certificate_constructed (GObject *object)
 	g_object_set (widget,
 		"sensitive", FALSE,
 		NULL);
-	gtk_container_add (GTK_CONTAINER (self->expander), widget);
+	e_gtk_container_add (self->expander, widget);
 
 	box = GTK_BOX (widget);
 
@@ -553,11 +552,11 @@ e_vcard_editor_certificate_constructed (GObject *object)
 		"propagate-natural-width", TRUE,
 		NULL);
 
-	gtk_box_pack_start (box, widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (box, widget, TRUE, TRUE, 0);
 
 	self->text_view_scrolled_window = widget;
 
-	gtk_container_add (GTK_CONTAINER (widget), GTK_WIDGET (self->text_view));
+	e_gtk_container_add (widget, GTK_WIDGET (self->text_view));
 
 	widget = e_certificate_widget_new ();
 	g_object_set (widget,
@@ -572,7 +571,7 @@ e_vcard_editor_certificate_constructed (GObject *object)
 		"min-content-height", 150,
 		NULL);
 
-	gtk_box_pack_start (box, widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (box, widget, TRUE, TRUE, 0);
 
 	self->cert_widget = E_CERTIFICATE_WIDGET (widget);
 
@@ -588,14 +587,14 @@ e_vcard_editor_certificate_constructed (GObject *object)
 
 	box = GTK_BOX (widget);
 
-	widget = gtk_button_new_from_icon_name ("user-trash", GTK_ICON_SIZE_BUTTON);
-	gtk_style_context_add_class (gtk_widget_get_style_context (widget), "flat");
+	widget = gtk_button_new_from_icon_name ("user-trash");
+	gtk_widget_add_css_class (widget, "flat");
 	g_object_set (widget,
 		"tooltip-text", _("Remove"),
 		"always-show-image", TRUE,
 		"valign", GTK_ALIGN_CENTER,
 		NULL);
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 
 	g_signal_connect (widget, "clicked",
 		G_CALLBACK (eve_certificate_remove_clicked_cb), self);
@@ -603,22 +602,22 @@ e_vcard_editor_certificate_constructed (GObject *object)
 	self->size_group = gtk_size_group_new (GTK_SIZE_GROUP_BOTH);
 	gtk_size_group_add_widget (self->size_group, widget);
 
-	widget = gtk_button_new_from_icon_name ("document-save", GTK_ICON_SIZE_BUTTON);
-	gtk_style_context_add_class (gtk_widget_get_style_context (widget), "flat");
+	widget = gtk_button_new_from_icon_name ("document-save");
+	gtk_widget_add_css_class (widget, "flat");
 	g_object_set (widget,
 		"tooltip-text", _("Save to File"),
 		"always-show-image", TRUE,
 		"valign", GTK_ALIGN_CENTER,
 		NULL);
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 
 	g_signal_connect (widget, "clicked",
 		G_CALLBACK (eve_certificate_save_clicked_cb), self);
 
 	self->save_button = widget;
 
-	widget = gtk_button_new_from_icon_name ("list-add", GTK_ICON_SIZE_BUTTON);
-	gtk_style_context_add_class (gtk_widget_get_style_context (widget), "flat");
+	widget = gtk_button_new_from_icon_name ("list-add");
+	gtk_widget_add_css_class (widget, "flat");
 	g_object_set (widget,
 		"visible", FALSE,
 		"tooltip-text", _("Add"),
@@ -626,7 +625,7 @@ e_vcard_editor_certificate_constructed (GObject *object)
 		"always-show-image", TRUE,
 		"valign", GTK_ALIGN_CENTER,
 		NULL);
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 
 	self->add_button = widget;
 
@@ -638,13 +637,13 @@ e_vcard_editor_certificate_constructed (GObject *object)
 		"visible", TRUE,
 		"no-show-all", TRUE,
 		NULL);
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 
 	gtk_size_group_add_widget (self->size_group, widget);
 
 	self->add_placeholder = widget;
 
-	gtk_widget_show_all (GTK_WIDGET (self));
+	gtk_widget_set_visible (GTK_WIDGET (self), TRUE);
 
 	g_signal_connect_object (self->expander, "notify::expanded",
 		G_CALLBACK (eve_certificate_notify_expanded_cb), self, G_CONNECT_SWAPPED);
@@ -743,7 +742,6 @@ e_vcard_editor_certificate_new_from_chooser (GtkWindow *parent_window,
 		_("_Open"), _("_Cancel"));
 
 	file_chooser = GTK_FILE_CHOOSER (native);
-	gtk_file_chooser_set_local_only (file_chooser, TRUE);
 	gtk_file_chooser_set_select_multiple (file_chooser, FALSE);
 
 	/* offer both file types, when the type is not preferred */
@@ -751,27 +749,27 @@ e_vcard_editor_certificate_new_from_chooser (GtkWindow *parent_window,
 		filter = gtk_file_filter_new ();
 		gtk_file_filter_set_name (filter, _("X.509 certificates"));
 		gtk_file_filter_add_mime_type (filter, "application/x-x509-user-cert");
-		gtk_file_chooser_add_filter (file_chooser, filter);
+		e_gtk_file_chooser_add_filter (file_chooser, filter);
 	}
 
 	if (prefer_type == E_CONTACT_PGP_CERT || (pgp_supported && prefer_type != E_CONTACT_X509_CERT)) {
 		filter = gtk_file_filter_new ();
 		gtk_file_filter_set_name (filter, _("PGP keys"));
 		gtk_file_filter_add_mime_type (filter, "application/pgp-keys");
-		gtk_file_chooser_add_filter (file_chooser, filter);
+		e_gtk_file_chooser_add_filter (file_chooser, filter);
 	}
 
 	filter = gtk_file_filter_new ();
 	gtk_file_filter_set_name (filter, _("All files"));
 	gtk_file_filter_add_pattern (filter, "*");
-	gtk_file_chooser_add_filter (file_chooser, filter);
+	e_gtk_file_chooser_add_filter (file_chooser, filter);
 
-	if (gtk_native_dialog_run (GTK_NATIVE_DIALOG (native)) == GTK_RESPONSE_ACCEPT) {
+	if (e_gtk_native_dialog_run (GTK_NATIVE_DIALOG (native)) == GTK_RESPONSE_ACCEPT) {
 		gchar *filename;
 		gchar *content = NULL;
 		gsize length = 0;
 
-		filename = gtk_file_chooser_get_filename (file_chooser);
+		filename = e_gtk_file_chooser_get_filename (file_chooser);
 		if (!filename) {
 			g_set_error_literal (error, G_IO_ERROR, G_IO_ERROR_NOT_SUPPORTED, _("Chosen file is not a local file."));
 		} else if (g_file_get_contents (filename, &content, &length, error) && length > 0) {

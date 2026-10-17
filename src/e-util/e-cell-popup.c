@@ -376,7 +376,7 @@ ecp_event (ECellView *ecv,
 		break;
 	case GDK_KEY_PRESS:
 		if (e_table_model_is_cell_editable (ecv->e_table_model, model_col, row) &&
-		    event->key.state & GDK_MOD1_MASK
+		    event->key.state & GDK_ALT_MASK
 		    && event->key.keyval == GDK_KEY_Down) {
 			return e_cell_popup_do_popup (ecp_view, event, row, view_col);
 		}

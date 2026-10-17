@@ -48,14 +48,14 @@ menu_bar_move_items_to (GtkMenuShell *des,
 	des_container = GTK_CONTAINER (des);
 	src_container = GTK_CONTAINER (src);
 
-	children = gtk_container_get_children (src_container);
+	children = e_gtk_widget_get_children (src_container);
 
 	for (link = children; link; link = g_list_next (link)) {
 		GtkWidget *widget = link->data;
 
 		g_object_ref (widget);
-		gtk_container_remove (src_container, widget);
-		gtk_container_add (des_container, widget);
+		e_gtk_container_remove (src_container, widget);
+		e_gtk_container_add (des_container, widget);
 		g_object_unref (widget);
 	}
 
@@ -232,10 +232,10 @@ e_menu_bar_window_event_after_cb (GtkWindow *window,
 		return;
 
 	if (event->type == GDK_KEY_PRESS) {
-		GdkEventKey *key_event;
+		GdkEvent *key_event;
 		gboolean has_modifier_pressed;
 
-		key_event = (GdkEventKey *) event;
+		key_event = (GdkEvent *) event;
 		has_modifier_pressed = (key_event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK |
 					GDK_SUPER_MASK | GDK_HYPER_MASK |
 					GDK_META_MASK)) != 0;
@@ -262,7 +262,7 @@ e_menu_bar_window_event_after_cb (GtkWindow *window,
 			   gtk_widget_get_visible (self->priv->menu_button)) {
 			e_menu_bar_popup_menu (self);
 		}
-	} else if (event->type != GDK_BUTTON_RELEASE || !(event->button.state & GDK_MOD1_MASK)) {
+	} else if (event->type != GDK_BUTTON_RELEASE || !(event->button.state & GDK_ALT_MASK)) {
 		if (self->priv->delayed_show_id) {
 			g_source_remove (self->priv->delayed_show_id);
 			self->priv->delayed_show_id = 0;
@@ -316,8 +316,7 @@ e_menu_bar_new (GtkMenuBar *inner_menu_bar,
 	if (out_menu_button) {
 		GtkWidget *button;
 
-		button = gtk_button_new_from_icon_name ("open-menu", GTK_ICON_SIZE_MENU);
-		gtk_button_set_always_show_image (GTK_BUTTON (button), TRUE);
+		button = gtk_button_new_from_icon_name ("open-menu");
 
 		g_settings_bind (
 			settings, "menubar-visible",

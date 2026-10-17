@@ -106,17 +106,17 @@ e_preferences_window_row_new (const gchar *page_name,
 	row->sort_order = sort_order;
 
 	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 12);
-	gtk_container_set_border_width (GTK_CONTAINER (hbox), 12);
-	image = gtk_image_new_from_icon_name (icon_name, GTK_ICON_SIZE_BUTTON);
+	e_gtk_widget_set_border_width (hbox, 12);
+	image = gtk_image_new_from_icon_name (icon_name);
 	g_object_set (G_OBJECT (image),
 		"pixel-size", 24,
 		"use-fallback", TRUE,
 		NULL);
-	gtk_style_context_add_class (gtk_widget_get_style_context (image), "sidebar-icon");
+	gtk_widget_add_css_class (image, "sidebar-icon");
 	label = gtk_label_new (caption);
-	gtk_container_add (GTK_CONTAINER (hbox), image);
-	gtk_container_add (GTK_CONTAINER (hbox), label);
-	gtk_container_add (GTK_CONTAINER (row), hbox);
+	e_gtk_container_add (hbox, image);
+	e_gtk_container_add (hbox, label);
+	e_gtk_container_add (row, hbox);
 	return GTK_WIDGET (row);
 }
 
@@ -278,7 +278,7 @@ e_preferences_window_init (EPreferencesWindow *window)
 		"hscrollbar-policy", GTK_POLICY_NEVER,
 		"visible", TRUE,
 		NULL);
-	gtk_container_add (GTK_CONTAINER (widget), window->priv->listbox);
+	e_gtk_container_add (widget, window->priv->listbox);
 
 	vbox = g_object_new (GTK_TYPE_BOX,
 		"orientation", GTK_ORIENTATION_VERTICAL,
@@ -288,12 +288,12 @@ e_preferences_window_init (EPreferencesWindow *window)
 		"orientation", GTK_ORIENTATION_HORIZONTAL,
 		"visible", TRUE,
 		NULL);
-	gtk_container_add (GTK_CONTAINER (window), vbox);
-	gtk_container_add (GTK_CONTAINER (vbox), hbox);
-	gtk_container_add (GTK_CONTAINER (hbox), widget);
-	gtk_container_add (GTK_CONTAINER (hbox), window->priv->stack);
+	e_gtk_container_add (window, vbox);
+	e_gtk_container_add (vbox, hbox);
+	e_gtk_container_add (hbox, widget);
+	e_gtk_container_add (hbox, window->priv->stack);
 
-	widget = gtk_button_new_from_icon_name ("help-browser", GTK_ICON_SIZE_BUTTON);
+	widget = gtk_button_new_from_icon_name ("help-browser");
 	gtk_widget_set_tooltip_text (widget, _("Help"));
 	gtk_widget_show (widget);
 	g_signal_connect_swapped (
@@ -305,7 +305,7 @@ e_preferences_window_init (EPreferencesWindow *window)
 		GtkAccelGroup *accel_group;
 		GtkWidget *bbox;
 
-		bbox = gtk_button_box_new (GTK_ORIENTATION_HORIZONTAL);
+		bbox = e_gtk_button_box_new (GTK_ORIENTATION_HORIZONTAL);
 		g_object_set (bbox,
 			"layout-style", GTK_BUTTONBOX_END,
 			"visible", TRUE,
@@ -314,25 +314,23 @@ e_preferences_window_init (EPreferencesWindow *window)
 			"margin-top", 6,
 			"margin-bottom", 6,
 			NULL);
-		gtk_button_box_set_layout (GTK_BUTTON_BOX (bbox), GTK_BUTTONBOX_END);
-		gtk_container_add (GTK_CONTAINER (vbox), bbox);
+		e_gtk_container_add (vbox, bbox);
 
-		gtk_box_pack_start (GTK_BOX (bbox), widget, FALSE, FALSE, 0);
+		e_gtk_box_pack_start (GTK_BOX (bbox), widget, FALSE, FALSE, 0);
 		gtk_button_box_set_child_secondary (GTK_BUTTON_BOX (bbox), widget, TRUE);
 
 		widget = e_dialog_button_new_with_icon ("window-close", _("_Close"));
 		g_signal_connect_swapped (
 			widget, "clicked",
 			G_CALLBACK (gtk_widget_hide), window);
-		gtk_widget_set_can_default (widget, TRUE);
-		gtk_box_pack_start (GTK_BOX (bbox), widget, FALSE, FALSE, 0);
+		e_gtk_box_pack_start (GTK_BOX (bbox), widget, FALSE, FALSE, 0);
 		accel_group = gtk_accel_group_new ();
 		gtk_widget_add_accelerator (
 			widget, "activate", accel_group,
 			GDK_KEY_Escape, (GdkModifierType) 0,
 			GTK_ACCEL_VISIBLE);
 		gtk_window_add_accel_group (GTK_WINDOW (window), accel_group);
-		gtk_widget_grab_default (widget);
+		e_gtk_widget_grab_default (widget);
 		gtk_widget_show (widget);
 	}
 
@@ -378,7 +376,7 @@ e_preferences_window_has_page (EPreferencesWindow *window,
 	GList *children, *list;
 	gboolean exists = FALSE;
 
-	children = gtk_container_get_children (GTK_CONTAINER (window->priv->listbox));
+	children = e_gtk_widget_get_children (window->priv->listbox);
 	for (list = children; list != NULL; list = list->next) {
 		EPreferencesWindowRow *row = list->data;
 
@@ -419,8 +417,8 @@ e_preferences_window_add_page (EPreferencesWindow *window,
 		return;
 
 	row = e_preferences_window_row_new (page_name, icon_name, caption, help_target, create_fn, sort_order);
-	gtk_widget_show_all (row);
-	gtk_container_add (GTK_CONTAINER (window->priv->listbox), row);
+	gtk_widget_set_visible (row, TRUE);
+	e_gtk_container_add (window->priv->listbox, row);
 }
 
 void
@@ -433,7 +431,7 @@ e_preferences_window_show_page (EPreferencesWindow *window,
 	g_return_if_fail (page_name != NULL);
 	g_return_if_fail (window->priv->listbox);
 
-	children = gtk_container_get_children (GTK_CONTAINER (window->priv->listbox));
+	children = e_gtk_widget_get_children (window->priv->listbox);
 	for (list = children; list != NULL; list = list->next) {
 		EPreferencesWindowRow *child = list->data;
 		if (!g_strcmp0 (page_name, child->page_name)) {
@@ -459,7 +457,7 @@ e_preferences_window_setup (EPreferencesWindow *window)
 	if (window->priv->setup)
 		return;
 
-	children = gtk_container_get_children (GTK_CONTAINER (window->priv->listbox));
+	children = e_gtk_widget_get_children (window->priv->listbox);
 	for (list = children; list != NULL; list = list->next) {
 		EPreferencesWindowRow *child = list->data;
 		GtkWidget *content, *scrolled;
@@ -473,7 +471,7 @@ e_preferences_window_setup (EPreferencesWindow *window)
 				"hscrollbar-policy", GTK_POLICY_NEVER,
 				"visible", TRUE,
 				NULL);
-			gtk_container_add (GTK_CONTAINER (scrolled), content);
+			e_gtk_container_add (scrolled, content);
 			gtk_widget_show (content);
 			gtk_stack_add_named (GTK_STACK (window->priv->stack), scrolled, child->page_name);
 			slist_children = g_slist_prepend (slist_children, scrolled);

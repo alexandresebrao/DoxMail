@@ -83,7 +83,7 @@ main (gint argc,
 	gchar *cardstr;
 	EContactEditor *ce;
 
-	gtk_init (&argc, &argv);
+	gtk_init ();
 
 	cardstr = NULL;
 	if (argc == 2)

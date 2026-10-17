@@ -31,7 +31,7 @@
 #include <gtk/gtk.h>
 
 #include <libedataserver/libedataserver.h>
-#include <libedataserverui/libedataserverui.h>
+#include <libedataserverui4/libedataserverui4.h>
 
 #include "e-alert-dialog.h"
 #include "e-dialog-widgets.h"
@@ -1254,7 +1254,7 @@ accounts_window_tree_view_enabled_toggled_cb (GtkCellRendererToggle *cell_render
 
 static gboolean
 accounts_window_key_press_event_cb (GtkWidget *widget,
-				    GdkEventKey *event,
+				    GdkEvent *event,
 				    gpointer user_data)
 {
 	EAccountsWindow *accounts_window = user_data;
@@ -1518,7 +1518,7 @@ accounts_window_show_add_popup (EAccountsWindow *accounts_window,
 
 	g_signal_connect (popup_menu, "deactivate", G_CALLBACK (gtk_menu_detach), NULL);
 
-	gtk_widget_show_all (popup_menu);
+	gtk_widget_set_visible (popup_menu, TRUE);
 
 	gtk_menu_attach_to_widget (GTK_MENU (popup_menu), accounts_window->priv->add_button, NULL);
 
@@ -1544,12 +1544,12 @@ accounts_window_add_clicked_cb (GtkButton *button,
 
 	g_return_if_fail (E_IS_ACCOUNTS_WINDOW (accounts_window));
 
-	event = gtk_get_current_event ();
+	event = e_gtk_get_current_event ();
 
 	accounts_window_show_add_popup (accounts_window, event);
 
 	if (event)
-		gdk_event_free (event);
+		gdk_event_unref (event);
 }
 
 static GtkWidget *
@@ -1566,13 +1566,13 @@ accounts_window_create_add_button (EAccountsWindow *accounts_window)
 	box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
 
 	button = gtk_button_new ();
-	gtk_container_add (GTK_CONTAINER (button), box);
+	e_gtk_container_add (button, box);
 
 	if (button_images) {
 		GtkWidget *image;
 
-		image = gtk_image_new_from_icon_name ("list-add", GTK_ICON_SIZE_BUTTON);
-		gtk_box_pack_start (GTK_BOX (box), image, FALSE, FALSE, 2);
+		image = gtk_image_new_from_icon_name ("list-add");
+		e_gtk_box_pack_start (GTK_BOX (box), image, FALSE, FALSE, 2);
 	}
 
 	label = gtk_label_new_with_mnemonic (_("_Add"));
@@ -1583,15 +1583,15 @@ accounts_window_create_add_button (EAccountsWindow *accounts_window)
 		"xalign", 0.0,
 		NULL);
 
-	gtk_box_pack_start (GTK_BOX (box), label, TRUE, TRUE, 2);
+	e_gtk_box_pack_start (GTK_BOX (box), label, TRUE, TRUE, 2);
 
-	arrow = gtk_image_new_from_icon_name ("pan-down-symbolic", GTK_ICON_SIZE_BUTTON);
-	gtk_box_pack_start (GTK_BOX (box), arrow, FALSE, FALSE, 2);
+	arrow = gtk_image_new_from_icon_name ("pan-down-symbolic");
+	e_gtk_box_pack_start (GTK_BOX (box), arrow, FALSE, FALSE, 2);
 
 	g_signal_connect (button, "clicked",
 		G_CALLBACK (accounts_window_add_clicked_cb), accounts_window);
 
-	gtk_widget_show_all (button);
+	gtk_widget_set_visible (button, TRUE);
 
 	return button;
 }
@@ -1697,8 +1697,7 @@ accounts_window_constructed (GObject *object)
 
 	gtk_window_set_default_size (GTK_WINDOW (accounts_window), 480, 410);
 	gtk_window_set_title (GTK_WINDOW (accounts_window), _("Evolution Accounts"));
-	gtk_window_set_type_hint (GTK_WINDOW (accounts_window), GDK_WINDOW_TYPE_HINT_DIALOG);
-	gtk_container_set_border_width (GTK_CONTAINER (accounts_window), 12);
+	e_gtk_widget_set_border_width (accounts_window, 12);
 
 	widget = gtk_notebook_new ();
 	g_object_set (G_OBJECT (widget),
@@ -1707,7 +1706,7 @@ accounts_window_constructed (GObject *object)
 		NULL);
 
 	accounts_window->priv->notebook = widget;
-	gtk_container_add (GTK_CONTAINER (accounts_window), widget);
+	e_gtk_container_add (accounts_window, widget);
 
 	container = widget;
 	gtk_widget_show (widget);
@@ -1720,7 +1719,7 @@ accounts_window_constructed (GObject *object)
 
 	widget = gtk_scrolled_window_new (NULL, NULL);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (widget), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (widget), GTK_SHADOW_IN);
+	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (widget), TRUE);
 	gtk_widget_set_hexpand (widget, TRUE);
 	gtk_widget_set_vexpand (widget, TRUE);
 	gtk_grid_attach (grid, widget, 0, 0, 1, 1);
@@ -1728,7 +1727,7 @@ accounts_window_constructed (GObject *object)
 	container = widget;
 
 	widget = accounts_window_tree_view_new (accounts_window);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	accounts_window->priv->tree_view = widget;
 
 	g_signal_connect (
@@ -1745,8 +1744,7 @@ accounts_window_constructed (GObject *object)
 	g_signal_connect (selection, "changed",
 		G_CALLBACK (accounts_window_selection_changed_cb), accounts_window);
 
-	widget = gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
-	gtk_button_box_set_layout (GTK_BUTTON_BOX (widget), GTK_BUTTONBOX_START);
+	widget = e_gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
 	gtk_box_set_spacing (GTK_BOX (widget), 6);
 	gtk_grid_attach (grid, widget, 1, 0, 1, 1);
 	accounts_window->priv->button_box = widget;
@@ -1754,11 +1752,11 @@ accounts_window_constructed (GObject *object)
 	container = widget;
 
 	widget = accounts_window_create_add_button (accounts_window);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	accounts_window->priv->add_button = widget;
 
 	widget = gtk_button_new_with_mnemonic (_("_Edit"));
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	accounts_window->priv->edit_button = widget;
 
 	g_signal_connect_swapped (
@@ -1766,7 +1764,7 @@ accounts_window_constructed (GObject *object)
 		G_CALLBACK (accounts_window_emit_edit_source), accounts_window);
 
 	widget = e_dialog_button_new_with_icon ("edit-delete", _("_Delete"));
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	accounts_window->priv->delete_button = widget;
 
 	g_signal_connect_swapped (
@@ -1775,15 +1773,14 @@ accounts_window_constructed (GObject *object)
 
 	widget = e_dialog_button_new_with_icon ("view-refresh", _("_Refresh"));
 	gtk_widget_set_tooltip_text (widget, _("Initiates refresh of account sources"));
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	accounts_window->priv->refresh_backend_button = widget;
 
 	g_signal_connect_swapped (
 		widget, "clicked",
 		G_CALLBACK (accounts_window_refresh_backend_cb), accounts_window);
 
-	widget = gtk_button_box_new (GTK_ORIENTATION_HORIZONTAL);
-	gtk_button_box_set_layout (GTK_BUTTON_BOX (widget), GTK_BUTTONBOX_END);
+	widget = e_gtk_button_box_new (GTK_ORIENTATION_HORIZONTAL);
 	gtk_box_set_spacing (GTK_BOX (widget), 6);
 	gtk_widget_set_margin_top (widget, 12);
 	gtk_grid_attach (grid, widget, 0, 1, 2, 1);
@@ -1793,8 +1790,7 @@ accounts_window_constructed (GObject *object)
 	widget = e_dialog_button_new_with_icon ("window-close", _("_Close"));
 	g_signal_connect_swapped (widget, "clicked",
 		G_CALLBACK (gtk_window_close), accounts_window);
-	gtk_widget_set_can_default (widget, TRUE);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	accel_group = gtk_accel_group_new ();
 	gtk_widget_add_accelerator (
 		widget, "activate", accel_group,
@@ -1804,7 +1800,7 @@ accounts_window_constructed (GObject *object)
 
 	registry = e_accounts_window_get_registry (accounts_window);
 
-	gtk_widget_show_all (GTK_WIDGET (grid));
+	gtk_widget_set_visible (GTK_WIDGET (grid), TRUE);
 
 	/* First load extensions, thus the fill-tree-view can call them. */
 	e_extensible_load_extensions (E_EXTENSIBLE (object));
@@ -2090,7 +2086,6 @@ e_accounts_window_show_with_parent (EAccountsWindow *accounts_window,
 	window = GTK_WINDOW (accounts_window);
 
 	gtk_window_set_transient_for (window, parent);
-	gtk_window_set_position (window, parent ? GTK_WIN_POS_CENTER_ON_PARENT : GTK_WIN_POS_CENTER);
 
 	gtk_window_present (window);
 }
@@ -2224,7 +2219,7 @@ e_accounts_window_insert_to_add_popup (EAccountsWindow *accounts_window,
 		item = gtk_image_menu_item_new_with_mnemonic (label);
 
 		gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (item),
-			gtk_image_new_from_icon_name (icon_name, GTK_ICON_SIZE_MENU));
+			gtk_image_new_from_icon_name (icon_name));
 	} else {
 		item = gtk_menu_item_new_with_mnemonic (label);
 	}

@@ -72,7 +72,7 @@ webkit_inspector_get_web_view (EWebKitInspector *extension)
 
 static gboolean
 webkit_inspector_key_press_event_cb (WebKitWebView *web_view,
-                                  GdkEventKey *event)
+                                  GdkEvent *event)
 {
 	WebKitWebInspector *inspector;
 	gboolean handled = FALSE;

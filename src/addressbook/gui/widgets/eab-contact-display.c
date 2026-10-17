@@ -26,7 +26,7 @@
 #include <string.h>
 #include <glib/gi18n.h>
 
-#include <webkit2/webkit2.h>
+#include <webkit/webkit.h>
 
 #include "shell/e-shell-utils.h"
 
@@ -83,7 +83,7 @@ action_contact_mailto_copy_cb (EUIAction *action,
 			       gpointer user_data)
 {
 	EABContactDisplay *display = user_data;
-	GtkClipboard *clipboard;
+	GdkClipboard *clipboard;
 	EWebView *web_view;
 	EContact *contact;
 	GList *list;
@@ -102,9 +102,9 @@ action_contact_mailto_copy_cb (EUIAction *action,
 	list = e_contact_get (contact, E_CONTACT_EMAIL);
 	text = g_list_nth_data (list, index);
 
-	clipboard = gtk_clipboard_get (GDK_SELECTION_CLIPBOARD);
-	gtk_clipboard_set_text (clipboard, text, -1);
-	gtk_clipboard_store (clipboard);
+	clipboard = e_gtk_clipboard_get (E_GTK_SELECTION_CLIPBOARD);
+	e_gtk_clipboard_set_text (clipboard, text, -1);
+	e_gtk_clipboard_store (clipboard);
 
 	g_list_foreach (list, (GFunc) g_free, NULL);
 	g_list_free (list);

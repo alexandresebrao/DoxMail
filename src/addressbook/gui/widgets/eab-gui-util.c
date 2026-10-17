@@ -317,14 +317,14 @@ eab_select_source (ESourceRegistry *registry,
 	source_selection_changed_cb (E_SOURCE_SELECTOR (selector), ok_button);
 
 	scrolled_window = gtk_scrolled_window_new (NULL, NULL);
-	gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrolled_window), GTK_SHADOW_IN);
-	gtk_container_add (GTK_CONTAINER (scrolled_window), selector);
+	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (scrolled_window), TRUE);
+	e_gtk_container_add (scrolled_window, selector);
 
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
-	gtk_box_pack_start (GTK_BOX (content_area), scrolled_window, TRUE, TRUE, 4);
+	e_gtk_box_pack_start (GTK_BOX (content_area), scrolled_window, TRUE, TRUE, 4);
 
-	gtk_widget_show_all (dialog);
-	response = gtk_dialog_run (GTK_DIALOG (dialog));
+	gtk_widget_set_visible (dialog, TRUE);
+	response = e_gtk_dialog_run (GTK_DIALOG (dialog));
 
 	if (response == GTK_RESPONSE_ACCEPT)
 		source = e_source_selector_ref_primary_selection (
@@ -332,7 +332,7 @@ eab_select_source (ESourceRegistry *registry,
 	else
 		source = NULL;
 
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 
 	/* XXX Return a borrowed reference for backward-compatibility. */
 	if (source != NULL)
@@ -534,7 +534,7 @@ eab_transfer_contacts (ESourceRegistry *registry,
 	static gchar *last_uid = NULL;
 	ContactCopyProcess *process;
 	gchar *desc;
-	GtkWindow *window = GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (alert_sink)));
+	GtkWindow *window = GTK_WINDOW (e_gtk_widget_get_toplevel (GTK_WIDGET (alert_sink)));
 
 	g_return_if_fail (E_IS_SOURCE_REGISTRY (registry));
 	g_return_if_fail (E_IS_BOOK_CLIENT (source_client));

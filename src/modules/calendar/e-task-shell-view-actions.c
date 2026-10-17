@@ -639,12 +639,12 @@ action_task_purge_cb (EUIAction *action,
 
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
 	widget = gtk_check_button_new_with_label (_("Do not ask me again"));
-	gtk_box_pack_start (GTK_BOX (content_area), widget, TRUE, TRUE, 6);
+	e_gtk_box_pack_start (GTK_BOX (content_area), widget, TRUE, TRUE, 6);
 	gtk_widget_show (widget);
 
-	response = gtk_dialog_run (GTK_DIALOG (dialog));
+	response = e_gtk_dialog_run (GTK_DIALOG (dialog));
 	active = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 
 	if (response != GTK_RESPONSE_YES)
 		return;

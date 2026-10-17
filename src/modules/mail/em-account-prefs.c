@@ -149,8 +149,8 @@ account_prefs_add_account (EMailAccountManager *manager)
 	EMAccountPrefs *self = EM_ACCOUNT_PREFS (manager);
 	gpointer parent;
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (manager));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (manager));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	e_mail_shell_backend_new_account (E_MAIL_SHELL_BACKEND (self->priv->backend), parent);
 }
@@ -162,8 +162,8 @@ account_prefs_edit_account (EMailAccountManager *manager,
 	EMAccountPrefs *self = EM_ACCOUNT_PREFS (manager);
 	gpointer parent;
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (manager));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (manager));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	e_mail_shell_backend_edit_account (E_MAIL_SHELL_BACKEND (self->priv->backend), parent, source);
 }

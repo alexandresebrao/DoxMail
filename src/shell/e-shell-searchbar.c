@@ -421,7 +421,7 @@ shell_searchbar_entry_icon_release_cb (EShellSearchbar *searchbar,
 
 static gboolean
 shell_searchbar_entry_key_press_cb (EShellSearchbar *searchbar,
-                                    GdkEventKey *key_event,
+                                    GdkEvent *key_event,
                                     GtkWindow *entry)
 {
 	EShellView *shell_view;
@@ -429,7 +429,7 @@ shell_searchbar_entry_key_press_cb (EShellSearchbar *searchbar,
 	guint mask;
 
 	mask = gtk_accelerator_get_default_mod_mask ();
-	if ((key_event->state & mask) != GDK_MOD1_MASK)
+	if ((key_event->state & mask) != GDK_ALT_MASK)
 		return FALSE;
 
 	if (key_event->keyval != GDK_KEY_Down)
@@ -495,8 +495,8 @@ shell_searchbar_entry_focus_out_cb (GtkWidget *entry,
                                     GdkEvent *event,
                                     EShellSearchbar *searchbar)
 {
-	if (e_util_strcmp0 (searchbar->priv->active_search_text, gtk_entry_get_text (GTK_ENTRY (searchbar->priv->search_entry))) != 0) {
-		gtk_entry_set_text (GTK_ENTRY (searchbar->priv->search_entry), searchbar->priv->active_search_text ?
+	if (e_util_strcmp0 (searchbar->priv->active_search_text, gtk_editable_get_text (GTK_EDITABLE (searchbar->priv->search_entry))) != 0) {
+		gtk_editable_set_text (GTK_EDITABLE (searchbar->priv->search_entry), searchbar->priv->active_search_text ?
 			searchbar->priv->active_search_text : "");
 	}
 
@@ -877,15 +877,14 @@ e_shell_searchbar_init (EShellSearchbar *searchbar)
 	searchbar->priv = e_shell_searchbar_get_instance_private (searchbar);
 
 	gtk_box_set_spacing (GTK_BOX (searchbar), 6);
-	gtk_style_context_add_class (gtk_widget_get_style_context (GTK_WIDGET (searchbar)),
-				     "header-box");
+	gtk_widget_add_css_class (GTK_WIDGET (searchbar), "header-box");
 
 	/* Filter Combo Widgets */
 
 	box = GTK_BOX (searchbar);
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 3);
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 
 	e_binding_bind_property (
 		searchbar, "filter-visible",
@@ -899,7 +898,7 @@ e_shell_searchbar_init (EShellSearchbar *searchbar)
 	 * items that appear in the combo box are "Unread Messages",
 	 * "Important Messages", or "Active Appointments". */
 	widget = gtk_label_new_with_mnemonic (_("Sho_w:"));
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	label = GTK_LABEL (widget);
@@ -907,7 +906,7 @@ e_shell_searchbar_init (EShellSearchbar *searchbar)
 	widget = e_action_combo_box_new ();
 	e_action_combo_box_set_ellipsize_enabled (E_ACTION_COMBO_BOX (widget), TRUE);
 	gtk_label_set_mnemonic_widget (label, widget);
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 	searchbar->priv->filter_combo_box = widget;
 	gtk_widget_show (widget);
 
@@ -917,7 +916,7 @@ e_shell_searchbar_init (EShellSearchbar *searchbar)
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 3);
 	gtk_widget_set_margin_start (widget, 12);
-	gtk_box_pack_start (box, widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (box, widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	box = GTK_BOX (widget);
@@ -925,14 +924,14 @@ e_shell_searchbar_init (EShellSearchbar *searchbar)
 	/* Translators: This is part of the quick search interface.
 	 * example: Search: [_______________] in [ Current Folder ] */
 	widget = gtk_label_new_with_mnemonic (_("Sear_ch:"));
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	label = GTK_LABEL (widget);
 
 	widget = gtk_entry_new ();
 	gtk_label_set_mnemonic_widget (label, widget);
-	gtk_box_pack_start (box, widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (box, widget, TRUE, TRUE, 0);
 	searchbar->priv->search_entry = widget;
 	gtk_widget_show (widget);
 
@@ -981,7 +980,7 @@ e_shell_searchbar_init (EShellSearchbar *searchbar)
 	box = GTK_BOX (searchbar);
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 3);
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 
 	e_binding_bind_property (
 		searchbar, "scope-visible",
@@ -993,7 +992,7 @@ e_shell_searchbar_init (EShellSearchbar *searchbar)
 	/* Translators: This is part of the quick search interface.
 	 * example: Search: [_______________] in [ Current Folder ] */
 	widget = gtk_label_new_with_mnemonic (_("i_n"));
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	label = GTK_LABEL (widget);
@@ -1001,7 +1000,7 @@ e_shell_searchbar_init (EShellSearchbar *searchbar)
 	widget = e_action_combo_box_new ();
 	e_action_combo_box_set_ellipsize_enabled (E_ACTION_COMBO_BOX (widget), TRUE);
 	gtk_label_set_mnemonic_widget (label, widget);
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 	searchbar->priv->scope_combo_box = widget;
 	gtk_widget_show (widget);
 
@@ -1210,7 +1209,7 @@ e_shell_searchbar_get_search_text (EShellSearchbar *searchbar)
 
 	entry = GTK_ENTRY (searchbar->priv->search_entry);
 
-	return gtk_entry_get_text (entry);
+	return gtk_editable_get_text (GTK_EDITABLE (entry));
 }
 
 void
@@ -1228,10 +1227,10 @@ e_shell_searchbar_set_search_text (EShellSearchbar *searchbar,
 	if (search_text == NULL)
 		search_text = "";
 
-	if (g_strcmp0 (gtk_entry_get_text (entry), search_text) == 0)
+	if (g_strcmp0 (gtk_editable_get_text (GTK_EDITABLE (entry)), search_text) == 0)
 		return;
 
-	gtk_entry_set_text (entry, search_text);
+	gtk_editable_set_text (GTK_EDITABLE (entry), search_text);
 
 	shell_searchbar_update_search_widgets (searchbar);
 

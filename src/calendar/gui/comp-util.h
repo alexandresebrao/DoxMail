@@ -89,10 +89,10 @@ void		cal_comp_update_time_by_active_window
 						 struct _EShell *shell);
 
 void    	cal_comp_selection_set_string_list
-						(GtkSelectionData *data,
+						(EGtkSelectionData *data,
 						 GSList *str_list);
 GSList *	cal_comp_selection_get_string_list
-						(GtkSelectionData *data);
+						(EGtkSelectionData *data);
 
 void		cal_comp_set_dtstart_with_oldzone
 						(ECalClient *client,

@@ -29,7 +29,10 @@ G_DECLARE_FINAL_TYPE (EUIManager, e_ui_manager, E, UI_MANAGER, GObject)
 EUIManager *	e_ui_manager_new		(gchar *customizer_filename);
 EUIParser *	e_ui_manager_get_parser		(EUIManager *self);
 EUICustomizer *	e_ui_manager_get_customizer	(EUIManager *self);
-GtkAccelGroup *	e_ui_manager_get_accel_group	(EUIManager *self);
+GListModel *	e_ui_manager_get_shortcuts	(EUIManager *self);
+GtkEventController *
+		e_ui_manager_create_shortcut_controller
+						(EUIManager *self);
 void		e_ui_manager_freeze		(EUIManager *self);
 void		e_ui_manager_thaw		(EUIManager *self);
 gboolean	e_ui_manager_is_frozen		(EUIManager *self);

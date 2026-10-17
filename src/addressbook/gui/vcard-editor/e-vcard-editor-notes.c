@@ -77,11 +77,11 @@ e_vcard_editor_notes_constructed (GObject *object)
 		"bottom-margin", 6,
 		NULL);
 
-	gtk_container_add (GTK_CONTAINER (self), widget);
+	e_gtk_container_add (self, widget);
 
 	self->text_view = GTK_TEXT_VIEW (widget);
 
-	gtk_widget_show_all (GTK_WIDGET (self));
+	gtk_widget_set_visible (GTK_WIDGET (self), TRUE);
 
 	g_signal_connect_swapped (gtk_text_view_get_buffer (self->text_view), "changed",
 		G_CALLBACK (eve_notes_emit_changed), self);

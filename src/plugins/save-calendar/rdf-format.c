@@ -76,8 +76,8 @@ display_error_message (GtkWidget *parent,
 	dialog = gtk_message_dialog_new (
 		GTK_WINDOW (parent), 0, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
 		"%s", error_message);
-	gtk_dialog_run (GTK_DIALOG (dialog));
-	gtk_widget_destroy (dialog);
+	e_gtk_dialog_run (GTK_DIALOG (dialog));
+	e_gtk_widget_destroy (dialog);
 }
 
 /* Some helpers for the xml stuff */
@@ -207,13 +207,13 @@ do_save_calendar_rdf (FormatHandler *handler,
 
 	if (source_client == NULL) {
 		display_error_message (
-			gtk_widget_get_toplevel (GTK_WIDGET (selector)),
+			e_gtk_widget_get_toplevel (GTK_WIDGET (selector)),
 			error->message);
 		g_error_free (error);
 		return;
 	}
 
-	stream = open_for_writing (GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (selector))), dest_uri, &error);
+	stream = open_for_writing (GTK_WINDOW (e_gtk_widget_get_toplevel (GTK_WIDGET (selector))), dest_uri, &error);
 
 	if (stream && e_cal_client_get_object_list_as_comps_sync (E_CAL_CLIENT (source_client), "#t", &objects, NULL, NULL)) {
 		GSList *iter;
@@ -358,7 +358,7 @@ do_save_calendar_rdf (FormatHandler *handler,
 
 	if (error != NULL) {
 		display_error_message (
-			gtk_widget_get_toplevel (GTK_WIDGET (selector)),
+			e_gtk_widget_get_toplevel (GTK_WIDGET (selector)),
 			error->message);
 		g_error_free (error);
 	}

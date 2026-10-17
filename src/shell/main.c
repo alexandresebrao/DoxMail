@@ -45,7 +45,7 @@
 
 #include <libedataserver/libedataserver.h>
 
-#include <webkit2/webkit2.h>
+#include <webkit/webkit.h>
 
 #ifdef ENABLE_CONTACT_MAPS
 #include <clutter-gtk/clutter-gtk.h>
@@ -110,15 +110,15 @@ show_development_warning (void)
 		GTK_DIALOG (warning_dialog),
 		_("_OK"), GTK_RESPONSE_OK);
 
-	action_area = gtk_dialog_get_action_area (GTK_DIALOG (warning_dialog));
+	action_area = e_gtk_dialog_get_action_area (GTK_DIALOG (warning_dialog));
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (warning_dialog));
 
-	gtk_container_set_border_width (GTK_CONTAINER (action_area), 12);
-	gtk_container_set_border_width (GTK_CONTAINER (content_area), 0);
+	e_gtk_widget_set_border_width (action_area, 12);
+	e_gtk_widget_set_border_width (content_area, 0);
 
 	vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 12);
-	gtk_container_set_border_width (GTK_CONTAINER (vbox), 12);
-	gtk_box_pack_start (GTK_BOX (content_area), vbox, TRUE, TRUE, 0);
+	e_gtk_widget_set_border_width (vbox, 12);
+	e_gtk_box_pack_start (GTK_BOX (content_area), vbox, TRUE, TRUE, 0);
 
 	text = g_strdup_printf (
 		/* xgettext:no-c-format */
@@ -147,26 +147,26 @@ show_development_warning (void)
 	gtk_label_set_xalign (GTK_LABEL (label), 0);
 	gtk_label_set_yalign (GTK_LABEL (label), 0);
 
-	gtk_box_pack_start (GTK_BOX (vbox), label, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), label, TRUE, TRUE, 0);
 
 	label = gtk_label_new (_("Thanks\nThe Evolution Team\n"));
 	gtk_label_set_justify (GTK_LABEL (label), GTK_JUSTIFY_RIGHT);
 	gtk_label_set_xalign (GTK_LABEL (label), 1);
 
-	gtk_box_pack_start (GTK_BOX (vbox), label, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), label, TRUE, TRUE, 0);
 
 	checkbox = gtk_check_button_new_with_label (_("Do not tell me again"));
 	gtk_widget_set_halign (checkbox, GTK_ALIGN_START);
 
-	gtk_box_pack_start (GTK_BOX (vbox), checkbox, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), checkbox, TRUE, TRUE, 0);
 
-	gtk_widget_show_all (warning_dialog);
+	gtk_widget_set_visible (warning_dialog, TRUE);
 
-	gtk_dialog_run (GTK_DIALOG (warning_dialog));
+	e_gtk_dialog_run (GTK_DIALOG (warning_dialog));
 
 	skip = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (checkbox));
 
-	gtk_widget_destroy (warning_dialog);
+	e_gtk_widget_destroy (warning_dialog);
 
 	return skip;
 }
@@ -327,7 +327,7 @@ main (gint argc,
 		gtk_window_set_default_icon_name ("evolution");
 
 		#ifdef ENABLE_MAINTAINER_MODE
-		icon_theme = gtk_icon_theme_get_default ();
+		icon_theme = e_gtk_icon_theme_get_default ();
 		gtk_icon_theme_prepend_search_path (icon_theme, EVOLUTION_ICONDIR_IN_PREFIX);
 		#endif
 
@@ -352,7 +352,7 @@ main (gint argc,
 		 *
 		 * This has to be done before we load modules because some of the
 		 * EShellBackends immediately add GMainContext sources that would
-		 * otherwise get dispatched during gtk_dialog_run(), and we don't
+		 * otherwise get dispatched during e_gtk_dialog_run (), and we don't
 		 * want them dispatched until after the conversion is complete.
 		 *
 		 * Addendum: We need to perform the XDG Base Directory migration

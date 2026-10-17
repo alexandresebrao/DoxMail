@@ -29,7 +29,7 @@ main (gint argc,
 	ECertDB *db;
 	EPKCS12 *pkcs12;
 
-	gtk_init (&argc, &argv);
+	gtk_init ();
 
 	db = e_cert_db_peek ();
 

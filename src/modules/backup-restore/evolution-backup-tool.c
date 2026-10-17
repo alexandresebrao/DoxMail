@@ -1175,8 +1175,8 @@ finish_job (gpointer user_data)
 			GTK_BUTTONS_CLOSE,
 			_("Failed to verify the backup file “%s”, the archive is broken."),
 			bk_file);
-		gtk_dialog_run (GTK_DIALOG (widget));
-		gtk_widget_destroy (widget);
+		e_gtk_dialog_run (GTK_DIALOG (widget));
+		e_gtk_widget_destroy (widget);
 	}
 
 	gtk_main_quit ();
@@ -1211,7 +1211,7 @@ dlg_response (GtkWidget *dlg,
 
 	/* If the response is not of delete_event then destroy the event. */
 	if (response != GTK_RESPONSE_NONE)
-		gtk_widget_destroy (dlg);
+		e_gtk_widget_destroy (dlg);
 
 	/* We will kill just the tar operation. Rest of
 	 * them will be just a second of microseconds.*/
@@ -1310,19 +1310,17 @@ main (gint argc,
 			_("_Cancel"), GTK_RESPONSE_REJECT,
 			NULL);
 
-		gtk_container_set_border_width (
-			GTK_CONTAINER (progress_dialog), 12);
+		e_gtk_widget_set_border_width (progress_dialog, 12);
 
-		action_area = gtk_dialog_get_action_area (
-			GTK_DIALOG (progress_dialog));
+		action_area = e_gtk_dialog_get_action_area (GTK_DIALOG (progress_dialog));
 		content_area = gtk_dialog_get_content_area (
 			GTK_DIALOG (progress_dialog));
 
 		/* Override GtkDialog defaults */
 		gtk_box_set_spacing (GTK_BOX (content_area), 12);
-		gtk_container_set_border_width (GTK_CONTAINER (content_area), 0);
+		e_gtk_widget_set_border_width (content_area, 0);
 		gtk_box_set_spacing (GTK_BOX (action_area), 12);
-		gtk_container_set_border_width (GTK_CONTAINER (action_area), 0);
+		e_gtk_widget_set_border_width (action_area, 0);
 
 		if (oper && file)
 			str = g_strdup_printf (oper, file);
@@ -1332,11 +1330,9 @@ main (gint argc,
 		gtk_grid_set_row_spacing (GTK_GRID (container), 0);
 		gtk_widget_show (container);
 
-		gtk_box_pack_start (
-			GTK_BOX (content_area), container, FALSE, TRUE, 0);
+		e_gtk_box_pack_start (GTK_BOX (content_area), container, FALSE, TRUE, 0);
 
-		widget = gtk_image_new_from_icon_name (
-			"edit-copy", GTK_ICON_SIZE_DIALOG);
+		widget = gtk_image_new_from_icon_name ("edit-copy");
 		gtk_widget_show (widget);
 
 		gtk_grid_attach (GTK_GRID (container), widget, 0, 0, 1, 3);
@@ -1359,7 +1355,7 @@ main (gint argc,
 
 		markup = g_markup_printf_escaped ("<b><big>%s</big></b>", txt1);
 		widget = gtk_label_new (markup);
-		gtk_label_set_line_wrap (GTK_LABEL (widget), FALSE);
+		gtk_label_set_wrap (GTK_LABEL (widget), FALSE);
 		gtk_label_set_use_markup (GTK_LABEL (widget), TRUE);
 		gtk_label_set_xalign (GTK_LABEL (widget), 0);
 		gtk_label_set_yalign (GTK_LABEL (widget), 0);
@@ -1378,7 +1374,7 @@ main (gint argc,
 			txt2, " ", _("This may take a while depending "
 			"on the amount of data in your account."), NULL);
 		widget = gtk_label_new (markup);
-		gtk_label_set_line_wrap (GTK_LABEL (widget), TRUE);
+		gtk_label_set_wrap (GTK_LABEL (widget), TRUE);
 		gtk_label_set_width_chars (GTK_LABEL (widget), 20);
 		gtk_label_set_xalign (GTK_LABEL (widget), 0);
 		gtk_widget_show (widget);
@@ -1425,7 +1421,7 @@ main (gint argc,
 		g_signal_connect (
 			progress_dialog, "response",
 			G_CALLBACK (dlg_response), cancellable);
-		gtk_widget_show_all (progress_dialog);
+		gtk_widget_set_visible (progress_dialog, TRUE);
 
 	} else if (check_op) {
 		/* For sanity we don't need gui */

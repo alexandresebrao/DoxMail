@@ -132,7 +132,7 @@ e_table_field_chooser_dialog_response (GtkDialog *dialog,
                                        gint id)
 {
 	if (id == GTK_RESPONSE_OK)
-		gtk_widget_destroy (GTK_WIDGET (dialog));
+		e_gtk_widget_destroy (GTK_WIDGET (dialog));
 }
 
 static void
@@ -209,7 +209,7 @@ e_table_field_chooser_dialog_init (ETableFieldChooserDialog *e_table_field_choos
 		NULL);
 
 	content_area = gtk_dialog_get_content_area (dialog);
-	gtk_box_pack_start (GTK_BOX (content_area), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (content_area), widget, TRUE, TRUE, 0);
 
 	gtk_widget_show (GTK_WIDGET (widget));
 

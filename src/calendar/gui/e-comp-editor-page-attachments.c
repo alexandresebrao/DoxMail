@@ -649,7 +649,7 @@ ecep_attachments_fill_component (ECompEditorPage *page,
 
 static gboolean
 ecep_attachments_drag_motion (GtkWidget *widget,
-			      GdkDragContext *context,
+			      EGtkDragContext *context,
 			      gint x,
 			      gint y,
 			      guint time)
@@ -667,10 +667,10 @@ ecep_attachments_drag_motion (GtkWidget *widget,
 
 static void
 ecep_attachments_drag_data_received (GtkWidget *widget,
-				     GdkDragContext *context,
+				     EGtkDragContext *context,
 				     gint x,
 				     gint y,
-				     GtkSelectionData *selection,
+				     EGtkSelectionData *selection,
 				     guint info,
 				     guint time)
 {
@@ -865,16 +865,16 @@ ecep_attachments_constructed (GObject *object)
 	widget = gtk_scrolled_window_new (NULL, NULL);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (widget), GTK_SHADOW_IN);
+	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (widget), TRUE);
 	gtk_notebook_append_page (GTK_NOTEBOOK (container), widget, NULL);
 	gtk_widget_show (widget);
 
 	container = widget;
 
 	widget = e_attachment_icon_view_new ();
-	gtk_widget_set_can_focus (widget, TRUE);
+	gtk_widget_set_focusable (widget, TRUE);
 	gtk_icon_view_set_model (GTK_ICON_VIEW (widget), page_attachments->priv->store);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	page_attachments->priv->icon_view = widget;
 	g_object_set (G_OBJECT (widget),
 		"hexpand", TRUE,
@@ -894,16 +894,16 @@ ecep_attachments_constructed (GObject *object)
 	widget = gtk_scrolled_window_new (NULL, NULL);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (widget), GTK_SHADOW_IN);
+	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (widget), TRUE);
 	gtk_notebook_append_page (GTK_NOTEBOOK (container), widget, NULL);
 	gtk_widget_show (widget);
 
 	container = widget;
 
 	widget = e_attachment_tree_view_new ();
-	gtk_widget_set_can_focus (widget, TRUE);
+	gtk_widget_set_focusable (widget, TRUE);
 	gtk_tree_view_set_model (GTK_TREE_VIEW (widget), page_attachments->priv->store);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	page_attachments->priv->tree_view = widget;
 	g_object_set (G_OBJECT (widget),
 		"hexpand", TRUE,
@@ -926,7 +926,7 @@ ecep_attachments_constructed (GObject *object)
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
 	gtk_widget_set_margin_end (widget, 6);
 	gtk_widget_set_margin_start (widget, 6);
-	gtk_box_pack_end (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_end (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -936,8 +936,8 @@ ecep_attachments_constructed (GObject *object)
 	widget = gtk_button_new ();
 	action = e_attachment_view_get_action (E_ATTACHMENT_VIEW (page_attachments->priv->icon_view), "add-uri");
 	e_ui_action_util_assign_to_widget (action, widget);
-	gtk_button_set_image (GTK_BUTTON (widget), gtk_image_new_from_icon_name (e_ui_action_get_icon_name (action), GTK_ICON_SIZE_BUTTON));
-	gtk_box_pack_end (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_button_set_image (GTK_BUTTON (widget), gtk_image_new_from_icon_name (e_ui_action_get_icon_name (action)));
+	e_gtk_box_pack_end (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	page_attachments->priv->add_uri_button = widget;
@@ -947,8 +947,8 @@ ecep_attachments_constructed (GObject *object)
 	widget = gtk_button_new ();
 	action = e_attachment_view_get_action (E_ATTACHMENT_VIEW (page_attachments->priv->icon_view), "add");
 	e_ui_action_util_assign_to_widget (action, widget);
-	gtk_button_set_image (GTK_BUTTON (widget), gtk_image_new_from_icon_name (e_ui_action_get_icon_name (action), GTK_ICON_SIZE_BUTTON));
-	gtk_box_pack_end (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_button_set_image (GTK_BUTTON (widget), gtk_image_new_from_icon_name (e_ui_action_get_icon_name (action)));
+	e_gtk_box_pack_end (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	widget = gtk_combo_box_text_new ();
@@ -957,19 +957,18 @@ ecep_attachments_constructed (GObject *object)
 		GTK_COMBO_BOX_TEXT (widget), _("Icon View"));
 	gtk_combo_box_text_append_text (
 		GTK_COMBO_BOX_TEXT (widget), _("List View"));
-	gtk_box_pack_end (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_end (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	page_attachments->priv->combo_box = widget;
 	gtk_widget_show (widget);
 
-	widget = gtk_image_new_from_icon_name (
-		"mail-attachment", GTK_ICON_SIZE_MENU);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	widget = gtk_image_new_from_icon_name ("mail-attachment");
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	page_attachments->priv->status_icon = widget;
 	gtk_widget_show (widget);
 
 	widget = gtk_label_new (NULL);
 	gtk_label_set_use_markup (GTK_LABEL (widget), TRUE);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	page_attachments->priv->status_label = widget;
 	gtk_widget_show (widget);
 

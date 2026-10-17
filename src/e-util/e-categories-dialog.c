@@ -61,9 +61,8 @@ e_categories_dialog_init (ECategoriesDialog *dialog)
 	dialog->priv->categories_editor = categories_editor;
 
 	dialog_content = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
-	gtk_container_set_border_width (GTK_CONTAINER (dialog), 12);
-	gtk_box_pack_start (
-		GTK_BOX (dialog_content), categories_editor, TRUE, TRUE, 0);
+	e_gtk_widget_set_border_width (dialog, 12);
+	e_gtk_box_pack_start (GTK_BOX (dialog_content), categories_editor, TRUE, TRUE, 0);
 	gtk_box_set_spacing (GTK_BOX (dialog_content), 12);
 
 	g_signal_connect (
@@ -79,7 +78,7 @@ e_categories_dialog_init (ECategoriesDialog *dialog)
 		GTK_DIALOG (dialog), GTK_RESPONSE_OK, FALSE);
 	gtk_window_set_title (GTK_WINDOW (dialog), _("Categories"));
 
-	gtk_widget_show_all (categories_editor);
+	gtk_widget_set_visible (categories_editor, TRUE);
 }
 
 /**

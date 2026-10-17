@@ -84,7 +84,7 @@ e_bulk_edit_contacts_apply_simple (EBulkEditContacts *self,
 	if (!gtk_toggle_button_get_active (edit_item->toggle))
 		return;
 
-	value = gtk_entry_get_text (GTK_ENTRY (edit_item->widget));
+	value = gtk_editable_get_text (GTK_EDITABLE (edit_item->widget));
 
 	if (value && !*value)
 		value = NULL;
@@ -379,7 +379,7 @@ e_bulk_edit_contacts_apply_address (EBulkEditContacts *self,
 
 	#define get_entry_value(_into, _edit_item) G_STMT_START { \
 		if (gtk_toggle_button_get_active ((_edit_item).toggle)) \
-			_into = gtk_entry_get_text (GTK_ENTRY ((_edit_item).widget)); \
+			_into = gtk_editable_get_text (GTK_EDITABLE ((_edit_item).widget)); \
 		} G_STMT_END
 
 	get_entry_value (locality, address_item->city);
@@ -616,7 +616,7 @@ e_bulk_edit_contacts_save_changes_done_cb (gpointer ptr)
 		gtk_dialog_set_response_sensitive (GTK_DIALOG (scd->self), GTK_RESPONSE_APPLY, TRUE);
 
 		if (scd->success)
-			gtk_widget_destroy (GTK_WIDGET (scd->self));
+			e_gtk_widget_destroy (GTK_WIDGET (scd->self));
 	}
 
 	g_clear_object (&scd->self->priv->cancellable);
@@ -645,7 +645,7 @@ e_bulk_edit_contacts_response_cb (GtkDialog *dialog,
 		contacts = e_bulk_edit_contacts_apply_changes_gui (self);
 
 		if (!contacts) {
-			gtk_widget_destroy (GTK_WIDGET (dialog));
+			e_gtk_widget_destroy (GTK_WIDGET (dialog));
 			return;
 		}
 
@@ -675,7 +675,7 @@ e_bulk_edit_contacts_response_cb (GtkDialog *dialog,
 			gtk_dialog_set_response_sensitive (GTK_DIALOG (self), GTK_RESPONSE_APPLY, FALSE);
 		}
 	} else {
-		gtk_widget_destroy (GTK_WIDGET (dialog));
+		e_gtk_widget_destroy (GTK_WIDGET (dialog));
 	}
 }
 
@@ -754,7 +754,7 @@ e_bulk_edit_contacts_add_simple_item (GtkGrid *grid,
 
 		value = e_contact_get (contact, field);
 		if (value && *value)
-			gtk_entry_set_text (GTK_ENTRY (widget), value);
+			gtk_editable_set_text (GTK_EDITABLE (widget), value);
 
 		g_free (value);
 	}
@@ -813,7 +813,7 @@ e_bulk_edit_contacts_add_address (GtkGrid *grid,
 		"accepts-tab", FALSE,
 		NULL);
 
-	gtk_container_add (GTK_CONTAINER (scrolled_window), widget);
+	e_gtk_container_add (scrolled_window, widget);
 
 	address_item->address.widget = widget;
 
@@ -842,7 +842,7 @@ e_bulk_edit_contacts_add_address (GtkGrid *grid,
 		if (addr) {
 			#define set_entry_value(_val, _entry) G_STMT_START { \
 				if ((_val) && *(_val)) \
-					gtk_entry_set_text (GTK_ENTRY (_entry), _val); \
+					gtk_editable_set_text (GTK_EDITABLE (_entry), _val); \
 				} G_STMT_END
 
 			set_entry_value (addr->locality, address_item->city.widget);
@@ -988,7 +988,7 @@ e_bulk_edit_contacts_fill_content (EBulkEditContacts *self)
 				"margin-bottom", 12,
 				NULL);
 
-			gtk_container_add (GTK_CONTAINER (scrolled_window), widget);
+			e_gtk_container_add (scrolled_window, widget);
 
 			tab_title = NULL;
 			section_grid = GTK_GRID (widget);
@@ -1139,9 +1139,9 @@ e_bulk_edit_contacts_fill_content (EBulkEditContacts *self)
 	gtk_widget_set_margin_bottom (self->priv->activity_bar, 6);
 
 	widget = gtk_dialog_get_content_area (GTK_DIALOG (self));
-	gtk_box_pack_start (GTK_BOX (widget), self->priv->items_grid, TRUE, TRUE, 0);
-	gtk_box_pack_start (GTK_BOX (widget), self->priv->alert_bar, FALSE, FALSE, 0);
-	gtk_box_pack_start (GTK_BOX (widget), self->priv->activity_bar, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (widget), self->priv->items_grid, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (widget), self->priv->alert_bar, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (widget), self->priv->activity_bar, FALSE, FALSE, 0);
 
 	gtk_dialog_add_buttons (GTK_DIALOG (self),
 		_("M_odify"), GTK_RESPONSE_APPLY,

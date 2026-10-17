@@ -333,8 +333,8 @@ elm_getwidget (EImport *ei,
 		w, "toggled",
 		G_CALLBACK (checkbox_toggle_cb), target);
 
-	gtk_box_pack_start ((GtkBox *) box, w, FALSE, FALSE, 0);
-	gtk_widget_show_all (box);
+	e_gtk_box_pack_start ((GtkBox *) box, w, FALSE, FALSE, 0);
+	gtk_widget_set_visible (box, TRUE);
 
 	return box;
 }

@@ -873,8 +873,8 @@ mail_display_open_attachment (EMailDisplay *display,
 	GAppInfo *default_app;
 	gpointer parent;
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (display));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (display));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	/* Either open in the default application... */
 	default_app = e_attachment_ref_default_app (attachment);
@@ -1485,7 +1485,7 @@ mail_display_content_loaded_cb (EWebView *web_view,
 	    gtk_widget_has_focus (GTK_WIDGET (web_view))) {
 		GtkWidget *toplevel, *widget = GTK_WIDGET (web_view);
 
-		toplevel = gtk_widget_get_toplevel (widget);
+		toplevel = e_gtk_widget_get_toplevel (widget);
 
 		if (GTK_IS_WINDOW (toplevel)) {
 			gtk_window_set_focus (GTK_WINDOW (toplevel), NULL);
@@ -1509,8 +1509,8 @@ action_open_with_app_cb (EUIAction *action,
 	data = g_hash_table_lookup (self->priv->open_with_apps_hash, GINT_TO_POINTER (g_variant_get_int32 (parameter)));
 	g_return_if_fail (data != NULL);
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (self));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (self));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	app_info = data->app_info;
 
@@ -1525,12 +1525,12 @@ action_open_with_app_cb (EUIAction *action,
 		content_type = g_file_info_get_content_type (file_info);
 
 		dialog = gtk_app_chooser_dialog_new_for_content_type (parent, 0, content_type);
-		if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
+		if (e_gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
 			GtkAppChooser *app_chooser = GTK_APP_CHOOSER (dialog);
 			app_info = gtk_app_chooser_get_app_info (app_chooser);
 		}
 
-		gtk_widget_destroy (dialog);
+		e_gtk_widget_destroy (dialog);
 		g_object_unref (file_info);
 	} else if (app_info) {
 		g_object_ref (app_info);
@@ -2603,7 +2603,7 @@ mail_display_suggest_filename (EWebView *web_view,
 
 static void
 mail_display_save_part_for_drop (CamelMimePart *mime_part,
-				 GtkSelectionData *data)
+				 EGtkSelectionData *data)
 {
 	gchar *tmp, *path, *filename;
 	const gchar *part_filename;
@@ -2648,10 +2648,10 @@ mail_display_save_part_for_drop (CamelMimePart *mime_part,
 			if (camel_data_wrapper_decode_to_stream_sync (dw, stream, NULL, NULL)) {
 				tmp = g_filename_to_uri (filename, NULL, NULL);
 				if (tmp) {
-					gtk_selection_data_set (
+					e_gtk_selection_data_set (
 						data,
-						gtk_selection_data_get_data_type (data),
-						gtk_selection_data_get_format (data),
+						e_gtk_selection_data_get_data_type (data),
+						e_gtk_selection_data_get_format (data),
 						(const guchar *) tmp, strlen (tmp));
 					g_free (tmp);
 				}
@@ -2668,8 +2668,8 @@ mail_display_save_part_for_drop (CamelMimePart *mime_part,
 
 static void
 mail_display_drag_data_get (GtkWidget *widget,
-                            GdkDragContext *context,
-                            GtkSelectionData *data,
+                            EGtkDragContext *context,
+                            EGtkSelectionData *data,
                             guint info,
                             guint time,
                             EMailDisplay *display)
@@ -2683,8 +2683,8 @@ mail_display_drag_data_get (GtkWidget *widget,
 	gint length;
 	GByteArray *byte_array;
 
-	data_from_webkit = gtk_selection_data_get_data (data);
-	length = gtk_selection_data_get_length (data);
+	data_from_webkit = e_gtk_selection_data_get_data (data);
+	length = e_gtk_selection_data_get_length (data);
 
 	uri = g_strndup ((const gchar *) data_from_webkit, length);
 
@@ -2761,10 +2761,10 @@ mail_display_drag_data_get (GtkWidget *widget,
 	/* Insert filename before base64 data */
 	src = g_strconcat (filename, ";data:", mime_type, ";base64,", base64_encoded, NULL);
 
-	gtk_selection_data_set (
+	e_gtk_selection_data_set (
 		data,
-		gtk_selection_data_get_data_type (data),
-		gtk_selection_data_get_format (data),
+		e_gtk_selection_data_get_data_type (data),
+		e_gtk_selection_data_get_format (data),
 		(const guchar *) src, strlen (src));
 
 	g_free (src);

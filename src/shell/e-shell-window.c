@@ -341,10 +341,10 @@ shell_window_create_shell_view (EShellWindow *shell_window,
 				if (shell_window->priv->headerbar_box) {
 					widget = gtk_header_bar_new ();
 
-					gtk_header_bar_set_show_close_button (GTK_HEADER_BAR (widget), TRUE);
+					gtk_header_bar_set_show_title_buttons (GTK_HEADER_BAR (widget), TRUE);
 					gtk_widget_set_visible (widget, TRUE);
 
-					gtk_box_pack_start (shell_window->priv->headerbar_box, widget, FALSE, FALSE, 0);
+					e_gtk_box_pack_start (shell_window->priv->headerbar_box, widget, FALSE, FALSE, 0);
 
 					e_binding_bind_property (widget, "title",
 						shell_window, "title",
@@ -409,7 +409,7 @@ shell_window_create_shell_view (EShellWindow *shell_window,
 		headerbar = g_object_ref (e_shell_view_get_headerbar (shell_view));
 		gtk_widget_unparent (headerbar);
 
-		gtk_box_pack_start (shell_window->priv->headerbar_box, headerbar, FALSE, FALSE, 0);
+		e_gtk_box_pack_start (shell_window->priv->headerbar_box, headerbar, FALSE, FALSE, 0);
 		gtk_widget_set_visible (headerbar, g_hash_table_size (loaded_views) == 1);
 
 		e_binding_bind_property (shell_window, "title",
@@ -581,7 +581,7 @@ shell_window_map (GtkWidget *widget)
 
 static gboolean
 shell_window_delete_event_cb (GtkWidget *widget,
-			      GdkEventAny *event)
+			      GdkEvent *event)
 {
 	g_return_val_if_fail (E_IS_SHELL_WINDOW (widget), FALSE);
 

@@ -8,7 +8,7 @@
 #include <glib/gi18n-lib.h>
 #include <gtk/gtk.h>
 
-#include <libedataserverui/libedataserverui.h>
+#include <libedataserverui4/libedataserverui4.h>
 
 #include "e-content-editor.h"
 #include "e-markdown-utils.h"
@@ -38,7 +38,7 @@ struct _EMarkdownEditorPrivate {
 	guint preview_update_id;
 	gulong cursor_position_id;
 	gulong notify_mode_id;
-	GdkAtom serialize_atom;
+	EGtkAtom serialize_atom;
 	gchar *signature_html_code;
 	gchar *monospace_font;
 	gchar *variable_width_font;
@@ -1516,7 +1516,7 @@ e_markdown_editor_markdown_syntax_cb (EMarkdownEditor *self)
 
 	g_return_if_fail (E_IS_MARKDOWN_EDITOR (self));
 
-	toplevel = gtk_widget_get_toplevel (GTK_WIDGET (self));
+	toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (self));
 
 	e_show_uri (GTK_IS_WINDOW (toplevel) ? GTK_WINDOW (toplevel) : NULL, "https://commonmark.org/help/");
 }
@@ -1835,11 +1835,11 @@ e_markdown_editor_toggle_preview (EMarkdownEditor *self,
 
 	g_object_ref (self->priv->text_view);
 	g_object_ref (self->priv->web_view);
-	gtk_container_remove (GTK_CONTAINER (gtk_widget_get_parent (GTK_WIDGET (self->priv->text_view))), GTK_WIDGET (self->priv->text_view));
-	gtk_container_remove (GTK_CONTAINER (gtk_widget_get_parent (GTK_WIDGET (self->priv->web_view))), GTK_WIDGET (self->priv->web_view));
+	e_gtk_container_remove (gtk_widget_get_parent (GTK_WIDGET (self->priv->text_view)), GTK_WIDGET (self->priv->text_view));
+	e_gtk_container_remove (gtk_widget_get_parent (GTK_WIDGET (self->priv->web_view)), GTK_WIDGET (self->priv->web_view));
 
-	gtk_container_add (GTK_CONTAINER (text_scrolled_window), GTK_WIDGET (self->priv->text_view));
-	gtk_container_add (GTK_CONTAINER (preview_scrolled_window), GTK_WIDGET (self->priv->web_view));
+	e_gtk_container_add (text_scrolled_window, GTK_WIDGET (self->priv->text_view));
+	e_gtk_container_add (preview_scrolled_window, GTK_WIDGET (self->priv->web_view));
 
 	while (gtk_notebook_get_n_pages (self->priv->notebook) > 0)
 		gtk_notebook_remove_page (self->priv->notebook, -1);
@@ -1859,8 +1859,8 @@ e_markdown_editor_toggle_preview (EMarkdownEditor *self,
 			"visible", TRUE,
 			NULL);
 
-		gtk_paned_pack1 (paned, text_scrolled_window, TRUE, TRUE);
-		gtk_paned_pack2 (paned, preview_scrolled_window, TRUE, TRUE);
+		e_gtk_paned_pack1 (paned, text_scrolled_window, TRUE, TRUE);
+		e_gtk_paned_pack2 (paned, preview_scrolled_window, TRUE, TRUE);
 
 		gtk_notebook_append_page (self->priv->notebook, GTK_WIDGET (paned), gtk_label_new_with_mnemonic (_("_Write")));
 
@@ -2004,7 +2004,7 @@ e_markdown_editor_style_updated_cb (GtkWidget *widget,
 						GtkWidget *icon_widget = gtk_tool_button_get_icon_widget (GTK_TOOL_BUTTON (item));
 
 						if (icon_widget)
-							gtk_image_set_from_icon_name (GTK_IMAGE (icon_widget), icon_name, GTK_ICON_SIZE_SMALL_TOOLBAR);
+							gtk_image_set_from_icon_name (GTK_IMAGE (icon_widget), icon_name);
 						else
 							gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (item), icon_name);
 					}
@@ -2018,7 +2018,7 @@ e_markdown_editor_style_updated_cb (GtkWidget *widget,
 }
 
 static void
-e_markdown_editor_clipboard_owner_change_cb (GtkClipboard *clipboard,
+e_markdown_editor_clipboard_owner_change_cb (GdkClipboard *clipboard,
 					     GdkEvent *event,
 					     gpointer user_data)
 {
@@ -2026,7 +2026,7 @@ e_markdown_editor_clipboard_owner_change_cb (GtkClipboard *clipboard,
 	gboolean has_text_or_image;
 
 	/* image is taken care of by the owner of the editor */
-	has_text_or_image = gtk_clipboard_wait_is_text_available (clipboard) || gtk_clipboard_wait_is_image_available (clipboard);
+	has_text_or_image = e_gtk_clipboard_wait_is_text_available (clipboard) || e_gtk_clipboard_wait_is_image_available (clipboard);
 
 	if ((self->priv->can_paste ? 1 : 0) != (has_text_or_image ? 1 : 0)) {
 		self->priv->can_paste = has_text_or_image;
@@ -2134,13 +2134,13 @@ e_markdown_editor_realize_cb (GtkWidget *widget,
 			      gpointer user_data)
 {
 	EMarkdownEditor *self = E_MARKDOWN_EDITOR (widget);
-	GtkClipboard *clipboard;
+	GdkClipboard *clipboard;
 	GtkTextBuffer *buffer;
 
 	/* Disconnect the handler, it's enough to add the below signal handlers once */
 	g_signal_handlers_disconnect_by_func (self, G_CALLBACK (e_markdown_editor_realize_cb), NULL);
 
-	clipboard = gtk_widget_get_clipboard (GTK_WIDGET (self->priv->text_view), GDK_SELECTION_CLIPBOARD);
+	clipboard = gtk_widget_get_clipboard (GTK_WIDGET (self->priv->text_view), E_GTK_SELECTION_CLIPBOARD);
 	g_signal_connect_object (clipboard, "owner-change",
 		G_CALLBACK (e_markdown_editor_clipboard_owner_change_cb), self, 0);
 	e_markdown_editor_clipboard_owner_change_cb (clipboard, NULL, self);
@@ -2430,7 +2430,7 @@ e_markdown_editor_constructed (GObject *object)
 		"show-border", TRUE,
 		"show-tabs", TRUE,
 		NULL);
-	gtk_box_pack_start (GTK_BOX (self), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (self), widget, TRUE, TRUE, 0);
 
 	self->priv->notebook = GTK_NOTEBOOK (widget);
 
@@ -2461,7 +2461,7 @@ e_markdown_editor_constructed (GObject *object)
 		"wrap-mode", GTK_WRAP_WORD_CHAR,
 		NULL);
 
-	gtk_container_add (GTK_CONTAINER (scrolled_window), widget);
+	e_gtk_container_add (scrolled_window, widget);
 
 	self->priv->text_view = GTK_TEXT_VIEW (widget);
 
@@ -2501,7 +2501,7 @@ e_markdown_editor_constructed (GObject *object)
 		"margin", 4,
 		NULL);
 
-	gtk_container_add (GTK_CONTAINER (scrolled_window), widget);
+	e_gtk_container_add (scrolled_window, widget);
 
 	self->priv->web_view = E_WEB_VIEW (widget);
 
@@ -2510,7 +2510,7 @@ e_markdown_editor_constructed (GObject *object)
 	#endif /* HAVE_MARKDOWN */
 
 	widget = gtk_toolbar_new ();
-	e_util_setup_toolbar_icon_size (GTK_TOOLBAR (widget), GTK_ICON_SIZE_SMALL_TOOLBAR);
+	e_util_setup_toolbar_icon_size (widget, E_GTK_ICON_SIZE_SMALL_TOOLBAR);
 	gtk_widget_show (widget);
 	gtk_notebook_set_action_widget (self->priv->notebook, widget, GTK_PACK_END);
 
@@ -2525,7 +2525,7 @@ e_markdown_editor_constructed (GObject *object)
 			const gchar *icon_name;
 
 			icon_name = self->priv->is_dark_theme ? toolbar_items[ii].icon_name_dark : toolbar_items[ii].icon_name;
-			icon = gtk_image_new_from_icon_name (icon_name, GTK_ICON_SIZE_SMALL_TOOLBAR);
+			icon = gtk_image_new_from_icon_name (icon_name);
 			gtk_widget_show (GTK_WIDGET (icon));
 			if (toolbar_items[ii].toggle_key) {
 				GSettings *settings;

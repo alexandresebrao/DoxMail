@@ -109,10 +109,10 @@ mail_config_welcome_page_constructed (GObject *object)
 
 	widget = gtk_label_new (NULL);
 	gtk_widget_set_valign (widget, GTK_ALIGN_FILL);
-	gtk_label_set_line_wrap (GTK_LABEL (widget), TRUE);
+	gtk_label_set_wrap (GTK_LABEL (widget), TRUE);
 	gtk_label_set_width_chars (GTK_LABEL (widget), 20);
 	gtk_label_set_xalign (GTK_LABEL (widget), 0);
-	gtk_box_pack_start (GTK_BOX (main_box), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (main_box), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	e_binding_bind_object_text_property (

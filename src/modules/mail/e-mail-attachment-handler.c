@@ -37,7 +37,7 @@ G_DEFINE_DYNAMIC_TYPE_EXTENDED (EMailAttachmentHandler, e_mail_attachment_handle
 	G_ADD_PRIVATE_DYNAMIC (EMailAttachmentHandler))
 
 /* Note: Do not use the info field. */
-static GtkTargetEntry target_table[] = {
+static EGtkTargetEntry target_table[] = {
 	{ (gchar *) "message/rfc822",	0, 0 },
 	{ (gchar *) "x-uid-list",	0, 0 }
 };
@@ -402,7 +402,7 @@ mail_attachment_handler_message_save_to_folder (EUIAction *action,
 	message = mail_attachment_handler_get_selected_message (handler);
 	g_return_if_fail (message != NULL);
 
-	widget = gtk_widget_get_toplevel (GTK_WIDGET (e_attachment_handler_get_view (handler)));
+	widget = e_gtk_widget_get_toplevel (GTK_WIDGET (e_attachment_handler_get_view (handler)));
 
 	dest_folder_uri = em_utils_select_folder_for_copy_move_message (GTK_IS_WINDOW (widget) ? GTK_WINDOW (widget) : NULL, FALSE, NULL);
 	if (dest_folder_uri) {
@@ -513,8 +513,8 @@ action_mail_import_pgp_key_cb (EUIAction *action,
 	gpointer parent_window;
 
 	view = e_attachment_handler_get_view (handler);
-	parent_window = gtk_widget_get_toplevel (GTK_WIDGET (view));
-	parent_window = gtk_widget_is_toplevel (parent_window) ? parent_window : NULL;
+	parent_window = e_gtk_widget_get_toplevel (GTK_WIDGET (view));
+	parent_window = e_gtk_widget_is_toplevel (parent_window) ? parent_window : NULL;
 
 	list = e_attachment_view_get_selected_paths (view);
 	g_return_if_fail (g_list_length (list) == 1);
@@ -583,15 +583,15 @@ call_attachment_load_handle_error (GObject *source_object,
 
 static void
 mail_attachment_handler_message_rfc822 (EAttachmentView *view,
-                                        GdkDragContext *drag_context,
+                                        EGtkDragContext *drag_context,
                                         gint x,
                                         gint y,
-                                        GtkSelectionData *selection_data,
+                                        EGtkSelectionData *selection_data,
                                         guint info,
                                         guint time,
                                         EAttachmentHandler *handler)
 {
-	static GdkAtom atom = GDK_NONE;
+	static EGtkAtom atom = E_GTK_ATOM_NONE;
 	EAttachmentStore *store;
 	EAttachment *attachment;
 	CamelMimeMessage *message;
@@ -602,16 +602,16 @@ mail_attachment_handler_message_rfc822 (EAttachmentView *view,
 	gpointer parent;
 	gint length;
 
-	if (G_UNLIKELY (atom == GDK_NONE))
-		atom = gdk_atom_intern_static_string ("message/rfc822");
+	if (G_UNLIKELY (atom == E_GTK_ATOM_NONE))
+		atom = e_gtk_atom_intern_static_string ("message/rfc822");
 
-	if (gtk_selection_data_get_target (selection_data) != atom)
+	if (e_gtk_selection_data_get_target (selection_data) != atom)
 		return;
 
 	g_signal_stop_emission_by_name (view, "drag-data-received");
 
-	data = (const gchar *) gtk_selection_data_get_data (selection_data);
-	length = gtk_selection_data_get_length (selection_data);
+	data = (const gchar *) e_gtk_selection_data_get_data (selection_data);
+	length = e_gtk_selection_data_get_length (selection_data);
 
 	stream = camel_stream_mem_new ();
 	camel_stream_write (stream, data, length, NULL, NULL);
@@ -626,8 +626,8 @@ mail_attachment_handler_message_rfc822 (EAttachmentView *view,
 
 	store = e_attachment_view_get_store (view);
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (view));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (view));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	attachment = e_attachment_new_for_message (message);
 	e_attachment_store_add_attachment (store, attachment);
@@ -642,7 +642,7 @@ exit:
 	g_object_unref (message);
 	g_object_unref (stream);
 
-	gtk_drag_finish (drag_context, success, FALSE, time);
+	e_gtk_drag_finish (drag_context, success, FALSE, time);
 }
 
 static gboolean
@@ -674,15 +674,15 @@ gather_x_uid_list_messages_cb (CamelFolder *folder,
 
 static void
 mail_attachment_handler_x_uid_list (EAttachmentView *view,
-                                    GdkDragContext *drag_context,
+                                    EGtkDragContext *drag_context,
                                     gint x,
                                     gint y,
-                                    GtkSelectionData *selection_data,
+                                    EGtkSelectionData *selection_data,
                                     guint info,
                                     guint time,
                                     EAttachmentHandler *handler)
 {
-	static GdkAtom atom = GDK_NONE;
+	static EGtkAtom atom = E_GTK_ATOM_NONE;
 	EMailAttachmentHandler *self = E_MAIL_ATTACHMENT_HANDLER (handler);
 	CamelDataWrapper *wrapper;
 	CamelMultipart *multipart;
@@ -695,16 +695,16 @@ mail_attachment_handler_x_uid_list (EAttachmentView *view,
 	gpointer parent;
 	GError *local_error = NULL;
 
-	if (G_UNLIKELY (atom == GDK_NONE))
-		atom = gdk_atom_intern_static_string ("x-uid-list");
+	if (G_UNLIKELY (atom == E_GTK_ATOM_NONE))
+		atom = e_gtk_atom_intern_static_string ("x-uid-list");
 
-	if (gtk_selection_data_get_target (selection_data) != atom)
+	if (e_gtk_selection_data_get_target (selection_data) != atom)
 		return;
 
 	store = e_attachment_view_get_store (view);
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (view));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (view));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	session = e_mail_backend_get_session (self->priv->backend);
 
@@ -795,7 +795,7 @@ mail_attachment_handler_x_uid_list (EAttachmentView *view,
 
  exit:
 	if (local_error != NULL) {
-		const gchar *folder_name = (const gchar *) gtk_selection_data_get_data (selection_data);
+		const gchar *folder_name = (const gchar *) e_gtk_selection_data_get_data (selection_data);
 
 		e_alert_run_dialog_for_args (
 			parent, "mail-composer:attach-nomessages",
@@ -1037,7 +1037,7 @@ mail_attachment_handler_get_drag_actions (EAttachmentHandler *handler)
 	return GDK_ACTION_COPY;
 }
 
-static const GtkTargetEntry *
+static const EGtkTargetEntry *
 mail_attachment_handler_get_target_table (EAttachmentHandler *handler,
                                           guint *n_targets)
 {

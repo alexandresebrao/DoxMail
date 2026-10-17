@@ -201,8 +201,8 @@ build_test_window (void)
 	container = widget;
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 12);
-	gtk_container_set_border_width (GTK_CONTAINER (widget), 12);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_widget_set_border_width (widget, 12);
+	e_gtk_container_add (container, widget);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -210,20 +210,20 @@ build_test_window (void)
 	widget = e_tree_view_frame_new ();
 	e_tree_view_frame_set_tree_view (
 		E_TREE_VIEW_FRAME (widget), glob_tree_view);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	glob_tree_view_frame = E_TREE_VIEW_FRAME (widget);
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
 
 	text = "Inline toolbar is visible";
 	widget = gtk_check_button_new_with_label (text);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	e_binding_bind_property (
@@ -234,7 +234,7 @@ build_test_window (void)
 
 	text = "Tree view is reorderable";
 	widget = gtk_check_button_new_with_label (text);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	e_binding_bind_property (
@@ -249,7 +249,7 @@ build_test_window (void)
 	gtk_grid_set_row_spacing (GTK_GRID (widget), 6);
 	gtk_grid_set_column_spacing (GTK_GRID (widget), 6);
 	gtk_widget_set_margin_bottom (widget, 6);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	grid = widget;
@@ -364,7 +364,7 @@ gint
 main (gint argc,
       gchar **argv)
 {
-	gtk_init (&argc, &argv);
+	gtk_init ();
 
 	build_tree_view ();
 	build_test_window ();

@@ -57,15 +57,10 @@ GtkWidget *	e_header_bar_button_new			(const gchar *label,
 void		e_header_bar_button_add_action		(EHeaderBarButton *header_bar_button,
 							 const gchar *label,
 							 EUIAction *action);
-void		e_header_bar_button_take_menu		(EHeaderBarButton *header_bar_button,
-							 GtkWidget *menu);
+void		e_header_bar_button_set_menu_model	(EHeaderBarButton *header_bar_button,
+							 GMenuModel *menu_model);
 void		e_header_bar_button_css_add_class	(EHeaderBarButton *header_bar_button,
 							 const gchar *class);
-void		e_header_bar_button_add_accelerator	(EHeaderBarButton* header_bar_button,
-							 GtkAccelGroup* accel_group,
-							 guint accel_key,
-							 GdkModifierType accel_mods,
-							 GtkAccelFlags accel_flags);
 void		e_header_bar_button_get_widths		(EHeaderBarButton *self,
 							 gint *out_labeled_width,
 							 gint *out_icon_only_width);

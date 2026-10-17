@@ -8,7 +8,7 @@
  * with an optional dropdown menu.
  *
  * You can use e_header_bar_button_new() to get a new #EHeaderBarButton. If you do not provide
- * an action, prefered action will be used. See e_header_bar_button_take_menu().
+ * an action, prefered action will be used. See e_header_bar_button_set_menu_model().
  */
 
 #include "evolution-config.h"
@@ -150,7 +150,7 @@ header_bar_button_add_action_button (EHeaderBarButton *header_bar_button,
 		g_clear_pointer (&state, g_variant_unref);
 	}
 
-	gtk_box_pack_start (GTK_BOX (header_bar_button), button, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (header_bar_button), button, FALSE, FALSE, 0);
 
 	if (action)
 		header_bar_button_update_button_for_action (header_bar_button, GTK_BUTTON (button), action, header_bar_button->priv->ui_manager);
@@ -395,7 +395,7 @@ e_header_bar_button_init (EHeaderBarButton *self)
  *
  * Creates a new #EHeaderBarButton labeled with @label.
  * If action is %NULL, button will use default preferred menu action if available,
- * see e_header_bar_button_take_menu().
+ * see e_header_bar_button_set_menu_model().
  *
  * Returns: (transfer full): a new #EHeaderBarButton
  *
@@ -436,35 +436,33 @@ e_header_bar_button_add_action (EHeaderBarButton *header_bar_button,
 }
 
 /**
- * e_header_bar_button_take_menu:
+ * e_header_bar_button_set_menu_model:
  * @header_bar_button: #EHeaderBarButton
- * @menu: (transfer full) (nullable): A #GtkMenu, or %NULL to unset and disable the dropdown button.
+ * @menu_model: (nullable): a #GMenuModel, or %NULL to unset and hide the dropdown button
  *
- * Sets the #GtkMenu that will be popped up when the @menu_button is clicked, or
- * %NULL to dissociate any existing menu and disable the dropdown button.
+ * Sets the menu that will be popped up when the dropdown button is clicked,
+ * or %NULL to hide the dropdown button.
  *
  * If current #EHeaderBarButton action is %NULL, clicking the button will fire
  * the preferred item, if set, or the first menu item otherwise.
  *
- * Since: 3.46
+ * Since: DoxMail
  **/
 void
-e_header_bar_button_take_menu (EHeaderBarButton *header_bar_button,
-			       GtkWidget *menu)
+e_header_bar_button_set_menu_model (EHeaderBarButton *header_bar_button,
+				    GMenuModel *menu_model)
 {
 	g_return_if_fail (E_IS_HEADER_BAR_BUTTON (header_bar_button));
 
-	if (!GTK_IS_MENU (menu)) {
+	if (!menu_model) {
 		if (header_bar_button->priv->dropdown_button != NULL)
-			gtk_widget_hide (header_bar_button->priv->dropdown_button);
+			gtk_widget_set_visible (header_bar_button->priv->dropdown_button, FALSE);
 		return;
 	}
 
 	if (header_bar_button->priv->dropdown_button == NULL) {
 		header_bar_button->priv->dropdown_button = gtk_menu_button_new ();
-		gtk_box_pack_end (
-			GTK_BOX (header_bar_button), header_bar_button->priv->dropdown_button,
-			FALSE, FALSE, 0);
+		gtk_box_append (GTK_BOX (header_bar_button), header_bar_button->priv->dropdown_button);
 
 		e_binding_bind_property (
 			header_bar_button->priv->labeled_button, "sensitive",
@@ -472,18 +470,16 @@ e_header_bar_button_take_menu (EHeaderBarButton *header_bar_button,
 			G_BINDING_SYNC_CREATE);
 	}
 
-	gtk_menu_button_set_popup (GTK_MENU_BUTTON (header_bar_button->priv->dropdown_button), menu);
+	gtk_menu_button_set_menu_model (GTK_MENU_BUTTON (header_bar_button->priv->dropdown_button), menu_model);
 
 	/* Setting/unsetting menu can sensitize/un-sensitize the menu button,
 	   thus re-sync the state with the labeled button. */
-	if (header_bar_button->priv->dropdown_button && menu) {
-		gtk_widget_set_sensitive (header_bar_button->priv->dropdown_button,
-			gtk_widget_get_sensitive (header_bar_button->priv->labeled_button));
-	}
+	gtk_widget_set_sensitive (header_bar_button->priv->dropdown_button,
+		gtk_widget_get_sensitive (header_bar_button->priv->labeled_button));
 
 	header_bar_button_update_button (header_bar_button);
 
-	gtk_widget_show (header_bar_button->priv->dropdown_button);
+	gtk_widget_set_visible (header_bar_button->priv->dropdown_button, TRUE);
 }
 
 /**
@@ -499,49 +495,12 @@ void
 e_header_bar_button_css_add_class (EHeaderBarButton *header_bar_button,
 				   const gchar *class_name)
 {
-	GtkStyleContext *style_context;
-
 	g_return_if_fail (E_IS_HEADER_BAR_BUTTON (header_bar_button));
 
-	style_context = gtk_widget_get_style_context (header_bar_button->priv->labeled_button);
-	gtk_style_context_add_class (style_context, class_name);
+	gtk_widget_add_css_class (header_bar_button->priv->labeled_button, class_name);
 
-	if (header_bar_button->priv->icon_only_button) {
-		style_context = gtk_widget_get_style_context (header_bar_button->priv->icon_only_button);
-		gtk_style_context_add_class (style_context, class_name);
-	}
-}
-
-/**
- * e_header_bar_button_add_accelerator:
- * @header_bar_button: #EHeaderBarButton to activate
- * @accel_group: Accel group for this widget, added to its toplevel.
- * @accel_key: GDK keyval of the accelerator
- * @accel_mods: Modifier key combination of the accelerator.
- * @accel_flags: Flag accelerators, e.g. GTK_ACCEL_VISIBLE
- *
- * Installs an accelerator for main action
- *
- * Since: 3.46
- **/
-void
-e_header_bar_button_add_accelerator (EHeaderBarButton *header_bar_button,
-				     GtkAccelGroup *accel_group,
-				     guint accel_key,
-				     GdkModifierType accel_mods,
-				     GtkAccelFlags accel_flags)
-{
-	g_return_if_fail (E_IS_HEADER_BAR_BUTTON (header_bar_button));
-
-	gtk_widget_add_accelerator (
-		header_bar_button->priv->labeled_button, "clicked",
-		accel_group, accel_key, accel_mods, accel_flags);
-
-	if (header_bar_button->priv->icon_only_button) {
-		gtk_widget_add_accelerator (
-			header_bar_button->priv->icon_only_button, "clicked",
-			accel_group, accel_key, accel_mods, accel_flags);
-	}
+	if (header_bar_button->priv->icon_only_button)
+		gtk_widget_add_css_class (header_bar_button->priv->icon_only_button, class_name);
 }
 
 /**
@@ -571,7 +530,7 @@ e_header_bar_button_get_widths (EHeaderBarButton *self,
 	g_return_if_fail (out_labeled_width != NULL);
 	g_return_if_fail (out_icon_only_width != NULL);
 
-	gtk_widget_get_preferred_width (GTK_WIDGET (self), &current_width, NULL);
+	e_gtk_widget_get_preferred_width (GTK_WIDGET (self), &current_width, NULL);
 
 	if (!self->priv->icon_only_button) {
 		*out_labeled_width = current_width;
@@ -586,18 +545,18 @@ e_header_bar_button_get_widths (EHeaderBarButton *self,
 	}
 
 	if (gtk_widget_get_visible (self->priv->labeled_button)) {
-		gtk_widget_get_preferred_width (self->priv->labeled_button, &labeled_width, NULL);
+		e_gtk_widget_get_preferred_width (self->priv->labeled_button, &labeled_width, NULL);
 	} else {
 		gtk_widget_show (self->priv->labeled_button);
-		gtk_widget_get_preferred_width (self->priv->labeled_button, &labeled_width, NULL);
+		e_gtk_widget_get_preferred_width (self->priv->labeled_button, &labeled_width, NULL);
 		gtk_widget_hide (self->priv->labeled_button);
 	}
 
 	if (gtk_widget_get_visible (self->priv->icon_only_button)) {
-		gtk_widget_get_preferred_width (self->priv->icon_only_button, &icon_only_width, NULL);
+		e_gtk_widget_get_preferred_width (self->priv->icon_only_button, &icon_only_width, NULL);
 	} else {
 		gtk_widget_show (self->priv->icon_only_button);
-		gtk_widget_get_preferred_width (self->priv->icon_only_button, &icon_only_width, NULL);
+		e_gtk_widget_get_preferred_width (self->priv->icon_only_button, &icon_only_width, NULL);
 		gtk_widget_hide (self->priv->icon_only_button);
 	}
 

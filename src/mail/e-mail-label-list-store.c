@@ -159,7 +159,7 @@ mail_label_list_store_dup_icon_name (EMailLabelListStore *store,
 	if (!gdk_rgba_parse (&rgba, color_spec))
 		return NULL;
 
-	icon_theme = gtk_icon_theme_get_default ();
+	icon_theme = e_gtk_icon_theme_get_default ();
 	icon_name = g_strdup_printf ("evolution-label-%s", color_spec);
 
 	/* It's just a solid block of a user-chosen color. */

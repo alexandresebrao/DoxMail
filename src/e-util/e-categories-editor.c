@@ -69,7 +69,7 @@ entry_changed_cb (GtkEntry *entry,
                   ECategoriesEditor *editor)
 {
 	g_signal_handler_block (editor->priv->categories_list, editor->priv->category_checked_handler_id);
-	e_categories_selector_set_checked (editor->priv->categories_list, gtk_entry_get_text (entry));
+	e_categories_selector_set_checked (editor->priv->categories_list, gtk_editable_get_text (GTK_EDITABLE (entry)));
 	g_signal_handler_unblock (editor->priv->categories_list, editor->priv->category_checked_handler_id);
 
 	g_signal_emit (editor, signals[ENTRY_CHANGED], 0);
@@ -101,7 +101,7 @@ categories_editor_update_entry (ECategoriesEditor *editor)
 	categories = e_categories_selector_get_checked (editor->priv->categories_list);
 
 	g_signal_handler_block (entry, editor->priv->entry_changed_handler_id);
-	gtk_entry_set_text (entry, categories);
+	gtk_editable_set_text (GTK_EDITABLE (entry), categories);
 	g_signal_handler_unblock (entry, editor->priv->entry_changed_handler_id);
 
 	g_free (categories);
@@ -121,7 +121,7 @@ new_button_clicked_cb (GtkButton *button,
 	GtkWidget *toplevel, *parent;
 	ECategoryEditor *cat_editor;
 
-	toplevel = gtk_widget_get_toplevel (GTK_WIDGET (editor));
+	toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (editor));
 	if (GTK_IS_WINDOW (toplevel))
 		parent = toplevel;
 	else
@@ -133,7 +133,7 @@ new_button_clicked_cb (GtkButton *button,
 
 	e_category_editor_create_category (cat_editor);
 
-	gtk_widget_destroy (GTK_WIDGET (cat_editor));
+	e_gtk_widget_destroy (GTK_WIDGET (cat_editor));
 }
 
 static void
@@ -144,7 +144,7 @@ edit_button_clicked_cb (GtkButton *button,
 	ECategoryEditor *cat_editor;
 	gchar *category;
 
-	toplevel = gtk_widget_get_toplevel (GTK_WIDGET (editor));
+	toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (editor));
 	if (GTK_IS_WINDOW (toplevel))
 		parent = toplevel;
 	else
@@ -160,7 +160,7 @@ edit_button_clicked_cb (GtkButton *button,
 
 	e_category_editor_edit_category (cat_editor, category);
 
-	gtk_widget_destroy (GTK_WIDGET (cat_editor));
+	e_gtk_widget_destroy (GTK_WIDGET (cat_editor));
 	g_free (category);
 }
 
@@ -289,20 +289,18 @@ e_categories_editor_init (ECategoriesEditor *editor)
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (scrolledwindow1),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_set_shadow_type (
-		GTK_SCROLLED_WINDOW (scrolledwindow1), GTK_SHADOW_IN);
+	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (scrolledwindow1), TRUE);
 
 	categories_list = GTK_WIDGET (e_categories_selector_new ());
-	gtk_container_add (GTK_CONTAINER (scrolledwindow1), categories_list);
+	e_gtk_container_add (scrolledwindow1, categories_list);
 	gtk_widget_set_size_request (categories_list, -1, 350);
 	gtk_tree_view_set_headers_visible (
 		GTK_TREE_VIEW (categories_list), FALSE);
-	gtk_tree_view_set_rules_hint (GTK_TREE_VIEW (categories_list), TRUE);
 	editor->priv->category_checked_handler_id = g_signal_connect_swapped (
 		G_OBJECT (categories_list), "category-checked",
 		G_CALLBACK (categories_editor_category_checked_cb), editor);
 
-	hbuttonbox1 = gtk_button_box_new (GTK_ORIENTATION_HORIZONTAL);
+	hbuttonbox1 = e_gtk_button_box_new (GTK_ORIENTATION_HORIZONTAL);
 	g_object_set (
 		G_OBJECT (hbuttonbox1),
 		"hexpand", TRUE,
@@ -312,16 +310,13 @@ e_categories_editor_init (ECategoriesEditor *editor)
 	gtk_box_set_spacing (GTK_BOX (hbuttonbox1), 6);
 
 	button_new = e_dialog_button_new_with_icon ("document-new", C_("category", "_New"));
-	gtk_container_add (GTK_CONTAINER (hbuttonbox1), button_new);
-	gtk_widget_set_can_default (button_new, TRUE);
+	e_gtk_container_add (hbuttonbox1, button_new);
 
 	button_edit = gtk_button_new_with_mnemonic (C_("category", "_Edit"));
-	gtk_container_add (GTK_CONTAINER (hbuttonbox1), button_edit);
-	gtk_widget_set_can_default (button_edit, TRUE);
+	e_gtk_container_add (hbuttonbox1, button_edit);
 
 	button_delete = e_dialog_button_new_with_icon ("edit-delete", C_("category", "_Delete"));
-	gtk_container_add (GTK_CONTAINER (hbuttonbox1), button_delete);
-	gtk_widget_set_can_default (button_delete, TRUE);
+	e_gtk_container_add (hbuttonbox1, button_delete);
 
 	gtk_label_set_mnemonic_widget (
 		GTK_LABEL (label_header), entry_categories);
@@ -361,7 +356,7 @@ e_categories_editor_init (ECategoriesEditor *editor)
 		editor->priv->categories_entry, "changed",
 		G_CALLBACK (entry_changed_cb), editor);
 
-	gtk_widget_show_all (GTK_WIDGET (editor));
+	gtk_widget_set_visible (GTK_WIDGET (editor), TRUE);
 }
 
 /**
@@ -403,7 +398,7 @@ e_categories_editor_get_categories (ECategoriesEditor *editor)
 
 		categories = g_string_new ("");
 
-		split = g_strsplit (gtk_entry_get_text (GTK_ENTRY (editor->priv->categories_entry)), ",", 0);
+		split = g_strsplit (gtk_editable_get_text (GTK_EDITABLE (editor->priv->categories_entry)), ",", 0);
 
 		if (split) {
 			GHashTable *known;

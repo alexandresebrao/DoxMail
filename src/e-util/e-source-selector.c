@@ -23,7 +23,7 @@
 #include <string.h>
 #include <glib/gi18n-lib.h>
 
-#include <libedataserverui/libedataserverui.h>
+#include <libedataserverui4/libedataserverui4.h>
 
 #include "e-source-selector.h"
 
@@ -1475,7 +1475,7 @@ source_selector_constructed (GObject *object)
 
 static gboolean
 source_selector_button_press_event (GtkWidget *widget,
-                                    GdkEventButton *event)
+                                    GdkEvent *event)
 {
 	ESourceSelector *selector;
 	GtkWidgetClass *widget_class;
@@ -1564,7 +1564,7 @@ chainup:
 
 static void
 source_selector_drag_leave (GtkWidget *widget,
-                            GdkDragContext *context,
+                            EGtkDragContext *context,
                             guint time_)
 {
 	GtkTreeView *tree_view;
@@ -1578,7 +1578,7 @@ source_selector_drag_leave (GtkWidget *widget,
 
 static gboolean
 source_selector_drag_motion (GtkWidget *widget,
-                             GdkDragContext *context,
+                             EGtkDragContext *context,
                              gint x,
                              gint y,
                              guint time_)
@@ -1609,10 +1609,10 @@ source_selector_drag_motion (GtkWidget *widget,
 	pos = GTK_TREE_VIEW_DROP_INTO_OR_BEFORE;
 	gtk_tree_view_set_drag_dest_row (tree_view, path, pos);
 
-	if (gdk_drag_context_get_actions (context) & GDK_ACTION_MOVE)
+	if (e_gtk_drag_context_get_actions (context) & GDK_ACTION_MOVE)
 		action = GDK_ACTION_MOVE;
 	else
-		action = gdk_drag_context_get_suggested_action (context);
+		action = e_gtk_drag_context_get_suggested_action (context);
 
 exit:
 	if (path != NULL)
@@ -1621,14 +1621,14 @@ exit:
 	if (source != NULL)
 		g_object_unref (source);
 
-	gdk_drag_status (context, action, time_);
+	e_gtk_drag_status (context, action, time_);
 
 	return TRUE;
 }
 
 static gboolean
 source_selector_drag_drop (GtkWidget *widget,
-                           GdkDragContext *context,
+                           EGtkDragContext *context,
                            gint x,
                            gint y,
                            guint time_)
@@ -1670,10 +1670,10 @@ source_selector_drag_drop (GtkWidget *widget,
 
 static void
 source_selector_drag_data_received (GtkWidget *widget,
-                                    GdkDragContext *context,
+                                    EGtkDragContext *context,
                                     gint x,
                                     gint y,
-                                    GtkSelectionData *selection_data,
+                                    EGtkSelectionData *selection_data,
                                     guint info,
                                     guint time_)
 {
@@ -1689,7 +1689,7 @@ source_selector_drag_data_received (GtkWidget *widget,
 	tree_view = GTK_TREE_VIEW (widget);
 	model = gtk_tree_view_get_model (tree_view);
 
-	action = gdk_drag_context_get_selected_action (context);
+	action = e_gtk_drag_context_get_selected_action (context);
 	delete = (action == GDK_ACTION_MOVE);
 
 	if (!gtk_tree_view_get_dest_row_at_pos (tree_view, x, y, &path, NULL))
@@ -1705,7 +1705,7 @@ source_selector_drag_data_received (GtkWidget *widget,
 
 	g_signal_emit (
 		widget, signals[DATA_DROPPED], 0, selection_data,
-		source, gdk_drag_context_get_selected_action (context),
+		source, e_gtk_drag_context_get_selected_action (context),
 		info, &success);
 
 exit:
@@ -1715,7 +1715,7 @@ exit:
 	if (source != NULL)
 		g_object_unref (source);
 
-	gtk_drag_finish (context, success, delete, time_);
+	e_gtk_drag_finish (context, success, delete, time_);
 }
 
 static gboolean
@@ -1995,7 +1995,7 @@ e_source_selector_class_init (ESourceSelectorClass *class)
 		G_STRUCT_OFFSET (ESourceSelectorClass, data_dropped),
 		NULL, NULL, NULL,
 		G_TYPE_BOOLEAN, 4,
-		GTK_TYPE_SELECTION_DATA | G_SIGNAL_TYPE_STATIC_SCOPE,
+		E_GTK_TYPE_SELECTION_DATA | G_SIGNAL_TYPE_STATIC_SCOPE,
 		E_TYPE_SOURCE,
 		GDK_TYPE_DRAG_ACTION,
 		G_TYPE_UINT);
@@ -3599,7 +3599,7 @@ create_tree (ESourceSelector *selector,
 	GNode *root;
 
 	scrolled = gtk_scrolled_window_new (NULL, NULL);
-	gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrolled), GTK_SHADOW_IN);
+	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (scrolled), TRUE);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled),
 					GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
@@ -3622,7 +3622,7 @@ create_tree (ESourceSelector *selector,
 	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (table));
 	gtk_tree_selection_set_mode (selection, GTK_SELECTION_SINGLE);
 
-	gtk_container_add (GTK_CONTAINER (scrolled), table);
+	e_gtk_container_add (scrolled, table);
 
 	*tree = table;
 
@@ -3868,8 +3868,8 @@ e_source_selector_manage_groups (ESourceSelector *selector)
 
 	g_return_val_if_fail (E_IS_SOURCE_SELECTOR (selector), FALSE);
 
-	w = gtk_widget_get_toplevel (GTK_WIDGET (selector));
-	if (!w || !gtk_widget_is_toplevel (w))
+	w = e_gtk_widget_get_toplevel (GTK_WIDGET (selector));
+	if (!w || !e_gtk_widget_is_toplevel (w))
 		w = NULL;
 
 	dlg = gtk_dialog_new_with_buttons (_("Manage Groups"),
@@ -3881,37 +3881,36 @@ e_source_selector_manage_groups (ESourceSelector *selector)
 
 	w = gtk_dialog_get_content_area (GTK_DIALOG (dlg));
 	box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 2);
-	gtk_container_set_border_width (GTK_CONTAINER (box), 12);
-	gtk_box_pack_start (GTK_BOX (w), box, TRUE, TRUE, 0);
+	e_gtk_widget_set_border_width (box, 12);
+	e_gtk_box_pack_start (GTK_BOX (w), box, TRUE, TRUE, 0);
 
 	txt = g_strconcat ("<b>", _("Available Groups:"), "</b>", NULL);
 	w = gtk_label_new ("");
 	gtk_label_set_markup (GTK_LABEL (w), txt);
 	g_free (txt);
 	gtk_label_set_xalign (GTK_LABEL (w), 0);
-	gtk_box_pack_start (GTK_BOX (box), w, FALSE, FALSE, 2);
+	e_gtk_box_pack_start (GTK_BOX (box), w, FALSE, FALSE, 2);
 
 	pbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 2);
-	gtk_box_pack_start (GTK_BOX (box), pbox, TRUE, TRUE, 2);
+	e_gtk_box_pack_start (GTK_BOX (box), pbox, TRUE, TRUE, 2);
 
 	/* space on the left */
 	w = gtk_label_new ("");
-	gtk_box_pack_start (GTK_BOX (pbox), w, FALSE, FALSE, 6);
+	e_gtk_box_pack_start (GTK_BOX (pbox), w, FALSE, FALSE, 6);
 
 	w = create_tree (selector, &tree);
 	gtk_widget_set_size_request (w, 200, 240);
-	gtk_box_pack_start (GTK_BOX (pbox), w, TRUE, TRUE, 2);
+	e_gtk_box_pack_start (GTK_BOX (pbox), w, TRUE, TRUE, 2);
 
 	/* box of buttons */
-	w2 = gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
-	gtk_button_box_set_layout (GTK_BUTTON_BOX (w2), GTK_BUTTONBOX_START);
-	gtk_box_pack_start (GTK_BOX (pbox), w2, FALSE, FALSE, 2);
+	w2 = e_gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
+	e_gtk_box_pack_start (GTK_BOX (pbox), w2, FALSE, FALSE, 2);
 
 	#define add_button(_x,_y,_cb,_cb2) \
-		w = (_x) ? gtk_button_new_from_icon_name (_x, GTK_ICON_SIZE_BUTTON) : gtk_button_new (); \
+		w = (_x) ? gtk_button_new_from_icon_name (_x) : gtk_button_new (); \
 		gtk_button_set_label (GTK_BUTTON (w), _y); \
 		gtk_button_set_use_underline (GTK_BUTTON (w), TRUE); \
-		gtk_box_pack_start (GTK_BOX (w2), w, FALSE, FALSE, 2); \
+		e_gtk_box_pack_start (GTK_BOX (w2), w, FALSE, FALSE, 2); \
 		g_signal_connect (w, "clicked", (GCallback)_cb, tree); \
 		g_signal_connect (tree, "cursor-changed", (GCallback)_cb2, w);
 
@@ -3923,9 +3922,9 @@ e_source_selector_manage_groups (ESourceSelector *selector)
 
 	#undef add_button
 
-	gtk_widget_show_all (box);
+	gtk_widget_set_visible (box, TRUE);
 
-	if (gtk_dialog_run (GTK_DIALOG (dlg)) == GTK_RESPONSE_ACCEPT) {
+	if (e_gtk_dialog_run (GTK_DIALOG (dlg)) == GTK_RESPONSE_ACCEPT) {
 		GtkTreeModel *model = gtk_tree_view_get_model (GTK_TREE_VIEW (tree));
 		GtkTreeIter iter;
 		gint ii, cnt = gtk_tree_model_iter_n_children (model, NULL);
@@ -3961,7 +3960,7 @@ e_source_selector_manage_groups (ESourceSelector *selector)
 		confirmed = TRUE;
 	}
 
-	gtk_widget_destroy (dlg);
+	e_gtk_widget_destroy (dlg);
 
 	return confirmed;
 }

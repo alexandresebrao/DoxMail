@@ -649,13 +649,13 @@ cal_comp_util_get_n_icons (ECalComponent *comp,
  * cal_comp_selection_get_string_list() to get this list from target data.
  **/
 void
-cal_comp_selection_set_string_list (GtkSelectionData *data,
+cal_comp_selection_set_string_list (EGtkSelectionData *data,
                                     GSList *str_list)
 {
 	/* format is "str1\0str2\0...strN\0" */
 	GSList *p;
 	GByteArray *array;
-	GdkAtom target;
+	EGtkAtom target;
 
 	g_return_if_fail (data != NULL);
 
@@ -670,8 +670,8 @@ cal_comp_selection_set_string_list (GtkSelectionData *data,
 			g_byte_array_append (array, c, strlen ((const gchar *) c) + 1);
 	}
 
-	target = gtk_selection_data_get_target (data);
-	gtk_selection_data_set (data, target, 8, array->data, array->len);
+	target = e_gtk_selection_data_get_target (data);
+	e_gtk_selection_data_set (data, target, 8, array->data, array->len);
 	g_byte_array_free (array, TRUE);
 }
 
@@ -687,7 +687,7 @@ cal_comp_selection_set_string_list (GtkSelectionData *data,
  * Returns: Newly allocated #GSList of strings.
  **/
 GSList *
-cal_comp_selection_get_string_list (GtkSelectionData *selection_data)
+cal_comp_selection_get_string_list (EGtkSelectionData *selection_data)
 {
 	/* format is "str1\0str2\0...strN\0" */
 	gchar *inptr, *inend;
@@ -697,8 +697,8 @@ cal_comp_selection_get_string_list (GtkSelectionData *selection_data)
 
 	g_return_val_if_fail (selection_data != NULL, NULL);
 
-	data = gtk_selection_data_get_data (selection_data);
-	length = gtk_selection_data_get_length (selection_data);
+	data = e_gtk_selection_data_get_data (selection_data);
+	length = e_gtk_selection_data_get_length (selection_data);
 
 	list = NULL;
 	inptr = (gchar *) data;

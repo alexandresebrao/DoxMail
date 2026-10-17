@@ -191,7 +191,7 @@ source_config_add_candidate (ESourceConfig *config,
 
 	/* Do not show the page here. */
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
-	gtk_box_pack_start (backend_box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (backend_box, widget, FALSE, FALSE, 0);
 	candidate->page = g_object_ref_sink (widget);
 
 	g_ptr_array_add (config->priv->candidates, candidate);
@@ -800,7 +800,7 @@ source_config_check_complete (ESourceConfig *config,
 
 	/* Make sure the Name: entry field is not empty. */
 	name_entry = GTK_ENTRY (config->priv->name_entry);
-	text = gtk_entry_get_text (name_entry);
+	text = gtk_editable_get_text (GTK_EDITABLE (name_entry));
 	correct = text != NULL && *text != '\0';
 
 	e_util_set_entry_issue_hint (config->priv->name_entry, correct ? NULL : _("Name cannot be empty"));
@@ -826,10 +826,10 @@ source_config_resize_window (ESourceConfig *config)
 	 * select a backend with tons of options and then a backend with
 	 * few options and wind up with lots of unused vertical space. */
 
-	toplevel = gtk_widget_get_toplevel (GTK_WIDGET (config));
+	toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (config));
 
 	if (GTK_IS_WINDOW (toplevel))
-		gtk_window_resize (GTK_WINDOW (toplevel), 1, 1);
+		gtk_window_set_default_size (GTK_WINDOW (toplevel), 1, 1);
 }
 
 static gboolean
@@ -1025,7 +1025,7 @@ e_source_config_init (ESourceConfig *config)
 	/* The backend box holds backend-specific options.  Each backend
 	 * gets a child widget.  Only one child widget is visible at once. */
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 12);
-	gtk_box_pack_end (GTK_BOX (config), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_end (GTK_BOX (config), widget, TRUE, TRUE, 0);
 	config->priv->backend_box = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -1085,7 +1085,7 @@ e_source_config_insert_widget (ESourceConfig *config,
 		vbox = e_source_config_get_page (config, scratch_source);
 
 	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 12);
-	gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, TRUE, 0);
 
 	e_binding_bind_property (
 		widget, "visible",
@@ -1094,11 +1094,11 @@ e_source_config_insert_widget (ESourceConfig *config,
 
 	label = gtk_label_new (caption);
 	gtk_label_set_xalign (GTK_LABEL (label), 1);
-	gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 0);
 	gtk_size_group_add_widget (config->priv->size_group, label);
 	gtk_widget_show (label);
 
-	gtk_box_pack_start (GTK_BOX (hbox), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (hbox), widget, TRUE, TRUE, 0);
 }
 
 GtkWidget *
@@ -1353,11 +1353,11 @@ e_source_config_add_refresh_interval (ESourceConfig *config,
 	/* Translators: This is the first of a sequence of widgets:
 	 * "Refresh every [NUMERIC_ENTRY] [TIME_UNITS_COMBO]" */
 	widget = gtk_label_new (_("Refresh every"));
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	widget = e_interval_chooser_new ();
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	e_binding_bind_property (
@@ -1557,7 +1557,7 @@ e_source_config_add_user_entry (ESourceConfig *config,
 	/* If this is a new data source, initialize the
 	 * GtkEntry to the user name of the current user. */
 	if (original_source == NULL)
-		gtk_entry_set_text (GTK_ENTRY (widget), g_get_user_name ());
+		gtk_editable_set_text (GTK_EDITABLE (widget), g_get_user_name ());
 
 	return widget;
 }
@@ -1584,13 +1584,13 @@ e_source_config_add_timeout_interval_for_webdav (ESourceConfig *config,
 	container = widget;
 
 	widget = gtk_label_new (_("Connection timeout (in seconds)"));
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	widget = gtk_spin_button_new_with_range (0, G_MAXUINT, 1);
 	gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (widget), TRUE);
 	gtk_spin_button_set_update_policy (GTK_SPIN_BUTTON (widget), GTK_UPDATE_IF_VALID);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	e_binding_bind_property (

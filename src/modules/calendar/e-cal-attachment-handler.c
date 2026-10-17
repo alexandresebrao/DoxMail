@@ -268,9 +268,7 @@ attachment_handler_run_dialog (GtkWindow *parent,
 		_("_Cancel"), GTK_RESPONSE_CANCEL, NULL);
 
 	widget = gtk_button_new_with_mnemonic (_("I_mport"));
-	gtk_button_set_image (
-		GTK_BUTTON (widget), gtk_image_new_from_icon_name (
-		"stock_mail-import", GTK_ICON_SIZE_MENU));
+	e_gtk_button_set_image (GTK_BUTTON (widget), gtk_image_new_from_icon_name ("stock_mail-import"));
 	gtk_dialog_add_action_widget (
 		GTK_DIALOG (dialog), widget, GTK_RESPONSE_OK);
 	gtk_widget_show (widget);
@@ -283,9 +281,8 @@ attachment_handler_run_dialog (GtkWindow *parent,
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_set_shadow_type (
-		GTK_SCROLLED_WINDOW (widget), GTK_SHADOW_IN);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (widget), TRUE);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -294,14 +291,14 @@ attachment_handler_run_dialog (GtkWindow *parent,
 	widget = e_source_selector_new (registry, extension_name);
 	selector = E_SOURCE_SELECTOR (widget);
 	e_source_selector_set_show_toggles (selector, FALSE);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	gtk_widget_show (widget);
 
 	g_signal_connect_swapped (
 		widget, "row-activated",
 		G_CALLBACK (attachment_handler_row_activated_cb), dialog);
 
-	if (gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_OK)
+	if (e_gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_OK)
 		goto exit;
 
 	source = e_source_selector_ref_primary_selection (selector);
@@ -351,7 +348,7 @@ attachment_handler_run_dialog (GtkWindow *parent,
 	}
 
  exit:
-	gtk_widget_destroy (dialog);
+	e_gtk_widget_destroy (dialog);
 }
 
 static void
@@ -366,8 +363,8 @@ attachment_handler_import_ical (EAttachmentHandler *handler,
 
 	view = e_attachment_handler_get_view (handler);
 
-	parent = gtk_widget_get_toplevel (GTK_WIDGET (view));
-	parent = gtk_widget_is_toplevel (parent) ? parent : NULL;
+	parent = e_gtk_widget_get_toplevel (GTK_WIDGET (view));
+	parent = e_gtk_widget_is_toplevel (parent) ? parent : NULL;
 
 	selected = e_attachment_view_get_selected_attachments (view);
 	g_return_if_fail (g_list_length (selected) == 1);

@@ -45,7 +45,7 @@ composer_text_header_query_tooltip_cb (GtkEntry *entry,
 {
 	const gchar *text;
 
-	text = gtk_entry_get_text (entry);
+	text = gtk_editable_get_text (GTK_EDITABLE (entry));
 
 	if (keyboard_mode || text == NULL || *text == '\0')
 		return FALSE;
@@ -130,7 +130,7 @@ e_composer_text_header_get_text (EComposerTextHeader *header)
 
 	entry = E_COMPOSER_TEXT_HEADER_GET_ENTRY (header);
 
-	return gtk_entry_get_text (entry);
+	return gtk_editable_get_text (GTK_EDITABLE (entry));
 }
 
 void
@@ -143,5 +143,5 @@ e_composer_text_header_set_text (EComposerTextHeader *header,
 
 	entry = E_COMPOSER_TEXT_HEADER_GET_ENTRY (header);
 
-	gtk_entry_set_text (entry, (text != NULL) ? text : "");
+	gtk_editable_set_text (GTK_EDITABLE (entry), (text != NULL) ? text : "");
 }

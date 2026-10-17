@@ -164,7 +164,7 @@ static void on_date_popup_now_button_clicked	(GtkWidget	*button,
 static gint on_date_popup_delete_event		(GtkWidget	*widget,
 						 EDateEdit	*dedit);
 static gint on_date_popup_key_press		(GtkWidget	*widget,
-						 GdkEventKey	*event,
+						 GdkEvent	*event,
 						 EDateEdit	*dedit);
 static gint on_date_popup_button_press		(GtkWidget	*widget,
 						 GdkEvent	*button_event,
@@ -189,10 +189,10 @@ static gint on_time_entry_key_release		(GtkWidget	*widget,
 						 GdkEvent	*key_event,
 						 EDateEdit	*dedit);
 static gint on_date_entry_focus_out		(GtkEntry	*entry,
-						 GdkEventFocus  *event,
+						 GdkEvent  *event,
 						 EDateEdit	*dedit);
 static gint on_time_entry_focus_out		(GtkEntry	*entry,
-						 GdkEventFocus  *event,
+						 GdkEvent  *event,
 						 EDateEdit	*dedit);
 static void e_date_edit_update_date_entry	(EDateEdit	*dedit);
 static void e_date_edit_update_time_entry	(EDateEdit	*dedit);
@@ -636,7 +636,7 @@ create_children (EDateEdit *dedit)
 	a11y = gtk_widget_get_accessible (priv->date_entry);
 	atk_object_set_description (a11y, _("Text entry to input date"));
 	atk_object_set_name (a11y, _("Date"));
-	gtk_box_pack_start (GTK_BOX (dedit), priv->date_entry, FALSE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (dedit), priv->date_entry, FALSE, TRUE, 0);
 
 	g_signal_connect (
 		priv->date_entry, "key_press_event",
@@ -648,13 +648,11 @@ create_children (EDateEdit *dedit)
 		priv->date_entry, "focus_out_event",
 		G_CALLBACK (on_date_entry_focus_out), dedit);
 
-	priv->date_button = gtk_button_new_from_icon_name ("pan-down-symbolic", GTK_ICON_SIZE_BUTTON);
+	priv->date_button = gtk_button_new_from_icon_name ("pan-down-symbolic");
 	g_signal_connect (
 		priv->date_button, "clicked",
 		G_CALLBACK (on_date_button_clicked), dedit);
-	gtk_box_pack_start (
-		GTK_BOX (dedit), priv->date_button,
-		FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (dedit), priv->date_button, FALSE, FALSE, 0);
 	a11y = gtk_widget_get_accessible (priv->date_button);
 	atk_object_set_description (a11y, _("Click this button to show a calendar"));
 	atk_object_set_name (a11y, _("Date"));
@@ -666,7 +664,7 @@ create_children (EDateEdit *dedit)
 
 	/* This is just to create a space between the date & time parts. */
 	priv->space = gtk_drawing_area_new ();
-	gtk_box_pack_start (GTK_BOX (dedit), priv->space, FALSE, FALSE, 2);
+	e_gtk_box_pack_start (GTK_BOX (dedit), priv->space, FALSE, FALSE, 2);
 
 	time_store = gtk_list_store_new (1, G_TYPE_STRING);
 	priv->time_combo = gtk_combo_box_new_with_model_and_entry (
@@ -690,7 +688,7 @@ create_children (EDateEdit *dedit)
 	}
 	g_object_unref (css_provider);
 
-	child = gtk_bin_get_child (GTK_BIN (priv->time_combo));
+	child = e_gtk_bin_get_child (priv->time_combo);
 
 	/* We need to make sure labels are right-aligned, since we want
 	 * digits to line up, and with a nonproportional font, the width
@@ -708,7 +706,7 @@ create_children (EDateEdit *dedit)
 		g_list_free (cells);
 	}
 
-	gtk_box_pack_start (GTK_BOX (dedit), priv->time_combo, FALSE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (dedit), priv->time_combo, FALSE, TRUE, 0);
 	maybe_rebuild_time_popup (dedit);
 	a11y = gtk_widget_get_accessible (priv->time_combo);
 	atk_object_set_description (a11y, _("Drop-down combination box to select time"));
@@ -741,13 +739,6 @@ create_children (EDateEdit *dedit)
 		gtk_widget_show (priv->space);
 
 	priv->cal_popup = gtk_window_new (GTK_WINDOW_POPUP);
-	gtk_window_set_type_hint (
-		GTK_WINDOW (priv->cal_popup),
-		GDK_WINDOW_TYPE_HINT_COMBO);
-	gtk_widget_set_events (
-		priv->cal_popup,
-		gtk_widget_get_events (priv->cal_popup)
-		| GDK_KEY_PRESS_MASK);
 	g_signal_connect (
 		priv->cal_popup, "delete_event",
 		G_CALLBACK (on_date_popup_delete_event), dedit);
@@ -760,13 +751,12 @@ create_children (EDateEdit *dedit)
 	gtk_window_set_resizable (GTK_WINDOW (priv->cal_popup), TRUE);
 
 	frame = gtk_frame_new (NULL);
-	gtk_frame_set_shadow_type (GTK_FRAME (frame), GTK_SHADOW_OUT);
-	gtk_container_add (GTK_CONTAINER (priv->cal_popup), frame);
+	e_gtk_container_add (priv->cal_popup, frame);
 	gtk_widget_show (frame);
 
 	vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
-	gtk_container_set_border_width (GTK_CONTAINER (vbox), 6);
-	gtk_container_add (GTK_CONTAINER (frame), vbox);
+	e_gtk_widget_set_border_width (vbox, 6);
+	e_gtk_container_add (frame, vbox);
 	gtk_widget_show (vbox);
 
 	priv->calendar = e_calendar_new ();
@@ -781,23 +771,23 @@ create_children (EDateEdit *dedit)
 		e_calendar_get_item (calendar), "selection_changed",
 		G_CALLBACK (on_date_popup_date_selected), dedit);
 
-	gtk_box_pack_start (GTK_BOX (vbox), priv->calendar, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), priv->calendar, FALSE, FALSE, 0);
 	gtk_widget_show (priv->calendar);
 
-	bbox = gtk_button_box_new (GTK_ORIENTATION_HORIZONTAL);
+	bbox = e_gtk_button_box_new (GTK_ORIENTATION_HORIZONTAL);
 	gtk_box_set_spacing (GTK_BOX (bbox), 2);
-	gtk_box_pack_start (GTK_BOX (vbox), bbox, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (vbox), bbox, FALSE, FALSE, 0);
 	gtk_widget_show (bbox);
 
 	priv->now_button = gtk_button_new_with_mnemonic (_("No_w"));
-	gtk_container_add (GTK_CONTAINER (bbox), priv->now_button);
+	e_gtk_container_add (bbox, priv->now_button);
 	gtk_widget_show (priv->now_button);
 	g_signal_connect (
 		priv->now_button, "clicked",
 		G_CALLBACK (on_date_popup_now_button_clicked), dedit);
 
 	priv->today_button = gtk_button_new_with_mnemonic (_("_Today"));
-	gtk_container_add (GTK_CONTAINER (bbox), priv->today_button);
+	e_gtk_container_add (bbox, priv->today_button);
 	gtk_widget_show (priv->today_button);
 	g_signal_connect (
 		priv->today_button, "clicked",
@@ -806,7 +796,7 @@ create_children (EDateEdit *dedit)
 	/* Note that we don't show this here, since by default a 'None' date
 	 * is not permitted. */
 	priv->none_button = gtk_button_new_with_mnemonic (_("_None"));
-	gtk_container_add (GTK_CONTAINER (bbox), priv->none_button);
+	e_gtk_container_add (bbox, priv->none_button);
 	g_signal_connect (
 		priv->none_button, "clicked",
 		G_CALLBACK (on_date_popup_none_button_clicked), dedit);
@@ -836,7 +826,7 @@ e_date_edit_grab_focus (GtkWidget *widget)
 	g_return_if_fail (E_IS_DATE_EDIT (widget));
 
 	dedit = E_DATE_EDIT (widget);
-	child = gtk_bin_get_child (GTK_BIN (dedit->priv->time_combo));
+	child = e_gtk_bin_get_child (dedit->priv->time_combo);
 
 	if (dedit->priv->show_date)
 		gtk_widget_grab_focus (dedit->priv->date_entry);
@@ -1481,7 +1471,7 @@ on_date_button_clicked (GtkWidget *widget,
 
 	/* Obtain the GdkEvent that triggered
 	 * the date button's "clicked" signal. */
-	event = gtk_get_current_event ();
+	event = e_gtk_get_current_event ();
 	e_date_edit_show_date_popup (dedit, event);
 }
 
@@ -1507,7 +1497,7 @@ e_date_edit_show_date_popup (EDateEdit *dedit,
 	priv = dedit->priv;
 	calendar = E_CALENDAR (priv->calendar);
 
-	date_text = gtk_entry_get_text (GTK_ENTRY (priv->date_entry));
+	date_text = gtk_editable_get_text (GTK_EDITABLE (priv->date_entry));
 	if (field_set_to_none (date_text)
 	    || !e_date_edit_parse_date (dedit, date_text, &mtm))
 		clear_selection = TRUE;
@@ -1528,7 +1518,7 @@ e_date_edit_show_date_popup (EDateEdit *dedit,
 	 * emissions. */
 	e_calendar_get_item (calendar)->selection_changed = FALSE;
 
-	toplevel = gtk_widget_get_toplevel (GTK_WIDGET (dedit));
+	toplevel = e_gtk_widget_get_toplevel (GTK_WIDGET (dedit));
 	if (!GTK_IS_WINDOW (toplevel))
 		toplevel = NULL;
 
@@ -1539,7 +1529,7 @@ e_date_edit_show_date_popup (EDateEdit *dedit,
 	gtk_widget_grab_focus (priv->cal_popup);
 	gtk_grab_add (priv->cal_popup);
 
-	window = gtk_widget_get_window (priv->cal_popup);
+	window = e_gtk_widget_get_surface (priv->cal_popup);
 
 	g_return_if_fail (priv->grabbed_keyboard == NULL);
 	g_return_if_fail (priv->grabbed_pointer == NULL);
@@ -1622,11 +1612,11 @@ position_date_popup (EDateEdit *dedit)
 
 	gtk_widget_translate_coordinates (
 		dedit->priv->date_button,
-		gtk_widget_get_toplevel (dedit->priv->date_button),
+		e_gtk_widget_get_toplevel (dedit->priv->date_button),
 		bwidth - cal_req.width, bheight, &x, &y);
 
-	toplevel = gtk_widget_get_toplevel (dedit->priv->date_button);
-	window = gtk_widget_get_window (toplevel);
+	toplevel = e_gtk_widget_get_toplevel (dedit->priv->date_button);
+	window = e_gtk_widget_get_surface (toplevel);
 	gdk_window_get_origin (window, &win_x, &win_y);
 
 	x += win_x;
@@ -1638,7 +1628,6 @@ position_date_popup (EDateEdit *dedit)
 	x = CLAMP (x, 0, MAX (0, screen_width - cal_req.width));
 	y = CLAMP (y, 0, MAX (0, screen_height - cal_req.height));
 
-	gtk_window_move (GTK_WINDOW (dedit->priv->cal_popup), x, y);
 }
 
 /* A date has been selected in the date popup, so we set the date field
@@ -1704,7 +1693,7 @@ on_date_popup_none_button_clicked (GtkWidget *button,
  * key we hide the popup. */
 static gint
 on_date_popup_key_press (GtkWidget *widget,
-                         GdkEventKey *event,
+                         GdkEvent *event,
                          EDateEdit *dedit)
 {
 	if (event->keyval == GDK_KEY_Escape) {
@@ -1842,11 +1831,11 @@ rebuild_time_popup (EDateEdit *dedit)
 
 	priv = dedit->priv;
 
-	entry = gtk_bin_get_child (GTK_BIN (priv->time_combo));
+	entry = e_gtk_bin_get_child (priv->time_combo);
 	g_warn_if_fail (GTK_IS_ENTRY (entry));
 
 	time_combo = GTK_COMBO_BOX (priv->time_combo);
-	entry_text = GTK_IS_ENTRY (entry) ? gtk_entry_get_text (GTK_ENTRY (entry)) : NULL;
+	entry_text = GTK_IS_ENTRY (entry) ? gtk_editable_get_text (GTK_EDITABLE (entry)) : NULL;
 	item_index = gtk_combo_box_get_active (time_combo);
 
 	model = gtk_combo_box_get_model (time_combo);
@@ -1940,7 +1929,7 @@ rebuild_time_popup (EDateEdit *dedit)
 	g_ptr_array_free (values, TRUE);
 
 	if (GTK_IS_ENTRY (entry))
-		gtk_entry_set_width_chars (GTK_ENTRY (entry), max_len + 1);
+		gtk_editable_set_width_chars (GTK_EDITABLE (entry), max_len + 1);
 
 	if (item_index != -1)
 		gtk_combo_box_set_active (time_combo, item_index);
@@ -2020,7 +2009,7 @@ on_date_edit_time_selected (GtkComboBox *combo,
 {
 	GtkWidget *child;
 
-	child = gtk_bin_get_child (GTK_BIN (combo));
+	child = e_gtk_bin_get_child (combo);
 
 	/* We only want to emit signals when an item is selected explicitly,
 	 * not when it is selected by the silly combo update thing. */
@@ -2041,10 +2030,10 @@ on_date_entry_key_press (GtkWidget *widget,
 	GdkModifierType event_state = 0;
 	guint event_keyval = 0;
 
-	gdk_event_get_keyval (key_event, &event_keyval);
-	gdk_event_get_state (key_event, &event_state);
+	e_gdk_event_get_keyval (key_event, &event_keyval);
+	e_gdk_event_get_state (key_event, &event_state);
 
-	if (event_state & GDK_MOD1_MASK
+	if (event_state & GDK_ALT_MASK
 	    && (event_keyval == GDK_KEY_Up || event_keyval == GDK_KEY_Down
 		|| event_keyval == GDK_KEY_Return || event_keyval == GDK_KEY_KP_Enter)) {
 		g_signal_stop_emission_by_name (widget, "key_press_event");
@@ -2071,18 +2060,18 @@ on_time_entry_key_press (GtkWidget *widget,
 	GdkModifierType event_state = 0;
 	guint event_keyval = 0;
 
-	gdk_event_get_keyval (key_event, &event_keyval);
-	gdk_event_get_state (key_event, &event_state);
+	e_gdk_event_get_keyval (key_event, &event_keyval);
+	e_gdk_event_get_state (key_event, &event_state);
 
-	child = gtk_bin_get_child (GTK_BIN (dedit->priv->time_combo));
+	child = e_gtk_bin_get_child (dedit->priv->time_combo);
 
 	/* I'd like to use Alt+Up/Down for popping up the list, like Win32,
 	 * but the combo steals any Up/Down keys, so we use Alt + Return. */
 #if 0
-	if ((event_state & GDK_MOD1_MASK) != 0
+	if ((event_state & GDK_ALT_MASK) != 0
 	    && (event_keyval == GDK_KEY_Up || event_keyval == GDK_KEY_Down)) {
 #else
-	if ((event_state & GDK_MOD1_MASK) != 0 && (event_keyval == GDK_KEY_Return || event_keyval == GDK_KEY_KP_Enter)) {
+	if ((event_state & GDK_ALT_MASK) != 0 && (event_keyval == GDK_KEY_Return || event_keyval == GDK_KEY_KP_Enter)) {
 #endif
 		g_signal_stop_emission_by_name (widget, "key_press_event");
 		g_signal_emit_by_name (child, "activate", 0);
@@ -2116,7 +2105,7 @@ on_time_entry_key_release (GtkWidget *widget,
 {
 	guint event_keyval = 0;
 
-	gdk_event_get_keyval (key_event, &event_keyval);
+	e_gdk_event_get_keyval (key_event, &event_keyval);
 
 	if (event_keyval == GDK_KEY_Up || event_keyval == GDK_KEY_Down) {
 		g_signal_stop_emission_by_name (widget, "key_release_event");
@@ -2129,7 +2118,7 @@ on_time_entry_key_release (GtkWidget *widget,
 
 static gint
 on_date_entry_focus_out (GtkEntry *entry,
-                         GdkEventFocus *event,
+                         GdkEvent *event,
                          EDateEdit *dedit)
 {
 	gboolean did_change, success = TRUE;
@@ -2174,7 +2163,7 @@ on_date_entry_focus_out (GtkEntry *entry,
 
 static gint
 on_time_entry_focus_out (GtkEntry *entry,
-                         GdkEventFocus *event,
+                         GdkEvent *event,
                          EDateEdit *dedit)
 {
 	gboolean did_change;
@@ -2260,7 +2249,7 @@ e_date_edit_update_date_entry (EDateEdit *dedit)
 	priv = dedit->priv;
 
 	if (priv->date_set_to_none || !priv->date_is_valid) {
-		gtk_entry_set_text (GTK_ENTRY (priv->date_entry), C_("date", "None"));
+		gtk_editable_set_text (GTK_EDITABLE (priv->date_entry), C_("date", "None"));
 	} else {
 		GtkEntry *entry;
 		gchar *format = NULL;
@@ -2289,11 +2278,11 @@ e_date_edit_update_date_entry (EDateEdit *dedit)
 
 		entry = GTK_ENTRY (priv->date_entry);
 
-		gtk_entry_set_text (entry, buffer);
+		gtk_editable_set_text (GTK_EDITABLE (entry), buffer);
 
 		char_len = g_utf8_strlen (buffer, -1) + 1;
 		if (gtk_entry_get_width_chars (entry) < char_len)
-			gtk_entry_set_width_chars (entry, char_len);
+			gtk_editable_set_width_chars (GTK_EDITABLE (entry), char_len);
 	}
 
 	add_relation (dedit, priv->date_entry);
@@ -2313,11 +2302,11 @@ e_date_edit_update_time_entry (EDateEdit *dedit)
 	priv = dedit->priv;
 
 	combo_box = GTK_COMBO_BOX (priv->time_combo);
-	child = gtk_bin_get_child (GTK_BIN (priv->time_combo));
+	child = e_gtk_bin_get_child (priv->time_combo);
 
 	if (priv->time_set_to_none || !priv->time_is_valid) {
 		gtk_combo_box_set_active (combo_box, -1);
-		gtk_entry_set_text (GTK_ENTRY (child), "");
+		gtk_editable_set_text (GTK_EDITABLE (child), "");
 	} else {
 		GtkTreeModel *model;
 		GtkTreeIter iter;
@@ -2346,7 +2335,7 @@ e_date_edit_update_time_entry (EDateEdit *dedit)
 		if (!use_24_hour_format && buffer[0] == '0')
 			buffer[0] = ' ';
 
-		gtk_entry_set_text (GTK_ENTRY (child), buffer);
+		gtk_editable_set_text (GTK_EDITABLE (child), buffer);
 
 		/* truncate left spaces */
 		b = buffer;
@@ -2416,10 +2405,10 @@ e_date_edit_update_time_combo_state (EDateEdit *dedit)
 		GtkWidget *child;
 
 		/* Only clear it if it isn't empty already. */
-		child = gtk_bin_get_child (GTK_BIN (priv->time_combo));
-		text = gtk_entry_get_text (GTK_ENTRY (child));
+		child = e_gtk_bin_get_child (priv->time_combo);
+		text = gtk_editable_get_text (GTK_EDITABLE (child));
 		if (text[0])
-			gtk_entry_set_text (GTK_ENTRY (child), "");
+			gtk_editable_set_text (GTK_EDITABLE (child), "");
 	}
 
 	gtk_widget_set_sensitive (priv->time_combo, sensitive);
@@ -2457,7 +2446,7 @@ e_date_edit_check_date_changed (EDateEdit *dedit)
 	tmp_tm.tm_mon = 0;
 	tmp_tm.tm_mday = 0;
 
-	date_text = gtk_entry_get_text (GTK_ENTRY (priv->date_entry));
+	date_text = gtk_editable_get_text (GTK_EDITABLE (priv->date_entry));
 	if (field_set_to_none (date_text)) {
 		none = TRUE;
 	} else if (!e_date_edit_parse_date (dedit, date_text, &tmp_tm)) {
@@ -2497,8 +2486,8 @@ e_date_edit_check_time_changed (EDateEdit *dedit)
 	tmp_tm.tm_hour = 0;
 	tmp_tm.tm_min = 0;
 
-	child = gtk_bin_get_child (GTK_BIN (priv->time_combo));
-	time_text = gtk_entry_get_text (GTK_ENTRY (child));
+	child = e_gtk_bin_get_child (priv->time_combo);
+	time_text = gtk_editable_get_text (GTK_EDITABLE (child));
 	if (field_set_to_none (time_text))
 		none = TRUE;
 	else if (!e_date_edit_parse_time (dedit, time_text, &tmp_tm))
@@ -2677,7 +2666,7 @@ e_date_edit_set_time_internal (EDateEdit *dedit,
 	if (time_changed) {
 		GtkEntry *entry;
 
-		entry = GTK_ENTRY (gtk_bin_get_child (GTK_BIN (dedit->priv->time_combo)));
+		entry = GTK_ENTRY (e_gtk_bin_get_child (dedit->priv->time_combo));
 
 		if (priv->time_is_valid) {
 			gtk_entry_set_icon_from_icon_name (entry, GTK_ENTRY_ICON_PRIMARY, NULL);
@@ -2752,7 +2741,7 @@ e_date_edit_has_focus (EDateEdit *dedit)
 	return e_date_edit_get_show_time (dedit) &&
 	       dedit->priv->time_combo && (
 		(gtk_widget_has_focus (dedit->priv->time_combo) ||
-		 gtk_widget_has_focus (gtk_bin_get_child (GTK_BIN (dedit->priv->time_combo)))));
+		 gtk_widget_has_focus (e_gtk_bin_get_child (dedit->priv->time_combo))));
 }
 
 gint

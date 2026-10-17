@@ -636,7 +636,7 @@ cal_shell_content_datepicker_button_press_cb (ECalendar *calendar,
 		GDate sel_start, sel_end;
 
 		/* Do that only if the double-click was above a day cell */
-		if (!gdk_event_get_coords (event, &xwin, &ywin) ||
+		if (!e_gdk_event_get_coords (event, &xwin, &ywin) ||
 		    !e_calendar_item_convert_position_to_date (calitem, xwin, ywin, &sel_start)) {
 			return FALSE;
 		}
@@ -1933,7 +1933,7 @@ cal_shell_content_constructed (GObject *object)
 	container = GTK_WIDGET (object);
 
 	widget = e_paned_new (GTK_ORIENTATION_HORIZONTAL);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	cal_shell_content->priv->hpaned = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -1942,13 +1942,13 @@ cal_shell_content_constructed (GObject *object)
 	widget = gtk_notebook_new ();
 	gtk_notebook_set_show_tabs (GTK_NOTEBOOK (widget), FALSE);
 	gtk_notebook_set_show_border (GTK_NOTEBOOK (widget), FALSE);
-	gtk_paned_pack1 (GTK_PANED (container), widget, TRUE, FALSE);
+	e_gtk_paned_pack1 (container, widget, TRUE, FALSE);
 	cal_shell_content->priv->calendar_notebook = g_object_ref (widget);
 	gtk_widget_show (widget);
 
 	widget = e_paned_new (GTK_ORIENTATION_VERTICAL);
 	e_paned_set_fixed_resize (E_PANED (widget), FALSE);
-	gtk_paned_pack2 (GTK_PANED (container), widget, FALSE, TRUE);
+	e_gtk_paned_pack2 (container, widget, FALSE, TRUE);
 	cal_shell_content->priv->vpaned = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -1962,7 +1962,7 @@ cal_shell_content_constructed (GObject *object)
 	container = cal_shell_content->priv->vpaned;
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-	gtk_paned_pack1 (GTK_PANED (container), widget, TRUE, TRUE);
+	e_gtk_paned_pack1 (container, widget, TRUE, TRUE);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -1970,7 +1970,7 @@ cal_shell_content_constructed (GObject *object)
 	widget = gtk_label_new (NULL);
 	markup = g_strdup_printf ("<b>%s</b>", _("Tasks"));
 	gtk_label_set_markup (GTK_LABEL (widget), markup);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, TRUE, 0);
 	gtk_widget_show (widget);
 	g_free (markup);
 
@@ -1978,13 +1978,13 @@ cal_shell_content_constructed (GObject *object)
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
 
 	widget = e_task_table_new (shell_view, cal_shell_content->priv->task_model);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	cal_shell_content->priv->task_table = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -2002,7 +2002,7 @@ cal_shell_content_constructed (GObject *object)
 	container = cal_shell_content->priv->vpaned;
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-	gtk_paned_pack2 (GTK_PANED (container), widget, TRUE, TRUE);
+	e_gtk_paned_pack2 (container, widget, TRUE, TRUE);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -2010,7 +2010,7 @@ cal_shell_content_constructed (GObject *object)
 	widget = gtk_label_new (NULL);
 	markup = g_strdup_printf ("<b>%s</b>", _("Memos"));
 	gtk_label_set_markup (GTK_LABEL (widget), markup);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, TRUE, 0);
 	gtk_widget_show (widget);
 	g_free (markup);
 
@@ -2018,13 +2018,13 @@ cal_shell_content_constructed (GObject *object)
 	gtk_scrolled_window_set_policy (
 		GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
 
 	widget = e_memo_table_new (shell_view, cal_shell_content->priv->memo_model);
-	gtk_container_add (GTK_CONTAINER (container), widget);
+	e_gtk_container_add (container, widget);
 	cal_shell_content->priv->memo_table = g_object_ref (widget);
 	gtk_widget_show (widget);
 

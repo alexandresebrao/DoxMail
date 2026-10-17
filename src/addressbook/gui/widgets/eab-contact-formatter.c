@@ -96,7 +96,7 @@ icon_available (const gchar *icon)
 	if (!icon)
 		return FALSE;
 
-	icon_theme = gtk_icon_theme_get_default ();
+	icon_theme = e_gtk_icon_theme_get_default ();
 	icon_info = gtk_icon_theme_lookup_icon (icon_theme, icon, 16, 0);
 	if (icon_info != NULL)
 		g_object_unref (icon_info);

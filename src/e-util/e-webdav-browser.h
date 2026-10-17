@@ -22,7 +22,7 @@
 #define E_WEBDAV_BROWSER_H
 
 #include <gtk/gtk.h>
-#include <libedataserverui/libedataserverui.h>
+#include <libedataserverui4/libedataserverui4.h>
 
 /* Standard GObject macros */
 #define E_TYPE_WEBDAV_BROWSER \

@@ -176,8 +176,8 @@ week_view_event_item_button_press (EWeekViewEventItem *event_item,
 	gdouble event_x_win = 0;
 	gdouble event_y_win = 0;
 
-	gdk_event_get_button (button_event, &event_button);
-	gdk_event_get_coords (button_event, &event_x_win, &event_y_win);
+	e_gdk_event_get_button (button_event, &event_button);
+	e_gdk_event_get_coords (button_event, &event_x_win, &event_y_win);
 
 	item = GNOME_CANVAS_ITEM (event_item);
 

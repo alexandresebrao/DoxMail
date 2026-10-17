@@ -164,7 +164,7 @@ set_image_from_data (EImageChooser *chooser,
 
 static gboolean
 image_drag_motion_cb (GtkWidget *widget,
-                      GdkDragContext *context,
+                      EGtkDragContext *context,
                       gint x,
                       gint y,
                       guint time,
@@ -172,15 +172,15 @@ image_drag_motion_cb (GtkWidget *widget,
 {
 	GList *targets, *p;
 
-	targets = gdk_drag_context_list_targets (context);
+	targets = e_gtk_drag_context_list_targets (context);
 
 	for (p = targets; p != NULL; p = p->next) {
 		gchar *possible_type;
 
-		possible_type = gdk_atom_name (GDK_POINTER_TO_ATOM (p->data));
+		possible_type = e_gtk_atom_name (GDK_POINTER_TO_ATOM (p->data));
 		if (!strcmp (possible_type, URI_LIST_TYPE)) {
 			g_free (possible_type);
-			gdk_drag_status (context, GDK_ACTION_COPY, time);
+			e_gtk_drag_status (context, GDK_ACTION_COPY, time);
 			return TRUE;
 		}
 
@@ -192,7 +192,7 @@ image_drag_motion_cb (GtkWidget *widget,
 
 static void
 image_drag_leave_cb (GtkWidget *widget,
-                     GdkDragContext *context,
+                     EGtkDragContext *context,
                      guint time,
                      EImageChooser *chooser)
 {
@@ -200,7 +200,7 @@ image_drag_leave_cb (GtkWidget *widget,
 
 static gboolean
 image_drag_drop_cb (GtkWidget *widget,
-                    GdkDragContext *context,
+                    EGtkDragContext *context,
                     gint x,
                     gint y,
                     guint time,
@@ -208,7 +208,7 @@ image_drag_drop_cb (GtkWidget *widget,
 {
 	GList *targets, *p;
 
-	targets = gdk_drag_context_list_targets (context);
+	targets = e_gtk_drag_context_list_targets (context);
 
 	if (targets == NULL)
 		return FALSE;
@@ -216,10 +216,10 @@ image_drag_drop_cb (GtkWidget *widget,
 	for (p = targets; p != NULL; p = p->next) {
 		gchar *possible_type;
 
-		possible_type = gdk_atom_name (GDK_POINTER_TO_ATOM (p->data));
+		possible_type = e_gtk_atom_name (GDK_POINTER_TO_ATOM (p->data));
 		if (!strcmp (possible_type, URI_LIST_TYPE)) {
 			g_free (possible_type);
-			gtk_drag_get_data (
+			e_gtk_drag_get_data (
 				widget, context,
 				GDK_POINTER_TO_ATOM (p->data), time);
 			return TRUE;
@@ -258,10 +258,10 @@ exit:
 
 static void
 image_drag_data_received_cb (GtkWidget *widget,
-                             GdkDragContext *context,
+                             EGtkDragContext *context,
                              gint x,
                              gint y,
-                             GtkSelectionData *selection_data,
+                             EGtkSelectionData *selection_data,
                              guint info,
                              guint time,
                              EImageChooser *chooser)
@@ -270,7 +270,7 @@ image_drag_data_received_cb (GtkWidget *widget,
 	gboolean handled = FALSE;
 	gchar **uris;
 
-	uris = gtk_selection_data_get_uris (selection_data);
+	uris = e_gtk_selection_data_get_uris (selection_data);
 
 	if (uris == NULL)
 		goto exit;
@@ -290,7 +290,7 @@ image_drag_data_received_cb (GtkWidget *widget,
 	handled = TRUE;
 
 exit:
-	gtk_drag_finish (context, handled, FALSE, time);
+	e_gtk_drag_finish (context, handled, FALSE, time);
 }
 
 static void
@@ -306,7 +306,7 @@ image_chooser_set_icon_name (EImageChooser *chooser,
 		chooser->priv->icon_name = g_strdup (icon_name);
 	}
 
-	icon_theme = gtk_icon_theme_get_default ();
+	icon_theme = e_gtk_icon_theme_get_default ();
 	if (chooser->priv->pixel_size == 0) {
 		gint width, height;
 		gtk_icon_size_lookup (GTK_ICON_SIZE_DIALOG, &width, &height);
@@ -446,12 +446,12 @@ e_image_chooser_init (EImageChooser *chooser)
 	widget = gtk_image_new ();
 	gtk_widget_set_halign (widget, GTK_ALIGN_CENTER);
 	gtk_widget_set_valign (widget, GTK_ALIGN_CENTER);
-	gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	chooser->priv->image = g_object_ref (widget);
 	gtk_widget_show (widget);
 
-	gtk_drag_dest_set (widget, 0, NULL, 0, GDK_ACTION_COPY);
-	gtk_drag_dest_add_uri_targets (widget);
+	e_gtk_drag_dest_set (widget, 0, NULL, 0, GDK_ACTION_COPY);
+	e_gtk_drag_dest_add_uri_targets (widget);
 
 	g_signal_connect (
 		widget, "drag-motion",

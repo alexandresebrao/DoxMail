@@ -415,7 +415,7 @@ mail_config_auth_check_constructed (GObject *object)
 
 	text = _("Check for Supported Types");
 	widget = gtk_button_new_with_label (text);
-	gtk_box_pack_start (GTK_BOX (object), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (object), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	g_signal_connect (
@@ -425,7 +425,7 @@ mail_config_auth_check_constructed (GObject *object)
 
 	widget = e_auth_combo_box_new ();
 	e_auth_combo_box_set_provider (E_AUTH_COMBO_BOX (widget), provider);
-	gtk_box_pack_start (GTK_BOX (object), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (object), widget, FALSE, FALSE, 0);
 	auth_check->priv->combo_box = widget;  /* do not reference */
 	gtk_widget_show (widget);
 

@@ -28,8 +28,8 @@ close_dialog (GtkWidget *widget,
               gint response,
               gpointer data)
 {
-	gtk_widget_destroy (GTK_WIDGET (name_selector_dialog));
-	gtk_widget_destroy (name_selector_entry_window);
+	e_gtk_widget_destroy (GTK_WIDGET (name_selector_dialog));
+	e_gtk_widget_destroy (name_selector_entry_window);
 
 	g_timeout_add (4000, (GSourceFunc) gtk_main_quit, NULL);
 }
@@ -65,8 +65,8 @@ start_test (EClientCache *client_cache)
 	gtk_widget_show (GTK_WIDGET (name_selector_dialog));
 
 	container = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-	gtk_container_add (GTK_CONTAINER (container), name_selector_entry);
-	gtk_widget_show_all (container);
+	e_gtk_container_add (container, name_selector_entry);
+	gtk_widget_set_visible (container, TRUE);
 
 	name_selector_entry_window = container;
 
@@ -83,7 +83,7 @@ main (gint argc,
 	EClientCache *client_cache;
 	GError *error = NULL;
 
-	gtk_init (&argc, &argv);
+	gtk_init ();
 
 	camel_init (NULL, 0);
 

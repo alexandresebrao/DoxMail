@@ -36,9 +36,9 @@ e_html_editor_link_popover_sensitize_save_button (EHTMLEditorLinkPopover *self)
 {
 	gboolean sensitive;
 
-	sensitive = g_strcmp0 (gtk_entry_get_text (GTK_ENTRY (self->description_entry)), "") != 0 && (
-		    g_strcmp0 (gtk_entry_get_text (GTK_ENTRY (self->uri_entry)), "") != 0 ||
-		    g_strcmp0 (gtk_entry_get_text (GTK_ENTRY (self->name_entry)), "") != 0);
+	sensitive = g_strcmp0 (gtk_editable_get_text (GTK_EDITABLE (self->description_entry)), "") != 0 && (
+		    g_strcmp0 (gtk_editable_get_text (GTK_EDITABLE (self->uri_entry)), "") != 0 ||
+		    g_strcmp0 (gtk_editable_get_text (GTK_EDITABLE (self->name_entry)), "") != 0);
 
 	gtk_widget_set_sensitive (self->save_button, sensitive);
 }
@@ -49,8 +49,8 @@ e_html_editor_link_popover_uri_changed_cb (EHTMLEditorLinkPopover *self)
 	if (self->description_autofill) {
 		const gchar *text;
 
-		text = gtk_entry_get_text (GTK_ENTRY (self->uri_entry));
-		gtk_entry_set_text (GTK_ENTRY (self->description_entry), text);
+		text = gtk_editable_get_text (GTK_EDITABLE (self->uri_entry));
+		gtk_editable_set_text (GTK_EDITABLE (self->description_entry), text);
 	}
 
 	e_html_editor_link_popover_sensitize_save_button (self);
@@ -60,8 +60,8 @@ static void
 e_html_editor_link_popover_description_changed_cb (EHTMLEditorLinkPopover *self)
 {
 	self->description_autofill = 0 == g_strcmp0 (
-		gtk_entry_get_text (GTK_ENTRY (self->uri_entry)),
-		gtk_entry_get_text (GTK_ENTRY (self->description_entry)));
+		gtk_editable_get_text (GTK_EDITABLE (self->uri_entry)),
+		gtk_editable_get_text (GTK_EDITABLE (self->description_entry)));
 
 	e_html_editor_link_popover_sensitize_save_button (self);
 }
@@ -77,9 +77,9 @@ e_html_editor_link_popover_save_clicked_cb (GtkButton *button,
 
 	e_content_editor_link_set_properties (
 		cnt_editor,
-		gtk_entry_get_text (GTK_ENTRY (self->uri_entry)),
-		gtk_entry_get_text (GTK_ENTRY (self->description_entry)),
-		gtk_entry_get_text (GTK_ENTRY (self->name_entry)));
+		gtk_editable_get_text (GTK_EDITABLE (self->uri_entry)),
+		gtk_editable_get_text (GTK_EDITABLE (self->description_entry)),
+		gtk_editable_get_text (GTK_EDITABLE (self->name_entry)));
 
 	gtk_popover_popdown (GTK_POPOVER (self));
 }
@@ -109,10 +109,10 @@ e_html_editor_link_popover_show (GtkWidget *widget)
 	cnt_editor = e_html_editor_get_content_editor (self->editor);
 
 	/* Reset to default values */
-	gtk_entry_set_text (GTK_ENTRY (self->uri_entry), "https://");
-	gtk_entry_set_text (GTK_ENTRY (self->description_entry), "");
+	gtk_editable_set_text (GTK_EDITABLE (self->uri_entry), "https://");
+	gtk_editable_set_text (GTK_EDITABLE (self->description_entry), "");
 	gtk_widget_set_sensitive (self->description_entry, TRUE);
-	gtk_entry_set_text (GTK_ENTRY (self->name_entry), "");
+	gtk_editable_set_text (GTK_EDITABLE (self->name_entry), "");
 
 	self->description_autofill = TRUE;
 
@@ -120,7 +120,7 @@ e_html_editor_link_popover_show (GtkWidget *widget)
 
 	e_content_editor_link_get_properties (cnt_editor, &href, &text, &name);
 	if ((href && *href) || (name && *name)) {
-		gtk_entry_set_text (GTK_ENTRY (self->uri_entry), href);
+		gtk_editable_set_text (GTK_EDITABLE (self->uri_entry), href);
 		gtk_button_set_label (GTK_BUTTON (self->save_button), _("Upd_ate"));
 	} else {
 		gtk_button_set_label (GTK_BUTTON (self->save_button), _("_Add"));
@@ -129,10 +129,10 @@ e_html_editor_link_popover_show (GtkWidget *widget)
 	gtk_widget_set_visible (self->remove_button, (href && *href) || (name && *name));
 
 	if (text && *text)
-		gtk_entry_set_text (GTK_ENTRY (self->description_entry), text);
+		gtk_editable_set_text (GTK_EDITABLE (self->description_entry), text);
 
 	if (name && *name)
-		gtk_entry_set_text (GTK_ENTRY (self->name_entry), name);
+		gtk_editable_set_text (GTK_EDITABLE (self->name_entry), name);
 
 	g_free (href);
 	g_free (text);
@@ -185,7 +185,7 @@ e_html_editor_link_popover_constructed (GObject *object)
 		"column-spacing", 4,
 		NULL);
 
-	gtk_container_add (GTK_CONTAINER (self), widget);
+	e_gtk_container_add (self, widget);
 
 	grid = GTK_GRID (widget);
 
@@ -283,7 +283,7 @@ e_html_editor_link_popover_constructed (GObject *object)
 
 	self->name_entry = widget;
 
-	widget = gtk_button_box_new (GTK_ORIENTATION_HORIZONTAL);
+	widget = e_gtk_button_box_new (GTK_ORIENTATION_HORIZONTAL);
 	g_object_set (widget,
 		"visible", TRUE,
 		"halign", GTK_ALIGN_CENTER,
@@ -303,7 +303,7 @@ e_html_editor_link_popover_constructed (GObject *object)
 		"valign", GTK_ALIGN_CENTER,
 		NULL);
 
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 
 	self->save_button = widget;
 
@@ -315,7 +315,7 @@ e_html_editor_link_popover_constructed (GObject *object)
 		"valign", GTK_ALIGN_CENTER,
 		NULL);
 
-	gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 
 	self->remove_button = widget;
 

@@ -128,11 +128,11 @@ alert_dialog_constructed (GObject *object)
 	 *     See https://bugzilla.gnome.org/681937 for details. */
 	gtk_window_set_resizable (GTK_WINDOW (dialog), FALSE);
 
-	action_area = gtk_dialog_get_action_area (GTK_DIALOG (dialog));
+	action_area = e_gtk_dialog_get_action_area (GTK_DIALOG (dialog));
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
 
-	gtk_container_set_border_width (GTK_CONTAINER (action_area), 12);
-	gtk_container_set_border_width (GTK_CONTAINER (content_area), 0);
+	e_gtk_widget_set_border_width (action_area, 12);
+	e_gtk_widget_set_border_width (content_area, 0);
 
 	gtk_window_set_destroy_with_parent (GTK_WINDOW (dialog), TRUE);
 
@@ -170,8 +170,7 @@ alert_dialog_constructed (GObject *object)
 
 		button = e_alert_create_button_for_action (action);
 
-		gtk_widget_set_can_default (button, TRUE);
-		gtk_box_pack_end (GTK_BOX (action_area), button, FALSE, FALSE, 0);
+		e_gtk_box_pack_end (GTK_BOX (action_area), button, FALSE, FALSE, 0);
 
 		/* This is set in e_alert_add_action(). */
 		data = g_object_get_data (G_OBJECT (action), "e-alert-response-id");
@@ -182,7 +181,7 @@ alert_dialog_constructed (GObject *object)
 		 * IDs, we have set both the default widget and the
 		 * initial focus widget ourselves. */
 		if (GPOINTER_TO_INT (data) == default_response) {
-			gtk_widget_grab_default (button);
+			e_gtk_widget_grab_default (button);
 			gtk_widget_grab_focus (button);
 		}
 
@@ -193,13 +192,13 @@ alert_dialog_constructed (GObject *object)
 	while (link != NULL) {
 		widget = link->data;
 
-		gtk_box_pack_end (GTK_BOX (action_area), widget, FALSE, FALSE, 0);
+		e_gtk_box_pack_end (GTK_BOX (action_area), widget, FALSE, FALSE, 0);
 		link = g_list_next (link);
 	}
 
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 12);
-	gtk_container_set_border_width (GTK_CONTAINER (widget), 12);
-	gtk_box_pack_start (GTK_BOX (content_area), widget, FALSE, FALSE, 0);
+	e_gtk_widget_set_border_width (widget, 12);
+	e_gtk_box_pack_start (GTK_BOX (content_area), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -207,11 +206,11 @@ alert_dialog_constructed (GObject *object)
 	widget = e_alert_create_image (alert, GTK_ICON_SIZE_DIALOG);
 	gtk_widget_set_halign (widget, GTK_ALIGN_START);
 	gtk_widget_set_valign (widget, GTK_ALIGN_START);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 12);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	dialog->priv->content_area = widget;
 	gtk_widget_show (widget);
 
@@ -228,25 +227,25 @@ alert_dialog_constructed (GObject *object)
 
 	widget = gtk_label_new (primary);
 	gtk_label_set_attributes (GTK_LABEL (widget), list);
-	gtk_label_set_line_wrap (GTK_LABEL (widget), TRUE);
+	gtk_label_set_wrap (GTK_LABEL (widget), TRUE);
 	gtk_label_set_selectable (GTK_LABEL (widget), TRUE);
 	gtk_label_set_width_chars (GTK_LABEL (widget), 40);
 	gtk_label_set_max_width_chars (GTK_LABEL (widget), 60);
 	gtk_label_set_xalign (GTK_LABEL (widget), 0);
 	gtk_label_set_yalign (GTK_LABEL (widget), 0);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
-	gtk_widget_set_can_focus (widget, FALSE);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	gtk_widget_set_focusable (widget, FALSE);
 	gtk_widget_show (widget);
 
 	widget = gtk_label_new (secondary);
-	gtk_label_set_line_wrap (GTK_LABEL (widget), TRUE);
+	gtk_label_set_wrap (GTK_LABEL (widget), TRUE);
 	gtk_label_set_selectable (GTK_LABEL (widget), TRUE);
 	gtk_label_set_width_chars (GTK_LABEL (widget), 60);
 	gtk_label_set_max_width_chars (GTK_LABEL (widget), 80);
 	gtk_label_set_xalign (GTK_LABEL (widget), 0);
 	gtk_label_set_yalign (GTK_LABEL (widget), 0);
-	gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
-	gtk_widget_set_can_focus (widget, FALSE);
+	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
+	gtk_widget_set_focusable (widget, FALSE);
 	gtk_widget_show (widget);
 
 	pango_attr_list_unref (list);
@@ -320,7 +319,6 @@ dialog_focus_in_event_cb (GtkWindow *dialog,
                           GdkEvent *event,
                           GtkWindow *parent)
 {
-	gtk_window_set_urgency_hint (parent, FALSE);
 
 	return FALSE;
 }
@@ -340,32 +338,30 @@ e_alert_run_dialog (GtkWindow *parent,
 
 	if (parent != NULL) {
 		/* Since we'll be in a nested main loop, the widgets may be destroyed
-		 * before we get back from gtk_dialog_run(). In practice, this can happen
+		 * before we get back from e_gtk_dialog_run (). In practice, this can happen
 		 * if Evolution exits while the dialog is up. Make sure we don't try
 		 * to access destroyed widgets. */
 		parent_destroyed_signal_id = g_signal_connect (parent, "destroy", G_CALLBACK (gtk_widget_destroyed), &parent);
 
-		gtk_window_set_urgency_hint (parent, TRUE);
 		signal_id = g_signal_connect (
 			dialog, "focus-in-event",
 			G_CALLBACK (dialog_focus_in_event_cb), parent);
 	} else {
-		gtk_window_set_urgency_hint (GTK_WINDOW (dialog), TRUE);
 	}
 
 	g_signal_connect (dialog, "destroy", G_CALLBACK (gtk_widget_destroyed), &dialog);
 
-	response = gtk_dialog_run (GTK_DIALOG (dialog));
+	response = e_gtk_dialog_run (GTK_DIALOG (dialog));
 
 	if (signal_id > 0) {
 		if (parent)
-			gtk_window_set_urgency_hint (parent, FALSE);
+			;
 		if (dialog)
 			g_signal_handler_disconnect (dialog, signal_id);
 	}
 
 	if (dialog)
-		gtk_widget_destroy (dialog);
+		e_gtk_widget_destroy (dialog);
 	if (parent && parent_destroyed_signal_id)
 		g_signal_handler_disconnect (parent, parent_destroyed_signal_id);
 

@@ -17,7 +17,7 @@
 
 #include "evolution-config.h"
 
-#include <libedataserverui/libedataserverui.h>
+#include <libedataserverui4/libedataserverui4.h>
 
 #include "e-source-combo-box.h"
 

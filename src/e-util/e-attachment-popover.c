@@ -42,7 +42,7 @@ e_attachment_popover_sensitize_save_button (EAttachmentPopover *self)
 
 	if (self->attachment) {
 		sensitive = !e_attachment_is_uri (self->attachment) ||
-			g_strcmp0 (gtk_entry_get_text (GTK_ENTRY (self->uri_entry)), "") != 0;
+			g_strcmp0 (gtk_editable_get_text (GTK_EDITABLE (self->uri_entry)), "") != 0;
 	}
 
 	gtk_widget_set_sensitive (self->save_button, sensitive);
@@ -54,25 +54,25 @@ e_attachment_popover_uri_entry_focus_out_cb (EAttachmentPopover *self)
 	if (!self->in_refresh && gtk_widget_get_visible (self->uri_entry)) {
 		const gchar *text;
 
-		text = gtk_entry_get_text (GTK_ENTRY (self->mime_type_entry));
+		text = gtk_editable_get_text (GTK_EDITABLE (self->mime_type_entry));
 
 		if (!text || !*text || g_ascii_strcasecmp (text, "application/octet-stream") == 0) {
-			text = gtk_entry_get_text (GTK_ENTRY (self->uri_entry));
+			text = gtk_editable_get_text (GTK_EDITABLE (self->uri_entry));
 
 			if (text && *text) {
 				gchar *guessed_mime_type;
 
 				guessed_mime_type = e_util_guess_mime_type (text, FALSE);
 				if (guessed_mime_type) {
-					gtk_entry_set_text (GTK_ENTRY (self->mime_type_entry), guessed_mime_type);
+					gtk_editable_set_text (GTK_EDITABLE (self->mime_type_entry), guessed_mime_type);
 					g_free (guessed_mime_type);
 				}
 			}
 		} else {
-			text = gtk_entry_get_text (GTK_ENTRY (self->uri_entry));
+			text = gtk_editable_get_text (GTK_EDITABLE (self->uri_entry));
 		}
 
-		if (text && *text && g_strcmp0 (gtk_entry_get_text (GTK_ENTRY (self->filename_entry)), "") == 0) {
+		if (text && *text && g_strcmp0 (gtk_editable_get_text (GTK_EDITABLE (self->filename_entry)), "") == 0) {
 			GUri *guri;
 
 			guri = g_uri_parse (text, G_URI_FLAGS_PARSE_RELAXED, NULL);
@@ -88,7 +88,7 @@ e_attachment_popover_uri_entry_focus_out_cb (EAttachmentPopover *self)
 				}
 
 				if (path && *path)
-					gtk_entry_set_text (GTK_ENTRY (self->filename_entry), path);
+					gtk_editable_set_text (GTK_EDITABLE (self->filename_entry), path);
 
 				g_uri_unref (guri);
 			}
@@ -142,19 +142,19 @@ e_attachment_popover_refresh (EAttachmentPopover *self)
 			type_description = g_strdup_printf ("%s (%s)", comment, mime_type);
 
 		gtk_label_set_text (GTK_LABEL (self->mime_type_text_label), type_description);
-		gtk_entry_set_text (GTK_ENTRY (self->mime_type_entry), mime_type ? mime_type : "");
+		gtk_editable_set_text (GTK_EDITABLE (self->mime_type_entry), mime_type ? mime_type : "");
 
 		g_free (comment);
 		g_free (mime_type);
 		g_free (type_description);
 	} else {
 		gtk_label_set_text (GTK_LABEL (self->mime_type_text_label), "");
-		gtk_entry_set_text (GTK_ENTRY (self->mime_type_entry), "");
+		gtk_editable_set_text (GTK_EDITABLE (self->mime_type_entry), "");
 	}
 
-	gtk_entry_set_text (GTK_ENTRY (self->filename_entry), display_name ? display_name : "");
-	gtk_entry_set_text (GTK_ENTRY (self->uri_entry), "");
-	gtk_entry_set_text (GTK_ENTRY (self->description_entry), description ? description : "");
+	gtk_editable_set_text (GTK_EDITABLE (self->filename_entry), display_name ? display_name : "");
+	gtk_editable_set_text (GTK_EDITABLE (self->uri_entry), "");
+	gtk_editable_set_text (GTK_EDITABLE (self->description_entry), description ? description : "");
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (self->prefer_inline_check), g_strcmp0 (disposition, "inline") == 0);
 
 	if (is_uri) {
@@ -166,7 +166,7 @@ e_attachment_popover_refresh (EAttachmentPopover *self)
 
 			uri = g_file_get_uri (file);
 			if (uri) {
-				gtk_entry_set_text (GTK_ENTRY (self->uri_entry), uri);
+				gtk_editable_set_text (GTK_EDITABLE (self->uri_entry), uri);
 				g_free (uri);
 			}
 		}
@@ -208,28 +208,28 @@ e_attachment_popover_save_changes_cb (EAttachmentPopover *self)
 	mime_part = e_attachment_ref_mime_part (self->attachment);
 
 	g_file_info_set_attribute_string (file_info, G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME,
-		gtk_entry_get_text (GTK_ENTRY (self->filename_entry)));
+		gtk_editable_get_text (GTK_EDITABLE (self->filename_entry)));
 
 	if (mime_part)
-		camel_mime_part_set_filename (mime_part, gtk_entry_get_text (GTK_ENTRY (self->filename_entry)));
+		camel_mime_part_set_filename (mime_part, gtk_editable_get_text (GTK_EDITABLE (self->filename_entry)));
 
 	if (e_attachment_is_uri (self->attachment)) {
 		GFile *file;
 
-		file = g_file_new_for_uri (gtk_entry_get_text (GTK_ENTRY (self->uri_entry)));
+		file = g_file_new_for_uri (gtk_editable_get_text (GTK_EDITABLE (self->uri_entry)));
 		e_attachment_set_file (self->attachment, file);
 		g_clear_object (&file);
 
 		g_file_info_set_attribute_string (file_info, G_FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE,
-			gtk_entry_get_text (GTK_ENTRY (self->mime_type_entry)));
+			gtk_editable_get_text (GTK_EDITABLE (self->mime_type_entry)));
 	} else {
 		const gchar *disposition;
 
 		g_file_info_set_attribute_string (file_info, G_FILE_ATTRIBUTE_STANDARD_DESCRIPTION,
-			gtk_entry_get_text (GTK_ENTRY (self->description_entry)));
+			gtk_editable_get_text (GTK_EDITABLE (self->description_entry)));
 
 		if (mime_part)
-			camel_mime_part_set_description (mime_part, gtk_entry_get_text (GTK_ENTRY (self->description_entry)));
+			camel_mime_part_set_description (mime_part, gtk_editable_get_text (GTK_EDITABLE (self->description_entry)));
 
 		disposition = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (self->prefer_inline_check)) ? "inline" : "attachment";
 		e_attachment_set_disposition (self->attachment, disposition);
@@ -271,7 +271,7 @@ e_attachment_popover_constructed (GObject *object)
 		"column-spacing", 4,
 		NULL);
 
-	gtk_container_add (GTK_CONTAINER (self), widget);
+	e_gtk_container_add (self, widget);
 
 	grid = GTK_GRID (widget);
 

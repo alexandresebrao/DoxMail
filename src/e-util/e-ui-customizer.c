@@ -667,7 +667,7 @@ e_ui_customizer_toolbar_context_menu_cb (GtkWidget *toolbar,
 	gtk_menu_attach_to_widget (menu, toolbar, NULL);
 	e_util_connect_menu_detach_after_deactivate (menu);
 
-	event = gtk_get_current_event ();
+	event = e_gtk_get_current_event ();
 
 	gtk_menu_popup_at_pointer (menu, event);
 

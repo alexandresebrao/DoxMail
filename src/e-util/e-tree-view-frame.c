@@ -533,9 +533,8 @@ tree_view_frame_constructed (GObject *object)
 		GTK_ORIENTATION_VERTICAL);
 
 	widget = gtk_scrolled_window_new (NULL, NULL);
-	gtk_scrolled_window_set_shadow_type (
-		GTK_SCROLLED_WINDOW (widget), GTK_SHADOW_IN);
-	gtk_box_pack_start (GTK_BOX (tree_view_frame), widget, TRUE, TRUE, 0);
+	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (widget), TRUE);
+	e_gtk_box_pack_start (GTK_BOX (tree_view_frame), widget, TRUE, TRUE, 0);
 	tree_view_frame->priv->scrolled_window = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -552,8 +551,8 @@ tree_view_frame_constructed (GObject *object)
 	widget = gtk_toolbar_new ();
 	gtk_toolbar_set_show_arrow (GTK_TOOLBAR (widget), FALSE);
 	gtk_toolbar_set_style (GTK_TOOLBAR (widget), GTK_TOOLBAR_ICONS);
-	e_util_setup_toolbar_icon_size (GTK_TOOLBAR (widget), GTK_ICON_SIZE_MENU);
-	gtk_box_pack_start (GTK_BOX (tree_view_frame), widget, FALSE, FALSE, 0);
+	e_util_setup_toolbar_icon_size (widget, E_GTK_ICON_SIZE_MENU);
+	e_gtk_box_pack_start (GTK_BOX (tree_view_frame), widget, FALSE, FALSE, 0);
 	tree_view_frame->priv->inline_toolbar = g_object_ref (widget);
 	gtk_widget_show (widget);
 
@@ -885,9 +884,7 @@ e_tree_view_frame_set_tree_view (ETreeViewFrame *tree_view_frame,
 	scrolled_window = tree_view_frame->priv->scrolled_window;
 
 	if (tree_view_frame->priv->tree_view != NULL) {
-		gtk_container_remove (
-			GTK_CONTAINER (scrolled_window),
-			GTK_WIDGET (tree_view_frame->priv->tree_view));
+		e_gtk_container_remove (scrolled_window, GTK_WIDGET (tree_view_frame->priv->tree_view));
 		tree_view_frame_dispose_tree_view (tree_view_frame->priv);
 	}
 
@@ -913,9 +910,7 @@ e_tree_view_frame_set_tree_view (ETreeViewFrame *tree_view_frame,
 		tree_view_frame);
 	tree_view_frame->priv->selection_changed_handler_id = handler_id;
 
-	gtk_container_add (
-		GTK_CONTAINER (scrolled_window),
-		GTK_WIDGET (tree_view));
+	e_gtk_container_add (scrolled_window, GTK_WIDGET (tree_view));
 
 	gtk_widget_show (GTK_WIDGET (tree_view));
 

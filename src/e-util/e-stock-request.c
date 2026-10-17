@@ -164,7 +164,7 @@ process_stock_request_idle_cb (gpointer user_data)
 
 		size = MAX (icon_width, icon_height) * scale_factor;
 
-		icon_theme = gtk_icon_theme_get_default ();
+		icon_theme = e_gtk_icon_theme_get_default ();
 
 		if (icon_name_symbolic)
 			icon_info = gtk_icon_theme_lookup_icon (icon_theme, icon_name_symbolic, size, GTK_ICON_LOOKUP_USE_BUILTIN);

@@ -24,7 +24,7 @@
 
 #include <glib/gi18n.h>
 
-#include <libedataserverui/libedataserverui.h>
+#include <libedataserverui4/libedataserverui4.h>
 
 #include "nss.h"
 #include "pk11func.h"
@@ -162,9 +162,9 @@ e_cert_selector_new (gint type,
 
 	w = e_builder_get_widget (builder, "cert_selector_vbox");
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (ecs));
-	gtk_container_add (GTK_CONTAINER (w), p->cert_widget);
-	gtk_widget_show_all (w);
-	gtk_box_pack_start (GTK_BOX (content_area), w, TRUE, TRUE, 3);
+	e_gtk_container_add (w, p->cert_widget);
+	gtk_widget_set_visible (w, TRUE);
+	e_gtk_box_pack_start (GTK_BOX (content_area), w, TRUE, TRUE, 3);
 	gtk_window_set_title (GTK_WINDOW (ecs), _("Select certificate"));
 
 	switch (type) {

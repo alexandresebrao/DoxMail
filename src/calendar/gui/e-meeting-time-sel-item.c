@@ -998,7 +998,7 @@ e_meeting_time_selector_item_motion_notify (EMeetingTimeSelectorItem *mts_item,
 		mts_item->last_cursor_set = cursor;
 
 		canvas = GNOME_CANVAS_ITEM (mts_item)->canvas;
-		window = gtk_widget_get_window (GTK_WIDGET (canvas));
+		window = e_gtk_widget_get_surface (GTK_WIDGET (canvas));
 		gdk_window_set_cursor (window, cursor);
 	}
 
@@ -1072,7 +1072,7 @@ e_meeting_time_selector_item_set_normal_cursor (EMeetingTimeSelectorItem *mts_it
 	g_return_if_fail (IS_E_MEETING_TIME_SELECTOR_ITEM (mts_item));
 
 	canvas = GNOME_CANVAS_ITEM (mts_item)->canvas;
-	window = gtk_widget_get_window (GTK_WIDGET (canvas));
+	window = e_gtk_widget_get_surface (GTK_WIDGET (canvas));
 	if (window)
 		gdk_window_set_cursor (window, mts_item->normal_cursor);
 }

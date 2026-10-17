@@ -91,7 +91,7 @@ typedef void (* ETestFixtureFunc) (TestFixture *fixture, gconstpointer user_data
 
 static gboolean
 window_key_press_event_cb (GtkWindow *window,
-			   GdkEventKey *event,
+			   GdkEvent *event,
 			   gpointer user_data)
 {
 	WebKitWebView *web_view = user_data;
@@ -116,7 +116,7 @@ window_delete_event_cb (GtkWidget *widget,
 {
 	TestFixture *fixture = user_data;
 
-	gtk_widget_destroy (fixture->window);
+	e_gtk_widget_destroy (fixture->window);
 	fixture->window = NULL;
 	fixture->web_view = NULL;
 
@@ -143,7 +143,7 @@ test_utils_fixture_set_up (TestFixture *fixture,
 		"vexpand", TRUE,
 		NULL);
 
-	gtk_container_add (GTK_CONTAINER (fixture->window), GTK_WIDGET (fixture->web_view));
+	e_gtk_container_add (fixture->window, GTK_WIDGET (fixture->web_view));
 
 	settings = webkit_web_view_get_settings (fixture->web_view);
 	webkit_settings_set_enable_developer_extras (settings, TRUE);
@@ -157,7 +157,7 @@ test_utils_fixture_set_up (TestFixture *fixture,
 		fixture->window, "delete-event",
 		G_CALLBACK (window_delete_event_cb), fixture);
 
-	gtk_widget_show_all (fixture->window);
+	gtk_widget_set_visible (fixture->window, TRUE);
 
 	fixture->flag = g_object_new (test_flag_get_type (), NULL);
 }
@@ -167,7 +167,7 @@ test_utils_fixture_tear_down (TestFixture *fixture,
 			      gconstpointer user_data)
 {
 	if (fixture->window) {
-		gtk_widget_destroy (fixture->window);
+		e_gtk_widget_destroy (fixture->window);
 		fixture->web_view = NULL;
 	}
 
@@ -1866,7 +1866,7 @@ test_get_element_from_point (TestFixture *fixture)
 
 	/* To scroll in the overall document */
 	gtk_widget_set_size_request (fixture->window, -1, -1);
-	gtk_window_resize (GTK_WINDOW (fixture->window), scroll_x, scroll_y);
+	gtk_window_set_default_size (GTK_WINDOW (fixture->window), scroll_x, scroll_y);
 
 	/* Window/widget resize is done asynchronously, thus wait for it */
 	g_signal_connect (fixture->window, "size-allocate",
@@ -3619,7 +3619,7 @@ main (gint argc,
 	g_setenv ("E_WEB_VIEW_TEST_SOURCES", "1", FALSE);
 	g_setenv ("EVOLUTION_SOURCE_WEBKITDATADIR", EVOLUTION_SOURCE_WEBKITDATADIR, FALSE);
 
-	gtk_init (&argc, &argv);
+	gtk_init ();
 
 	e_util_init_main_thread (NULL);
 	e_passwords_init ();
