@@ -472,6 +472,67 @@ static GHashTable *layout_originals = NULL;
 
 #define SIZE_ALLOCATE_KEY "e-gtk-size-allocate"
 
+/* The handlers of GTK 3 often resized widgets, which GTK 4 does not allow
+ * while it allocates them; GTK 3 ran another layout cycle then.  The
+ * signal is emitted right after the layout instead, with the latest size. */
+typedef struct _SizeAllocateEmit {
+	GWeakRef widget;
+	gint width;
+	gint height;
+	guint idle_id;
+} SizeAllocateEmit;
+
+#define SIZE_ALLOCATE_EMIT_KEY "e-gtk-size-allocate-emit"
+
+static gboolean
+size_allocate_emit_idle_cb (gpointer user_data)
+{
+	SizeAllocateEmit *emit = user_data;
+	GtkWidget *widget = g_weak_ref_get (&emit->widget);
+
+	emit->idle_id = 0;
+
+	if (widget) {
+		GtkAllocation allocation = { 0, 0, emit->width, emit->height };
+
+		g_signal_emit (widget, signals[SIZE_ALLOCATE], 0, &allocation);
+		g_object_unref (widget);
+	}
+
+	return G_SOURCE_REMOVE;
+}
+
+static void
+size_allocate_emit_free (gpointer ptr)
+{
+	SizeAllocateEmit *emit = ptr;
+
+	if (emit->idle_id)
+		g_source_remove (emit->idle_id);
+	g_weak_ref_clear (&emit->widget);
+	g_free (emit);
+}
+
+static void
+size_allocate_schedule_emit (GtkWidget *widget,
+			     gint width,
+			     gint height)
+{
+	SizeAllocateEmit *emit = g_object_get_data (G_OBJECT (widget), SIZE_ALLOCATE_EMIT_KEY);
+
+	if (!emit) {
+		emit = g_new0 (SizeAllocateEmit, 1);
+		g_weak_ref_init (&emit->widget, widget);
+		g_object_set_data_full (G_OBJECT (widget), SIZE_ALLOCATE_EMIT_KEY, emit, size_allocate_emit_free);
+	}
+
+	emit->width = width;
+	emit->height = height;
+
+	if (!emit->idle_id)
+		emit->idle_id = g_idle_add_full (G_PRIORITY_HIGH_IDLE, size_allocate_emit_idle_cb, emit, NULL);
+}
+
 static GQuark
 layout_methods_quark (void)
 {
@@ -541,11 +602,8 @@ layout_allocate_wrapper (GtkLayoutManager *manager,
 	else
 		layout_originals_for (manager)->allocate (manager, widget, width, height, baseline);
 
-	if (g_object_get_data (G_OBJECT (widget), SIZE_ALLOCATE_KEY)) {
-		GtkAllocation allocation = { 0, 0, width, height };
-
-		g_signal_emit (widget, signals[SIZE_ALLOCATE], 0, &allocation);
-	}
+	if (g_object_get_data (G_OBJECT (widget), SIZE_ALLOCATE_KEY))
+		size_allocate_schedule_emit (widget, width, height);
 }
 
 static void
@@ -661,11 +719,8 @@ size_allocate_wrapper (GtkWidget *widget,
 	if (original)
 		original (widget, width, height, baseline);
 
-	if (g_object_get_data (G_OBJECT (widget), SIZE_ALLOCATE_KEY)) {
-		GtkAllocation allocation = { 0, 0, width, height };
-
-		g_signal_emit (widget, signals[SIZE_ALLOCATE], 0, &allocation);
-	}
+	if (g_object_get_data (G_OBJECT (widget), SIZE_ALLOCATE_KEY))
+		size_allocate_schedule_emit (widget, width, height);
 }
 
 gpointer

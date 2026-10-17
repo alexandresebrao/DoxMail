@@ -431,6 +431,16 @@ test_layout_box_init (TestLayoutBox *self)
 }
 
 static void
+size_allocate_signal_cb (GtkWidget *widget,
+			 GtkAllocation *allocation,
+			 gpointer user_data)
+{
+	gint *out_width = user_data;
+
+	*out_width = allocation->width;
+}
+
+static void
 test_layout_methods (void)
 {
 	GtkWidget *box, *label, *window;
@@ -454,6 +464,19 @@ test_layout_methods (void)
 	g_assert_cmpint (test_layout_box_allocations, >, 0);
 	g_assert_cmpint (gtk_widget_get_width (box), >=, 321);
 	g_assert_cmpint (gtk_widget_get_width (label), >, 0);
+
+	/* the GTK 3 size-allocate signal, for a widget with a layout manager */
+	{
+		GtkWidget *other = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+		gint allocated_width = 0;
+
+		gtk_widget_set_size_request (other, 123, 10);
+		g_signal_connect (e_gtk_widget_size_allocations (other), "size-allocate",
+			G_CALLBACK (size_allocate_signal_cb), &allocated_width);
+		gtk_box_append (GTK_BOX (box), other);
+		spin (200);
+		g_assert_cmpint (allocated_width, >=, 123);
+	}
 
 	gtk_window_destroy (GTK_WINDOW (window));
 	spin (50);

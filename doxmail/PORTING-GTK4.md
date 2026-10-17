@@ -213,8 +213,14 @@ visible by default, so widgets GTK 3 kept hidden until needed must hide
 themselves (alert and activity bars so far). `G_DEBUG=fatal-criticals
 doxmail/port/run-evolution.sh --gdb` stops at the first critical.
 
-Still open: GtkPopoverMenu keeps the submenu pages of rebuilt menu models
-("duplicate child name in GtkStack" warnings, a leak).
+Menus: GtkPopoverMenu does not drop the pages of submenus removed from its
+model, so EUIMenu, which rebuilt its content from scratch, left stale
+submenus ("duplicate child name in GtkStack"); it now fills a new menu and
+syncs the shown one to it, keeping unchanged items and the submenu and
+section GMenus. The compat `size-allocate` signal is emitted right after
+the layout (GTK 3 handlers resize widgets, which GTK 4 forbids while
+allocating). Minor: two "Trying to snapshot ECanvas without a current
+allocation" warnings on the first frame.
 
 **Layout managers**: GTK 4 measures and allocates widgets that have a
 layout manager (GtkBox, GtkGrid, GtkFixed, GtkButton, ... and their

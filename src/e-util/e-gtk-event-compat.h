@@ -47,7 +47,9 @@ void		e_gtk_widget_class_layout_methods
 
 /* "size-allocate" (void (GtkWidget *, GtkAllocation *)) is emitted after
  * widgets passed through this got allocated, with the allocation in their
- * own coordinates; the size_allocate method of their class is wrapped */
+ * own coordinates, right after the layout (the handlers may resize
+ * widgets, which GTK 4 does not allow while allocating); the size_allocate
+ * method of their class, or their layout manager, is wrapped */
 gpointer	e_gtk_widget_size_allocations	(gpointer widget);
 
 /* "style-updated" (void (GtkWidget *)) is emitted for widgets passed

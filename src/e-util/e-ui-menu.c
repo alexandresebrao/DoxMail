@@ -472,9 +472,130 @@ e_ui_menu_is_frozen (EUIMenu *self)
  *
  * Since: 3.56
  **/
+static gboolean
+e_ui_menu_items_equal (GMenuModel *model1,
+		       gint index1,
+		       GMenuModel *model2,
+		       gint index2)
+{
+	GMenuAttributeIter *aiter;
+	GMenuLinkIter *liter;
+	const gchar *name;
+	GVariant *value, *other;
+	GMenuModel *link;
+	guint n_attrs1 = 0, n_attrs2 = 0, n_links1 = 0, n_links2 = 0;
+	gboolean equal = TRUE;
+
+	aiter = g_menu_model_iterate_item_attributes (model1, index1);
+	while (equal && g_menu_attribute_iter_get_next (aiter, &name, &value)) {
+		other = g_menu_model_get_item_attribute_value (model2, index2, name, NULL);
+		equal = other && g_variant_equal (value, other);
+		g_clear_pointer (&other, g_variant_unref);
+		g_variant_unref (value);
+		n_attrs1++;
+	}
+	g_object_unref (aiter);
+
+	if (!equal)
+		return FALSE;
+
+	aiter = g_menu_model_iterate_item_attributes (model2, index2);
+	while (g_menu_attribute_iter_get_next (aiter, &name, &value)) {
+		g_variant_unref (value);
+		n_attrs2++;
+	}
+	g_object_unref (aiter);
+
+	if (n_attrs1 != n_attrs2)
+		return FALSE;
+
+	/* the same link names; their content is synced separately */
+	liter = g_menu_model_iterate_item_links (model1, index1);
+	while (equal && g_menu_link_iter_get_next (liter, &name, &link)) {
+		GMenuModel *other_link = g_menu_model_get_item_link (model2, index2, name);
+
+		equal = other_link != NULL;
+		g_clear_object (&other_link);
+		g_object_unref (link);
+		n_links1++;
+	}
+	g_object_unref (liter);
+
+	if (!equal)
+		return FALSE;
+
+	liter = g_menu_model_iterate_item_links (model2, index2);
+	while (g_menu_link_iter_get_next (liter, &name, &link)) {
+		g_object_unref (link);
+		n_links2++;
+	}
+	g_object_unref (liter);
+
+	return n_links1 == n_links2;
+}
+
+/* Makes @dest have the content of @src, changing only what differs and
+ * keeping the GMenu objects of the submenus and sections.  GTK 4's
+ * GtkPopoverMenu does not drop the pages of submenus removed from its
+ * model, thus menus rebuilt from scratch got stale submenus ("duplicate
+ * child name in GtkStack"). */
+static void
+e_ui_menu_sync (GMenu *dest,
+		GMenuModel *src)
+{
+	gint ii, n_src, n_dest;
+
+	n_src = g_menu_model_get_n_items (src);
+
+	for (ii = 0; ii < n_src; ii++) {
+		gboolean keep = FALSE;
+
+		n_dest = g_menu_model_get_n_items (G_MENU_MODEL (dest));
+
+		if (ii < n_dest && e_ui_menu_items_equal (G_MENU_MODEL (dest), ii, src, ii)) {
+			GMenuLinkIter *liter;
+			const gchar *name;
+			GMenuModel *src_link;
+
+			keep = TRUE;
+
+			liter = g_menu_model_iterate_item_links (src, ii);
+			while (keep && g_menu_link_iter_get_next (liter, &name, &src_link)) {
+				GMenuModel *dest_link = g_menu_model_get_item_link (G_MENU_MODEL (dest), ii, name);
+
+				if (dest_link == src_link) {
+					/* the same model, like a dynamic submenu */
+				} else if (G_IS_MENU (dest_link)) {
+					e_ui_menu_sync (G_MENU (dest_link), src_link);
+				} else {
+					keep = FALSE;
+				}
+
+				g_clear_object (&dest_link);
+				g_object_unref (src_link);
+			}
+			g_object_unref (liter);
+		}
+
+		if (!keep) {
+			GMenuItem *item = g_menu_item_new_from_model (src, ii);
+
+			if (ii < n_dest)
+				g_menu_remove (dest, ii);
+			g_menu_insert_item (dest, ii, item);
+			g_object_unref (item);
+		}
+	}
+
+	for (n_dest = g_menu_model_get_n_items (G_MENU_MODEL (dest)); n_dest > n_src; n_dest--)
+		g_menu_remove (dest, n_dest - 1);
+}
+
 void
 e_ui_menu_rebuild (EUIMenu *self)
 {
+	GMenu *real_menu, *fresh_menu;
+
 	g_return_if_fail (E_IS_UI_MENU (self));
 
 	if (self->frozen) {
@@ -482,8 +603,19 @@ e_ui_menu_rebuild (EUIMenu *self)
 		return;
 	}
 
+	/* DoxMail: fill a new menu, then sync the shown one to it */
+	real_menu = self->real_menu;
+	fresh_menu = g_menu_new ();
+
+	/* removes the tracked actions; the fill tracks them again */
+	self->real_menu = fresh_menu;
 	e_ui_menu_remove_all (self);
 	e_ui_manager_fill_menu (self->manager, self->id, self);
+	self->real_menu = real_menu;
+
+	e_ui_menu_sync (real_menu, G_MENU_MODEL (fresh_menu));
+
+	g_object_unref (fresh_menu);
 }
 
 /**
