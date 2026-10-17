@@ -58,12 +58,12 @@ typedef struct _EShellSidebarPrivate EShellSidebarPrivate;
  * functions below.
  **/
 struct _EShellSidebar {
-	GtkBin parent;
+	EGtkBin parent;
 	EShellSidebarPrivate *priv;
 };
 
 struct _EShellSidebarClass {
-	GtkBinClass parent_class;
+	EGtkBinClass parent_class;
 
 	guint32		(*check_state)		(EShellSidebar *shell_sidebar);
 };

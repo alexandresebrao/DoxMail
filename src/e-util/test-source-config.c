@@ -10,7 +10,7 @@ static void
 dialog_response (GtkDialog *dialog,
                  gint response_id)
 {
-	gtk_main_quit ();
+	e_gtk_main_quit ();
 }
 
 gint
@@ -52,7 +52,7 @@ main (gint argc,
 
 	g_object_unref (source);
 
-	gtk_main ();
+	e_gtk_main ();
 
 	e_misc_util_free_global_memory ();
 

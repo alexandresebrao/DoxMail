@@ -120,7 +120,7 @@ window_delete_event_cb (GtkWidget *widget,
 			GdkEvent *event,
 			gpointer user_data)
 {
-	gtk_main_quit ();
+	e_gtk_main_quit ();
 
 	return FALSE;
 }
@@ -134,7 +134,7 @@ on_idle_create_widget (gpointer user_data)
 	window = gtk_window_new ();
 	gtk_window_set_default_size (GTK_WINDOW (window), 480, 640);
 
-	g_signal_connect (window, "delete-event",
+	g_signal_connect (e_gtk_window_delete_events (window), "delete-event",
 		G_CALLBACK (window_delete_event_cb), NULL);
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 4);
@@ -231,7 +231,7 @@ main (int argc,
 
 	g_idle_add (on_idle_create_widget, registry);
 
-	gtk_main ();
+	e_gtk_main ();
 
 	g_object_unref (registry);
 	g_clear_object (&glob_client);

@@ -40,10 +40,12 @@ struct _EShellSwitcherPrivate {
 	GList *proxies;
 	gboolean style_set;
 	GtkToolbarStyle style;
-	GtkSettings *settings;
-	gulong settings_handler_id;
 	gboolean toolbar_visible;
 };
+
+/* the image and the label of a switcher button */
+#define BUTTON_IMAGE_KEY "e-shell-switcher-image"
+#define BUTTON_LABEL_KEY "e-shell-switcher-label"
 
 enum {
 	PROP_0,
@@ -58,18 +60,32 @@ enum {
 
 static guint signals[LAST_SIGNAL];
 
-/* Forward Declarations */
-static void shell_switcher_tool_shell_iface_init (GtkToolShellIface *iface);
-
-G_DEFINE_TYPE_WITH_CODE (EShellSwitcher, e_shell_switcher, GTK_TYPE_BIN,
+G_DEFINE_TYPE_WITH_CODE (EShellSwitcher, e_shell_switcher, E_GTK_TYPE_BIN,
 	G_ADD_PRIVATE (EShellSwitcher)
-	G_IMPLEMENT_INTERFACE (E_TYPE_EXTENSIBLE, NULL)
-	G_IMPLEMENT_INTERFACE (GTK_TYPE_TOOL_SHELL, shell_switcher_tool_shell_iface_init))
+	G_IMPLEMENT_INTERFACE (E_TYPE_EXTENSIBLE, NULL))
+
+/* GTK 4 has no tool items; a button shows its parts by the style */
+static void
+shell_switcher_style_button (GtkWidget *button,
+			     GtkToolbarStyle style)
+{
+	GtkWidget *image = g_object_get_data (G_OBJECT (button), BUTTON_IMAGE_KEY);
+	GtkWidget *label = g_object_get_data (G_OBJECT (button), BUTTON_LABEL_KEY);
+	GtkWidget *box = gtk_button_get_child (GTK_BUTTON (button));
+
+	gtk_widget_set_visible (image, style != GTK_TOOLBAR_TEXT);
+	gtk_widget_set_visible (label, style != GTK_TOOLBAR_ICONS);
+	gtk_orientable_set_orientation (GTK_ORIENTABLE (box),
+		style == GTK_TOOLBAR_BOTH ? GTK_ORIENTATION_VERTICAL : GTK_ORIENTATION_HORIZONTAL);
+	gtk_widget_set_halign (box, style == GTK_TOOLBAR_BOTH_HORIZ ? GTK_ALIGN_START : GTK_ALIGN_CENTER);
+}
 
 static gint
-shell_switcher_layout_actions (EShellSwitcher *switcher)
+shell_switcher_layout_actions (EShellSwitcher *switcher,
+			       gint width,
+			       gint height)
 {
-	GtkAllocation allocation;
+	GtkAllocation allocation = { 0, 0, width, height };
 	gint num_btns = g_list_length (switcher->priv->proxies), btns_per_row;
 	GList **rows, *p;
 	gboolean icons_only;
@@ -79,8 +95,6 @@ shell_switcher_layout_actions (EShellSwitcher *switcher)
 	gint row_last;
 	gint x, y;
 	gint i;
-
-	gtk_widget_get_allocation (GTK_WIDGET (switcher), &allocation);
 
 	y = allocation.y + allocation.height;
 
@@ -158,7 +172,7 @@ shell_switcher_layout_actions (EShellSwitcher *switcher)
 			child_allocation.height = max_height;
 
 			gtk_widget_size_allocate (
-				GTK_WIDGET (p->data), &child_allocation);
+				GTK_WIDGET (p->data), &child_allocation, -1);
 
 			x += child_allocation.width + H_PADDING;
 		}
@@ -169,15 +183,6 @@ shell_switcher_layout_actions (EShellSwitcher *switcher)
 	g_free (rows);
 
 	return y - allocation.y - V_PADDING;
-}
-
-static void
-shell_switcher_toolbar_style_changed_cb (EShellSwitcher *switcher)
-{
-	if (!switcher->priv->style_set) {
-		switcher->priv->style_set = TRUE;
-		e_shell_switcher_unset_style (switcher);
-	}
 }
 
 static void
@@ -306,63 +311,30 @@ shell_switcher_get_preferred_height (GtkWidget *switcher_widget,
 
 static void
 shell_switcher_size_allocate (GtkWidget *widget,
-                              GtkAllocation *allocation)
+                              gint width,
+                              gint height,
+                              gint baseline)
 {
 	EShellSwitcher *switcher;
 	GtkAllocation child_allocation;
 	GtkWidget *child;
-	gint height;
+	gint child_height;
 
 	switcher = E_SHELL_SWITCHER (widget);
 
-	gtk_widget_set_allocation (widget, allocation);
-
 	if (switcher->priv->toolbar_visible)
-		height = shell_switcher_layout_actions (switcher);
+		child_height = shell_switcher_layout_actions (switcher, width, height);
 	else
-		height = allocation->height;
+		child_height = height;
 
-	child_allocation.x = allocation->x;
-	child_allocation.y = allocation->y;
-	child_allocation.width = allocation->width;
-	child_allocation.height = height;
+	child_allocation.x = 0;
+	child_allocation.y = 0;
+	child_allocation.width = width;
+	child_allocation.height = child_height;
 
 	child = e_gtk_bin_get_child (widget);
 	if (child != NULL)
-		gtk_widget_size_allocate (child, &child_allocation);
-}
-
-static void
-shell_switcher_screen_changed (GtkWidget *widget,
-                               GdkScreen *previous_screen)
-{
-	EShellSwitcher *self = E_SHELL_SWITCHER (widget);
-	GtkSettings *settings;
-
-	if (gtk_widget_has_screen (widget))
-		settings = gtk_widget_get_settings (widget);
-	else
-		settings = NULL;
-
-	if (settings == self->priv->settings)
-		return;
-
-	if (self->priv->settings != NULL) {
-		g_signal_handler_disconnect (
-			self->priv->settings, self->priv->settings_handler_id);
-		g_clear_object (&self->priv->settings);
-	}
-
-	if (settings != NULL) {
-		self->priv->settings = g_object_ref (settings);
-		self->priv->settings_handler_id = e_signal_connect_notify_swapped (
-			settings, "notify::gtk-toolbar-style",
-			G_CALLBACK (shell_switcher_toolbar_style_changed_cb),
-			widget);
-	} else
-		self->priv->settings = NULL;
-
-	shell_switcher_toolbar_style_changed_cb (self);
+		gtk_widget_size_allocate (child, &child_allocation, -1);
 }
 
 static void
@@ -385,22 +357,7 @@ shell_switcher_remove (GtkWidget *container,
 	}
 
 	/* Chain up to parent's remove() method. */
-	GTK_CONTAINER_CLASS (e_shell_switcher_parent_class)->remove (container, remove_widget);
-}
-
-static void
-shell_switcher_forall (GtkWidget *container,
-                       gboolean include_internals,
-                       EGtkCallback callback,
-                       gpointer callback_data)
-{
-	EShellSwitcher *self = E_SHELL_SWITCHER (container);
-
-	if (include_internals)
-		g_list_foreach (self->priv->proxies, (GFunc) callback, callback_data);
-
-	/* Chain up to parent's forall() method. */
-	GTK_CONTAINER_CLASS (e_shell_switcher_parent_class)->forall (container, include_internals, callback, callback_data);
+	E_GTK_BIN_CLASS (e_shell_switcher_parent_class)->remove (container, remove_widget);
 }
 
 static void
@@ -414,43 +371,10 @@ shell_switcher_style_changed (EShellSwitcher *switcher,
 
 	g_list_foreach (
 		switcher->priv->proxies,
-		(GFunc) gtk_tool_item_toolbar_reconfigured, NULL);
+		(GFunc) shell_switcher_style_button, GINT_TO_POINTER (style));
 
 	gtk_widget_queue_resize (GTK_WIDGET (switcher));
 	g_object_notify (G_OBJECT (switcher), "toolbar-style");
-}
-
-static GtkIconSize
-shell_switcher_get_icon_size (GtkToolShell *shell)
-{
-	return GTK_ICON_SIZE_NORMAL;
-}
-
-static GtkOrientation
-shell_switcher_get_orientation (GtkToolShell *shell)
-{
-	return GTK_ORIENTATION_HORIZONTAL;
-}
-
-static GtkToolbarStyle
-shell_switcher_get_style (GtkToolShell *shell)
-{
-	return e_shell_switcher_get_style (E_SHELL_SWITCHER (shell));
-}
-
-static GtkReliefStyle
-shell_switcher_get_relief_style (GtkToolShell *shell)
-{
-	return GTK_RELIEF_NORMAL;
-}
-
-static gfloat
-shell_switcher_get_text_alignment (GtkToolShell *shell)
-{
-	if (shell_switcher_get_style (shell) == GTK_TOOLBAR_ICONS)
-		return 0.5;
-	else
-		return 0.0;
 }
 
 static void
@@ -481,7 +405,7 @@ e_shell_switcher_class_init (EShellSwitcherClass *class)
 {
 	GObjectClass *object_class;
 	GtkWidgetClass *widget_class;
-	GtkContainerClass *container_class;
+	EGtkBinClass *bin_class;
 
 	object_class = G_OBJECT_CLASS (class);
 	object_class->set_property = shell_switcher_set_property;
@@ -491,11 +415,9 @@ e_shell_switcher_class_init (EShellSwitcherClass *class)
 	widget_class = GTK_WIDGET_CLASS (class);
 	widget_class->measure = e_shell_switcher_measure;
 	widget_class->size_allocate = shell_switcher_size_allocate;
-	widget_class->screen_changed = shell_switcher_screen_changed;
 
-	container_class = GTK_CONTAINER_CLASS (class);
-	container_class->remove = shell_switcher_remove;
-	container_class->forall = shell_switcher_forall;
+	bin_class = E_GTK_BIN_CLASS (class);
+	bin_class->remove = shell_switcher_remove;
 
 	class->style_changed = shell_switcher_style_changed;
 
@@ -561,16 +483,6 @@ e_shell_switcher_init (EShellSwitcher *switcher)
 	e_extensible_load_extensions (E_EXTENSIBLE (switcher));
 }
 
-static void
-shell_switcher_tool_shell_iface_init (GtkToolShellIface *iface)
-{
-	iface->get_icon_size = shell_switcher_get_icon_size;
-	iface->get_orientation = shell_switcher_get_orientation;
-	iface->get_style = shell_switcher_get_style;
-	iface->get_relief_style = shell_switcher_get_relief_style;
-	iface->get_text_alignment = shell_switcher_get_text_alignment;
-}
-
 /**
  * e_shell_switcher_new:
  *
@@ -584,61 +496,33 @@ e_shell_switcher_new (void)
 	return g_object_new (E_TYPE_SHELL_SWITCHER, NULL);
 }
 
-/*
- * gtk+ doesn't give us what we want - a middle click,
- * option on toolbar items, so we have to get it by force.
- */
-static GtkButton *
-tool_item_get_button (GtkWidget *widget)
+/* A middle click, or a shift click, opens a new window of the view */
+static void
+switcher_button_pressed_cb (GtkGestureClick *gesture,
+			    gint n_press,
+			    gdouble x,
+			    gdouble y,
+			    EUIAction *action)
 {
-	GtkWidget *child;
-
-	g_return_val_if_fail (GTK_IS_TOOL_ITEM (widget), NULL);
-
-	child = e_gtk_bin_get_child (widget);
-	if (child != NULL && GTK_IS_BUTTON (child))
-		return GTK_BUTTON (child);
-	else
-		return NULL;
-}
-
-static gboolean
-tool_item_button_release_cb (GtkWidget *button,
-			     GdkEvent *button_event,
-			     EUIAction *action)
-{
-	guint32 my_mods = GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_ALT_MASK |
+	GdkModifierType my_mods = GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_ALT_MASK |
 		GDK_SUPER_MASK | GDK_HYPER_MASK | GDK_META_MASK;
-	GdkModifierType event_state = 0;
-	guint event_button = 0;
+	GdkModifierType state;
+	guint button;
 
-	g_return_val_if_fail (E_IS_UI_ACTION (action), FALSE);
+	g_return_if_fail (E_IS_UI_ACTION (action));
 
-	e_gdk_event_get_button (button_event, &event_button);
-	e_gdk_event_get_state (button_event, &event_state);
+	button = gtk_gesture_single_get_current_button (GTK_GESTURE_SINGLE (gesture));
+	state = gtk_event_controller_get_current_event_state (GTK_EVENT_CONTROLLER (gesture));
 
-	if (event_button == 2 || (event_button == 1 && (event_state & my_mods) == GDK_SHIFT_MASK)) {
+	if (button == 2 || (button == 1 && (state & my_mods) == GDK_SHIFT_MASK)) {
 		GVariant *target;
+
+		gtk_gesture_set_state (GTK_GESTURE (gesture), GTK_EVENT_SEQUENCE_CLAIMED);
 
 		target = e_ui_action_ref_target (action);
 		g_action_activate (G_ACTION (action), target);
 		g_clear_pointer (&target, g_variant_unref);
-
-		return TRUE;
 	}
-
-	/* switch to the chosen view - cannot 'return FALSE' below, because it "unpushes"
-	   the button when the user clicks on an already pushed (active) button */
-	if (GTK_IS_TOGGLE_BUTTON (button)) {
-		GtkWidget *parent;
-
-		parent = gtk_widget_get_parent (button);
-
-		if (GTK_IS_TOGGLE_TOOL_BUTTON (parent))
-			gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (parent), TRUE);
-	}
-
-	return TRUE;
 }
 
 /**
@@ -659,9 +543,8 @@ e_shell_switcher_add_action (EShellSwitcher *switcher,
                              EUIAction *switch_action,
                              EUIAction *new_window_action)
 {
-	GtkWidget *widget;
-	GtkButton *button;
-	GtkToolItem *tool_item;
+	GtkWidget *widget, *box, *image, *label;
+	GtkGesture *gesture;
 	GSettings *settings;
 	GVariant *target;
 	const gchar *view_name;
@@ -691,32 +574,41 @@ e_shell_switcher_add_action (EShellSwitcher *switcher,
 		return;
 
 	g_object_ref (switch_action);
-	tool_item = gtk_toggle_tool_button_new ();
-	gtk_tool_item_set_is_important (tool_item, TRUE);
+
+	image = gtk_image_new ();
+	label = gtk_label_new (NULL);
+	gtk_label_set_use_underline (GTK_LABEL (label), TRUE);
+	box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 4);
+	gtk_box_append (GTK_BOX (box), image);
+	gtk_box_append (GTK_BOX (box), label);
+
+	widget = gtk_toggle_button_new ();
+	gtk_button_set_child (GTK_BUTTON (widget), box);
+	g_object_set_data (G_OBJECT (widget), BUTTON_IMAGE_KEY, image);
+	g_object_set_data (G_OBJECT (widget), BUTTON_LABEL_KEY, label);
+	shell_switcher_style_button (widget, switcher->priv->style);
 
 	e_binding_bind_property (
 		switch_action, "label",
-		tool_item, "label",
+		label, "label",
 		G_BINDING_SYNC_CREATE);
 
 	e_binding_bind_property (
 		switch_action, "icon-name",
-		tool_item, "icon-name",
+		image, "icon-name",
 		G_BINDING_SYNC_CREATE);
 
-	widget = GTK_WIDGET (tool_item);
 	gtk_widget_set_tooltip_text (widget, e_ui_action_get_tooltip (switch_action));
-	gtk_widget_show (widget);
 
+	/* the action state keeps the button of the current view pushed */
 	e_ui_action_util_assign_to_widget (switch_action, widget);
 
-	button = tool_item_get_button (widget);
-	if (button != NULL) {
-		g_signal_connect_object (
-			e_gtk_widget_legacy_events (button), "button-release-event",
-			G_CALLBACK (tool_item_button_release_cb),
-			new_window_action, 0);
-	}
+	gesture = gtk_gesture_click_new ();
+	gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (gesture), 0);
+	gtk_event_controller_set_propagation_phase (GTK_EVENT_CONTROLLER (gesture), GTK_PHASE_CAPTURE);
+	g_signal_connect_object (gesture, "pressed",
+		G_CALLBACK (switcher_button_pressed_cb), new_window_action, 0);
+	gtk_widget_add_controller (widget, GTK_EVENT_CONTROLLER (gesture));
 
 	gtk_widget_set_visible (widget, switcher->priv->toolbar_visible);
 
@@ -773,7 +665,6 @@ e_shell_switcher_set_style (EShellSwitcher *switcher,
 void
 e_shell_switcher_unset_style (EShellSwitcher *switcher)
 {
-	GtkSettings *settings;
 	GtkToolbarStyle style;
 
 	g_return_if_fail (E_IS_SHELL_SWITCHER (switcher));
@@ -781,14 +672,8 @@ e_shell_switcher_unset_style (EShellSwitcher *switcher)
 	if (!switcher->priv->style_set)
 		return;
 
-	settings = switcher->priv->settings;
-	if (settings != NULL)
-		g_object_get (settings, "gtk-toolbar-style", &style, NULL);
-	else
-		style = E_SHELL_SWITCHER_DEFAULT_TOOLBAR_STYLE;
-
-	if (style == GTK_TOOLBAR_BOTH)
-		style = GTK_TOOLBAR_BOTH_HORIZ;
+	/* GTK 4 has no toolbar style setting */
+	style = E_SHELL_SWITCHER_DEFAULT_TOOLBAR_STYLE;
 
 	if (style != switcher->priv->style)
 		g_signal_emit (switcher, signals[STYLE_CHANGED], 0, style);

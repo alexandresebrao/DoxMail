@@ -58,6 +58,8 @@ void			e_header_bar_remove_all		(EHeaderBar *self);
 GList *			e_header_bar_get_start_widgets	(EHeaderBar *self);
 GList *			e_header_bar_get_end_widgets	(EHeaderBar *self);
 GtkHeaderBar *		e_header_bar_get_header_bar	(EHeaderBar *self);
+void			e_header_bar_bind_window_title	(GtkWidget *header_bar,
+							 GtkWindow *window);
 
 G_END_DECLS
 

@@ -154,7 +154,7 @@ test_utils_fixture_set_up (TestFixture *fixture,
 		G_CALLBACK (window_key_press_event_cb), fixture->web_view);
 
 	g_signal_connect (
-		fixture->window, "delete-event",
+		e_gtk_window_delete_events (fixture->window), "delete-event",
 		G_CALLBACK (window_delete_event_cb), fixture);
 
 	gtk_widget_set_visible (fixture->window, TRUE);

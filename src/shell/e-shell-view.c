@@ -71,6 +71,9 @@ struct _EShellViewPrivate {
 	guint accel_group_added : 1;
 	gint sidebar_width;
 
+	/* the shortcuts of the view, in the window while it is active */
+	GtkEventController *shortcut_controller;
+
 	gchar *title;
 	gchar *view_id;
 	gint page_num;
@@ -776,33 +779,19 @@ action_search_edit_cb (EUIAction *action,
 	shell_view_update_search_menu (self);
 }
 
+/* a popover menu tells only that it closed, chosen or cancelled */
 static void
-search_options_selection_cancel_cb (GtkMenuShell *menu,
-				    EShellView *self);
-
-static void
-search_options_selection_done_cb (GtkMenuShell *menu,
-				  EShellView *self)
+search_options_closed_cb (GtkPopover *menu,
+			  EShellView *self)
 {
 	EShellSearchbar *search_bar;
 
-	/* disconnect first */
-	g_signal_handlers_disconnect_by_func (menu, search_options_selection_done_cb, self);
-	g_signal_handlers_disconnect_by_func (menu, search_options_selection_cancel_cb, self);
+	g_signal_handlers_disconnect_by_func (menu, search_options_closed_cb, self);
 
 	g_return_if_fail (E_IS_SHELL_VIEW (self));
 
 	search_bar = E_SHELL_SEARCHBAR (e_shell_view_get_searchbar (self));
 	e_shell_searchbar_search_entry_grab_focus (search_bar);
-}
-
-static void
-search_options_selection_cancel_cb (GtkMenuShell *menu,
-				    EShellView *self)
-{
-	/* only disconnect both functions, thus the selection-done is not called */
-	g_signal_handlers_disconnect_by_func (menu, search_options_selection_done_cb, self);
-	g_signal_handlers_disconnect_by_func (menu, search_options_selection_cancel_cb, self);
 }
 
 static void
@@ -823,12 +812,10 @@ action_search_options_cb (EUIAction *action,
 	popup_menu = e_shell_view_show_popup_menu (self, "search-options", NULL);
 
 	if (popup_menu) {
-		g_return_if_fail (GTK_IS_MENU_SHELL (popup_menu));
+		g_return_if_fail (GTK_IS_POPOVER (popup_menu));
 
-		g_signal_connect_object (popup_menu, "selection-done",
-			G_CALLBACK (search_options_selection_done_cb), self, 0);
-		g_signal_connect_object (popup_menu, "cancel",
-			G_CALLBACK (search_options_selection_cancel_cb), self, 0);
+		g_signal_connect_object (popup_menu, "closed",
+			G_CALLBACK (search_options_closed_cb), self, 0);
 	}
 }
 
@@ -1505,17 +1492,13 @@ shell_view_ui_manager_create_item_cb (EUIManager *manager,
 		if (is_action ("EShellView::new-menu")) {
 			EShellBackend *shell_backend;
 			EUIAction *fallback_action;
-			GtkToolItem *tool_item;
-			GtkWidget *menu;
+			GtkWidget *tool_item;
 
 			fallback_action = shell_view_get_new_menu_first_action (G_MENU_MODEL (self->priv->new_menu), manager);
 
-			menu = gtk_popover_menu_new_from_model (G_MENU_MODEL (self->priv->new_menu));
 			tool_item = e_menu_tool_button_new (C_("toolbar-button", "New"), manager);
 			e_menu_tool_button_set_fallback_action (E_MENU_TOOL_BUTTON (tool_item), fallback_action);
-			gtk_tool_item_set_is_important (tool_item, TRUE);
-			gtk_menu_tool_button_set_menu (GTK_MENU_TOOL_BUTTON (tool_item), menu);
-			gtk_widget_set_visible (GTK_WIDGET (tool_item), TRUE);
+			e_menu_tool_button_set_menu_model (E_MENU_TOOL_BUTTON (tool_item), G_MENU_MODEL (self->priv->new_menu));
 
 			shell_backend = e_shell_view_get_shell_backend (self);
 
@@ -1533,28 +1516,21 @@ shell_view_ui_manager_create_item_cb (EUIManager *manager,
 		}
 
 		if (widget) {
-			GtkToolItem *tool_item;
-
-			tool_item = gtk_tool_item_new ();
-			e_gtk_container_add (tool_item, widget);
-			gtk_widget_set_visible (GTK_WIDGET (tool_item), TRUE);
-
-			*out_item = G_OBJECT (tool_item);
+			/* toolbars hold widgets directly with GTK 4 */
+			*out_item = G_OBJECT (widget);
 		} else if (!claimed && !*out_item) {
 			g_warning ("%s: Did not get toolbar widget for '%s'", G_STRFUNC, name);
 		}
 	} else if (for_kind == E_UI_ELEMENT_KIND_HEADERBAR) {
 		if (is_action ("EShellView::new-menu")) {
 			GtkWidget *button;
-			GtkWidget *menu;
 			EShellBackend *shell_backend;
 			EUIAction *fallback_action;
 
 			fallback_action = shell_view_get_new_menu_first_action (G_MENU_MODEL (self->priv->new_menu), manager);
 
-			menu = gtk_popover_menu_new_from_model (G_MENU_MODEL (self->priv->new_menu));
 			button = e_header_bar_button_new (C_("toolbar-button", "New"), fallback_action, manager);
-			e_header_bar_button_take_menu (E_HEADER_BAR_BUTTON (button), menu);
+			e_header_bar_button_set_menu_model (E_HEADER_BAR_BUTTON (button), G_MENU_MODEL (self->priv->new_menu));
 			gtk_widget_set_visible (GTK_WIDGET (button), TRUE);
 
 			shell_backend = e_shell_view_get_shell_backend (self);
@@ -1709,12 +1685,12 @@ shell_view_notify_active_view_cb (GObject *object,
 				  gpointer user_data)
 {
 	EShellView *self = user_data;
-	EGtkAccelGroup *accel_group;
 
 	if (!self->priv->ui_manager)
 		return;
 
-	accel_group = e_ui_manager_get_accel_group (self->priv->ui_manager);
+	if (!self->priv->shortcut_controller)
+		self->priv->shortcut_controller = e_ui_manager_create_shortcut_controller (self->priv->ui_manager);
 
 	/* Different views can use the same accelerator for their actions.
 	   The gtk+ finds the first accel group with the accelerator and
@@ -1724,11 +1700,12 @@ shell_view_notify_active_view_cb (GObject *object,
 	if (e_shell_view_is_active (self)) {
 		if (!self->priv->accel_group_added) {
 			self->priv->accel_group_added = TRUE;
-			e_gtk_window_add_accel_group (GTK_WINDOW (object), accel_group);
+			/* the window takes a reference, this one is kept */
+			gtk_widget_add_controller (GTK_WIDGET (object), g_object_ref (self->priv->shortcut_controller));
 		}
 	} else if (self->priv->accel_group_added) {
 		self->priv->accel_group_added = FALSE;
-		e_gtk_window_remove_accel_group (GTK_WINDOW (object), accel_group);
+		gtk_widget_remove_controller (GTK_WIDGET (object), self->priv->shortcut_controller);
 	}
 }
 
@@ -2014,6 +1991,8 @@ shell_view_dispose (GObject *object)
 
 	/* Expedite any pending state saves. */
 	e_shell_view_save_state_immediately (self);
+
+	g_clear_object (&self->priv->shortcut_controller);
 
 	if (self->priv->update_actions_idle_id > 0) {
 		g_source_remove (self->priv->update_actions_idle_id);
@@ -4018,7 +3997,6 @@ e_shell_view_show_popup_menu (EShellView *shell_view,
 {
 	GObject *ui_item;
 	GtkWidget *widget;
-	GtkMenu *menu;
 
 	g_return_val_if_fail (E_IS_SHELL_VIEW (shell_view), NULL);
 
@@ -4040,12 +4018,7 @@ e_shell_view_show_popup_menu (EShellView *shell_view,
 	widget = gtk_popover_menu_new_from_model (G_MENU_MODEL (ui_item));
 	g_clear_object (&ui_item);
 
-	menu = GTK_MENU (widget);
-
-	gtk_menu_attach_to_widget (menu, GTK_WIDGET (shell_view), NULL);
-	e_util_connect_menu_detach_after_deactivate (menu);
-
-	gtk_menu_popup_at_pointer (menu, button_event);
+	e_util_popup_menu_at_event (widget, GTK_WIDGET (shell_view), button_event);
 
 	return widget;
 }

@@ -295,7 +295,7 @@ action_quit_cb (EUIAction *action,
 
 	g_return_if_fail (E_IS_HTML_EDITOR (editor));
 
-	gtk_main_quit ();
+	e_gtk_main_quit ();
 }
 
 static void
@@ -444,7 +444,7 @@ editor_destroyed_cb (GtkWidget *editor)
 	glob_editors--;
 
 	if (!glob_editors)
-		gtk_main_quit ();
+		e_gtk_main_quit ();
 }
 
 static void
@@ -717,8 +717,8 @@ main (gint argc,
 	g_setenv ("E_HTML_EDITOR_TEST_SOURCES", "1", FALSE);
 	g_setenv ("EVOLUTION_SOURCE_WEBKITDATADIR", EVOLUTION_SOURCE_WEBKITDATADIR, FALSE);
 
-	gtk_icon_theme_append_search_path (e_gtk_icon_theme_get_default (), EVOLUTION_ICONDIR);
-	gtk_icon_theme_append_search_path (e_gtk_icon_theme_get_default (), E_DATA_SERVER_ICONDIR);
+	gtk_icon_theme_add_search_path (e_gtk_icon_theme_get_default (), EVOLUTION_ICONDIR);
+	gtk_icon_theme_add_search_path (e_gtk_icon_theme_get_default (), E_DATA_SERVER_ICONDIR);
 
 	modules = e_module_load_all_in_directory (EVOLUTION_MODULEDIR);
 	g_list_free_full (modules, (GDestroyNotify) g_type_module_unuse);
@@ -728,7 +728,7 @@ main (gint argc,
 
 	create_new_editor ();
 
-	gtk_main ();
+	e_gtk_main ();
 
 	g_clear_object (&application);
 	e_misc_util_free_global_memory ();

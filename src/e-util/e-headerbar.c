@@ -668,3 +668,41 @@ e_header_bar_get_end_widgets (EHeaderBar *self)
 
 	return e_gtk_widget_get_children (self->priv->end_buttons);
 }
+
+static void
+header_bar_window_title_cb (GtkWindow *window,
+			    GParamSpec *param,
+			    GtkHeaderBar *header_bar)
+{
+	e_gtk_header_bar_set_title (header_bar, gtk_window_get_title (window));
+}
+
+/**
+ * e_header_bar_bind_window_title:
+ * @header_bar: an #EHeaderBar or a #GtkHeaderBar
+ * @window: a #GtkWindow
+ *
+ * Shows the title of the @window in the @header_bar and keeps it updated;
+ * GTK 4 header bars have no "title" property to bind to.
+ *
+ * Since: DoxMail
+ **/
+void
+e_header_bar_bind_window_title (GtkWidget *header_bar,
+				GtkWindow *window)
+{
+	GtkHeaderBar *gtk_header_bar;
+
+	g_return_if_fail (GTK_IS_WINDOW (window));
+
+	if (E_IS_HEADER_BAR (header_bar))
+		gtk_header_bar = e_header_bar_get_header_bar (E_HEADER_BAR (header_bar));
+	else
+		gtk_header_bar = GTK_HEADER_BAR (header_bar);
+
+	g_return_if_fail (GTK_IS_HEADER_BAR (gtk_header_bar));
+
+	g_signal_connect_object (window, "notify::title",
+		G_CALLBACK (header_bar_window_title_cb), gtk_header_bar, 0);
+	header_bar_window_title_cb (window, NULL, gtk_header_bar);
+}

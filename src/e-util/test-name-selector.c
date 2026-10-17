@@ -31,7 +31,7 @@ close_dialog (GtkWidget *widget,
 	e_gtk_widget_destroy (GTK_WIDGET (name_selector_dialog));
 	e_gtk_widget_destroy (name_selector_entry_window);
 
-	g_timeout_add (4000, (GSourceFunc) gtk_main_quit, NULL);
+	g_timeout_add (4000, (GSourceFunc) e_gtk_main_quit, NULL);
 }
 
 static gboolean
@@ -100,7 +100,7 @@ main (gint argc,
 
 	g_idle_add ((GSourceFunc) start_test, client_cache);
 
-	gtk_main ();
+	e_gtk_main ();
 
 	g_object_unref (registry);
 	g_object_unref (client_cache);

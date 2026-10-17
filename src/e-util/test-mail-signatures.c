@@ -92,7 +92,7 @@ window_delete_event_cb (GtkWidget *widget,
 			GdkEvent *event,
 			gpointer user_data)
 {
-	gtk_main_quit ();
+	e_gtk_main_quit ();
 
 	return FALSE;
 }
@@ -127,7 +127,7 @@ main (gint argc,
 	gtk_widget_show (widget);
 
 	g_signal_connect (
-		widget, "delete-event",
+		e_gtk_window_delete_events (widget), "delete-event",
 		G_CALLBACK (window_delete_event_cb), NULL);
 
 	container = widget;
@@ -197,7 +197,7 @@ main (gint argc,
 		signature_combo, "identity-uid",
 		G_BINDING_SYNC_CREATE);
 
-	gtk_main ();
+	e_gtk_main ();
 
 	e_misc_util_free_global_memory ();
 

@@ -4441,7 +4441,7 @@ image_clicked (GtkWidget *button,
 				G_CALLBACK (file_chooser_response), editor);
 
 			g_signal_connect_after (
-				editor->priv->image_selector, "delete-event",
+				e_gtk_window_delete_events (editor->priv->image_selector), "delete-event",
 				G_CALLBACK (file_selector_deleted),
 				editor->priv->image_selector);
 		} else {
@@ -5282,7 +5282,7 @@ e_contact_editor_init (EContactEditor *e_contact_editor)
 	/* Connect to the deletion of the dialog */
 
 	g_signal_connect (
-		e_contact_editor->priv->app, "delete_event",
+		e_gtk_window_delete_events (e_contact_editor->priv->app), "delete_event",
 		G_CALLBACK (app_delete_event_cb), e_contact_editor);
 
 	/* set the icon */

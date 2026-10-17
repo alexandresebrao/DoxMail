@@ -585,7 +585,7 @@ e_plugin_ui_init (EUIManager *manager,
 		G_CALLBACK (key_press_cb), composer);
 
 	g_signal_connect (
-		cnt_editor, "delete-event",
+		e_gtk_window_delete_events (cnt_editor), "delete-event",
 		G_CALLBACK (delete_cb), composer);
 
 	return TRUE;

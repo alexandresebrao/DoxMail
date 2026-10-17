@@ -244,7 +244,7 @@ create_default_shell (gint *pargc,
 			_("Cannot start Evolution.  Another Evolution instance may be unresponsive. System error: %s"),
 			error->message);
 		g_warning ("%s", msg);
-		if (gtk_init_check (pargc, pargv))
+		if (gtk_init_check ())
 			e_notice (NULL, GTK_MESSAGE_ERROR, "%s", msg);
 		g_free (msg);
 		g_clear_error (&error);
@@ -328,7 +328,7 @@ main (gint argc,
 
 		#ifdef ENABLE_MAINTAINER_MODE
 		icon_theme = e_gtk_icon_theme_get_default ();
-		gtk_icon_theme_prepend_search_path (icon_theme, EVOLUTION_ICONDIR_IN_PREFIX);
+		gtk_icon_theme_add_search_path (icon_theme, EVOLUTION_ICONDIR_IN_PREFIX);
 		#endif
 
 		#ifdef DEVELOPMENT

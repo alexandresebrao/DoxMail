@@ -33,6 +33,7 @@ enum {
 	DRAG_MOTION,
 	DRAG_DROP,
 	DRAG_DATA_RECEIVED,
+	OWNER_CHANGE,
 	LAST_SIGNAL
 };
 
@@ -58,6 +59,12 @@ static void
 e_gtk_dnd_register_signals (void)
 {
 	GType type = GTK_TYPE_WIDGET;
+
+	/* GtkClipboard::owner-change (void (GdkClipboard *, gpointer event)),
+	 * emitted from GdkClipboard::changed with a NULL event */
+	signals[OWNER_CHANGE] = g_signal_new ("owner-change", GDK_TYPE_CLIPBOARD,
+		G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL,
+		G_TYPE_NONE, 1, G_TYPE_POINTER);
 
 	signals[DRAG_BEGIN] = g_signal_new ("drag-begin", type,
 		G_SIGNAL_RUN_LAST, 0, NULL, NULL, NULL,
@@ -1906,16 +1913,32 @@ e_gtk_drag_finish (EGtkDragContext *context,
 /* ------------------------------------------------------------------ */
 /* Clipboard */
 
+static void
+clipboard_changed_cb (GdkClipboard *clipboard,
+		      gpointer user_data)
+{
+	g_signal_emit (clipboard, signals[OWNER_CHANGE], 0, NULL);
+}
+
 GdkClipboard *
 e_gtk_clipboard_get_for_display (GdkDisplay *display,
                                  EGtkAtom selection)
 {
+	GdkClipboard *clipboard;
+
 	g_return_val_if_fail (GDK_IS_DISPLAY (display), NULL);
 
 	if (selection && g_str_equal (selection, "PRIMARY"))
-		return gdk_display_get_primary_clipboard (display);
+		clipboard = gdk_display_get_primary_clipboard (display);
+	else
+		clipboard = gdk_display_get_clipboard (display);
 
-	return gdk_display_get_clipboard (display);
+	if (!g_object_get_data (G_OBJECT (clipboard), "e-gtk-owner-change")) {
+		g_object_set_data (G_OBJECT (clipboard), "e-gtk-owner-change", GINT_TO_POINTER (1));
+		g_signal_connect (clipboard, "changed", G_CALLBACK (clipboard_changed_cb), NULL);
+	}
+
+	return clipboard;
 }
 
 GdkClipboard *

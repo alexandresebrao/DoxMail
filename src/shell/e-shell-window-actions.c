@@ -81,19 +81,9 @@ action_close_cb (EUIAction *action,
 		 gpointer user_data)
 {
 	EShellWindow *shell_window = user_data;
-	GtkWidget *widget;
-	GdkSurface *window;
-	GdkEvent *event;
 
-	widget = GTK_WIDGET (shell_window);
-	window = e_gtk_widget_get_surface (widget);
-
-	/* Synthesize a delete_event on this window. */
-	event = gdk_event_new (GDK_DELETE);
-	event->any.window = g_object_ref (window);
-	event->any.send_event = TRUE;
-	gtk_main_do_event (event);
-	gdk_event_unref (event);
+	/* GTK 4 closes like the window manager's close button did */
+	gtk_window_close (GTK_WINDOW (shell_window));
 }
 
 /**

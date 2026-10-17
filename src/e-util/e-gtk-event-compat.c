@@ -21,6 +21,7 @@ enum {
 	FOCUS_OUT_EVENT,
 	POPUP_MENU,
 	STYLE_UPDATED,
+	DELETE_EVENT,
 	LAST_SIGNAL
 };
 
@@ -71,6 +72,13 @@ e_gtk_event_register_signals (void)
 		G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION, 0,
 		g_signal_accumulator_true_handled, NULL, NULL,
 		G_TYPE_BOOLEAN, 0);
+
+	signals[DELETE_EVENT] = g_signal_new (
+		"delete-event", GTK_TYPE_WINDOW,
+		G_SIGNAL_RUN_LAST, 0,
+		g_signal_accumulator_true_handled, NULL, NULL,
+		G_TYPE_BOOLEAN, 1,
+		GDK_TYPE_EVENT);
 
 	signals[STYLE_UPDATED] = g_signal_new (
 		"style-updated", GTK_TYPE_WIDGET,
@@ -395,6 +403,30 @@ e_gtk_widget_chain_legacy_popup_menu (GtkWidget *widget)
 	g_value_unset (&ret);
 
 	return handled;
+}
+
+static gboolean
+window_close_request_cb (GtkWindow *window,
+			 gpointer user_data)
+{
+	gboolean handled = FALSE;
+
+	g_signal_emit (window, signals[DELETE_EVENT], 0, NULL, &handled);
+
+	return handled;
+}
+
+gpointer
+e_gtk_window_delete_events (gpointer window)
+{
+	g_return_val_if_fail (GTK_IS_WINDOW (window), window);
+
+	if (!g_object_get_data (window, "e-gtk-delete-events")) {
+		g_object_set_data (window, "e-gtk-delete-events", GINT_TO_POINTER (1));
+		g_signal_connect (window, "close-request", G_CALLBACK (window_close_request_cb), NULL);
+	}
+
+	return window;
 }
 
 static void

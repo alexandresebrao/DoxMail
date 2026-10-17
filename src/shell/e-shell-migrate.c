@@ -408,7 +408,6 @@ shell_migrate_mail_folders_show_dialog_cb (gpointer user_data)
 		"deletable", FALSE,
 		"resizable", FALSE,
 		"modal", TRUE, /* to not have "minimize" button */
-		"type-hint", GDK_WINDOW_TYPE_HINT_DIALOG, /* to not have "minimize" button */
 		"title", _("Evolution"),
 		NULL);
 
@@ -460,7 +459,7 @@ shell_migrate_mail_folders_show_dialog_cb (gpointer user_data)
 	/* do not update the GUI more than 5 times per second */
 	mfd->update_dialog_id = g_timeout_add (1000 / 5, shell_migrate_mail_folders_update_dialog_cb, mfd);
 
-	g_signal_connect (mfd->window, "delete-event", G_CALLBACK (prevent_window_delete_cb), NULL);
+	g_signal_connect (e_gtk_window_delete_events (mfd->window), "delete-event", G_CALLBACK (prevent_window_delete_cb), NULL);
 
 	gtk_widget_set_visible (box, TRUE);
 	gtk_window_present (GTK_WINDOW (mfd->window));

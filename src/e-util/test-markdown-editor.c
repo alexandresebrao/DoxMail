@@ -13,7 +13,7 @@ window_delete_event_cb (GtkWidget *widget,
 			GdkEvent *event,
 			gpointer user_data)
 {
-	gtk_main_quit ();
+	e_gtk_main_quit ();
 
 	return FALSE;
 }
@@ -189,7 +189,7 @@ on_idle_create_widget (gpointer user_data)
 	gtk_window_set_default_size (GTK_WINDOW (window), 640, 480);
 
 	g_signal_connect (
-		window, "delete-event",
+		e_gtk_window_delete_events (window), "delete-event",
 		G_CALLBACK (window_delete_event_cb), NULL);
 
 	widget = gtk_grid_new ();
@@ -412,15 +412,15 @@ main (gint argc,
 
 	g_setenv ("EVOLUTION_SOURCE_WEBKITDATADIR", EVOLUTION_SOURCE_WEBKITDATADIR, FALSE);
 
-	gtk_icon_theme_append_search_path (e_gtk_icon_theme_get_default (), EVOLUTION_ICONDIR);
-	gtk_icon_theme_append_search_path (e_gtk_icon_theme_get_default (), E_DATA_SERVER_ICONDIR);
+	gtk_icon_theme_add_search_path (e_gtk_icon_theme_get_default (), EVOLUTION_ICONDIR);
+	gtk_icon_theme_add_search_path (e_gtk_icon_theme_get_default (), E_DATA_SERVER_ICONDIR);
 
 	modules = e_module_load_all_in_directory (EVOLUTION_MODULEDIR);
 	g_list_free_full (modules, (GDestroyNotify) g_type_module_unuse);
 
 	g_idle_add ((GSourceFunc) on_idle_create_widget, NULL);
 
-	gtk_main ();
+	e_gtk_main ();
 
 	e_misc_util_free_global_memory ();
 

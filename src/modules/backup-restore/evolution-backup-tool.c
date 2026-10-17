@@ -1179,7 +1179,7 @@ finish_job (gpointer user_data)
 		e_gtk_widget_destroy (widget);
 	}
 
-	gtk_main_quit ();
+	e_gtk_main_quit ();
 
 	return FALSE;
 }
@@ -1233,7 +1233,7 @@ dlg_response (GtkWidget *dlg,
 		g_free (filename);
 	}
 
-	gtk_main_quit ();
+	e_gtk_main_quit ();
 }
 
 gint
@@ -1441,7 +1441,7 @@ main (gint argc,
 	g_task_run_in_thread (task, start_job);
 	g_object_unref (task);
 
-	gtk_main ();
+	e_gtk_main ();
 
 	g_object_unref (cancellable);
 	e_misc_util_free_global_memory ();

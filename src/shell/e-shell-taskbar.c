@@ -354,31 +354,43 @@ shell_taskbar_constructed (GObject *object)
 	G_OBJECT_CLASS (e_shell_taskbar_parent_class)->constructed (object);
 }
 
+static gboolean
+shell_taskbar_set_height_idle_cb (gpointer user_data)
+{
+	EShellTaskbar *shell_taskbar = user_data;
+
+	g_object_set (G_OBJECT (shell_taskbar), "height-request", shell_taskbar->priv->fixed_height, NULL);
+
+	return G_SOURCE_REMOVE;
+}
+
 static void
 shell_taskbar_size_allocate (GtkWidget *widget,
-                             GtkAllocation *allocation)
+                             gint width,
+                             gint height,
+                             gint baseline)
 {
 	EShellTaskbar *shell_taskbar;
 	gint fixed_height, minimum_height = 0, natural_height = 0;
 	gboolean height_changed;
 
-	if (GTK_WIDGET_CLASS (e_shell_taskbar_parent_class)->get_preferred_height)
-		GTK_WIDGET_CLASS (e_shell_taskbar_parent_class)->measure (widget, GTK_ORIENTATION_VERTICAL, -1, &minimum_height, &natural_height, NULL, NULL);
+	GTK_WIDGET_CLASS (e_shell_taskbar_parent_class)->measure (widget, GTK_ORIENTATION_VERTICAL, -1, &minimum_height, &natural_height, NULL, NULL);
 
 	shell_taskbar = E_SHELL_TASKBAR (widget);
 
 	/* Maximum height allocation sticks. */
 	fixed_height = shell_taskbar->priv->fixed_height;
-	fixed_height = MAX (fixed_height, MAX (allocation->height, minimum_height));
+	fixed_height = MAX (fixed_height, MAX (height, minimum_height));
 	height_changed = fixed_height != shell_taskbar->priv->fixed_height;
 	shell_taskbar->priv->fixed_height = fixed_height;
 
 	/* Chain up to parent's size_allocate() method. */
 	GTK_WIDGET_CLASS (e_shell_taskbar_parent_class)->
-		size_allocate (widget, allocation);
+		size_allocate (widget, width, height, baseline);
 
+	/* not while allocating; GTK 4 warns about resizes then */
 	if (height_changed)
-		g_object_set (G_OBJECT (shell_taskbar), "height-request", fixed_height, NULL);
+		g_idle_add_full (G_PRIORITY_HIGH_IDLE, shell_taskbar_set_height_idle_cb, g_object_ref (shell_taskbar), g_object_unref);
 }
 
 static void

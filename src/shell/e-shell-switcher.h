@@ -58,12 +58,12 @@ typedef struct _EShellSwitcherPrivate EShellSwitcherPrivate;
  * functions below.
  **/
 struct _EShellSwitcher {
-	GtkBin parent;
+	EGtkBin parent;
 	EShellSwitcherPrivate *priv;
 };
 
 struct _EShellSwitcherClass {
-	GtkBinClass parent_class;
+	EGtkBinClass parent_class;
 
 	void		(*style_changed)	(EShellSwitcher *switcher,
 						 GtkToolbarStyle style);

@@ -249,7 +249,7 @@ e_preferences_window_init (EPreferencesWindow *window)
 	if (e_util_get_use_header_bar ()) {
 		widget = gtk_header_bar_new ();
 		g_object_set (G_OBJECT (widget),
-			"show-close-button", TRUE,
+			"show-title-buttons", TRUE,
 			"visible", TRUE,
 			NULL);
 		gtk_window_set_titlebar (GTK_WINDOW (window), widget);

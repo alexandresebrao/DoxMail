@@ -22,7 +22,7 @@ static EProxyPreferences *preferences;
 static gboolean
 quit_delay_cb (gpointer user_data)
 {
-	gtk_main_quit ();
+	e_gtk_main_quit ();
 
 	return FALSE;
 }
@@ -68,7 +68,7 @@ main (gint argc,
 	gtk_widget_show (window);
 
 	g_signal_connect (
-		window, "delete-event",
+		e_gtk_window_delete_events (window), "delete-event",
 		G_CALLBACK (delete_event_cb), NULL);
 
 	widget = e_proxy_preferences_new (registry);
@@ -78,7 +78,7 @@ main (gint argc,
 
 	g_object_unref (registry);
 
-	gtk_main ();
+	e_gtk_main ();
 
 	e_misc_util_free_global_memory ();
 

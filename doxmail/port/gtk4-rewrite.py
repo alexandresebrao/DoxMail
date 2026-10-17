@@ -234,6 +234,8 @@ RENAMES = {
 
 # GTK 3 calls with nothing to do in GTK 4, dropped when they are a statement
 DROPPED = [
+    'gtk_window_set_role',
+    'gtk_window_set_type_hint',
     'gtk_toolbar_set_style',
     'gtk_toolbar_set_show_arrow',
     'gtk_toolbar_set_icon_size',
@@ -466,6 +468,9 @@ def wrap_legacy_connects(text):
                 not first.startswith('e_gtk_widget_legacy_events')):
             out.append('e_gtk_widget_legacy_events (%s)' % first.strip())
             counts['legacy event connect'] += 1
+        elif name == '"delete-event"' and not first.startswith('e_gtk_window_delete_events'):
+            out.append('e_gtk_window_delete_events (%s)' % first.strip())
+            counts['delete-event connect'] += 1
         elif name == '"style-updated"' and not first.startswith('e_gtk_widget_style_updates'):
             out.append('e_gtk_widget_style_updates (%s)' % first.strip())
             counts['style-updated connect'] += 1
@@ -580,6 +585,10 @@ REGEX_RENAMES = [
     (r'\(GDestroyNotify\) gtk_widget_destroy\b', '(GDestroyNotify) e_gtk_widget_destroy'),
     (r'(g_clear_pointer \([^,]+, )gtk_widget_destroy\)', r'\1e_gtk_widget_destroy)'),
     (r'\bGTK_IS_CONTAINER\b', 'GTK_IS_WIDGET'),
+    # GtkBin subclasses -> EGtkBin of e-gtk4-compat
+    (r'\bGTK_TYPE_BIN\b', 'E_GTK_TYPE_BIN'),
+    (r'\bGtkBin(Class)?\b', r'EGtkBin\1'),
+    (r'\n[ \t]*\w+->forall = \w+;', ''),
     # GTK 4 has no containers; any widget may have children
     (r'\bGtkContainer\b(?!Class)', 'GtkWidget'),
     (r'\bGTK_CONTAINER\s*\(', 'GTK_WIDGET ('),
@@ -604,6 +613,10 @@ REGEX_RENAMES = [
     (r'\bGTK_BUTTON_BOX\s*\(', 'GTK_BOX ('),
     (r'\bgtk_button_clicked \(\s*GTK_BUTTON \(([^()]*(?:\([^()]*\))?[^()]*)\)\s*\)', r'g_signal_emit_by_name (\1, "clicked")'),
     (r'\bGtkAccelGroup\b', 'EGtkAccelGroup'),
+    (r'\bgtk_main \(\)', 'e_gtk_main ()'),
+    (r'\bgtk_main_quit\b', 'e_gtk_main_quit'),
+    (r'\bgtk_init_check \([^()]*\)', 'gtk_init_check ()'),
+    (r'\bgtk_paned_add(1|2) \(\s*GTK_PANED \(([^()]*)\),\s*([^;]*)\);', lambda m: 'e_gtk_paned_pack%s (%s, %s, %s, TRUE);' % (m.group(1), m.group(2), m.group(3), 'FALSE' if m.group(1) == '1' else 'TRUE')),
     (r'\bgtk_widget_override_font\s*\(', 'e_gtk_widget_override_font ('),
     (r'\bGtkBindingSet \*', 'GtkWidgetClass *'),
     (r'\bgtk_button_box_set_child_secondary \(\s*GTK_BUTTON_BOX \(([^()]*)\)', r'e_gtk_button_box_set_child_secondary (\1'),
@@ -628,6 +641,10 @@ REGEX_RENAMES = [
     (r'\bgtk_image_new_from_stock\s*\(', 'gtk_image_new_from_icon_name ('),
     (r'\bGTK_STOCK_OK\b', '_("_OK")'),
     (r'\bGTK_STOCK_CANCEL\b', '_("_Cancel")'),
+    (r'\bgtk_style_context_add_provider_for_screen \(\s*gdk_screen_get_default \(\)', 'gtk_style_context_add_provider_for_display (gdk_display_get_default ()'),
+    (r'\bgtk_style_context_remove_provider_for_screen \(\s*gdk_screen_get_default \(\)', 'gtk_style_context_remove_provider_for_display (gdk_display_get_default ()'),
+    (r'\bgtk_icon_theme_(append|prepend)_search_path\s*\(', 'gtk_icon_theme_add_search_path ('),
+    (r'\n[ \t]*"type-hint", GDK_WINDOW_TYPE_HINT_[A-Z_]+,[^\n]*', ''),
     (r'\bgtk_icon_theme_load_icon_for_scale\s*\(', 'e_gtk_icon_theme_load_icon_for_scale ('),
     (r'\bgtk_render_icon_surface\s*\(', 'e_gtk_render_icon_surface ('),
     (r'\bGTK_ICON_LOOKUP_(FORCE_SIZE|USE_BUILTIN|GENERIC_FALLBACK|NO_SVG|FORCE_SVG)\b', '0'),

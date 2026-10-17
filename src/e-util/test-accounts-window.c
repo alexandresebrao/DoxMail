@@ -59,7 +59,7 @@ main (gint argc,
 
 	window = e_accounts_window_new (registry);
 
-	g_signal_connect (window, "delete-event", G_CALLBACK (delete_event_cb), loop);
+	g_signal_connect (e_gtk_window_delete_events (window), "delete-event", G_CALLBACK (delete_event_cb), loop);
 
 	e_accounts_window_show_with_parent (E_ACCOUNTS_WINDOW (window), NULL);
 

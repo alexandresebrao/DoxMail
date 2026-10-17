@@ -645,7 +645,7 @@ source_viewer_constructed (GObject *object)
 		GTK_SCROLLED_WINDOW (widget),
 		GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_scrolled_window_set_has_frame (GTK_SCROLLED_WINDOW (widget), TRUE);
-	gtk_paned_add1 (GTK_PANED (paned), widget);
+	e_gtk_paned_pack1 (paned, widget, FALSE, TRUE);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -732,7 +732,7 @@ source_viewer_constructed (GObject *object)
 	/* Right panel */
 
 	widget = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-	gtk_paned_add2 (GTK_PANED (paned), widget);
+	e_gtk_paned_pack2 (paned, widget, TRUE, TRUE);
 	gtk_widget_show (widget);
 
 	container = widget;
@@ -1145,7 +1145,7 @@ window_delete_event_cb (GtkWidget *widget,
 			GdkEvent *event,
 			gpointer user_data)
 {
-	gtk_main_quit ();
+	e_gtk_main_quit ();
 
 	return FALSE;
 }
@@ -1172,12 +1172,12 @@ main (gint argc,
 	}
 
 	g_signal_connect (
-		viewer, "delete-event",
+		e_gtk_window_delete_events (viewer), "delete-event",
 		G_CALLBACK (window_delete_event_cb), NULL);
 
 	gtk_widget_show (viewer);
 
-	gtk_main ();
+	e_gtk_main ();
 
 	e_misc_util_free_global_memory ();
 

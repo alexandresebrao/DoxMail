@@ -498,7 +498,7 @@ shell_ready_for_quit (EShell *shell,
 	 * watched window will modify the watched windows list, which
 	 * would derail the iteration. */
 	list = g_list_copy (gtk_application_get_windows (application));
-	g_list_foreach (list, (GFunc) gtk_widget_destroy, NULL);
+	g_list_foreach (list, (GFunc) e_gtk_widget_destroy, NULL);
 	g_list_free (list);
 }
 
@@ -1527,7 +1527,10 @@ e_setup_theme_icons_theme_changed_cb (GtkSettings *gtk_settings)
 			for (ii = 0; ii < G_N_ELEMENTS (sample_icon_names); ii++) {
 				EGtkIconInfo *icon_info;
 
-				icon_info = gtk_icon_theme_choose_icon (icon_theme, sample_icon_names[ii], 32, 0);
+				/* the first one the theme has, as gtk_icon_theme_choose_icon() did */
+				icon_info = e_gtk_icon_theme_lookup_icon (icon_theme, sample_icon_names[ii][0], 32, 0);
+				if (!icon_info)
+					icon_info = e_gtk_icon_theme_lookup_icon (icon_theme, sample_icon_names[ii][1], 32, 0);
 				if (icon_info) {
 					if (e_gtk_icon_info_is_symbolic (icon_info))
 						n_symbolic++;
@@ -1556,7 +1559,7 @@ e_setup_theme_icons_theme_changed_cb (GtkSettings *gtk_settings)
 		symbolic_icons_css_provider = gtk_css_provider_new ();
 		g_object_set_data_full (G_OBJECT (icon_theme), KEY_NAME, symbolic_icons_css_provider, g_object_unref);
 
-		gtk_style_context_add_provider_for_screen (gdk_screen_get_default (),
+		gtk_style_context_add_provider_for_display (gdk_display_get_default (),
 			GTK_STYLE_PROVIDER (symbolic_icons_css_provider),
 			GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 	}
@@ -1566,7 +1569,7 @@ e_setup_theme_icons_theme_changed_cb (GtkSettings *gtk_settings)
 			symbolic_icons_css_provider = gtk_css_provider_new ();
 			g_object_set_data_full (G_OBJECT (icon_theme), KEY_NAME, symbolic_icons_css_provider, g_object_unref);
 
-			gtk_style_context_add_provider_for_screen (gdk_screen_get_default (),
+			gtk_style_context_add_provider_for_display (gdk_display_get_default (),
 				GTK_STYLE_PROVIDER (symbolic_icons_css_provider),
 				GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 		}
@@ -1629,7 +1632,7 @@ categories_icon_theme_hack (void)
 				/* Add it to the icon theme's search path.  This relies on
 				 * GtkIconTheme's legacy feature of using image files found
 				 * directly in the search path. */
-				gtk_icon_theme_append_search_path (icon_theme, dirname);
+				gtk_icon_theme_add_search_path (icon_theme, dirname);
 				g_hash_table_insert (dirnames, dirname, NULL);
 			} else {
 				g_free (dirname);
@@ -1908,8 +1911,8 @@ shell_activate (GApplication *application)
 		/* Add our icon directory to the theme's search path
 		 * here instead of in main() so Anjal picks it up. */
 		icon_theme = e_gtk_icon_theme_get_default ();
-		gtk_icon_theme_append_search_path (icon_theme, EVOLUTION_ICONDIR);
-		gtk_icon_theme_append_search_path (icon_theme, E_DATA_SERVER_ICONDIR);
+		gtk_icon_theme_add_search_path (icon_theme, EVOLUTION_ICONDIR);
+		gtk_icon_theme_add_search_path (icon_theme, E_DATA_SERVER_ICONDIR);
 
 		e_shell_load_modules (shell);
 
@@ -1975,7 +1978,7 @@ shell_window_added (GtkApplication *application,
 	/* Register a callback to properly quit when the window is closed, but
 	 * run it last so other handlers also have a chance to run beforehand. */
 	g_signal_connect_after (
-		window, "delete-event",
+		e_gtk_window_delete_events (window), "delete-event",
 		G_CALLBACK (shell_window_delete_event_cb), application);
 
 	/* We use the window's own type name and memory
@@ -1984,7 +1987,6 @@ shell_window_added (GtkApplication *application,
 		"%s-%" G_GINTPTR_FORMAT,
 		G_OBJECT_TYPE_NAME (window),
 		(gintptr) window);
-	gtk_window_set_role (window, role);
 	g_free (role);
 }
 

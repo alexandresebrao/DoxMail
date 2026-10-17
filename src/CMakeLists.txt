@@ -3,6 +3,7 @@
 if(WITH_GTK4)
 	add_subdirectory(libgnomecanvas)
 	add_subdirectory(e-util)
+	add_subdirectory(shell)
 	add_subdirectory(doxmail-tests)
 	return()
 endif(WITH_GTK4)

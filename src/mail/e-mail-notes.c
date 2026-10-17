@@ -1271,7 +1271,7 @@ e_mail_notes_editor_new_with_editor (EHTMLEditor *html_editor,
 	g_object_unref (settings);
 
 	g_signal_connect (
-		notes_editor, "delete-event",
+		e_gtk_window_delete_events (notes_editor), "delete-event",
 		G_CALLBACK (mail_notes_editor_delete_event_cb), NULL);
 
 	activity_bar = e_html_editor_get_activity_bar (notes_editor->editor);

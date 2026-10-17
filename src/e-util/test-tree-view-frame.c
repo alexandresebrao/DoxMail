@@ -11,7 +11,7 @@ static gboolean
 delete_event_cb (GtkWidget *widget,
                  GdkEvent *event)
 {
-	gtk_main_quit ();
+	e_gtk_main_quit ();
 
 	return FALSE;
 }
@@ -195,7 +195,7 @@ build_test_window (void)
 	gtk_widget_show (widget);
 
 	g_signal_connect (
-		widget, "delete-event",
+		e_gtk_window_delete_events (widget), "delete-event",
 		G_CALLBACK (delete_event_cb), NULL);
 
 	container = widget;
@@ -369,7 +369,7 @@ main (gint argc,
 	build_tree_view ();
 	build_test_window ();
 
-	gtk_main ();
+	e_gtk_main ();
 
 	e_misc_util_free_global_memory ();
 

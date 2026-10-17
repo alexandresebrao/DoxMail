@@ -346,11 +346,8 @@ shell_window_create_shell_view (EShellWindow *shell_window,
 
 					e_gtk_box_pack_start (shell_window->priv->headerbar_box, widget, FALSE, FALSE, 0);
 
-					e_binding_bind_property (widget, "title",
-						shell_window, "title",
-						G_BINDING_DEFAULT);
-
-					e_gtk_header_bar_set_title (GTK_HEADER_BAR (widget), _("Evolution"));
+					gtk_window_set_title (GTK_WINDOW (shell_window), _("Evolution"));
+					e_header_bar_bind_window_title (widget, GTK_WINDOW (shell_window));
 				}
 
 				widget = gtk_label_new ("Failed to load any view. Is installation broken?");
@@ -412,9 +409,7 @@ shell_window_create_shell_view (EShellWindow *shell_window,
 		e_gtk_box_pack_start (shell_window->priv->headerbar_box, headerbar, FALSE, FALSE, 0);
 		gtk_widget_set_visible (headerbar, g_hash_table_size (loaded_views) == 1);
 
-		e_binding_bind_property (shell_window, "title",
-			headerbar, "title",
-			G_BINDING_SYNC_CREATE);
+		e_header_bar_bind_window_title (headerbar, GTK_WINDOW (shell_window));
 
 		g_clear_object (&headerbar);
 	}
@@ -783,12 +778,12 @@ e_shell_window_init (EShellWindow *shell_window)
 
 	css_provider = gtk_css_provider_new ();
 	gtk_css_provider_load_from_string (css_provider, css);
-	gtk_style_context_add_provider_for_screen (gdk_screen_get_default (),
+	gtk_style_context_add_provider_for_display (gdk_display_get_default (),
 		GTK_STYLE_PROVIDER (css_provider),
 		GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 	g_clear_object (&css_provider);
 
-	g_signal_connect (shell_window, "delete-event",
+	g_signal_connect (e_gtk_window_delete_events (shell_window), "delete-event",
 		G_CALLBACK (shell_window_delete_event_cb), NULL);
 }
 

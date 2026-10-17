@@ -438,10 +438,19 @@ focus_tracker_targets_received_cb (GdkClipboard *clipboard,
 
 static void
 focus_tracker_set_focus_cb (GtkWindow *window,
-                            GtkWidget *focus,
+                            GParamSpec *param,
                             EFocusTracker *focus_tracker)
 {
+	GtkWidget *focus = gtk_window_get_focus (window);
+
 	while (focus != NULL) {
+		GtkWidget *parent = gtk_widget_get_parent (focus);
+
+		/* the GtkText inside an entry stands for the entry */
+		if (GTK_IS_TEXT (focus) && GTK_IS_EDITABLE (parent) &&
+		    gtk_editable_get_delegate (GTK_EDITABLE (parent)) == GTK_EDITABLE (focus))
+			focus = parent;
+
 		if (E_IS_SELECTABLE (focus))
 			break;
 
@@ -476,7 +485,7 @@ focus_tracker_set_window (EFocusTracker *focus_tracker,
 	focus_tracker->priv->window = g_object_ref (window);
 
 	g_signal_connect (
-		window, "set-focus",
+		window, "notify::focus-widget",
 		G_CALLBACK (focus_tracker_set_focus_cb), focus_tracker);
 }
 

@@ -4561,7 +4561,7 @@ e_vcard_editor_constructed (GObject *object)
 		"default-height", 650,
 		NULL);
 
-	g_signal_connect (self, "delete-event",
+	g_signal_connect (e_gtk_window_delete_events (self), "delete-event",
 		G_CALLBACK (eve_delete_event_cb), NULL);
 
 	self->add_menu_button = gtk_menu_button_new ();
@@ -5119,7 +5119,6 @@ e_vcard_editor_new (GtkWindow *transient_for,
 	self = g_object_new (E_TYPE_VCARD_EDITOR,
 		"can-focus", FALSE,
 		"border-width", 6,
-		"type-hint", GDK_WINDOW_TYPE_HINT_NORMAL,
 		"transient-for", transient_for,
 		"use-header-bar", e_util_get_use_header_bar (),
 		"title", _("Contact Editor"),

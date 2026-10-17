@@ -57,7 +57,7 @@ enum {
 static void	e_shell_content_alert_sink_init
 					(EAlertSinkInterface *iface);
 
-G_DEFINE_TYPE_WITH_CODE (EShellContent, e_shell_content, GTK_TYPE_BIN,
+G_DEFINE_TYPE_WITH_CODE (EShellContent, e_shell_content, E_GTK_TYPE_BIN,
 	G_ADD_PRIVATE (EShellContent)
 	G_IMPLEMENT_INTERFACE (E_TYPE_ALERT_SINK, e_shell_content_alert_sink_init)
 	G_IMPLEMENT_INTERFACE (E_TYPE_EXTENSIBLE, NULL));
@@ -260,7 +260,9 @@ shell_content_get_preferred_height (GtkWidget *widget,
 
 static void
 shell_content_size_allocate (GtkWidget *widget,
-                             GtkAllocation *allocation)
+                             gint width,
+                             gint height,
+                             gint baseline)
 {
 	EShellContent *self = E_SHELL_CONTENT (widget);
 	GtkAllocation child_allocation;
@@ -268,12 +270,11 @@ shell_content_size_allocate (GtkWidget *widget,
 	GtkWidget *child;
 	gint remaining_height;
 
-	remaining_height = allocation->height;
-	gtk_widget_set_allocation (widget, allocation);
+	remaining_height = height;
 
-	child_allocation.x = allocation->x;
-	child_allocation.y = allocation->y;
-	child_allocation.width = allocation->width;
+	child_allocation.x = 0;
+	child_allocation.y = 0;
+	child_allocation.width = width;
 
 	child_requisition.height = 0;
 
@@ -291,7 +292,7 @@ shell_content_size_allocate (GtkWidget *widget,
 	child_allocation.height = child_requisition.height;
 
 	if (child_allocation.height > 0)
-		gtk_widget_size_allocate (child, &child_allocation);
+		gtk_widget_size_allocate (child, &child_allocation, -1);
 
 	/* Search bar gets to be as tall as it wants (if we have one). */
 
@@ -307,16 +308,16 @@ shell_content_size_allocate (GtkWidget *widget,
 	child_allocation.height = child_requisition.height;
 
 	if (child != NULL)
-		gtk_widget_size_allocate (child, &child_allocation);
+		gtk_widget_size_allocate (child, &child_allocation, -1);
 
-	/* The GtkBin child gets whatever vertical space is left. */
+	/* The EGtkBin child gets whatever vertical space is left. */
 
 	child_allocation.y += child_requisition.height;
 	child_allocation.height = remaining_height;
 
 	child = e_gtk_bin_get_child (widget);
 	if (child != NULL)
-		gtk_widget_size_allocate (child, &child_allocation);
+		gtk_widget_size_allocate (child, &child_allocation, -1);
 }
 
 static void
@@ -338,25 +339,7 @@ shell_content_remove (GtkWidget *container,
 	}
 
 	/* Chain up to parent's remove() method. */
-	GTK_CONTAINER_CLASS (e_shell_content_parent_class)->remove (container, widget);
-}
-
-static void
-shell_content_forall (GtkWidget *container,
-                      gboolean include_internals,
-                      EGtkCallback callback,
-                      gpointer callback_data)
-{
-	EShellContent *self = E_SHELL_CONTENT (container);
-
-	if (self->priv->alert_bar != NULL)
-		callback (self->priv->alert_bar, callback_data);
-
-	if (self->priv->searchbar != NULL)
-		callback (self->priv->searchbar, callback_data);
-
-	/* Chain up to parent's forall() method. */
-	GTK_CONTAINER_CLASS (e_shell_content_parent_class)->forall (container, include_internals, callback, callback_data);
+	E_GTK_BIN_CLASS (e_shell_content_parent_class)->remove (container, widget);
 }
 
 static void
@@ -398,7 +381,7 @@ e_shell_content_class_init (EShellContentClass *class)
 {
 	GObjectClass *object_class;
 	GtkWidgetClass *widget_class;
-	GtkContainerClass *container_class;
+	EGtkBinClass *bin_class;
 
 	object_class = G_OBJECT_CLASS (class);
 	object_class->set_property = shell_content_set_property;
@@ -411,9 +394,8 @@ e_shell_content_class_init (EShellContentClass *class)
 	widget_class->measure = e_shell_content_measure;
 	widget_class->size_allocate = shell_content_size_allocate;
 
-	container_class = GTK_CONTAINER_CLASS (class);
-	container_class->remove = shell_content_remove;
-	container_class->forall = shell_content_forall;
+	bin_class = E_GTK_BIN_CLASS (class);
+	bin_class->remove = shell_content_remove;
 
 	/**
 	 * EShellContent:alert-bar

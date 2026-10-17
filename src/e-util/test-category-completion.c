@@ -21,7 +21,7 @@ window_delete_event_cb (GtkWidget *widget,
 			GdkEvent *event,
 			gpointer user_data)
 {
-	gtk_main_quit ();
+	e_gtk_main_quit ();
 
 	return FALSE;
 }
@@ -38,7 +38,7 @@ on_idle_create_widget (void)
 	gtk_window_set_default_size (GTK_WINDOW (window), 400, 200);
 
 	g_signal_connect (
-		window, "delete-event",
+		e_gtk_window_delete_events (window), "delete-event",
 		G_CALLBACK (window_delete_event_cb), NULL);
 
 	vgrid = g_object_new (
@@ -70,7 +70,7 @@ main (gint argc,
 
 	g_idle_add ((GSourceFunc) on_idle_create_widget, NULL);
 
-	gtk_main ();
+	e_gtk_main ();
 
 	e_misc_util_free_global_memory ();
 

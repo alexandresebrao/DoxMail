@@ -56,7 +56,7 @@ enum {
 static void	e_shell_sidebar_alert_sink_init
 					(EAlertSinkInterface *iface);
 
-G_DEFINE_TYPE_WITH_CODE (EShellSidebar, e_shell_sidebar, GTK_TYPE_BIN,
+G_DEFINE_TYPE_WITH_CODE (EShellSidebar, e_shell_sidebar, E_GTK_TYPE_BIN,
 	G_ADD_PRIVATE (EShellSidebar)
 	G_IMPLEMENT_INTERFACE (E_TYPE_ALERT_SINK, e_shell_sidebar_alert_sink_init)
 	G_IMPLEMENT_INTERFACE (E_TYPE_EXTENSIBLE, NULL))
@@ -160,7 +160,7 @@ shell_sidebar_dispose (GObject *object)
 
 	if (self->priv->event_box != NULL) {
 		gtk_widget_unparent (self->priv->event_box);
-		e_gtk_widget_destroy (self->priv->event_box);
+		self->priv->event_box = NULL;
 	}
 
 	g_clear_object (&self->priv->event_box);
@@ -242,47 +242,31 @@ shell_sidebar_get_preferred_height (GtkWidget *widget,
 
 static void
 shell_sidebar_size_allocate (GtkWidget *widget,
-                             GtkAllocation *allocation)
+                             gint width,
+                             gint height,
+                             gint baseline)
 {
 	EShellSidebar *self = E_SHELL_SIDEBAR (widget);
 	GtkAllocation child_allocation;
 	GtkRequisition child_requisition;
 	GtkWidget *child;
 
-	gtk_widget_set_allocation (widget, allocation);
-
 	child = self->priv->event_box;
 	gtk_widget_get_preferred_size (child, &child_requisition, NULL);
 
-	child_allocation.x = allocation->x;
-	child_allocation.y = allocation->y;
-	child_allocation.width = allocation->width;
+	child_allocation.x = 0;
+	child_allocation.y = 0;
+	child_allocation.width = width;
 	child_allocation.height = child_requisition.height;
 
-	gtk_widget_size_allocate (child, &child_allocation);
+	gtk_widget_size_allocate (child, &child_allocation, -1);
 
 	child_allocation.y += child_requisition.height;
-	child_allocation.height =
-		allocation->height - child_requisition.height;
+	child_allocation.height = height - child_requisition.height;
 
 	child = e_gtk_bin_get_child (widget);
 	if (child != NULL)
-		gtk_widget_size_allocate (child, &child_allocation);
-}
-
-static void
-shell_sidebar_forall (GtkWidget *container,
-                      gboolean include_internals,
-                      EGtkCallback callback,
-                      gpointer callback_data)
-{
-	EShellSidebar *self = E_SHELL_SIDEBAR (container);
-
-	if (include_internals && callback && self->priv->event_box)
-		callback (self->priv->event_box, callback_data);
-
-	/* Chain up to parent's forall() method. */
-	GTK_CONTAINER_CLASS (e_shell_sidebar_parent_class)->forall (container, include_internals, callback, callback_data);
+		gtk_widget_size_allocate (child, &child_allocation, -1);
 }
 
 static void
@@ -332,8 +316,6 @@ e_shell_sidebar_class_init (EShellSidebarClass *class)
 {
 	GObjectClass *object_class;
 	GtkWidgetClass *widget_class;
-	GtkContainerClass *container_class;
-
 	object_class = G_OBJECT_CLASS (class);
 	object_class->set_property = shell_sidebar_set_property;
 	object_class->get_property = shell_sidebar_get_property;
@@ -344,9 +326,6 @@ e_shell_sidebar_class_init (EShellSidebarClass *class)
 	widget_class = GTK_WIDGET_CLASS (class);
 	widget_class->measure = e_shell_sidebar_measure;
 	widget_class->size_allocate = shell_sidebar_size_allocate;
-
-	container_class = GTK_CONTAINER_CLASS (class);
-	container_class->forall = shell_sidebar_forall;
 
 	/**
 	 * EShellSidebar:icon-name

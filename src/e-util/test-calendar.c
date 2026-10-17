@@ -45,7 +45,7 @@ delete_event_cb (GtkWidget *widget,
                  GdkEvent *event,
                  gpointer data)
 {
-	gtk_main_quit ();
+	e_gtk_main_quit ();
 }
 
 gint
@@ -66,7 +66,7 @@ main (gint argc,
 	e_gtk_widget_set_border_width (window, 8);
 
 	g_signal_connect (
-		window, "delete_event",
+		e_gtk_window_delete_events (window), "delete_event",
 		G_CALLBACK (delete_event_cb), NULL);
 
 	cal = e_calendar_new ();
@@ -94,7 +94,7 @@ main (gint argc,
 	e_gtk_container_add (window, vbox);
 	gtk_widget_show (window);
 
-	gtk_main ();
+	e_gtk_main ();
 
 	e_misc_util_free_global_memory ();
 

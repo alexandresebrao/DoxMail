@@ -1608,7 +1608,7 @@ subscription_editor_constructed (GObject *object)
 	G_OBJECT_CLASS (em_subscription_editor_parent_class)->constructed (object);
 
 	g_signal_connect (
-		editor, "delete-event",
+		e_gtk_window_delete_events (editor), "delete-event",
 		G_CALLBACK (subscription_editor_delete_event_cb), NULL);
 	g_signal_connect (
 		editor, "response",

@@ -126,7 +126,7 @@ main (gint argc,
 	e_gtk_widget_set_border_width (window, 8);
 
 	g_signal_connect (
-		window, "delete_event",
+		e_gtk_window_delete_events (window), "delete_event",
 		G_CALLBACK (delete_event_cb), window);
 
 	grid = GTK_GRID (gtk_grid_new ());
@@ -292,7 +292,7 @@ main (gint argc,
 
 	gtk_widget_show (window);
 
-	gtk_main ();
+	e_gtk_main ();
 
 	e_misc_util_free_global_memory ();
 
@@ -306,7 +306,7 @@ delete_event_cb (GtkWidget *widget,
 {
 	e_gtk_widget_destroy (window);
 
-	gtk_main_quit ();
+	e_gtk_main_quit ();
 }
 
 static void

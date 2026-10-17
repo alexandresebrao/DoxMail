@@ -55,6 +55,7 @@ bin_child (GtkWidget *bin,
 	BIN (GTK_IS_LIST_BOX_ROW, GtkListBoxRow, gtk_list_box_row_get_child, gtk_list_box_row_set_child)
 	BIN (GTK_IS_FLOW_BOX_CHILD, GtkFlowBoxChild, gtk_flow_box_child_get_child, gtk_flow_box_child_set_child)
 	BIN (GTK_IS_WINDOW_HANDLE, GtkWindowHandle, gtk_window_handle_get_child, gtk_window_handle_set_child)
+	BIN (E_GTK_IS_BIN, EGtkBin, e_gtk_bin_get_bin_child, e_gtk_bin_set_bin_child)
 	/* the entry of a combo box with one, as with GTK 3 */
 	BIN (GTK_IS_COMBO_BOX, GtkComboBox, gtk_combo_box_get_child, gtk_combo_box_set_child)
 
@@ -154,7 +155,9 @@ e_gtk_container_remove (gpointer container,
 
 	parent = gtk_widget_get_parent (child);
 
-	if (GTK_IS_BOX (widget)) {
+	if (E_GTK_IS_BIN (widget)) {
+		E_GTK_BIN_GET_CLASS (widget)->remove (widget, child);
+	} else if (GTK_IS_BOX (widget)) {
 		/* children packed with e_gtk_box_pack_end() sit in an inner box */
 		if (parent && parent != widget &&
 		    parent == g_object_get_data (G_OBJECT (widget), END_BOX_KEY))
@@ -2110,4 +2113,161 @@ e_gtk_widget_get_pointer_position (GtkWidget *widget,
 		*y = py;
 
 	return res;
+}
+
+typedef struct _EGtkBinPrivate {
+	GtkWidget *child;
+} EGtkBinPrivate;
+
+G_DEFINE_TYPE_WITH_PRIVATE (EGtkBin, e_gtk_bin, GTK_TYPE_WIDGET)
+
+static void
+e_gtk_bin_real_remove (GtkWidget *container,
+		       GtkWidget *child)
+{
+	EGtkBinPrivate *priv = e_gtk_bin_get_instance_private (E_GTK_BIN (container));
+
+	if (child == priv->child) {
+		e_gtk_bin_set_bin_child (E_GTK_BIN (container), NULL);
+	} else if (gtk_widget_get_parent (child) == container) {
+		gtk_widget_unparent (child);
+	}
+}
+
+static void
+e_gtk_bin_measure (GtkWidget *widget,
+		   GtkOrientation orientation,
+		   gint for_size,
+		   gint *minimum,
+		   gint *natural,
+		   gint *minimum_baseline,
+		   gint *natural_baseline)
+{
+	EGtkBinPrivate *priv = e_gtk_bin_get_instance_private (E_GTK_BIN (widget));
+
+	if (priv->child && gtk_widget_get_visible (priv->child))
+		gtk_widget_measure (priv->child, orientation, for_size, minimum, natural, minimum_baseline, natural_baseline);
+}
+
+static void
+e_gtk_bin_size_allocate (GtkWidget *widget,
+			 gint width,
+			 gint height,
+			 gint baseline)
+{
+	EGtkBinPrivate *priv = e_gtk_bin_get_instance_private (E_GTK_BIN (widget));
+
+	if (priv->child && gtk_widget_get_visible (priv->child))
+		gtk_widget_allocate (priv->child, width, height, baseline, NULL);
+}
+
+static void
+e_gtk_bin_dispose (GObject *object)
+{
+	GtkWidget *child;
+
+	/* the main child and anything else a subclass did not drop */
+	e_gtk_bin_set_bin_child (E_GTK_BIN (object), NULL);
+
+	while ((child = gtk_widget_get_first_child (GTK_WIDGET (object))) != NULL)
+		gtk_widget_unparent (child);
+
+	G_OBJECT_CLASS (e_gtk_bin_parent_class)->dispose (object);
+}
+
+static void
+e_gtk_bin_class_init (EGtkBinClass *klass)
+{
+	GObjectClass *object_class = G_OBJECT_CLASS (klass);
+	GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+
+	object_class->dispose = e_gtk_bin_dispose;
+
+	widget_class->measure = e_gtk_bin_measure;
+	widget_class->size_allocate = e_gtk_bin_size_allocate;
+
+	klass->remove = e_gtk_bin_real_remove;
+}
+
+static void
+e_gtk_bin_init (EGtkBin *bin)
+{
+}
+
+GtkWidget *
+e_gtk_bin_get_bin_child (EGtkBin *bin)
+{
+	EGtkBinPrivate *priv;
+
+	g_return_val_if_fail (E_GTK_IS_BIN (bin), NULL);
+
+	priv = e_gtk_bin_get_instance_private (bin);
+
+	return priv->child;
+}
+
+void
+e_gtk_bin_set_bin_child (EGtkBin *bin,
+			 GtkWidget *child)
+{
+	EGtkBinPrivate *priv;
+
+	g_return_if_fail (E_GTK_IS_BIN (bin));
+	g_return_if_fail (child == NULL || GTK_IS_WIDGET (child));
+
+	priv = e_gtk_bin_get_instance_private (bin);
+
+	if (priv->child == child)
+		return;
+
+	if (priv->child)
+		gtk_widget_unparent (priv->child);
+
+	priv->child = child;
+
+	if (child)
+		gtk_widget_set_parent (child, GTK_WIDGET (bin));
+}
+
+GType
+e_gtk_toolbar_style_get_type (void)
+{
+	static gsize type = 0;
+
+	if (g_once_init_enter (&type)) {
+		/* the GTK 3 names and nicks */
+		static const GEnumValue values[] = {
+			{ GTK_TOOLBAR_ICONS, "GTK_TOOLBAR_ICONS", "icons" },
+			{ GTK_TOOLBAR_TEXT, "GTK_TOOLBAR_TEXT", "text" },
+			{ GTK_TOOLBAR_BOTH, "GTK_TOOLBAR_BOTH", "both" },
+			{ GTK_TOOLBAR_BOTH_HORIZ, "GTK_TOOLBAR_BOTH_HORIZ", "both-horiz" },
+			{ 0, NULL, NULL }
+		};
+
+		g_once_init_leave (&type, g_enum_register_static (g_intern_static_string ("GtkToolbarStyle"), values));
+	}
+
+	return type;
+}
+
+static GSList *main_loops = NULL;
+
+void
+e_gtk_main (void)
+{
+	GMainLoop *loop = g_main_loop_new (NULL, FALSE);
+
+	main_loops = g_slist_prepend (main_loops, loop);
+	g_main_loop_run (loop);
+	main_loops = g_slist_remove (main_loops, loop);
+
+	g_main_loop_unref (loop);
+}
+
+void
+e_gtk_main_quit (void)
+{
+	g_return_if_fail (main_loops != NULL);
+
+	g_main_loop_quit (main_loops->data);
 }

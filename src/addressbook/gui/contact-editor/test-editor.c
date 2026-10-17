@@ -73,7 +73,7 @@ editor_closed_cb (EContactEditor *ce,
 	g_object_unref (ce);
 
 	if (count == 0)
-		gtk_main_quit ();
+		e_gtk_main_quit ();
 }
 
 gint
@@ -106,7 +106,7 @@ main (gint argc,
 		ce, "editor_closed",
 		G_CALLBACK (editor_closed_cb), NULL);
 
-	gtk_main ();
+	e_gtk_main ();
 
 	e_misc_util_free_global_memory ();
 

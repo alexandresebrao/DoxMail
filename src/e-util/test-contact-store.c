@@ -138,7 +138,7 @@ main (gint argc,
 
 	g_idle_add ((GSourceFunc) start_test, (gpointer) param);
 
-	gtk_main ();
+	e_gtk_main ();
 
 	e_misc_util_free_global_memory ();
 

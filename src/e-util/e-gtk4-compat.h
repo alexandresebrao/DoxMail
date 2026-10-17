@@ -340,6 +340,39 @@ GSList *	e_gtk_radio_button_get_group	(gpointer button);
 void		e_gtk_radio_button_join_group	(gpointer button,
 						 gpointer group_source);
 
+/* gtk_main() and gtk_main_quit(): nested GMainLoop-s */
+void		e_gtk_main			(void);
+void		e_gtk_main_quit			(void);
+
+/* GtkToolbarStyle is gone with GTK 4; the shell switcher and the
+ * settings still talk about it */
+typedef enum {
+	GTK_TOOLBAR_ICONS,
+	GTK_TOOLBAR_TEXT,
+	GTK_TOOLBAR_BOTH,
+	GTK_TOOLBAR_BOTH_HORIZ
+} GtkToolbarStyle;
+
+#define GTK_TYPE_TOOLBAR_STYLE (e_gtk_toolbar_style_get_type ())
+GType		e_gtk_toolbar_style_get_type	(void) G_GNUC_CONST;
+
+/* GtkBin is gone with GTK 4: a widget with one main child, which it
+ * measures and allocates by default; subclasses may parent more widgets
+ * and drop them in remove(), called by e_gtk_container_remove() */
+#define E_GTK_TYPE_BIN (e_gtk_bin_get_type ())
+G_DECLARE_DERIVABLE_TYPE (EGtkBin, e_gtk_bin, E_GTK, BIN, GtkWidget)
+
+struct _EGtkBinClass {
+	GtkWidgetClass parent_class;
+
+	void	(* remove)	(GtkWidget *container,
+				 GtkWidget *child);
+};
+
+GtkWidget *	e_gtk_bin_get_bin_child		(EGtkBin *bin);
+void		e_gtk_bin_set_bin_child		(EGtkBin *bin,
+						 GtkWidget *child);
+
 /* GtkScrollable implemented by a wrapper and forwarded to the wrapped child;
  * the four properties take ids first_property_id .. first_property_id + 3 */
 void		e_gtk_scrollable_override_properties

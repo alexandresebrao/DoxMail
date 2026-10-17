@@ -180,7 +180,7 @@ e_rss_folder_tree_model_extension_constructed (GObject *object)
 
 		icon_dir = g_build_filename (e_get_user_data_dir (), "mail", "rss", NULL);
 
-		gtk_icon_theme_append_search_path (e_gtk_icon_theme_get_default (), icon_dir);
+		gtk_icon_theme_add_search_path (e_gtk_icon_theme_get_default (), icon_dir);
 
 		g_free (icon_dir);
 	}

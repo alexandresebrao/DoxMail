@@ -637,7 +637,7 @@ mail_signature_editor_constructed (GObject *object)
 	gtk_widget_show (widget);
 
 	g_signal_connect (
-		window, "delete-event",
+		e_gtk_window_delete_events (window), "delete-event",
 		G_CALLBACK (mail_signature_editor_delete_event_cb), NULL);
 
 	/* Configure an EFocusTracker to manage selection actions. */

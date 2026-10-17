@@ -813,6 +813,8 @@ add_private_programs_simple(
 	test-web-view-jsc
 )
 
+# DoxMail: the units synthesize GTK 3 key events; GTK 4 cannot inject them
+if(NOT WITH_GTK4)
 add_private_program(test-html-editor-units
 	test-html-editor-units.c
 	test-html-editor-units-bugs.h
@@ -821,6 +823,7 @@ add_private_program(test-html-editor-units
 	test-html-editor-units-utils.c
 )
 add_dependencies(test-html-editor-units evolutiontestsettings)
+endif(NOT WITH_GTK4)
 
 # verify e-supported-locales-private.h contains all locales from /po directory
 if(ENABLE_MAINTAINER_MODE)

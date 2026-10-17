@@ -77,7 +77,7 @@ window_notify_visible_cb (GObject *object,
 			  gpointer user_data)
 {
 	if (!gtk_widget_get_visible (GTK_WIDGET (object)))
-		gtk_main_quit ();
+		e_gtk_main_quit ();
 }
 
 gint
@@ -100,7 +100,7 @@ main (gint argc,
 
 	gtk_widget_show (window);
 
-	gtk_main ();
+	e_gtk_main ();
 
 	e_gtk_widget_destroy (window);
 	e_misc_util_free_global_memory ();

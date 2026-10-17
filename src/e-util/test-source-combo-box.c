@@ -99,7 +99,7 @@ main (gint argc,
 
 	g_idle_add ((GSourceFunc) on_idle_create_widget, registry);
 
-	gtk_main ();
+	e_gtk_main ();
 
 	e_misc_util_free_global_memory ();
 

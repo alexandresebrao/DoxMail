@@ -2831,7 +2831,7 @@ msg_composer_constructed (GObject *object)
 	gtk_window_set_default_size (GTK_WINDOW (composer), 600, 500);
 
 	g_signal_connect (
-		object, "delete-event",
+		e_gtk_window_delete_events (object), "delete-event",
 		G_CALLBACK (msg_composer_delete_event_cb), NULL);
 
 	g_signal_connect (

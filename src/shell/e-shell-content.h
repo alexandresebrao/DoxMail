@@ -58,12 +58,12 @@ typedef struct _EShellContentPrivate EShellContentPrivate;
  * functions below.
  **/
 struct _EShellContent {
-	GtkBin parent;
+	EGtkBin parent;
 	EShellContentPrivate *priv;
 };
 
 struct _EShellContentClass {
-	GtkBinClass parent_class;
+	EGtkBinClass parent_class;
 
 	/* Methods */
 	guint32		(*check_state)		(EShellContent *shell_content);

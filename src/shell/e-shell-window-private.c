@@ -240,7 +240,12 @@ e_shell_window_private_constructed (EShellWindow *shell_window)
 	 * values.  Note that if a geometry string is applied, the window
 	 * size and position are -not- recorded. */
 	if (priv->geometry != NULL) {
-		if (!gtk_window_parse_geometry (window, priv->geometry))
+		gint width = 0, height = 0;
+
+		/* GTK 4 windows can only take a size, from WIDTHxHEIGHT */
+		if (sscanf (priv->geometry, "%dx%d", &width, &height) == 2 && width > 0 && height > 0)
+			gtk_window_set_default_size (window, width, height);
+		else
 			g_printerr (
 				"Failed to parse geometry '%s'\n",
 				priv->geometry);
