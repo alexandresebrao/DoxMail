@@ -1500,7 +1500,9 @@ contact_list_editor_constructed (GObject *object)
 		selection, "changed",
 		G_CALLBACK (contact_list_editor_selection_changed_cb), editor);
 
-	gtk_tree_view_enable_model_drag_dest (view, NULL, GDK_ACTION_LINK);
+	/* GTK 3 gtk_tree_view_enable_model_drag_dest() made it a drag
+	 * destination handling the motion and drop itself */
+	e_gtk_drag_dest_set (WIDGET (TREE_VIEW), E_GTK_DEST_DEFAULT_ALL, NULL, 0, GDK_ACTION_LINK);
 	e_drag_dest_add_directory_targets (WIDGET (TREE_VIEW));
 	e_gtk_drag_dest_add_text_targets (WIDGET (TREE_VIEW));
 

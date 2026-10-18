@@ -1082,8 +1082,12 @@ e_tree_view_frame_insert_toolbar_action (ETreeViewFrame *tree_view_frame,
 		return;
 	}
 
-	/* icon-only, the label goes nowhere, as with GTK_TOOLBAR_ICONS */
-	tool_item = gtk_button_new_from_icon_name (e_ui_action_get_icon_name (action));
+	/* icon-only, the label goes nowhere, as with GTK_TOOLBAR_ICONS;
+	 * actions without an icon show their label */
+	if (e_ui_action_get_icon_name (action))
+		tool_item = gtk_button_new_from_icon_name (e_ui_action_get_icon_name (action));
+	else
+		tool_item = gtk_button_new_with_mnemonic (e_ui_action_get_label (action));
 	gtk_button_set_has_frame (GTK_BUTTON (tool_item), FALSE);
 	g_object_set_data_full (G_OBJECT (tool_item), "tree-view-frame-action",
 		g_object_ref (action), g_object_unref);

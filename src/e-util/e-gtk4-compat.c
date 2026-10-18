@@ -802,6 +802,15 @@ e_gtk_widget_get_preferred_height_for_width (GtkWidget *widget,
                                              gint *minimum,
                                              gint *natural)
 {
+	/* GTK 3 took a width under the minimum (like 0, before the first
+	 * allocation) as the minimum; GTK 4 warns */
+	if (width >= 0) {
+		gint min_width = 0;
+
+		gtk_widget_measure (widget, GTK_ORIENTATION_HORIZONTAL, -1, &min_width, NULL, NULL, NULL);
+		width = MAX (width, min_width);
+	}
+
 	gtk_widget_measure (widget, GTK_ORIENTATION_VERTICAL, width, minimum, natural, NULL, NULL);
 }
 

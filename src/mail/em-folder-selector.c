@@ -606,7 +606,7 @@ folder_selector_constructed (GObject *object)
 
 	widget = gtk_search_entry_new ();
 	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
-	gtk_entry_set_placeholder_text (GTK_ENTRY (widget), _("Search for folder…"));
+	g_object_set (widget, "placeholder-text", _("Search for folder…"), NULL);
 	gtk_widget_show (widget);
 
 	g_signal_connect (widget, "search-changed",

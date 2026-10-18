@@ -305,6 +305,9 @@ message list stayed at its minimum width) and move them when it changes
 (`/eutil/box-pack-orientation`); an expanding `pack_end()` child fills
 the free space, the end box no longer sits at its natural size at the end
 (the "Go to Folder" tree was under an empty gap, `/eutil/box-pack-end-expand`).
+GtkTreeView inline editing (renaming a calendar or folder in the sidebar)
+logs "gtk_css_node_insert_after: assertion ... failed" in GTK 4.22 even
+for a plain GtkTreeView; GTK's own, the editing works.
 The other dialogs of the five views (folder, source, filter, search folder,
 category, label, import, collection account, page setup, purge, jump-to,
 manage groups, new/properties of each source) open without warnings.
