@@ -245,6 +245,8 @@ e_mail_config_page_compare (GtkWidget *page_a,
 	return 0;
 }
 
+#define CHANGED_PENDING_KEY "e-mail-config-page-changed-pending"
+
 static gboolean
 mail_config_page_emit_changed_idle (gpointer user_data)
 {
@@ -252,6 +254,7 @@ mail_config_page_emit_changed_idle (gpointer user_data)
 
 	g_return_val_if_fail (E_IS_MAIL_CONFIG_PAGE (page), FALSE);
 
+	g_object_set_data (G_OBJECT (page), CHANGED_PENDING_KEY, NULL);
 	g_signal_emit (page, signals[CHANGED], 0);
 
 	return FALSE;
@@ -262,14 +265,16 @@ e_mail_config_page_changed (EMailConfigPage *page)
 {
 	g_return_if_fail (E_IS_MAIL_CONFIG_PAGE (page));
 
-	if (e_util_is_main_thread (NULL)) {
-		g_signal_emit (page, signals[CHANGED], 0);
-	} else {
-		/* Ensure the signal is emitted in the main/UI thread. */
-		g_idle_add_full (G_PRIORITY_DEFAULT_IDLE,
-			mail_config_page_emit_changed_idle,
-			g_object_ref (page), g_object_unref);
-	}
+	/* DoxMail: GTK 4 entries emit "changed" before "notify::text", which
+	 * updates the bound source extensions the pages check; emit once
+	 * they settled, before the next frame (also in the main thread) */
+	if (g_object_get_data (G_OBJECT (page), CHANGED_PENDING_KEY))
+		return;
+
+	g_object_set_data (G_OBJECT (page), CHANGED_PENDING_KEY, GINT_TO_POINTER (1));
+	g_idle_add_full (G_PRIORITY_HIGH_IDLE,
+		mail_config_page_emit_changed_idle,
+		g_object_ref (page), g_object_unref);
 }
 
 void

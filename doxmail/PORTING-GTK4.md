@@ -282,10 +282,14 @@ draw-indicator, no-show-all, border-width) is fixed too.
 
 ## Next
 
-Runtime: the account assistant pages after Welcome, the other dialogs, real
-mouse/keyboard use; then the DoxIA items below. The composer (`mailto:`),
-the contact, event, task and memo editors, the preferences, the accounts
-window and the account assistants open clean.
+Runtime: the other dialogs, real mouse/keyboard use; then the DoxIA items
+below. The composer (`mailto:`), the contact, event, task and memo
+editors, the preferences, the accounts window and the account assistant
+(all its pages, up to a created account) run clean. GTK 4 entries emit
+"changed" before "notify::text", which updates the bound extensions:
+`e_mail_config_page_changed()` emits in a high priority idle, so the pages
+check the new values. The assistant pages are taller than the 480 px
+default with GTK 4 entries and scroll (overlay scrollbars).
 GTK 4 GtkCheckButton is no GtkButton: `gtk_check_button_set_label()`;
 GtkFontButton binds `font`, not `font-name`. `e_gtk_box_pack_start/end()`
 apply expand/fill/padding along the orientation of the box layout manager
@@ -300,7 +304,9 @@ can now get down to the header bar width (mail 518 px, was 931).
 
 Headless runs reach dialogs through `DOXMAIL_ACTIVATE=action[,action...]`
 (e-shell.c: activates actions of the first window or its active view once
-they are enabled; `@sizes` prints the widgets at least 400 px wide), e.g.
+they are enabled; `@sizes` prints the widgets at least `DOXMAIL_SIZES_MIN`
+(400) px wide, `@click:Label` clicks a button, `@entry:Label:=text` fills
+the entry of a mnemonic label, in any window), e.g.
 `DOXMAIL_ACTIVATE=contact-new SHOT=x.png doxmail/port/run-evolution.sh 18
 -c contacts`. `run-evolution.sh` turns off the startup wizard and the
 default mailer prompt (`FIRST_RUN=1` keeps them).

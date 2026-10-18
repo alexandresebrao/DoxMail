@@ -2901,7 +2901,8 @@ e_shell_allow_auth_prompt_for (EShell *shell,
 /* DoxMail: DOXMAIL_ACTIVATE=action[,action...] activates actions of the
  * first window or its active view, in order, each once it is enabled, to
  * reach dialogs and editors where there is no pointer (headless test runs);
- * "@sizes" prints the widgets keeping the window wide */
+ * "@sizes" prints the widgets keeping the window wide, "@click:Label"
+ * clicks a button, "@entry:Label:=text" fills the entry of a label */
 typedef struct _DevActivate {
 	GWeakRef window;
 	gchar **names;
@@ -2956,6 +2957,119 @@ dev_dump_sizes (GtkWidget *widget,
 		dev_dump_sizes (child, depth + 1);
 }
 
+/* "@click:Label": a shown, sensitive button with that label (no mnemonic
+ * underscore), in any window */
+static GtkWidget *
+dev_find_button (GtkWidget *widget,
+		 const gchar *label)
+{
+	GtkWidget *child, *found = NULL;
+
+	if (!gtk_widget_get_mapped (widget) || !gtk_widget_is_sensitive (widget))
+		return NULL;
+
+	if (GTK_IS_BUTTON (widget)) {
+		GtkWidget *inner = gtk_button_get_child (GTK_BUTTON (widget));
+		const gchar *text = gtk_button_get_label (GTK_BUTTON (widget));
+
+		if (!text && GTK_IS_LABEL (inner))
+			text = gtk_label_get_text (GTK_LABEL (inner));
+
+		if (text) {
+			gchar *plain = g_strdup (text);
+			gchar *underscore;
+
+			while ((underscore = strchr (plain, '_')) != NULL)
+				memmove (underscore, underscore + 1, strlen (underscore));
+
+			if (g_strcmp0 (plain, label) == 0)
+				found = widget;
+
+			g_free (plain);
+		}
+
+		if (found)
+			return found;
+	}
+
+	for (child = gtk_widget_get_first_child (widget); child && !found; child = gtk_widget_get_next_sibling (child))
+		found = dev_find_button (child, label);
+
+	return found;
+}
+
+static gboolean
+dev_click (const gchar *label)
+{
+	GListModel *toplevels = gtk_window_get_toplevels ();
+	guint ii, n = g_list_model_get_n_items (toplevels);
+	GtkWidget *button = NULL;
+
+	for (ii = 0; ii < n && !button; ii++) {
+		GtkWidget *window = g_list_model_get_item (toplevels, ii);
+
+		button = dev_find_button (window, label);
+		g_object_unref (window);
+	}
+
+	if (button)
+		g_signal_emit_by_name (button, "clicked");
+
+	return button != NULL;
+}
+
+/* "@entry:Label=text": the editable a label with that text is the mnemonic
+ * label of, in any window */
+static GtkWidget *
+dev_find_label (GtkWidget *widget,
+		const gchar *text)
+{
+	GtkWidget *child, *found = NULL;
+
+	if (!gtk_widget_get_mapped (widget))
+		return NULL;
+
+	if (GTK_IS_LABEL (widget) && gtk_label_get_mnemonic_widget (GTK_LABEL (widget)) &&
+	    g_strcmp0 (gtk_label_get_text (GTK_LABEL (widget)), text) == 0)
+		return widget;
+
+	for (child = gtk_widget_get_first_child (widget); child && !found; child = gtk_widget_get_next_sibling (child))
+		found = dev_find_label (child, text);
+
+	return found;
+}
+
+static gboolean
+dev_entry (const gchar *spec)
+{
+	GListModel *toplevels = gtk_window_get_toplevels ();
+	const gchar *eq = strchr (spec, '=');
+	guint ii, n = g_list_model_get_n_items (toplevels);
+	GtkWidget *label = NULL;
+	gchar *text;
+
+	if (!eq)
+		return FALSE;
+
+	text = g_strndup (spec, eq - spec);
+
+	for (ii = 0; ii < n && !label; ii++) {
+		GtkWidget *window = g_list_model_get_item (toplevels, ii);
+
+		label = dev_find_label (window, text);
+		g_object_unref (window);
+	}
+
+	g_free (text);
+
+	if (!label || !GTK_IS_EDITABLE (gtk_label_get_mnemonic_widget (GTK_LABEL (label))))
+		return FALSE;
+
+	gtk_editable_set_text (GTK_EDITABLE (gtk_label_get_mnemonic_widget (GTK_LABEL (label))), eq + 1);
+
+	return TRUE;
+}
+
 static gboolean
 shell_dev_activate_cb (gpointer user_data)
 {
@@ -2978,6 +3092,21 @@ shell_dev_activate_cb (gpointer user_data)
 
 		return da->names[da->index] ? G_SOURCE_CONTINUE : G_SOURCE_REMOVE;
 	}
+
+	if (g_str_has_prefix (name, "@click:") || g_str_has_prefix (name, "@entry:")) {
+		if (g_str_has_prefix (name, "@click:") ? dev_click (name + 7) : dev_entry (name + 7)) {
+			da->index++;
+			da->tries = 0;
+		} else if (++da->tries >= 15) {
+			g_warning ("DOXMAIL_ACTIVATE: no widget for '%s'", name);
+			da->index++;
+			da->tries = 0;
+		}
+		g_object_unref (shell_window);
+
+		return da->names[da->index] ? G_SOURCE_CONTINUE : G_SOURCE_REMOVE;
+	}
+
 	action = e_shell_window_get_ui_action (shell_window, name);
 	shell_view = e_shell_window_peek_shell_view (shell_window,
 		e_shell_window_get_active_view (shell_window));
