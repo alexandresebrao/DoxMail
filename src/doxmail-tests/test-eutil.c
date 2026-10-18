@@ -525,6 +525,34 @@ test_layout_methods (void)
 	spin (50);
 }
 
+/* typing reaches the GtkText delegate of an entry; the undo listens there */
+static void
+test_entry_undo (void)
+{
+	GtkWidget *entry;
+	GtkEditable *delegate;
+	gint pos = 0;
+
+	entry = g_object_ref_sink (gtk_entry_new ());
+	e_widget_undo_attach (entry, NULL);
+
+	delegate = gtk_editable_get_delegate (GTK_EDITABLE (entry));
+	g_assert_nonnull (delegate);
+
+	gtk_editable_insert_text (delegate, "typed", -1, &pos);
+	g_assert_cmpstr (gtk_editable_get_text (GTK_EDITABLE (entry)), ==, "typed");
+	g_assert_true (e_widget_undo_has_undo (entry));
+
+	e_widget_undo_do_undo (entry);
+	g_assert_cmpstr (gtk_editable_get_text (GTK_EDITABLE (entry)), ==, "");
+	g_assert_true (e_widget_undo_has_redo (entry));
+
+	e_widget_undo_do_redo (entry);
+	g_assert_cmpstr (gtk_editable_get_text (GTK_EDITABLE (entry)), ==, "typed");
+
+	g_object_unref (entry);
+}
+
 /* toolbars shrink to an overflow button whose menu has the hidden actions */
 static void
 test_toolbar_overflow (void)
@@ -750,6 +778,7 @@ main (gint argc,
 	g_test_add_func ("/eutil/menu-sync", test_menu_sync);
 	g_test_add_func ("/eutil/box-pack-orientation", test_box_pack_orientation);
 	g_test_add_func ("/eutil/toolbar-overflow", test_toolbar_overflow);
+	g_test_add_func ("/eutil/entry-undo", test_entry_undo);
 
 	return g_test_run ();
 }

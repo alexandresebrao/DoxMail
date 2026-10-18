@@ -98,6 +98,10 @@ static void destination_row_inserted (ENameSelectorEntry *name_selector_entry, G
 static void destination_row_changed  (ENameSelectorEntry *name_selector_entry, GtkTreePath *path, GtkTreeIter *iter);
 static void destination_row_deleted  (ENameSelectorEntry *name_selector_entry, GtkTreePath *path);
 
+/* DoxMail: typing reaches the GtkText delegate of the entry, which alone
+ * emits "insert-text"/"delete-text" then; the handlers live there */
+#define NSE_EDIT_SIGNALS(nse) (gtk_editable_get_delegate (GTK_EDITABLE (nse)))
+
 static void user_insert_text (ENameSelectorEntry *name_selector_entry, const gchar *in_new_text, gint in_new_text_length, gint *position, gpointer user_data);
 static void user_delete_text (ENameSelectorEntry *name_selector_entry, gint start_pos, gint end_pos, gpointer user_data);
 
@@ -1122,11 +1126,9 @@ type_ahead_complete (ENameSelectorEntry *name_selector_entry)
 	textrep_len = g_utf8_strlen (textrep, -1);
 	pos = range_start;
 
-	g_signal_handlers_block_by_func (
-		name_selector_entry,
+	g_signal_handlers_block_by_func (NSE_EDIT_SIGNALS (name_selector_entry),
 		user_insert_text, name_selector_entry);
-	g_signal_handlers_block_by_func (
-		name_selector_entry,
+	g_signal_handlers_block_by_func (NSE_EDIT_SIGNALS (name_selector_entry),
 		user_delete_text, name_selector_entry);
 	g_signal_handlers_block_by_func (
 		name_selector_entry->priv->destination_store,
@@ -1166,8 +1168,8 @@ type_ahead_complete (ENameSelectorEntry *name_selector_entry)
 	g_signal_handlers_unblock_by_func (
 		name_selector_entry->priv->destination_store,
 		destination_row_changed, name_selector_entry);
-	g_signal_handlers_unblock_by_func (name_selector_entry, user_delete_text, name_selector_entry);
-	g_signal_handlers_unblock_by_func (name_selector_entry, user_insert_text, name_selector_entry);
+	g_signal_handlers_unblock_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_delete_text, name_selector_entry);
+	g_signal_handlers_unblock_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_insert_text, name_selector_entry);
 
 	g_free (textrep);
 }
@@ -1360,8 +1362,8 @@ sync_destination_at_position (ENameSelectorEntry *name_selector_entry,
 			*cursor_pos = range_start + address_len;
 	}
 
-	g_signal_handlers_block_by_func (name_selector_entry, user_insert_text, name_selector_entry);
-	g_signal_handlers_block_by_func (name_selector_entry, user_delete_text, name_selector_entry);
+	g_signal_handlers_block_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_insert_text, name_selector_entry);
+	g_signal_handlers_block_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_delete_text, name_selector_entry);
 
 	gtk_editable_get_selection_bounds (GTK_EDITABLE (name_selector_entry), &sel_start_pos, &sel_end_pos);
 
@@ -1371,8 +1373,8 @@ sync_destination_at_position (ENameSelectorEntry *name_selector_entry,
 	if (sel_start_pos >= 0 && sel_end_pos >= 0)
 		gtk_editable_select_region (GTK_EDITABLE (name_selector_entry), sel_start_pos, sel_end_pos);
 
-	g_signal_handlers_unblock_by_func (name_selector_entry, user_delete_text, name_selector_entry);
-	g_signal_handlers_unblock_by_func (name_selector_entry, user_insert_text, name_selector_entry);
+	g_signal_handlers_unblock_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_delete_text, name_selector_entry);
+	g_signal_handlers_unblock_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_insert_text, name_selector_entry);
 
 	generate_attribute_list (name_selector_entry);
 	g_free (address);
@@ -1525,8 +1527,8 @@ user_insert_text (ENameSelectorEntry *name_selector_entry,
 	gint chars_inserted = 0;
 	gboolean fast_insert, has_focus;
 
-	g_signal_handlers_block_by_func (name_selector_entry, user_insert_text, name_selector_entry);
-	g_signal_handlers_block_by_func (name_selector_entry, user_delete_text, name_selector_entry);
+	g_signal_handlers_block_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_insert_text, name_selector_entry);
+	g_signal_handlers_block_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_delete_text, name_selector_entry);
 
 	/* these can be groups or Outlook-provided list of addresses with a ';' as
 	   a delimiter, instead of ',', copied from the message body */
@@ -1708,10 +1710,10 @@ user_insert_text (ENameSelectorEntry *name_selector_entry,
 			AUTOCOMPLETE_TIMEOUT);
 	}
 
-	g_signal_handlers_unblock_by_func (name_selector_entry, user_delete_text, name_selector_entry);
-	g_signal_handlers_unblock_by_func (name_selector_entry, user_insert_text, name_selector_entry);
+	g_signal_handlers_unblock_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_delete_text, name_selector_entry);
+	g_signal_handlers_unblock_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_insert_text, name_selector_entry);
 
-	g_signal_stop_emission_by_name (name_selector_entry, "insert_text");
+	g_signal_stop_emission_by_name (NSE_EDIT_SIGNALS (name_selector_entry), "insert-text");
 
 	g_free (tmp_text);
 }
@@ -1746,7 +1748,7 @@ user_delete_text (ENameSelectorEntry *name_selector_entry,
 	get_utf8_string_context (text, start_pos, str_context, 2);
 	get_utf8_string_context (text, end_pos, str_b_context, 2);
 
-	g_signal_handlers_block_by_func (name_selector_entry, user_delete_text, name_selector_entry);
+	g_signal_handlers_block_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_delete_text, name_selector_entry);
 
 	if (end_pos - start_pos == 1) {
 		/* Might be backspace; update completion model so dropdown is accurate */
@@ -1759,7 +1761,7 @@ user_delete_text (ENameSelectorEntry *name_selector_entry,
 	index_start = get_index_at_position (text, start_pos);
 	index_end = get_index_at_position (text, end_pos);
 
-	g_signal_stop_emission_by_name (name_selector_entry, "delete_text");
+	g_signal_stop_emission_by_name (NSE_EDIT_SIGNALS (name_selector_entry), "delete-text");
 
 	/* If the deletion touches more than one destination, the first one is changed
 	 * and the rest are removed. If the last destination wasn't completely deleted,
@@ -1790,8 +1792,8 @@ user_delete_text (ENameSelectorEntry *name_selector_entry,
 			sel = TRUE;
 
 		if (!sel) {
-			g_signal_handlers_block_by_func (name_selector_entry, user_insert_text, name_selector_entry);
-			g_signal_handlers_block_by_func (name_selector_entry, user_delete_text, name_selector_entry);
+			g_signal_handlers_block_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_insert_text, name_selector_entry);
+			g_signal_handlers_block_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_delete_text, name_selector_entry);
 
 			gtk_editable_delete_text (GTK_EDITABLE (name_selector_entry), range_start, range_end);
 
@@ -1799,8 +1801,8 @@ user_delete_text (ENameSelectorEntry *name_selector_entry,
 			gtk_editable_insert_text (GTK_EDITABLE (name_selector_entry), ttext, -1, &range_start);
 			g_free (ttext);
 
-			g_signal_handlers_unblock_by_func (name_selector_entry, user_delete_text, name_selector_entry);
-			g_signal_handlers_unblock_by_func (name_selector_entry, user_insert_text, name_selector_entry);
+			g_signal_handlers_unblock_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_delete_text, name_selector_entry);
+			g_signal_handlers_unblock_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_insert_text, name_selector_entry);
 
 		}
 
@@ -1845,8 +1847,8 @@ user_delete_text (ENameSelectorEntry *name_selector_entry,
 					return;
 				}
 
-				g_signal_handlers_block_by_func (name_selector_entry, user_insert_text, name_selector_entry);
-				g_signal_handlers_block_by_func (name_selector_entry, user_delete_text, name_selector_entry);
+				g_signal_handlers_block_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_insert_text, name_selector_entry);
+				g_signal_handlers_block_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_delete_text, name_selector_entry);
 
 				gtk_editable_delete_text (GTK_EDITABLE (name_selector_entry), range_start, range_end);
 
@@ -1854,8 +1856,8 @@ user_delete_text (ENameSelectorEntry *name_selector_entry,
 				gtk_editable_insert_text (GTK_EDITABLE (name_selector_entry), ttext, -1, &range_start);
 				g_free (ttext);
 
-				g_signal_handlers_unblock_by_func (name_selector_entry, user_delete_text, name_selector_entry);
-				g_signal_handlers_unblock_by_func (name_selector_entry, user_insert_text, name_selector_entry);
+				g_signal_handlers_unblock_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_delete_text, name_selector_entry);
+				g_signal_handlers_unblock_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_insert_text, name_selector_entry);
 			}
 
 			if (range_start != -1) {
@@ -1906,7 +1908,7 @@ user_delete_text (ENameSelectorEntry *name_selector_entry,
 		name_selector_entry->priv->type_ahead_complete_cb_id = 0;
 	}
 
-	g_signal_handlers_unblock_by_func (name_selector_entry, user_delete_text, name_selector_entry);
+	g_signal_handlers_unblock_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_delete_text, name_selector_entry);
 }
 
 static gboolean
@@ -1943,9 +1945,9 @@ completion_match_selected (ENameSelectorEntry *name_selector_entry,
 		e_destination_set_client (destination, book_client);
 	sync_destination_at_position (name_selector_entry, cursor_pos, &cursor_pos);
 
-	g_signal_handlers_block_by_func (name_selector_entry, user_insert_text, name_selector_entry);
+	g_signal_handlers_block_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_insert_text, name_selector_entry);
 	gtk_editable_insert_text (GTK_EDITABLE (name_selector_entry), ", ", -1, &cursor_pos);
-	g_signal_handlers_unblock_by_func (name_selector_entry, user_insert_text, name_selector_entry);
+	g_signal_handlers_unblock_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_insert_text, name_selector_entry);
 
 	/*Add destination at end for next entry*/
 	insert_destination_at_position (name_selector_entry, cursor_pos);
@@ -2011,9 +2013,9 @@ entry_activate (ENameSelectorEntry *name_selector_entry)
 
                         /* Doing this we can make sure that It wont ask for completion again. */
 			gtk_editable_insert_text (GTK_EDITABLE (name_selector_entry), ", ", -1, &newpos);
-			g_signal_handlers_block_by_func (name_selector_entry, user_delete_text, name_selector_entry);
+			g_signal_handlers_block_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_delete_text, name_selector_entry);
 			gtk_editable_delete_text (GTK_EDITABLE (name_selector_entry), newpos - 2, newpos);
-			g_signal_handlers_unblock_by_func (name_selector_entry, user_delete_text, name_selector_entry);
+			g_signal_handlers_unblock_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_delete_text, name_selector_entry);
 
 			/* Move it close to next destination*/
 			range_end = range_end + 2;
@@ -2054,6 +2056,7 @@ sanitize_entry (ENameSelectorEntry *name_selector_entry)
 	GString *str = g_string_new ("");
 
 	g_signal_handlers_block_matched (name_selector_entry, G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, name_selector_entry);
+	g_signal_handlers_block_matched (NSE_EDIT_SIGNALS (name_selector_entry), G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, name_selector_entry);
 	g_signal_handlers_block_matched (name_selector_entry->priv->destination_store, G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, name_selector_entry);
 
 	known = e_destination_store_list_destinations (name_selector_entry->priv->destination_store);
@@ -2088,6 +2091,7 @@ sanitize_entry (ENameSelectorEntry *name_selector_entry)
 
 	g_signal_handlers_unblock_matched (name_selector_entry->priv->destination_store, G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, name_selector_entry);
 	g_signal_handlers_unblock_matched (name_selector_entry, G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, name_selector_entry);
+	g_signal_handlers_unblock_matched (NSE_EDIT_SIGNALS (name_selector_entry), G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, name_selector_entry);
 
 	generate_attribute_list (name_selector_entry);
 }
@@ -2114,6 +2118,7 @@ user_focus_in (ENameSelectorEntry *name_selector_entry,
 	/* To not send fake 'changed' signals, which can influence message composer */
 	name_selector_entry->priv->block_entry_changed_signal = TRUE;
 	g_signal_handlers_block_matched (name_selector_entry, G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, name_selector_entry);
+	g_signal_handlers_block_matched (NSE_EDIT_SIGNALS (name_selector_entry), G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, name_selector_entry);
 	g_signal_handlers_block_matched (name_selector_entry->priv->destination_store, G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, name_selector_entry);
 
 	known = e_destination_store_list_destinations (name_selector_entry->priv->destination_store);
@@ -2157,6 +2162,7 @@ user_focus_in (ENameSelectorEntry *name_selector_entry,
 
 	g_signal_handlers_unblock_matched (name_selector_entry->priv->destination_store, G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, name_selector_entry);
 	g_signal_handlers_unblock_matched (name_selector_entry, G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, name_selector_entry);
+	g_signal_handlers_unblock_matched (NSE_EDIT_SIGNALS (name_selector_entry), G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, name_selector_entry);
 	name_selector_entry->priv->block_entry_changed_signal = FALSE;
 
 	generate_attribute_list (name_selector_entry);
@@ -2572,8 +2578,8 @@ destination_row_changed (ENameSelectorEntry *name_selector_entry,
 		return;
 	}
 
-	g_signal_handlers_block_by_func (name_selector_entry, user_insert_text, name_selector_entry);
-	g_signal_handlers_block_by_func (name_selector_entry, user_delete_text, name_selector_entry);
+	g_signal_handlers_block_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_insert_text, name_selector_entry);
+	g_signal_handlers_block_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_delete_text, name_selector_entry);
 
 	gtk_editable_delete_text (GTK_EDITABLE (name_selector_entry), range_start, range_end);
 
@@ -2581,8 +2587,8 @@ destination_row_changed (ENameSelectorEntry *name_selector_entry,
 	gtk_editable_insert_text (GTK_EDITABLE (name_selector_entry), text, -1, &range_start);
 	g_free (text);
 
-	g_signal_handlers_unblock_by_func (name_selector_entry, user_delete_text, name_selector_entry);
-	g_signal_handlers_unblock_by_func (name_selector_entry, user_insert_text, name_selector_entry);
+	g_signal_handlers_unblock_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_delete_text, name_selector_entry);
+	g_signal_handlers_unblock_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_insert_text, name_selector_entry);
 
 	clear_completion_model (name_selector_entry);
 	generate_attribute_list (name_selector_entry);
@@ -2626,7 +2632,7 @@ destination_row_inserted (ENameSelectorEntry *name_selector_entry,
 		return;
 	}
 
-	g_signal_handlers_block_by_func (name_selector_entry, user_insert_text, name_selector_entry);
+	g_signal_handlers_block_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_insert_text, name_selector_entry);
 
 	if (comma_before)
 		gtk_editable_insert_text (GTK_EDITABLE (name_selector_entry), ", ", -1, &insert_pos);
@@ -2638,7 +2644,7 @@ destination_row_inserted (ENameSelectorEntry *name_selector_entry,
 	if (comma_after)
 		gtk_editable_insert_text (GTK_EDITABLE (name_selector_entry), ", ", -1, &insert_pos);
 
-	g_signal_handlers_unblock_by_func (name_selector_entry, user_insert_text, name_selector_entry);
+	g_signal_handlers_unblock_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_insert_text, name_selector_entry);
 
 	clear_completion_model (name_selector_entry);
 	generate_attribute_list (name_selector_entry);
@@ -2703,9 +2709,9 @@ destination_row_deleted (ENameSelectorEntry *name_selector_entry,
 		}
 	}
 
-	g_signal_handlers_block_by_func (name_selector_entry, user_delete_text, name_selector_entry);
+	g_signal_handlers_block_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_delete_text, name_selector_entry);
 	gtk_editable_delete_text (GTK_EDITABLE (name_selector_entry), range_start, range_end);
-	g_signal_handlers_unblock_by_func (name_selector_entry, user_delete_text, name_selector_entry);
+	g_signal_handlers_unblock_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_delete_text, name_selector_entry);
 
 	clear_completion_model (name_selector_entry);
 	generate_attribute_list (name_selector_entry);
@@ -3003,8 +3009,8 @@ popup_activate_cut (ENameSelectorEntry *name_selector_entry,
 	destination = name_selector_entry->priv->popup_destination;
 	contact_email =e_destination_get_textrep (destination, TRUE);
 
-	g_signal_handlers_block_by_func (name_selector_entry, user_insert_text, name_selector_entry);
-	g_signal_handlers_block_by_func (name_selector_entry, user_delete_text, name_selector_entry);
+	g_signal_handlers_block_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_insert_text, name_selector_entry);
+	g_signal_handlers_block_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_delete_text, name_selector_entry);
 
 	clipboard = e_gtk_clipboard_get (E_GTK_SELECTION_PRIMARY);
 	pemail = g_strconcat (contact_email, ",", NULL);
@@ -3017,8 +3023,8 @@ popup_activate_cut (ENameSelectorEntry *name_selector_entry,
 	e_destination_store_remove_destination (name_selector_entry->priv->destination_store, destination);
 
 	g_free (pemail);
-	g_signal_handlers_unblock_by_func (name_selector_entry, user_delete_text, name_selector_entry);
-	g_signal_handlers_unblock_by_func (name_selector_entry, user_insert_text, name_selector_entry);
+	g_signal_handlers_unblock_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_delete_text, name_selector_entry);
+	g_signal_handlers_unblock_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_insert_text, name_selector_entry);
 }
 
 static void
@@ -3033,8 +3039,8 @@ popup_activate_copy (ENameSelectorEntry *name_selector_entry,
 	destination = name_selector_entry->priv->popup_destination;
 	contact_email = e_destination_get_textrep (destination, TRUE);
 
-	g_signal_handlers_block_by_func (name_selector_entry, user_insert_text, name_selector_entry);
-	g_signal_handlers_block_by_func (name_selector_entry, user_delete_text, name_selector_entry);
+	g_signal_handlers_block_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_insert_text, name_selector_entry);
+	g_signal_handlers_block_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_delete_text, name_selector_entry);
 
 	clipboard = e_gtk_clipboard_get (E_GTK_SELECTION_PRIMARY);
 	pemail = g_strconcat (contact_email, ",", NULL);
@@ -3043,8 +3049,8 @@ popup_activate_copy (ENameSelectorEntry *name_selector_entry,
 	clipboard = e_gtk_clipboard_get (E_GTK_SELECTION_CLIPBOARD);
 	e_gtk_clipboard_set_text (clipboard, pemail, strlen (pemail));
 	g_free (pemail);
-	g_signal_handlers_unblock_by_func (name_selector_entry, user_delete_text, name_selector_entry);
-	g_signal_handlers_unblock_by_func (name_selector_entry, user_insert_text, name_selector_entry);
+	g_signal_handlers_unblock_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_delete_text, name_selector_entry);
+	g_signal_handlers_unblock_by_func (NSE_EDIT_SIGNALS (name_selector_entry), user_insert_text, name_selector_entry);
 }
 
 static void
@@ -3410,11 +3416,11 @@ e_name_selector_entry_init (ENameSelectorEntry *name_selector_entry)
 	g_signal_connect (
 		name_selector_entry, "changed",
 		G_CALLBACK (maybe_block_entry_changed_cb), NULL);
-	g_signal_connect (
-		name_selector_entry, "insert-text",
+	g_signal_connect_swapped (
+		NSE_EDIT_SIGNALS (name_selector_entry), "insert-text",
 		G_CALLBACK (user_insert_text), name_selector_entry);
-	g_signal_connect (
-		name_selector_entry, "delete-text",
+	g_signal_connect_swapped (
+		NSE_EDIT_SIGNALS (name_selector_entry), "delete-text",
 		G_CALLBACK (user_delete_text), name_selector_entry);
 	g_signal_connect (
 		e_gtk_widget_legacy_events (name_selector_entry), "focus-out-event",

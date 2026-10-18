@@ -68,6 +68,7 @@ typedef struct _EUndoData {
 
 	gulong insert_handler_id;
 	gulong delete_handler_id;
+	GObject *handlers_object; /* not referenced; where the handlers are */
 
 	guint user_action_counter;
 	GPtrArray *user_action_array; /* EUndoInfo * */
@@ -504,15 +505,15 @@ undo_do_something (GObject *object,
 	if (!info)
 		return;
 
-	g_signal_handler_block (object, data->insert_handler_id);
-	g_signal_handler_block (object, data->delete_handler_id);
+	g_signal_handler_block (data->handlers_object, data->insert_handler_id);
+	g_signal_handler_block (data->handlers_object, data->delete_handler_id);
 
 	undo_apply_info (info, object, todo, insert_func, delete_func);
 
 	data->current_info = NULL;
 
-	g_signal_handler_unblock (object, data->delete_handler_id);
-	g_signal_handler_unblock (object, data->insert_handler_id);
+	g_signal_handler_unblock (data->handlers_object, data->delete_handler_id);
+	g_signal_handler_unblock (data->handlers_object, data->insert_handler_id);
 }
 
 static gchar *
@@ -695,12 +696,18 @@ e_widget_undo_attach (GtkWidget *widget,
 
 		g_object_set_data_full (G_OBJECT (widget), UNDO_DATA_KEY, data, free_undo_data);
 
-		data->insert_handler_id = g_signal_connect (
-			widget, "insert-text",
-			G_CALLBACK (editable_undo_insert_text_cb), NULL);
-		data->delete_handler_id = g_signal_connect (
-			widget, "delete-text",
-			G_CALLBACK (editable_undo_delete_text_cb), NULL);
+		/* typing reaches the delegate (the GtkText of a GtkEntry), which
+		 * alone emits the signals then; the callbacks get the widget */
+		data->handlers_object = G_OBJECT (gtk_editable_get_delegate (GTK_EDITABLE (widget)));
+		if (!data->handlers_object)
+			data->handlers_object = G_OBJECT (widget);
+
+		data->insert_handler_id = g_signal_connect_swapped (
+			data->handlers_object, "insert-text",
+			G_CALLBACK (editable_undo_insert_text_cb), widget);
+		data->delete_handler_id = g_signal_connect_swapped (
+			data->handlers_object, "delete-text",
+			G_CALLBACK (editable_undo_delete_text_cb), widget);
 
 		if (focus_tracker)
 			g_signal_connect_swapped (
@@ -721,6 +728,7 @@ e_widget_undo_attach (GtkWidget *widget,
 
 		g_object_set_data_full (G_OBJECT (text_buffer), UNDO_DATA_KEY, data, free_undo_data);
 
+		data->handlers_object = G_OBJECT (text_buffer);
 		data->insert_handler_id = g_signal_connect (
 			text_buffer, "insert-text",
 			G_CALLBACK (text_buffer_undo_insert_text_cb), NULL);

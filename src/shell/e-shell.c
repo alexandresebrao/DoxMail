@@ -2902,7 +2902,8 @@ e_shell_allow_auth_prompt_for (EShell *shell,
  * first window or its active view, in order, each once it is enabled, to
  * reach dialogs and editors where there is no pointer (headless test runs);
  * "@sizes" prints the widgets keeping the window wide, "@click:Label"
- * clicks a button, "@entry:Label:=text" fills the entry of a label */
+ * clicks a button, "@entry:Label:=text" fills the entry of a label,
+ * "@type:text" types into the focus, "@tab" moves the focus */
 typedef struct _DevActivate {
 	GWeakRef window;
 	gchar **names;
@@ -3070,6 +3071,67 @@ dev_entry (const gchar *spec)
 	return TRUE;
 }
 
+/* "@type:text" types into the focused editable the way keys do (through
+ * its delegate), "@tab" moves the focus on, in the active window */
+static GtkWindow *
+dev_active_window (void)
+{
+	GListModel *toplevels = gtk_window_get_toplevels ();
+	GtkWindow *active = NULL, *fallback = NULL;
+	guint ii, n = g_list_model_get_n_items (toplevels);
+
+	for (ii = 0; ii < n && !active; ii++) {
+		GtkWindow *window = g_list_model_get_item (toplevels, ii);
+
+		if (gtk_window_is_active (window))
+			active = window;
+		/* without a keyboard (headless) no window is active: take the
+		 * last shown window other than a shell window */
+		else if (gtk_widget_get_visible (GTK_WIDGET (window)) && !E_IS_SHELL_WINDOW (window))
+			fallback = window;
+		g_object_unref (window);
+	}
+
+	return active ? active : fallback;
+}
+
+static gboolean
+dev_type (const gchar *text)
+{
+	GtkWindow *window = dev_active_window ();
+	GtkWidget *focus = window ? gtk_window_get_focus (window) : NULL;
+	GtkEditable *editable;
+	gint pos;
+
+	while (focus && !GTK_IS_EDITABLE (focus))
+		focus = gtk_widget_get_parent (focus);
+	if (!focus)
+		return FALSE;
+
+	editable = GTK_EDITABLE (focus);
+	while (gtk_editable_get_delegate (editable))
+		editable = gtk_editable_get_delegate (editable);
+
+	pos = gtk_editable_get_position (editable);
+	gtk_editable_insert_text (editable, text, -1, &pos);
+	gtk_editable_set_position (editable, pos);
+
+	return TRUE;
+}
+
+static gboolean
+dev_tab (void)
+{
+	GtkWindow *window = dev_active_window ();
+
+	if (!window)
+		return FALSE;
+
+	gtk_widget_child_focus (GTK_WIDGET (window), GTK_DIR_TAB_FORWARD);
+
+	return TRUE;
+}
+
 static gboolean
 shell_dev_activate_cb (gpointer user_data)
 {
@@ -3093,8 +3155,20 @@ shell_dev_activate_cb (gpointer user_data)
 		return da->names[da->index] ? G_SOURCE_CONTINUE : G_SOURCE_REMOVE;
 	}
 
-	if (g_str_has_prefix (name, "@click:") || g_str_has_prefix (name, "@entry:")) {
-		if (g_str_has_prefix (name, "@click:") ? dev_click (name + 7) : dev_entry (name + 7)) {
+	if (g_str_has_prefix (name, "@click:") || g_str_has_prefix (name, "@entry:") ||
+	    g_str_has_prefix (name, "@type:") || g_strcmp0 (name, "@tab") == 0) {
+		gboolean done;
+
+		if (g_str_has_prefix (name, "@click:"))
+			done = dev_click (name + 7);
+		else if (g_str_has_prefix (name, "@entry:"))
+			done = dev_entry (name + 7);
+		else if (g_str_has_prefix (name, "@type:"))
+			done = dev_type (name + 6);
+		else
+			done = dev_tab ();
+
+		if (done) {
 			da->index++;
 			da->tries = 0;
 		} else if (++da->tries >= 15) {

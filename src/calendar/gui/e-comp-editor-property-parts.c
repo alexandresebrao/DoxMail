@@ -103,7 +103,10 @@ ecepp_summary_create_widgets (ECompEditorPropertyPart *property_part,
 	gtk_widget_show (*out_label_widget);
 
 	if (GTK_IS_EDITABLE (*out_edit_widget)) {
-		g_signal_connect (*out_edit_widget, "insert-text",
+		GtkEditable *delegate = gtk_editable_get_delegate (GTK_EDITABLE (*out_edit_widget));
+
+		/* typing reaches the delegate, which alone emits the signal then */
+		g_signal_connect (delegate ? delegate : GTK_EDITABLE (*out_edit_widget), "insert-text",
 			G_CALLBACK (ecepp_summary_insert_text_cb), NULL);
 	}
 }
