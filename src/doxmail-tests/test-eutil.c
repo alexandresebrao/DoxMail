@@ -21,6 +21,7 @@
 #include <gtk/gtk.h>
 #include <glib/gstdio.h>
 #include <e-util/e-util.h>
+#include <e-util/e-toolbar-layout.h> /* private */
 
 /* lets the widgets map and lay out */
 static void
@@ -524,6 +525,96 @@ test_layout_methods (void)
 	spin (50);
 }
 
+/* toolbars shrink to an overflow button whose menu has the hidden actions */
+static void
+test_toolbar_overflow (void)
+{
+	static const EUIActionEntry entries[] = {
+		{ "first", "document-new", "_First", NULL, NULL, NULL, NULL, NULL, NULL },
+		{ "second", "document-open", "_Second", NULL, NULL, NULL, NULL, NULL, NULL },
+		{ "third", "document-save", "_Third", NULL, NULL, NULL, NULL, NULL, NULL },
+		{ "fourth", "edit-copy", "F_ourth", NULL, NULL, NULL, NULL, NULL, NULL }
+	};
+	static const gchar *eui =
+		"<eui>"
+		" <toolbar id='test-toolbar' primary='true'>"
+		"  <item action='first' important='true'/>"
+		"  <item action='second' important='true'/>"
+		"  <separator/>"
+		"  <item action='third' important='true'/>"
+		"  <item action='fourth' important='true'/>"
+		" </toolbar>"
+		"</eui>";
+	EUIManager *manager;
+	GtkWidget *toolbar, *overflow, *window, *child;
+	GMenuModel *menu;
+	gint min = 0, nat = 0, n_hidden = 0, n_items = 0, ii;
+
+	manager = e_ui_manager_new (NULL);
+	e_ui_manager_add_actions_with_eui_data (manager, "test", NULL,
+		entries, G_N_ELEMENTS (entries), NULL, eui);
+
+	toolbar = GTK_WIDGET (e_ui_manager_create_item (manager, "test-toolbar"));
+	g_assert_true (GTK_IS_BOX (toolbar));
+
+	overflow = e_toolbar_layout_get_overflow (toolbar);
+	g_assert_nonnull (overflow);
+	g_assert_true (gtk_widget_get_last_child (toolbar) == overflow);
+
+	gtk_widget_measure (toolbar, GTK_ORIENTATION_HORIZONTAL, -1, &min, &nat, NULL, NULL);
+	g_assert_cmpint (min, <, nat / 2);
+
+	window = gtk_window_new ();
+	gtk_window_set_child (GTK_WINDOW (window), toolbar);
+	gtk_window_set_default_size (GTK_WINDOW (window), min + (nat - min) / 3, -1);
+	gtk_window_present (GTK_WINDOW (window));
+	spin (300);
+
+	g_assert_true (gtk_widget_get_child_visible (overflow));
+	g_assert_true (gtk_widget_get_child_visible (gtk_widget_get_first_child (toolbar)));
+
+	for (child = gtk_widget_get_first_child (toolbar); child != overflow; child = gtk_widget_get_next_sibling (child)) {
+		if (!gtk_widget_get_child_visible (child) && !GTK_IS_SEPARATOR (child))
+			n_hidden++;
+	}
+	g_assert_cmpint (n_hidden, >, 0);
+
+	gtk_menu_button_popup (GTK_MENU_BUTTON (overflow));
+	spin (100);
+
+	menu = gtk_menu_button_get_menu_model (GTK_MENU_BUTTON (overflow));
+	for (ii = 0; ii < g_menu_model_get_n_items (menu); ii++) {
+		GMenuModel *section = g_menu_model_get_item_link (menu, ii, G_MENU_LINK_SECTION);
+		gint jj;
+
+		g_assert_nonnull (section);
+		for (jj = 0; jj < g_menu_model_get_n_items (section); jj++) {
+			gchar *action_name = NULL;
+
+			g_assert_true (g_menu_model_get_item_attribute (section, jj, G_MENU_ATTRIBUTE_ACTION, "s", &action_name));
+			g_assert_true (g_str_has_prefix (action_name, "test."));
+			g_free (action_name);
+			n_items++;
+		}
+		g_object_unref (section);
+	}
+	g_assert_cmpint (n_items, ==, n_hidden);
+
+	gtk_menu_button_popdown (GTK_MENU_BUTTON (overflow));
+
+	/* wide enough again */
+	gtk_window_set_default_size (GTK_WINDOW (window), nat + 50, -1);
+	gtk_widget_queue_resize (window);
+	spin (300);
+
+	g_assert_false (gtk_widget_get_child_visible (overflow));
+	for (child = gtk_widget_get_first_child (toolbar); child != overflow; child = gtk_widget_get_next_sibling (child))
+		g_assert_true (gtk_widget_get_child_visible (child));
+
+	gtk_window_destroy (GTK_WINDOW (window));
+	g_object_unref (manager);
+}
+
 /* GTK 3 expanded packed children along the current orientation of the box */
 static void
 test_box_pack_orientation (void)
@@ -658,6 +749,7 @@ main (gint argc,
 	g_test_add_func ("/eutil/layout-methods", test_layout_methods);
 	g_test_add_func ("/eutil/menu-sync", test_menu_sync);
 	g_test_add_func ("/eutil/box-pack-orientation", test_box_pack_orientation);
+	g_test_add_func ("/eutil/toolbar-overflow", test_toolbar_overflow);
 
 	return g_test_run ();
 }

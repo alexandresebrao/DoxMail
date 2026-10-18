@@ -24,11 +24,17 @@ for _ in $(seq 50); do
 done
 [ -S "$runtime/wayland-test" ] || { cat "$runtime/weston.log" >&2; exit 1; }
 
+# the schemas of the build, in memory: the tests never touch the real settings
+mkdir -p "$runtime/schemas"
+find "$build" -name '*.gschema.xml' -exec cp {} "$runtime/schemas/" \;
+glib-compile-schemas "$runtime/schemas"
+
 status=0
 for t in "$build"/src/doxmail-tests/test-*; do
 	[ -x "$t" ] || continue
 	echo "== $(basename "$t")"
 	XDG_RUNTIME_DIR=$runtime WAYLAND_DISPLAY=wayland-test GDK_BACKEND=wayland \
+		GSETTINGS_SCHEMA_DIR=$runtime/schemas GSETTINGS_BACKEND=memory \
 		GSK_RENDERER=cairo timeout 120 ${DOXMAIL_TEST_WRAPPER:-} "$t" "$@" || status=1
 done
 exit $status

@@ -292,9 +292,11 @@ apply expand/fill/padding along the orientation of the box layout manager
 (EMailView's own "orientation" property is the preview orientation, the
 message list stayed at its minimum width) and move them when it changes
 (`/eutil/box-pack-orientation`).
-Toolbars that were GtkToolbar are boxes now and never shrink (no overflow
-menu): the mail view is at least 931 px wide because of the preview
-toolbar — needs an overflow menu or a shrinkable container.
+Toolbars (EUIManager boxes) get an EToolbarLayout (src/e-util/
+e-toolbar-layout.c, private): items at their natural width while they
+fit, the rest hidden behind an overflow button whose menu, built when it
+opens, has their actions (`/eutil/toolbar-overflow`). The shell window
+can now get down to the header bar width (mail 518 px, was 931).
 
 Headless runs reach dialogs through `DOXMAIL_ACTIVATE=action[,action...]`
 (e-shell.c: activates actions of the first window or its active view once
@@ -302,13 +304,6 @@ they are enabled; `@sizes` prints the widgets at least 400 px wide), e.g.
 `DOXMAIL_ACTIVATE=contact-new SHOT=x.png doxmail/port/run-evolution.sh 18
 -c contacts`. `run-evolution.sh` turns off the startup wizard and the
 default mailer prompt (`FIRST_RUN=1` keeps them).
-
- → modules (they give the shell its views) → plugins;
-then the `.ui` files and `data/` (schemas, icons) in the GTK 4 build.
-For each: add it to the `WITH_GTK4` list, rerun `rewrite-all.sh`, run
-`canvas-events.py` on canvas code and `gdk-event-fields.py` on the rest,
-then fix what the compiler reports. Calendar views mix canvas and widget
-events; they need care.
 
 ### DoxIA
 

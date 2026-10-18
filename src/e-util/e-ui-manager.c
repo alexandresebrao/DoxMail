@@ -15,6 +15,7 @@
 #include "e-ui-action.h"
 #include "e-ui-customizer.h"
 #include "e-ui-menu.h"
+#include "e-toolbar-layout.h"
 #include "e-ui-parser.h"
 #include "e-util-enumtypes.h"
 
@@ -2065,6 +2066,7 @@ eum_traverse_toolbar_rec (EUIManager *self,
 						*inout_any_added = TRUE;
 						*inout_need_separator = FALSE;
 
+						e_toolbar_layout_set_item_action (GTK_WIDGET (item), action);
 						gtk_box_append (GTK_BOX (toolbar), GTK_WIDGET (item));
 					} else {
 						g_warning ("%s: Expected GtkWidget, but received %s for action '%s.%s'", G_STRFUNC,
@@ -2120,8 +2122,16 @@ eum_toolbar_handle_changed_cb (EUIManager *self,
 	g_return_if_fail (E_IS_UI_MANAGER (self));
 	g_return_if_fail (GTK_IS_BOX (toolbar));
 
-	while ((child = gtk_widget_get_first_child (toolbar)) != NULL)
-		gtk_box_remove (GTK_BOX (toolbar), child);
+	/* all but the overflow button of the EToolbarLayout */
+	child = gtk_widget_get_first_child (toolbar);
+	while (child) {
+		GtkWidget *next = gtk_widget_get_next_sibling (child);
+
+		if (child != e_toolbar_layout_get_overflow (toolbar))
+			gtk_box_remove (GTK_BOX (toolbar), child);
+
+		child = next;
+	}
 
 	id = gtk_widget_get_name (GTK_WIDGET (toolbar));
 	g_return_if_fail (id != NULL);
@@ -2134,6 +2144,7 @@ eum_toolbar_handle_changed_cb (EUIManager *self,
 	}
 
 	eum_traverse_toolbar (self, toolbar, elem, is_customized);
+	e_toolbar_layout_install (toolbar);
 }
 
 static GObject *
@@ -2158,6 +2169,7 @@ e_ui_manager_create_item_for_toolbar (EUIManager *self,
 		G_CALLBACK (eum_toolbar_handle_changed_cb), toolbar, 0);
 
 	eum_traverse_toolbar (self, toolbar, elem, is_customized);
+	e_toolbar_layout_install (toolbar);
 
 	return G_OBJECT (toolbar);
 }

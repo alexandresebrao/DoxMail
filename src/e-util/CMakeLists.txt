@@ -182,6 +182,7 @@ set(SOURCES
 	e-gtk-event-compat.c
 	e-gtk-file-chooser-compat.c
 	e-gtk4-compat.c
+	e-toolbar-layout.c
 	e-misc-utils.c
 	e-mktemp.c
 	e-month-widget.c
