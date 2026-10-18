@@ -1828,6 +1828,8 @@ shell_dispose (GObject *object)
 	}
 
 	/* Chain up to parent's dispose() method. */
+	e_html_editor_discard_prepared ();
+
 	G_OBJECT_CLASS (e_shell_parent_class)->dispose (object);
 }
 
@@ -3334,6 +3336,14 @@ shell_dev_activate_cb (gpointer user_data)
 	return da->names[da->index] ? G_SOURCE_CONTINUE : G_SOURCE_REMOVE;
 }
 
+static gboolean
+shell_prepare_html_editor_cb (gpointer user_data)
+{
+	e_html_editor_prepare ();
+
+	return G_SOURCE_REMOVE;
+}
+
 /**
  * e_shell_create_shell_window:
  * @shell: an #EShell
@@ -3416,6 +3426,9 @@ e_shell_create_shell_window (EShell *shell,
 
 		/* Also check alerts for failed authentications */
 		shell_process_failed_authentications (shell);
+
+		/* DoxMail: a composer editor made ready while idle, so New opens at once */
+		e_named_timeout_add_seconds (3, shell_prepare_html_editor_cb, NULL);
 
 		if (g_getenv ("DOXMAIL_ACTIVATE") && *g_getenv ("DOXMAIL_ACTIVATE")) {
 			DevActivate *da = g_new0 (DevActivate, 1);

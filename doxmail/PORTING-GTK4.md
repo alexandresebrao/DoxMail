@@ -375,6 +375,12 @@ source strings still say Evolution.
   names the code looks up to the libadwaita ones and keeps button labels
   at the normal weight. The override applies to Evolution's schemas, so
   it also changes Evolution where both are installed;
+- done: New opens at once. A composer waited for its EHTMLEditor (the
+  editor UI, then the WebKit view loading the editor) about 0.4 s of its
+  0.55-0.9 s; `e_html_editor_prepare()` initializes one in the
+  background 3 s after the first window shows, the next
+  e_html_editor_new() hands it out and prepares the following one. New
+  now maps in about 0.15 s; one idle WebKit editor is kept meanwhile;
 - packaging in the DoxIA image.
 
 ## Keeping up with upstream

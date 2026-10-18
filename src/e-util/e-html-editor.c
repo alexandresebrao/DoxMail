@@ -1666,6 +1666,74 @@ e_html_editor_content_editor_initialized (EContentEditor *content_editor,
 	g_object_unref (async_result);
 }
 
+/* DoxMail: one editor initialized in advance (its WebKit view and the
+ * editor UI take most of the time a composer needs to open), handed out
+ * by the next e_html_editor_new() */
+static EHTMLEditor *prepared_editor = NULL;
+static gboolean preparing_editor = FALSE;
+
+static void
+html_editor_prepared_cb (GObject *source_object,
+			 GAsyncResult *result,
+			 gpointer user_data)
+{
+	GtkWidget *editor;
+
+	preparing_editor = FALSE;
+
+	editor = e_html_editor_new_finish (result, NULL);
+	if (!editor)
+		return;
+
+	/* held until handed out; the widget comes floating, as from new() */
+	if (prepared_editor)
+		g_object_unref (g_object_ref_sink (editor));
+	else
+		prepared_editor = E_HTML_EDITOR (g_object_ref_sink (editor));
+}
+
+static gboolean
+html_editor_prepare_timeout_cb (gpointer user_data)
+{
+	e_html_editor_prepare ();
+
+	return G_SOURCE_REMOVE;
+}
+
+/**
+ * e_html_editor_prepare:
+ *
+ * Starts initializing an #EHTMLEditor in the background, unless one is
+ * ready or on its way, so the next e_html_editor_new() finishes at once;
+ * that one prepares the following editor. Call when the application is
+ * idle, like after the main window shows.
+ *
+ * Since: DoxMail
+ **/
+void
+e_html_editor_prepare (void)
+{
+	if (prepared_editor || preparing_editor)
+		return;
+
+	preparing_editor = TRUE;
+	e_html_editor_new (html_editor_prepared_cb, NULL);
+}
+
+/**
+ * e_html_editor_discard_prepared:
+ *
+ * Frees the editor e_html_editor_prepare() made ready, if any, like
+ * before the application quits.
+ *
+ * Since: DoxMail
+ **/
+void
+e_html_editor_discard_prepared (void)
+{
+	g_clear_object (&prepared_editor);
+}
+
 /**
  * e_html_editor_new:
  * @callback: a callback to be called when the editor is ready
@@ -1685,6 +1753,20 @@ e_html_editor_new (GAsyncReadyCallback callback,
 	ESimpleAsyncResult *async_result;
 
 	g_return_if_fail (callback != NULL);
+
+	/* DoxMail: an editor made ready beforehand opens at once */
+	if (prepared_editor) {
+		async_result = e_simple_async_result_new (NULL, callback, user_data, e_html_editor_new);
+		/* the caller gets a floating widget again, as from g_object_new() */
+		html_editor = g_steal_pointer (&prepared_editor);
+		g_object_force_floating (G_OBJECT (html_editor));
+		e_simple_async_result_set_user_data (async_result, html_editor, g_object_unref);
+		e_simple_async_result_complete_idle_take (async_result);
+
+		/* the next one, once this one is up */
+		e_named_timeout_add_seconds (2, html_editor_prepare_timeout_cb, NULL);
+		return;
+	}
 
 	html_editor = g_object_new (E_TYPE_HTML_EDITOR, NULL);
 	async_result = e_simple_async_result_new (NULL, callback, user_data, e_html_editor_new);
