@@ -693,6 +693,31 @@ test_box_pack_end_expand (void)
 	gtk_window_destroy (GTK_WINDOW (window));
 }
 
+/* the emulated dialog action area keeps buttons in the order they were
+ * added, as a GTK 3 GtkButtonBox did with pack_end() (EAlertDialog put
+ * its default button at the left) */
+static void
+test_dialog_action_area_order (void)
+{
+	GtkWidget *dialog, *area, *first, *second;
+
+	dialog = gtk_dialog_new ();
+	area = e_gtk_dialog_get_action_area (GTK_DIALOG (dialog));
+	first = gtk_button_new_with_label ("_Exit");
+	second = gtk_button_new_with_label ("_Migrate");
+	e_gtk_box_pack_end (GTK_BOX (area), first, FALSE, FALSE, 0);
+	e_gtk_box_pack_end (GTK_BOX (area), second, FALSE, FALSE, 0);
+	e_gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area (GTK_DIALOG (dialog))),
+		gtk_label_new ("text"), FALSE, FALSE, 0);
+
+	g_assert_true (gtk_widget_get_first_child (area) == first);
+	g_assert_true (gtk_widget_get_next_sibling (first) == second);
+	/* the action area stays after the content */
+	g_assert_true (GTK_IS_LABEL (gtk_widget_get_first_child (gtk_dialog_get_content_area (GTK_DIALOG (dialog)))));
+
+	gtk_window_destroy (GTK_WINDOW (dialog));
+}
+
 /* a drag moves the divider in steps; a later allocation keeps the last */
 static void
 test_paned_drag (void)
@@ -861,6 +886,7 @@ main (gint argc,
 	g_test_add_func ("/eutil/box-pack-end-after-clear", test_box_pack_end_after_clear);
 	g_test_add_func ("/eutil/paned-drag", test_paned_drag);
 	g_test_add_func ("/eutil/box-pack-end-expand", test_box_pack_end_expand);
+	g_test_add_func ("/eutil/dialog-action-area-order", test_dialog_action_area_order);
 
 	return g_test_run ();
 }

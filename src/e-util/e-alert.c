@@ -991,12 +991,16 @@ e_alert_create_image (EAlert *alert,
                       GtkIconSize size)
 {
 	const gchar *icon_name;
+	GtkWidget *image;
 
 	g_return_val_if_fail (E_IS_ALERT (alert), NULL);
 
 	icon_name = e_alert_get_icon_name (alert);
 
-	return gtk_image_new_from_icon_name (icon_name);
+	image = gtk_image_new_from_icon_name (icon_name);
+	gtk_image_set_icon_size (GTK_IMAGE (image), size);
+
+	return image;
 }
 
 void

@@ -22,6 +22,7 @@
 #define BORDER_WIDTH_KEY "e-gtk-border-width"
 #define INNER_PANED_KEY "e-gtk-inner-paned"
 #define END_BOX_KEY "e-gtk-box-end-box"
+#define BUTTON_BOX_KEY "e-gtk-button-box"
 #define BOX_PACK_KEY "e-gtk-box-pack"
 
 static void
@@ -542,6 +543,14 @@ e_gtk_box_pack_end (GtkBox *box,
 
 	g_return_if_fail (GTK_IS_BOX (box));
 	g_return_if_fail (GTK_IS_WIDGET (child));
+
+	/* a GTK 3 GtkButtonBox (dialog action areas) kept the buttons in
+	 * the order they were added, whatever the pack type */
+	if (g_object_get_data (G_OBJECT (box), BUTTON_BOX_KEY)) {
+		box_pack (box, child, expand, fill, padding);
+		gtk_box_append (box, child);
+		return;
+	}
 
 	end_box = box_peek_end_box (box);
 	if (!end_box) {
@@ -1093,7 +1102,10 @@ e_gtk_dialog_get_action_area (GtkDialog *dialog)
 	if (!area) {
 		area = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
 		gtk_widget_set_halign (area, GTK_ALIGN_END);
-		gtk_box_append (GTK_BOX (gtk_dialog_get_content_area (dialog)), area);
+		g_object_set_data (G_OBJECT (area), BUTTON_BOX_KEY, GINT_TO_POINTER (1));
+		/* at the bottom, as in GTK 3, also when the content gets
+		 * packed after the action area was asked for */
+		e_gtk_box_pack_end (GTK_BOX (gtk_dialog_get_content_area (dialog)), area, FALSE, FALSE, 0);
 		g_object_set_data (G_OBJECT (dialog), "e-gtk-action-area", area);
 	}
 
