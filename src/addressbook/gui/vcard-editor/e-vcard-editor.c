@@ -4801,7 +4801,7 @@ e_vcard_editor_constructed (GObject *object)
 	for (ii = 0; ii < G_N_ELEMENTS (sections); ii++) {
 		g_warn_if_fail (!g_hash_table_contains (self->sections, GINT_TO_POINTER (sections[ii].kind)));
 
-		widget = e_vcard_editor_section_new (self, sections[ii].label, sections[ii].fill_section_func, sections[ii].fill_contact_func);
+		widget = e_vcard_editor_section_new (self, _(sections[ii].label), sections[ii].fill_section_func, sections[ii].fill_contact_func);
 
 		if (sections[ii].kind == SECTION_KIND_IDENTITY)
 			gtk_widget_set_margin_end (widget, 12);

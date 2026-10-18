@@ -31920,6 +31920,26 @@ msgstr "Não foi possível agendar um recurso, código de erro: %i"
 msgid "Imported Certificate"
 msgstr "Certificado importado"
 
+# DoxMail: strings of the GTK 4 port
+msgid "More"
+msgstr "Mais"
+
+msgid "(None)"
+msgstr "(Nenhum)"
+
+msgid "_Revert"
+msgstr "_Reverter"
+
+msgid "_Yes"
+msgstr "_Sim"
+
+msgid "Programs and scripts"
+msgstr "Programas e scripts"
+
+#, c-format
+msgid "%s cannot start while Evolution is running, because they use the same mail and settings. Close Evolution, then start %s again."
+msgstr "O %s não pode ser iniciado enquanto o Evolution estiver aberto, porque os dois usam os mesmos e-mails e configurações. Feche o Evolution e inicie o %s novamente."
+
 #~ msgid "Error removing list"
 #~ msgstr "Erro ao remover lista"
 

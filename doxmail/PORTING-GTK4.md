@@ -324,7 +324,14 @@ the context menu of the sidebar row with that name as Shift+F10 does, which
 enables the actions of the clicked source or folder), e.g.
 `DOXMAIL_ACTIVATE=contact-new SHOT=x.png doxmail/port/run-evolution.sh 18
 -c contacts`. `run-evolution.sh` turns off the startup wizard and the
-default mailer prompt (`FIRST_RUN=1` keeps them).
+default mailer prompt (`FIRST_RUN=1` keeps them); `RUN_LANG=pt_BR.UTF-8`
+runs it in that language (C.UTF-8 by default, so labels for `@click:`
+stay English).
+
+Translations: the GTK 4 build compiles and installs `po/` too (it was left
+out, so DoxMail always ran in English). Strings new in the port get their
+pt_BR translations in a "DoxMail" block of `po/pt_BR.po`, before the
+obsolete entries, and their files are listed in `po/POTFILES.in`.
 
 ### DoxIA
 

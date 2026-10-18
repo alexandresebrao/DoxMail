@@ -902,6 +902,7 @@ add_pkgconfig_file(evolution-shell.pc.in evolution-shell-${INTERFACE_VERSION}.pc
 
 if(WITH_GTK4)
 	add_subdirectory(data)
+	add_subdirectory(po)
 	add_subdirectory(src)
 	return()
 endif(WITH_GTK4)

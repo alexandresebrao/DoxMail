@@ -3,7 +3,8 @@
 # with its own HOME and D-Bus session, so it never touches the user's data;
 # SHOT=FILE.png [SHOT_AFTER=seconds] saves a screenshot of the session;
 # DOXMAIL_ACTIVATE=action[,action...] is passed on (see e-shell.c); PRE=CMDS
-# runs in the session before the program (like gsettings set ...)
+# runs in the session before the program (like gsettings set ...);
+# RUN_LANG=pt_BR.UTF-8 runs it in that language (C.UTF-8 by default)
 cd "$(dirname "$0")/../.." || exit 1
 secs=$1; shift
 tmp=$(mktemp -d)
@@ -20,7 +21,7 @@ if [ -n "${SHOT:-}" ]; then
 fi
 env -i PATH="$PATH" HOME="$tmp/home" XDG_RUNTIME_DIR="$tmp/run" \
 	WAYLAND_DISPLAY=wayland-iso GDK_BACKEND=wayland GSK_RENDERER=cairo \
-	GSETTINGS_SCHEMA_DIR="${GSETTINGS_SCHEMA_DIR:-}" DOXMAIL_ACTIVATE="${DOXMAIL_ACTIVATE:-}" DOXMAIL_SIZES_MIN="${DOXMAIL_SIZES_MIN:-}" XDG_DATA_DIRS="${XDG_DATA_DIRS:-/usr/local/share:/usr/share}" GTK_A11Y=none G_DEBUG="${G_DEBUG:-}" \
+	GSETTINGS_SCHEMA_DIR="${GSETTINGS_SCHEMA_DIR:-}" DOXMAIL_ACTIVATE="${DOXMAIL_ACTIVATE:-}" DOXMAIL_SIZES_MIN="${DOXMAIL_SIZES_MIN:-}" XDG_DATA_DIRS="${XDG_DATA_DIRS:-/usr/local/share:/usr/share}" GTK_A11Y=none G_DEBUG="${G_DEBUG:-}" LANG="${RUN_LANG:-C.UTF-8}" \
 	PRE="${PRE:-}" dbus-run-session -- sh -c 'eval "$PRE"; exec timeout -k 5 "$@"' sh "$secs" "$@"
 echo "exit: $?"
 kill $weston
