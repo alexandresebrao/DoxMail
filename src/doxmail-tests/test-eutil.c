@@ -524,6 +524,71 @@ test_layout_methods (void)
 	spin (50);
 }
 
+/* GtkPopoverMenu names submenu pages by label and keeps the pages of nested
+ * submenus of removed items: hiding items must not leave two submenus with
+ * the same label (warnings are fatal here) */
+static void
+test_menu_sync (void)
+{
+	static const EUIActionEntry entries[] = {
+		{ "format-menu", NULL, "For_mat", NULL, NULL, NULL, NULL, NULL, NULL },
+		{ "font-style-menu", NULL, "_Font Style", NULL, NULL, NULL, NULL, NULL, NULL },
+		{ "paragraph-style-menu", NULL, "_Paragraph Style", NULL, NULL, NULL, NULL, NULL, NULL },
+		{ "justify-menu", NULL, "_Alignment", NULL, NULL, NULL, NULL, NULL, NULL },
+		{ "bold", NULL, "_Bold", NULL, NULL, NULL, NULL, NULL, NULL },
+		{ "style-normal", NULL, "_Normal", NULL, NULL, NULL, NULL, NULL, NULL },
+		{ "justify-left", NULL, "_Left", NULL, NULL, NULL, NULL, NULL, NULL },
+		{ "indent", NULL, "_Indent", NULL, NULL, NULL, NULL, NULL, NULL }
+	};
+	static const gchar *eui =
+		"<eui>"
+		" <menu id='main-menu'>"
+		"  <submenu action='format-menu'>"
+		"   <submenu action='font-style-menu'><item action='bold'/></submenu>"
+		"   <separator/>"
+		"   <submenu action='paragraph-style-menu'><item action='style-normal'/></submenu>"
+		"   <submenu action='justify-menu'><item action='justify-left'/></submenu>"
+		"   <separator/>"
+		"   <item action='indent'/>"
+		"  </submenu>"
+		" </menu>"
+		"</eui>";
+	/* the section of Font Style empties and Paragraph Style moves into
+	 * it; Format takes nested submenus along */
+	const gchar *hide[] = { "font-style-menu", "paragraph-style-menu", "format-menu" };
+	EUIManager *manager;
+	GObject *menu;
+	GtkWidget *button, *window;
+	guint ii;
+
+	manager = e_ui_manager_new (NULL);
+	e_ui_manager_add_actions_with_eui_data (manager, "test", NULL,
+		entries, G_N_ELEMENTS (entries), NULL, eui);
+	e_ui_manager_set_actions_usable_for_kinds (manager, E_UI_ELEMENT_KIND_MENU,
+		"format-menu", "font-style-menu", "paragraph-style-menu", "justify-menu", NULL);
+
+	menu = e_ui_manager_create_item (manager, "main-menu");
+	g_assert_true (E_IS_UI_MENU (menu));
+
+	button = gtk_menu_button_new ();
+	gtk_menu_button_set_menu_model (GTK_MENU_BUTTON (button), G_MENU_MODEL (menu));
+	window = show_in_window (button);
+
+	for (ii = 0; ii < G_N_ELEMENTS (hide); ii++) {
+		EUIAction *action = e_ui_manager_get_action (manager, hide[ii]);
+
+		g_assert_nonnull (action);
+		e_ui_action_set_visible (action, FALSE);
+		spin (50);
+		e_ui_action_set_visible (action, TRUE);
+		spin (50);
+	}
+
+	gtk_window_destroy (GTK_WINDOW (window));
+	g_object_unref (menu);
+	g_object_unref (manager);
+}
+
 gint
 main (gint argc,
       gchar **argv)
@@ -560,6 +625,7 @@ main (gint argc,
 	g_test_add_func ("/eutil/widgets", test_widgets);
 	g_test_add_func ("/eutil/picture-gallery", test_picture_gallery);
 	g_test_add_func ("/eutil/layout-methods", test_layout_methods);
+	g_test_add_func ("/eutil/menu-sync", test_menu_sync);
 
 	return g_test_run ();
 }

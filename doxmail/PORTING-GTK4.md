@@ -255,6 +255,11 @@ as children, so EUIManager now remembers them (buttons were packed again
 on each change); `margin` became the four margins; entry clipboard and
 preedit signals are on the GtkText delegate; EUIMenu sync aligns items,
 so an item shown or hidden in between does not recreate the rest.
+Menus: GtkPopoverMenu names submenu pages by label and leaves the pages
+of nested submenus behind when an item goes, so the EUIMenu sync empties
+removed submenus first and drops a submenu that moved (hidden items merge
+sections: the composer's Paragraph Style and Alignment) before adding it
+again (`/eutil/menu-sync`).
 `doxmail/port/run-on-desktop.sh` runs the build on the desktop with its
 own HOME and D-Bus session, bringing the desktop theme along;
 `doxmail/port/sample-stacks.sh` samples stacks with eu-stack.
@@ -277,10 +282,9 @@ draw-indicator, no-show-all, border-width) is fixed too.
 
 ## Next
 
-Runtime: the GtkPopoverMenu duplicate stack pages of rebuilt menus,
-dialogs and editors (composer, contact/event editors, preferences), the
+Runtime: dialogs and editors (contact/event editors, preferences), the
 account assistant pages, real mouse/keyboard use; then the DoxIA items
-below.
+below. The composer opens clean (`mailto:`).
 
  → modules (they give the shell its views) → plugins;
 then the `.ui` files and `data/` (schemas, icons) in the GTK 4 build.

@@ -536,24 +536,119 @@ e_ui_menu_items_equal (GMenuModel *model1,
 
 /* Makes @dest have the content of @src, changing only what differs and
  * keeping the GMenu objects of the submenus and sections.  GTK 4's
- * GtkPopoverMenu does not drop the pages of submenus removed from its
- * model, thus menus rebuilt from scratch got stale submenus ("duplicate
- * child name in GtkStack"). */
+ * GtkPopoverMenu names the page of a submenu by its label and does not drop
+ * the pages of nested submenus when an item is removed, thus menus rebuilt
+ * from scratch got stale submenus ("duplicate child name in GtkStack").
+ * Two submenus with the same label must not exist at once either, which
+ * happened when hidden items moved a submenu into another section. */
+typedef struct _SyncData {
+	GMenu *root;
+	GHashTable *src_links; /* GMenuModel ~> NULL; models still in use */
+} SyncData;
+
+static void
+e_ui_menu_collect_links (GMenuModel *model,
+			 GHashTable *links)
+{
+	gint ii, n_items;
+
+	n_items = g_menu_model_get_n_items (model);
+
+	for (ii = 0; ii < n_items; ii++) {
+		GMenuLinkIter *liter;
+		GMenuModel *link;
+
+		liter = g_menu_model_iterate_item_links (model, ii);
+		while (g_menu_link_iter_get_next (liter, NULL, &link)) {
+			if (!g_hash_table_contains (links, link)) {
+				g_hash_table_add (links, g_object_ref (link));
+				e_ui_menu_collect_links (link, links);
+			}
+			g_object_unref (link);
+		}
+		g_object_unref (liter);
+	}
+}
+
+/* empties the submenus and sections of the item first, unless still used,
+ * so that GTK drops the pages of nested submenus too */
+static void
+e_ui_menu_remove_item (GMenu *menu,
+		       gint index,
+		       SyncData *sd)
+{
+	GMenuLinkIter *liter;
+	GMenuModel *link;
+
+	liter = g_menu_model_iterate_item_links (G_MENU_MODEL (menu), index);
+	while (g_menu_link_iter_get_next (liter, NULL, &link)) {
+		if (G_IS_MENU (link) && !g_hash_table_contains (sd->src_links, link)) {
+			gint ii;
+
+			for (ii = g_menu_model_get_n_items (link) - 1; ii >= 0; ii--)
+				e_ui_menu_remove_item (G_MENU (link), ii, sd);
+		}
+		g_object_unref (link);
+	}
+	g_object_unref (liter);
+
+	g_menu_remove (menu, index);
+}
+
+/* removes the submenus labeled @label from @menu and below, except
+ * the one linking to @keep */
+static void
+e_ui_menu_remove_submenus (GMenu *menu,
+			   const gchar *label,
+			   GMenu *keep,
+			   SyncData *sd)
+{
+	gint ii;
+
+	for (ii = g_menu_model_get_n_items (G_MENU_MODEL (menu)) - 1; ii >= 0; ii--) {
+		GMenuModel *submenu, *section;
+		gchar *item_label = NULL;
+
+		submenu = g_menu_model_get_item_link (G_MENU_MODEL (menu), ii, G_MENU_LINK_SUBMENU);
+		section = g_menu_model_get_item_link (G_MENU_MODEL (menu), ii, G_MENU_LINK_SECTION);
+
+		if (submenu && submenu != G_MENU_MODEL (keep) &&
+		    g_menu_model_get_item_attribute (G_MENU_MODEL (menu), ii, G_MENU_ATTRIBUTE_LABEL, "s", &item_label) &&
+		    g_strcmp0 (item_label, label) == 0) {
+			e_ui_menu_remove_item (menu, ii, sd);
+		} else {
+			if (G_IS_MENU (submenu) && submenu != G_MENU_MODEL (keep))
+				e_ui_menu_remove_submenus (G_MENU (submenu), label, keep, sd);
+			if (G_IS_MENU (section) && section != G_MENU_MODEL (keep))
+				e_ui_menu_remove_submenus (G_MENU (section), label, keep, sd);
+		}
+
+		g_free (item_label);
+		g_clear_object (&submenu);
+		g_clear_object (&section);
+	}
+}
+
 static gboolean
 e_ui_menu_sync_item (GMenu *dest,
 		     gint dest_index,
 		     GMenuModel *src,
-		     gint src_index);
+		     gint src_index,
+		     SyncData *sd);
 
 static void
 e_ui_menu_sync (GMenu *dest,
-		GMenuModel *src)
+		GMenuModel *src,
+		SyncData *sd)
 {
 	gint ii, jj, n_src, n_dest;
 
 	n_src = g_menu_model_get_n_items (src);
 
 	for (ii = 0; ii < n_src; ii++) {
+		GMenuModel *submenu;
+		gchar *label = NULL;
+
 		n_dest = g_menu_model_get_n_items (G_MENU_MODEL (dest));
 
 		/* items shown or hidden in between shift the others; find the
@@ -568,13 +663,20 @@ e_ui_menu_sync (GMenu *dest,
 			/* keep it only when no item of the source matches better
 			 * the ones skipped, like a removed item */
 			for (; jj > ii; jj--)
-				g_menu_remove (dest, ii);
+				e_ui_menu_remove_item (dest, ii, sd);
 
-			if (e_ui_menu_sync_item (dest, ii, src, ii))
+			if (e_ui_menu_sync_item (dest, ii, src, ii, sd))
 				continue;
 
-			g_menu_remove (dest, ii);
+			e_ui_menu_remove_item (dest, ii, sd);
 		}
+
+		/* a submenu moved from elsewhere goes away there first */
+		submenu = g_menu_model_get_item_link (src, ii, G_MENU_LINK_SUBMENU);
+		if (submenu && g_menu_model_get_item_attribute (src, ii, G_MENU_ATTRIBUTE_LABEL, "s", &label))
+			e_ui_menu_remove_submenus (sd->root, label, dest, sd);
+		g_clear_object (&submenu);
+		g_free (label);
 
 		{
 			GMenuItem *item = g_menu_item_new_from_model (src, ii);
@@ -585,7 +687,7 @@ e_ui_menu_sync (GMenu *dest,
 	}
 
 	for (n_dest = g_menu_model_get_n_items (G_MENU_MODEL (dest)); n_dest > n_src; n_dest--)
-		g_menu_remove (dest, n_dest - 1);
+		e_ui_menu_remove_item (dest, n_dest - 1, sd);
 }
 
 /* syncs the links of an item equal by its attributes; FALSE when the item
@@ -594,7 +696,8 @@ static gboolean
 e_ui_menu_sync_item (GMenu *dest,
 		     gint dest_index,
 		     GMenuModel *src,
-		     gint src_index)
+		     gint src_index,
+		     SyncData *sd)
 {
 	GMenuLinkIter *liter;
 	const gchar *name;
@@ -608,7 +711,7 @@ e_ui_menu_sync_item (GMenu *dest,
 		if (dest_link == src_link) {
 			/* the same model, like a dynamic submenu */
 		} else if (G_IS_MENU (dest_link)) {
-			e_ui_menu_sync (G_MENU (dest_link), src_link);
+			e_ui_menu_sync (G_MENU (dest_link), src_link, sd);
 		} else {
 			keep = FALSE;
 		}
@@ -643,7 +746,17 @@ e_ui_menu_rebuild (EUIMenu *self)
 	e_ui_manager_fill_menu (self->manager, self->id, self);
 	self->real_menu = real_menu;
 
-	e_ui_menu_sync (real_menu, G_MENU_MODEL (fresh_menu));
+	{
+		SyncData sd;
+
+		sd.root = real_menu;
+		sd.src_links = g_hash_table_new_full (g_direct_hash, g_direct_equal, g_object_unref, NULL);
+		e_ui_menu_collect_links (G_MENU_MODEL (fresh_menu), sd.src_links);
+
+		e_ui_menu_sync (real_menu, G_MENU_MODEL (fresh_menu), &sd);
+
+		g_hash_table_destroy (sd.src_links);
+	}
 
 	g_object_unref (fresh_menu);
 }
