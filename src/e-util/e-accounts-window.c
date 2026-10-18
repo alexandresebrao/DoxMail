@@ -1543,12 +1543,10 @@ static GtkWidget *
 accounts_window_create_add_button (EAccountsWindow *accounts_window)
 {
 	GtkWidget *box, *button, *arrow, *label;
+	/* GTK 4 has no gtk-button-images; it was off by default */
 	gboolean button_images = FALSE;
 
 	g_return_val_if_fail (E_IS_ACCOUNTS_WINDOW (accounts_window), NULL);
-
-	g_object_get (gtk_settings_get_default (),
-		"gtk-button-images", &button_images, NULL);
 
 	box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
 
@@ -1733,6 +1731,8 @@ accounts_window_constructed (GObject *object)
 
 	widget = e_gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
 	gtk_box_set_spacing (GTK_BOX (widget), 6);
+	/* GTK 4 propagates hexpand of the buttons; the tree gets the space */
+	gtk_widget_set_hexpand (widget, FALSE);
 	gtk_grid_attach (grid, widget, 1, 0, 1, 1);
 	accounts_window->priv->button_box = widget;
 

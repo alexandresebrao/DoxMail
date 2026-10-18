@@ -282,9 +282,10 @@ draw-indicator, no-show-all, border-width) is fixed too.
 
 ## Next
 
-Runtime: the account assistant pages, the other dialogs, real
+Runtime: the account assistant pages after Welcome, the other dialogs, real
 mouse/keyboard use; then the DoxIA items below. The composer (`mailto:`),
-the contact, event, task and memo editors and the preferences open clean.
+the contact, event, task and memo editors, the preferences, the accounts
+window and the account assistants open clean.
 GTK 4 GtkCheckButton is no GtkButton: `gtk_check_button_set_label()`;
 GtkFontButton binds `font`, not `font-name`. The message list leaves a
 blank strip before the To Do pane (ETable narrower than its area).
