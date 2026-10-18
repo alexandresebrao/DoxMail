@@ -668,6 +668,35 @@ test_box_pack_end_after_clear (void)
 	g_object_unref (box);
 }
 
+/* a drag moves the divider in steps; a later allocation keeps the last */
+static void
+test_paned_drag (void)
+{
+	GtkWidget *paned, *window;
+	gint pos, ii;
+
+	paned = e_paned_new (GTK_ORIENTATION_VERTICAL);
+	e_gtk_paned_pack1 (paned, gtk_label_new ("list"), TRUE, FALSE);
+	e_gtk_paned_pack2 (paned, gtk_label_new ("preview"), FALSE, FALSE);
+
+	window = show_in_window (paned);
+	spin (300);
+
+	for (ii = 1; ii <= 5; ii++) {
+		g_object_set (paned, "position", 100 + ii * 10, NULL);
+		spin (30);
+	}
+
+	/* like a change of the list or the preview */
+	gtk_widget_queue_resize (paned);
+	spin (200);
+
+	g_object_get (paned, "position", &pos, NULL);
+	g_assert_cmpint (pos, ==, 150);
+
+	gtk_window_destroy (GTK_WINDOW (window));
+}
+
 /* GTK 3 expanded packed children along the current orientation of the box */
 static void
 test_box_pack_orientation (void)
@@ -805,6 +834,7 @@ main (gint argc,
 	g_test_add_func ("/eutil/toolbar-overflow", test_toolbar_overflow);
 	g_test_add_func ("/eutil/entry-undo", test_entry_undo);
 	g_test_add_func ("/eutil/box-pack-end-after-clear", test_box_pack_end_after_clear);
+	g_test_add_func ("/eutil/paned-drag", test_paned_drag);
 
 	return g_test_run ();
 }

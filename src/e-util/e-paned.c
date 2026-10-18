@@ -135,6 +135,11 @@ paned_notify_position_cb (EPaned *paned)
 	else
 		paned->priv->sync_request = SYNC_REQUEST_PROPORTION;
 
+	/* GTK 3 resized the paned on a position change, which ended the sync;
+	 * a drag moves only the inner paned now, the next steps of the drag
+	 * were ignored and a later allocation restored its first step */
+	gtk_widget_queue_allocate (GTK_WIDGET (paned));
+
 	g_object_thaw_notify (G_OBJECT (paned));
 }
 
