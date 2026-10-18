@@ -1648,22 +1648,22 @@ ecep_recurrence_fill_widgets (ECompEditorPage *page,
 
 	switch (i_cal_component_isa (component)) {
 		case I_CAL_VEVENT_COMPONENT:
-			gtk_button_set_label (GTK_BUTTON (page_recurrence->priv->recr_check_box),
+			gtk_check_button_set_label (GTK_CHECK_BUTTON (page_recurrence->priv->recr_check_box),
 				/* Translators: Entire string is for example:     'This appointment recurs/Every[x][day(s)][for][1]occurrences' (combobox options are in [square brackets]) */
 				C_("ECompEditorPageRecur", "This appointment rec_urs"));
 			break;
 		case I_CAL_VTODO_COMPONENT:
-			gtk_button_set_label (GTK_BUTTON (page_recurrence->priv->recr_check_box),
+			gtk_check_button_set_label (GTK_CHECK_BUTTON (page_recurrence->priv->recr_check_box),
 				/* Translators: Entire string is for example:     'This task recurs/Every[x][day(s)][for][1]occurrences' (combobox options are in [square brackets]) */
 				C_("ECompEditorPageRecur", "This task rec_urs"));
 			break;
 		case I_CAL_VJOURNAL_COMPONENT:
-			gtk_button_set_label (GTK_BUTTON (page_recurrence->priv->recr_check_box),
+			gtk_check_button_set_label (GTK_CHECK_BUTTON (page_recurrence->priv->recr_check_box),
 				/* Translators: Entire string is for example:     'This memo recurs/Every[x][day(s)][for][1]occurrences' (combobox options are in [square brackets]) */
 				C_("ECompEditorPageRecur", "This memo rec_urs"));
 			break;
 		default:
-			gtk_button_set_label (GTK_BUTTON (page_recurrence->priv->recr_check_box),
+			gtk_check_button_set_label (GTK_CHECK_BUTTON (page_recurrence->priv->recr_check_box),
 				/* Translators: Entire string is for example:     'This component recurs/Every[x][day(s)][for][1]occurrences' (combobox options are in [square brackets]) */
 				C_("ECompEditorPageRecur", "This component rec_urs"));
 			break;

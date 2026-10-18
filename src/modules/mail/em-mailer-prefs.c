@@ -1944,10 +1944,10 @@ em_mailer_prefs_construct (EMMailerPrefs *prefs,
 		G_SETTINGS_BIND_DEFAULT |
 		G_SETTINGS_BIND_INVERT_BOOLEAN);
 
-	em_prefs_bind_settings (prefs, settings, "monospace-font", "FontFixed", "font-name");
+	em_prefs_bind_settings (prefs, settings, "monospace-font", "FontFixed", "font");
 	em_prefs_bind_settings_ex (prefs, settings, "use-custom-font", "FontFixed", "sensitive", G_SETTINGS_BIND_GET);
 
-	em_prefs_bind_settings (prefs, settings, "variable-width-font", "FontVariable", "font-name");
+	em_prefs_bind_settings (prefs, settings, "variable-width-font", "FontVariable", "font");
 	em_prefs_bind_settings_ex (prefs, settings, "use-custom-font", "FontVariable", "sensitive", G_SETTINGS_BIND_GET);
 
 	/* HTML Mail tab */

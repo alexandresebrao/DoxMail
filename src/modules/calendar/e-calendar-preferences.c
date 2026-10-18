@@ -527,7 +527,8 @@ update_system_tz_widgets (GtkCheckButton *button,
 
 	/* Translators: The '%s' is replaced with the time zone name, like "America/New York" or "UTC" */
 	text = g_strdup_printf (_("Use s_ystem time zone (%s)"), display_name);
-	gtk_button_set_label (GTK_BUTTON (widget), text);
+	gtk_check_button_set_label (GTK_CHECK_BUTTON (widget), text);
+	gtk_check_button_set_use_underline (GTK_CHECK_BUTTON (widget), TRUE);
 	g_free (text);
 }
 
@@ -815,7 +816,8 @@ e_cal_prefs_system_week_start_day_changed_cb (GSettings *no_settings,
 
 	widget = e_builder_get_widget (prefs->priv->builder, "use-system-week-start-day");
 	gtk_widget_set_visible (widget, weekday != G_DESKTOP_WEEKDAY_DEFAULT);
-	gtk_button_set_label (GTK_BUTTON (widget), text);
+	gtk_check_button_set_label (GTK_CHECK_BUTTON (widget), text);
+	gtk_check_button_set_use_underline (GTK_CHECK_BUTTON (widget), TRUE);
 
 	g_free (text);
 

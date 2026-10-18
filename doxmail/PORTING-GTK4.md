@@ -282,9 +282,12 @@ draw-indicator, no-show-all, border-width) is fixed too.
 
 ## Next
 
-Runtime: dialogs and editors (event/task/memo editors, preferences), the
-account assistant pages, real mouse/keyboard use; then the DoxIA items
-below. The composer (`mailto:`) and the contact editor open clean.
+Runtime: the account assistant pages, the other dialogs, real
+mouse/keyboard use; then the DoxIA items below. The composer (`mailto:`),
+the contact, event, task and memo editors and the preferences open clean.
+GTK 4 GtkCheckButton is no GtkButton: `gtk_check_button_set_label()`;
+GtkFontButton binds `font`, not `font-name`. The message list leaves a
+blank strip before the To Do pane (ETable narrower than its area).
 Toolbars that were GtkToolbar are boxes now and never shrink (no overflow
 menu): the mail view is at least 931 px wide because of the preview
 toolbar — needs an overflow menu or a shrinkable container.

@@ -849,7 +849,6 @@ ecepp_description_create_widgets (ECompEditorPropertyPart *property_part,
 		"halign", GTK_ALIGN_END,
 		"vexpand", FALSE,
 		"valign", GTK_ALIGN_START,
-		"track-visited-links", FALSE,
 		NULL);
 
 	g_signal_connect (description_part->view_as_label, "activate-link",

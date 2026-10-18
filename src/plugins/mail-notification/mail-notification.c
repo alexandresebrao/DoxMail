@@ -807,11 +807,11 @@ struct _SoundConfigureWidgets {
 	GtkToggleButton *enable;
 	GtkToggleButton *beep;
 	GtkToggleButton *use_theme;
-	GtkFileChooser *filechooser;
+	GtkWidget *filechooser; /* EGtkFileChooserButton */
 };
 
 static void
-sound_file_set_cb (GtkFileChooser *file_chooser,
+sound_file_set_cb (GtkWidget *file_chooser,
                    gpointer data)
 {
 	gchar *file;
@@ -1012,7 +1012,7 @@ get_config_widget_sound (void)
 	e_gtk_box_pack_start (GTK_BOX (container), widget, TRUE, TRUE, 0);
 	gtk_widget_show (widget);
 
-	scw->filechooser = GTK_FILE_CHOOSER (widget);
+	scw->filechooser = widget;
 
 	widget = gtk_button_new ();
 	e_gtk_button_set_image (GTK_BUTTON (widget), gtk_image_new_from_icon_name ("media-playback-start"));
