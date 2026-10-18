@@ -24,6 +24,34 @@
 #define END_BOX_KEY "e-gtk-box-end-box"
 #define BOX_PACK_KEY "e-gtk-box-pack"
 
+static void
+end_box_weak_ref_free (gpointer ptr)
+{
+	g_weak_ref_clear (ptr);
+	g_free (ptr);
+}
+
+/* The inner box of e_gtk_box_pack_end() children, while it is one: users
+ * removing all children of a box (gtk_box_remove()) drop it too */
+static GtkWidget *
+box_peek_end_box (gpointer box)
+{
+	GWeakRef *weak_ref;
+	GtkWidget *end_box;
+
+	if (!box)
+		return NULL;
+
+	weak_ref = g_object_get_data (G_OBJECT (box), END_BOX_KEY);
+	end_box = weak_ref ? g_weak_ref_get (weak_ref) : NULL;
+	if (!end_box)
+		return NULL;
+
+	g_object_unref (end_box);
+
+	return gtk_widget_get_parent (end_box) == GTK_WIDGET (box) ? end_box : NULL;
+}
+
 /* The single child of the "bin" widgets, i.e. those with get/set_child() */
 static gboolean
 bin_child (GtkWidget *bin,
@@ -164,7 +192,7 @@ e_gtk_container_remove (gpointer container,
 
 		/* children packed with e_gtk_box_pack_end() sit in an inner box */
 		if (parent && parent != widget &&
-		    parent == g_object_get_data (G_OBJECT (widget), END_BOX_KEY))
+		    parent == box_peek_end_box (widget))
 			gtk_box_remove (GTK_BOX (parent), child);
 		else
 			gtk_box_remove (GTK_BOX (widget), child);
@@ -240,7 +268,7 @@ e_gtk_widget_get_children (gpointer widget)
 
 	for (child = gtk_widget_get_last_child (container); child; child = gtk_widget_get_prev_sibling (child)) {
 		/* list the e_gtk_box_pack_end() children in place of their box */
-		if (child == g_object_get_data (G_OBJECT (container), END_BOX_KEY)) {
+		if (child == box_peek_end_box (container)) {
 			GtkWidget *end_child;
 
 			for (end_child = gtk_widget_get_last_child (child); end_child; end_child = gtk_widget_get_prev_sibling (end_child))
@@ -393,7 +421,7 @@ box_pack_orientation_cb (GtkLayoutManager *layout,
 
 	box_pack_move_children (GTK_WIDGET (box), orientation == GTK_ORIENTATION_VERTICAL);
 
-	end_box = g_object_get_data (G_OBJECT (box), END_BOX_KEY);
+	end_box = box_peek_end_box (box);
 	if (end_box) {
 		gtk_orientable_set_orientation (GTK_ORIENTABLE (end_box), orientation);
 		gtk_widget_set_halign (end_box, orientation == GTK_ORIENTATION_HORIZONTAL ? GTK_ALIGN_END : GTK_ALIGN_FILL);
@@ -449,7 +477,7 @@ update_end_box_expand (GtkBox *box)
 	GtkWidget *end_box, *child;
 	gboolean horizontal, start_expands = FALSE;
 
-	end_box = g_object_get_data (G_OBJECT (box), END_BOX_KEY);
+	end_box = box_peek_end_box (box);
 	if (!end_box)
 		return;
 
@@ -482,7 +510,7 @@ e_gtk_box_pack_start (GtkBox *box,
 
 	box_pack (box, child, expand, fill, padding);
 
-	end_box = g_object_get_data (G_OBJECT (box), END_BOX_KEY);
+	end_box = box_peek_end_box (box);
 	if (end_box)
 		gtk_box_insert_child_after (box, child, gtk_widget_get_prev_sibling (end_box));
 	else
@@ -503,9 +531,10 @@ e_gtk_box_pack_end (GtkBox *box,
 	g_return_if_fail (GTK_IS_BOX (box));
 	g_return_if_fail (GTK_IS_WIDGET (child));
 
-	end_box = g_object_get_data (G_OBJECT (box), END_BOX_KEY);
+	end_box = box_peek_end_box (box);
 	if (!end_box) {
 		GtkOrientation orientation;
+		GWeakRef *weak_ref;
 
 		orientation = box_get_orientation (box);
 		end_box = gtk_box_new (orientation, gtk_box_get_spacing (box));
@@ -514,7 +543,9 @@ e_gtk_box_pack_end (GtkBox *box,
 		else
 			gtk_widget_set_valign (end_box, GTK_ALIGN_END);
 		gtk_box_append (box, end_box);
-		g_object_set_data (G_OBJECT (box), END_BOX_KEY, end_box);
+		weak_ref = g_new0 (GWeakRef, 1);
+		g_weak_ref_init (weak_ref, end_box);
+		g_object_set_data_full (G_OBJECT (box), END_BOX_KEY, weak_ref, end_box_weak_ref_free);
 	}
 
 	box_pack (box, child, expand, fill, padding);
@@ -539,7 +570,7 @@ e_gtk_box_reorder_child (GtkBox *box,
 	/* children packed with e_gtk_box_pack_end() sit in an inner box;
 	 * they move among themselves */
 	if (gtk_widget_get_parent (child) != GTK_WIDGET (box) &&
-	    gtk_widget_get_parent (child) == g_object_get_data (G_OBJECT (box), END_BOX_KEY))
+	    gtk_widget_get_parent (child) == box_peek_end_box (box))
 		box = GTK_BOX (gtk_widget_get_parent (child));
 
 	g_return_if_fail (gtk_widget_get_parent (child) == GTK_WIDGET (box));
@@ -700,7 +731,7 @@ e_gtk_widget_destroy (gpointer widget)
 	if (GTK_IS_VIEWPORT (parent) && GTK_IS_SCROLLED_WINDOW (gtk_widget_get_parent (parent)))
 		parent = gtk_widget_get_parent (parent);
 	else if (GTK_IS_BOX (parent) && gtk_widget_get_parent (parent) &&
-		 g_object_get_data (G_OBJECT (gtk_widget_get_parent (parent)), END_BOX_KEY) == parent)
+		 box_peek_end_box (gtk_widget_get_parent (parent)) == parent)
 		parent = gtk_widget_get_parent (parent);
 
 	e_gtk_container_remove (parent, widget);

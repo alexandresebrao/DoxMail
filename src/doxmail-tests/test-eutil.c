@@ -643,6 +643,31 @@ test_toolbar_overflow (void)
 	g_object_unref (manager);
 }
 
+/* users clearing a box with gtk_box_remove() drop the inner box of the
+ * pack_end() children too (EAlertBar did; the next pack_end() crashed) */
+static void
+test_box_pack_end_after_clear (void)
+{
+	GtkWidget *box, *child;
+	gint ii;
+
+	box = g_object_ref_sink (gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0));
+
+	for (ii = 0; ii < 3; ii++) {
+		e_gtk_box_pack_start (GTK_BOX (box), gtk_label_new ("start"), FALSE, FALSE, 0);
+		e_gtk_box_pack_end (GTK_BOX (box), gtk_button_new_with_label ("end"), FALSE, FALSE, 0);
+
+		child = gtk_widget_get_last_child (box);
+		g_assert_true (GTK_IS_BOX (child));
+		g_assert_true (GTK_IS_BUTTON (gtk_widget_get_first_child (child)));
+
+		while ((child = gtk_widget_get_first_child (box)) != NULL)
+			gtk_box_remove (GTK_BOX (box), child);
+	}
+
+	g_object_unref (box);
+}
+
 /* GTK 3 expanded packed children along the current orientation of the box */
 static void
 test_box_pack_orientation (void)
@@ -779,6 +804,7 @@ main (gint argc,
 	g_test_add_func ("/eutil/box-pack-orientation", test_box_pack_orientation);
 	g_test_add_func ("/eutil/toolbar-overflow", test_toolbar_overflow);
 	g_test_add_func ("/eutil/entry-undo", test_entry_undo);
+	g_test_add_func ("/eutil/box-pack-end-after-clear", test_box_pack_end_after_clear);
 
 	return g_test_run ();
 }
