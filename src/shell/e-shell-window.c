@@ -346,7 +346,7 @@ shell_window_create_shell_view (EShellWindow *shell_window,
 
 					e_gtk_box_pack_start (shell_window->priv->headerbar_box, widget, FALSE, FALSE, 0);
 
-					gtk_window_set_title (GTK_WINDOW (shell_window), _("Evolution"));
+					gtk_window_set_title (GTK_WINDOW (shell_window), DOXMAIL_DISPLAY_NAME);
 					e_header_bar_bind_window_title (widget, GTK_WINDOW (shell_window));
 				}
 

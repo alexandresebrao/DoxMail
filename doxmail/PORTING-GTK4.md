@@ -31,8 +31,6 @@ under a wrapper.
 `src/doxmail-tests/test-canvas --interactive` opens a demo canvas (hover,
 drag the blue square, double-click, type) for checking input by hand.
 
-Check the GTK 3 build too after touching shared code:
-`cmake -S . -B _build -G Ninja && ninja -C _build`.
 
 ## Done
 
@@ -313,8 +311,14 @@ default mailer prompt (`FIRST_RUN=1` keeps them).
 
 ### DoxIA
 
-- application ID and binary name (`org.doxia.DoxMail`, `doxmail`) once it
-  runs on GTK 4 — renaming earlier would only make upstream merges harder;
+- done: application ID `org.doxia.DoxMail`, binary `doxmail`, the
+  `.desktop`/metainfo files generated from Evolution's in `data/CMakeLists.txt`,
+  the icon also installed under the ID, "DoxMail" in window titles and About
+  (CMake `DOXMAIL_APPLICATION_ID`/`DOXMAIL_BINARY`/`DOXMAIL_DISPLAY_NAME`,
+  `E_APPLICATION_ID` in the config header). Data, settings, the keyring
+  schema, the gresource prefix and the texts that say "Evolution" stay, so
+  Evolution users keep their data; DoxMail refuses to start while
+  `org.gnome.Evolution` is on the session bus (`src/shell/main.c`);
 - DoxIA theme and look (doxia-theme colors, maybe libadwaita);
 - packaging in the DoxIA image.
 

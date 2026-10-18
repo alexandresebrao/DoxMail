@@ -67,11 +67,7 @@
 
 #include "e-util/e-util.h"
 
-#ifdef OVERRIDE_APPLICATION_ID
-#define APPLICATION_ID OVERRIDE_APPLICATION_ID
-#else
-#define APPLICATION_ID "org.gnome.Evolution"
-#endif
+#define APPLICATION_ID E_APPLICATION_ID
 
 /* STABLE_VERSION is only defined for development versions. */
 #ifdef STABLE_VERSION
@@ -253,6 +249,36 @@ create_default_shell (gint *pargc,
 	return shell;
 }
 
+/* DoxMail: it uses Evolution's data; both running would share the mail
+ * stores, so it does not start while Evolution runs */
+static gboolean
+evolution_is_running (void)
+{
+	GDBusConnection *connection;
+	GVariant *reply;
+	gboolean has_owner = FALSE;
+
+	if (g_strcmp0 (APPLICATION_ID, EVOLUTION_APPLICATION_ID) == 0)
+		return FALSE;
+
+	connection = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL);
+	if (!connection)
+		return FALSE;
+
+	reply = g_dbus_connection_call_sync (connection,
+		"org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus",
+		"NameHasOwner", g_variant_new ("(s)", EVOLUTION_APPLICATION_ID),
+		G_VARIANT_TYPE ("(b)"), G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL);
+	if (reply) {
+		g_variant_get (reply, "(b)", &has_owner);
+		g_variant_unref (reply);
+	}
+
+	g_object_unref (connection);
+
+	return has_owner;
+}
+
 gint
 main (gint argc,
       gchar **argv)
@@ -284,7 +310,7 @@ main (gint argc,
 	}
 
 	/* To pair the app with the desktop file */
-	g_set_prgname ("org.gnome.Evolution");
+	g_set_prgname (APPLICATION_ID);
 
 	/* Pre-cache list of supported locales */
 	e_util_enum_supported_locales ();
@@ -314,6 +340,20 @@ main (gint argc,
 
 	is_remote = g_application_get_is_remote (G_APPLICATION (shell));
 
+	if (!is_remote && evolution_is_running ()) {
+		/* Translators: %s is the name of this program, DoxMail */
+		gchar *msg = g_strdup_printf (_("%s cannot start while Evolution is running, because they use the same mail and settings. Close Evolution, then start %s again."),
+			DOXMAIL_DISPLAY_NAME, DOXMAIL_DISPLAY_NAME);
+
+		g_warning ("%s", msg);
+		if (gtk_init_check ())
+			e_notice (NULL, GTK_MESSAGE_ERROR, "%s", msg);
+		g_free (msg);
+		g_object_unref (shell);
+
+		return 1;
+	}
+
 	if (!is_remote) {
 		#ifdef ENABLE_MAINTAINER_MODE
 		GtkIconTheme *icon_theme;
@@ -324,7 +364,7 @@ main (gint argc,
 		#endif
 
 		e_passwords_init ();
-		gtk_window_set_default_icon_name ("evolution");
+		gtk_window_set_default_icon_name (APPLICATION_ID);
 
 		#ifdef ENABLE_MAINTAINER_MODE
 		icon_theme = e_gtk_icon_theme_get_default ();

@@ -19,11 +19,20 @@ configure_file(org.gnome.Evolution.desktop.in.in
 	@ONLY
 )
 
-intltool_merge(${CMAKE_CURRENT_BINARY_DIR}/org.gnome.Evolution.desktop.in org.gnome.Evolution.desktop --desktop-style --utf8)
+# DoxMail: the .desktop file of its own identity, from Evolution's
+file(READ ${CMAKE_CURRENT_BINARY_DIR}/org.gnome.Evolution.desktop.in _doxmail_desktop)
+string(REGEX REPLACE "\n_Name=Evolution\n" "\nName=${DOXMAIL_DISPLAY_NAME}\n" _doxmail_desktop "${_doxmail_desktop}")
+string(REGEX REPLACE "\n_X-GNOME-FullName=[^\n]*\n" "\nX-GNOME-FullName=${DOXMAIL_DISPLAY_NAME}\n" _doxmail_desktop "${_doxmail_desktop}")
+string(REGEX REPLACE "\nX-Flatpak-RenamedFrom=[^\n]*\n" "\n" _doxmail_desktop "${_doxmail_desktop}")
+string(REPLACE "Exec=evolution" "Exec=${DOXMAIL_BINARY}" _doxmail_desktop "${_doxmail_desktop}")
+string(REPLACE "Icon=evolution" "Icon=${OVERRIDE_APPLICATION_ID}" _doxmail_desktop "${_doxmail_desktop}")
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${OVERRIDE_APPLICATION_ID}.desktop.in "${_doxmail_desktop}")
 
-list(APPEND filedeps ${CMAKE_CURRENT_BINARY_DIR}/org.gnome.Evolution.desktop)
+intltool_merge(${CMAKE_CURRENT_BINARY_DIR}/${OVERRIDE_APPLICATION_ID}.desktop.in ${OVERRIDE_APPLICATION_ID}.desktop --desktop-style --utf8)
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/org.gnome.Evolution.desktop
+list(APPEND filedeps ${CMAKE_CURRENT_BINARY_DIR}/${OVERRIDE_APPLICATION_ID}.desktop)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${OVERRIDE_APPLICATION_ID}.desktop
 	DESTINATION ${desktopdir}
 )
 
@@ -49,7 +58,13 @@ configure_file(org.gnome.Evolution.metainfo.xml.in.in
 	@ONLY
 )
 
-add_appdata_file(${CMAKE_CURRENT_BINARY_DIR}/org.gnome.Evolution.metainfo.xml.in org.gnome.Evolution.metainfo.xml)
+# DoxMail: the metainfo of its own identity
+file(READ ${CMAKE_CURRENT_BINARY_DIR}/org.gnome.Evolution.metainfo.xml.in _doxmail_metainfo)
+string(REPLACE "org.gnome.Evolution.desktop" "${OVERRIDE_APPLICATION_ID}.desktop" _doxmail_metainfo "${_doxmail_metainfo}")
+string(REGEX REPLACE "<_?name>Evolution</_?name>" "<name>${DOXMAIL_DISPLAY_NAME}</name>" _doxmail_metainfo "${_doxmail_metainfo}")
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${OVERRIDE_APPLICATION_ID}.metainfo.xml.in "${_doxmail_metainfo}")
+
+add_appdata_file(${CMAKE_CURRENT_BINARY_DIR}/${OVERRIDE_APPLICATION_ID}.metainfo.xml.in ${OVERRIDE_APPLICATION_ID}.metainfo.xml)
 
 set(SCHEMAS
 	org.gnome.evolution.gschema.xml

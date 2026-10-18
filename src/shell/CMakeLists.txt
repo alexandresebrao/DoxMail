@@ -123,6 +123,9 @@ add_executable(evolution
 	${SOURCES}
 )
 
+# DoxMail: the target keeps its name, the binary is DoxMail's
+set_target_properties(evolution PROPERTIES OUTPUT_NAME ${DOXMAIL_BINARY})
+
 add_dependencies(evolution
 	${DEPENDENCIES}
 )

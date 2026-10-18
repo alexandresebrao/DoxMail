@@ -20,7 +20,7 @@ if [ -n "${SHOT:-}" ]; then
 fi
 env -i PATH="$PATH" HOME="$tmp/home" XDG_RUNTIME_DIR="$tmp/run" \
 	WAYLAND_DISPLAY=wayland-iso GDK_BACKEND=wayland GSK_RENDERER=cairo \
-	GSETTINGS_SCHEMA_DIR="${GSETTINGS_SCHEMA_DIR:-}" DOXMAIL_ACTIVATE="${DOXMAIL_ACTIVATE:-}" DOXMAIL_SIZES_MIN="${DOXMAIL_SIZES_MIN:-}" GTK_A11Y=none G_DEBUG="${G_DEBUG:-}" \
+	GSETTINGS_SCHEMA_DIR="${GSETTINGS_SCHEMA_DIR:-}" DOXMAIL_ACTIVATE="${DOXMAIL_ACTIVATE:-}" DOXMAIL_SIZES_MIN="${DOXMAIL_SIZES_MIN:-}" XDG_DATA_DIRS="${XDG_DATA_DIRS:-/usr/local/share:/usr/share}" GTK_A11Y=none G_DEBUG="${G_DEBUG:-}" \
 	PRE="${PRE:-}" dbus-run-session -- sh -c 'eval "$PRE"; exec timeout -k 5 "$@"' sh "$secs" "$@"
 echo "exit: $?"
 kill $weston

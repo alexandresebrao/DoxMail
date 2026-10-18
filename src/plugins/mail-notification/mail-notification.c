@@ -336,7 +336,7 @@ static guint unread_message_count = 0;
 static void
 update_unity_launcher_entry (void)
 {
-	UnityLauncherEntry *entry = unity_launcher_entry_get_for_desktop_id ("org.gnome.Evolution.desktop");
+	UnityLauncherEntry *entry = unity_launcher_entry_get_for_desktop_id (E_APPLICATION_ID ".desktop");
 
 	if (entry) {
 		unity_launcher_entry_set_count (entry, unread_message_count);
@@ -625,10 +625,8 @@ new_notify_status (EMEventTargetFolder *t)
 			additional_messages), additional_messages);
 	}
 
-	if (e_util_is_running_flatpak ())
-		icon_name = "org.gnome.Evolution";
-	else
-		icon_name = "evolution";
+	/* DoxMail installs its icon under the application ID */
+	icon_name = E_APPLICATION_ID;
 
 	summary = _("New email in Evolution");
 	escaped_text = g_markup_escape_text (text->str, -1);
@@ -651,7 +649,7 @@ new_notify_status (EMEventTargetFolder *t)
 
 		notify_notification_set_hint (
 			notify, "desktop-entry",
-			g_variant_new_string ("org.gnome.Evolution"));
+			g_variant_new_string (E_APPLICATION_ID));
 
 		if (e_util_is_running_gnome ()) {
 			notify_notification_set_hint (

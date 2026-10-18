@@ -349,7 +349,7 @@ e_shell_utils_run_help_about (EShell *shell)
 
 	gtk_show_about_dialog (
 		e_shell_get_active_window (shell),
-		"program-name", "Evolution",
+		"program-name", DOXMAIL_DISPLAY_NAME,
 		"version", VERSION VERSION_SUBSTRING " " VERSION_COMMENT,
 		"copyright", EVOLUTION_COPYRIGHT,
 		"comments", _("Groupware Suite"),
@@ -358,7 +358,7 @@ e_shell_utils_run_help_about (EShell *shell)
 		"authors", authors,
 		"documenters", documenters,
 		"translator-credits", translator_credits,
-		"logo-icon-name", "evolution",
+		"logo-icon-name", E_APPLICATION_ID,
 		"license-type", GTK_LICENSE_GPL_2_0,
 		NULL);
 }

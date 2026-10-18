@@ -31,7 +31,7 @@
 	((obj), E_TYPE_MAILTO_HANDLER, EMailtoHandler))
 
 #define MAILTO_COMMAND \
-	"evolution --component=mail"
+	DOXMAIL_BINARY " --component=mail"
 
 #define MAILTO_HANDLER "x-scheme-handler/mailto"
 
@@ -89,7 +89,7 @@ mailto_handler_is_evolution (GAppInfo *app_info)
 
 	/* Check the basename of the first token. */
 	basename = g_path_get_basename (argv[0]);
-	is_evolution = g_str_has_prefix (basename, "evolution");
+	is_evolution = g_str_has_prefix (basename, DOXMAIL_BINARY);
 	g_free (basename);
 
 	g_strfreev (argv);

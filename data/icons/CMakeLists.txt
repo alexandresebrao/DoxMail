@@ -874,5 +874,16 @@ set(noinst_icons
 	source-symbols.svg
 )
 
+# DoxMail: the application icon under its application ID too (Evolution's
+# artwork for now), before the icon cache update
+install(FILES hicolor_apps_scalable_evolution.svg
+	DESTINATION ${SHARE_INSTALL_PREFIX}/icons/hicolor/scalable/apps
+	RENAME ${OVERRIDE_APPLICATION_ID}.svg
+)
+install(FILES hicolor_apps_scalable_evolution-symbolic.svg
+	DESTINATION ${SHARE_INSTALL_PREFIX}/icons/hicolor/symbolic/apps
+	RENAME ${OVERRIDE_APPLICATION_ID}-symbolic.svg
+)
+
 add_icon_cache_files("${SHARE_INSTALL_PREFIX}" public_icons)
 add_icon_cache_files("${privdatadir}" private_icons stock_private_icons legacy_private_icons)

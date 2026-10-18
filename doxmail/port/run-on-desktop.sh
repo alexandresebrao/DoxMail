@@ -28,4 +28,5 @@ case "$display" in /*) ;; *) display="$XDG_RUNTIME_DIR/$display" ;; esac
 exec env -i PATH="$PATH" HOME="$home" XDG_RUNTIME_DIR="$home/run" \
 	WAYLAND_DISPLAY="$display" GDK_BACKEND=wayland LANG="${LANG:-C.UTF-8}" \
 	GSETTINGS_SCHEMA_DIR="$PWD/_inst-gtk4/share/glib-2.0/schemas" \
-	dbus-run-session -- sh -c "$settings exec _inst-gtk4/bin/evolution \"\$@\"" evolution "$@"
+	XDG_DATA_DIRS="$PWD/_inst-gtk4/share:/usr/local/share:/usr/share" \
+	dbus-run-session -- sh -c "$settings exec _inst-gtk4/bin/doxmail \"\$@\"" evolution "$@"

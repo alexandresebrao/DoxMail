@@ -170,7 +170,7 @@ main (gint argc,
 	 * want to just skip to the killing if we can't ask Evolution to
 	 * terminate gracefully.  Despite our name we actually want to
 	 * -avoid- killing Evolution if at all possible. */
-	if (!g_spawn_command_line_async ("evolution --quit", &error)) {
+	if (!g_spawn_command_line_async (DOXMAIL_BINARY " --quit", &error)) {
 		g_printerr ("%s\n", error->message);
 		g_error_free (error);
 		retval = EXIT_FAILURE;

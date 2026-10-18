@@ -39,7 +39,7 @@
 
 #define EVOUSERDATADIR_MAGIC "#EVO_USERDATADIR#"
 
-#define EVOLUTION "evolution"
+#define EVOLUTION DOXMAIL_BINARY
 #define EVOLUTION_DIR "$DATADIR/"
 #define EVOLUTION_DIR_FILE EVOLUTION ".dir"
 
@@ -1256,7 +1256,7 @@ main (gint argc,
 	textdomain (GETTEXT_PACKAGE);
 
 	/* to pair the tool with the main app in the desktop environment (like in the GNOME shell) */
-	g_set_prgname ("org.gnome.Evolution");
+	g_set_prgname (E_APPLICATION_ID);
 
 	/* gtk_init_with_args() is gone with GTK 4 */
 	{
@@ -1310,7 +1310,7 @@ main (gint argc,
 		gchar *str = NULL;
 		gchar *markup;
 
-		gtk_window_set_default_icon_name ("evolution");
+		gtk_window_set_default_icon_name (E_APPLICATION_ID);
 
 		/* Backup / Restore only can have GUI.
 		 * We should restrict the rest. */

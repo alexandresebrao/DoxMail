@@ -215,6 +215,16 @@ if(OVERRIDE_APPLICATION_ID STREQUAL "")
 	unset(OVERRIDE_APPLICATION_ID)
 endif(OVERRIDE_APPLICATION_ID STREQUAL "")
 
+# DoxMail: its own identity (application ID, binary, name in the .desktop
+# file); the data and settings stay Evolution's, so do the internal names
+set(DOXMAIL_APPLICATION_ID "org.doxia.DoxMail" CACHE STRING "DoxMail application ID")
+set(DOXMAIL_BINARY "doxmail" CACHE STRING "Name of the DoxMail binary")
+set(DOXMAIL_DISPLAY_NAME "DoxMail" CACHE STRING "Name of DoxMail shown to users")
+# (option() above caches OFF, not an empty string)
+if(NOT OVERRIDE_APPLICATION_ID)
+	set(OVERRIDE_APPLICATION_ID "${DOXMAIL_APPLICATION_ID}")
+endif(NOT OVERRIDE_APPLICATION_ID)
+
 add_printable_option(ENABLE_MAINTAINER_MODE "Enable maintainer mode" OFF)
 
 # DoxMail: the GTK 4 port builds only the parts already ported (see

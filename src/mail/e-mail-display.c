@@ -2280,7 +2280,7 @@ mai_display_fill_open_with (EWebView *web_view,
 			continue;
 
 		/* Don't list 'Open With "Evolution"'. */
-		if (g_str_equal (app_id, "org.gnome.Evolution.desktop"))
+		if (g_str_equal (app_id, E_APPLICATION_ID ".desktop"))
 			continue;
 
 		if (app_info)

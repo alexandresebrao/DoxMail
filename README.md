@@ -1,34 +1,53 @@
 DoxMail
 =======
 
-**DoxMail** is a fork of [GNOME Evolution][evolution] being ported to GTK 4,
-to become the mail, calendar and contacts app of [DoxIA][doxia].
+**DoxMail** is a fork of [GNOME Evolution][evolution] ported to GTK 4, to
+become the mail, calendar and contacts app of [DoxIA][doxia].
 
 It is based on Evolution **3.60.2**, the version whose
 evolution-data-server ships with Fedora 44 (DoxIA's base), so it runs
 against the system EDS without building it too.
 
-Status: early. The `doxmail` branch still builds and runs as the regular
-GTK 3 Evolution; with `-DWITH_GTK4=ON` it builds only the parts already
-ported to GTK 4. The plan, the decisions made so far and what is next are
-in [doxmail/PORTING-GTK4.md](doxmail/PORTING-GTK4.md).
+Status: the whole tree builds and runs on GTK 4 (GTK 4 only since the tag
+`doxmail-gtk3-last`). The mail, calendar, contacts, tasks and memos views,
+the composer, the contact and event/task/memo editors, the preferences,
+the accounts window and the account assistant open without warnings in
+headless runs; real mouse and keyboard use is being checked next. The
+plan, the decisions made so far and what is left are in
+[doxmail/PORTING-GTK4.md](doxmail/PORTING-GTK4.md).
+
+DoxMail has its own identity — application ID `org.doxia.DoxMail`, binary
+`doxmail`, `org.doxia.DoxMail.desktop` — but uses Evolution's mail, settings
+and accounts (`~/.local/share/evolution`, `~/.config/evolution`, the EDS
+sources), so moving from Evolution keeps everything. Because of that it
+does not start while Evolution runs.
 
 ```sh
-# GTK 3 (the usual Evolution build)
-cmake -S . -B _build -G Ninja
-ninja -C _build
+# Configure into a local prefix: nothing goes to system directories
+cmake -S . -B _build-gtk4 -G Ninja -DWITH_GTK4=ON \
+	-DCMAKE_INSTALL_PREFIX=$PWD/_inst-gtk4 \
+	-Dcamel_providerdir=$PWD/_inst-gtk4/lib/camel-providers \
+	-Dedsuimoduledir=$PWD/_inst-gtk4/lib/eds-ui-modules
+ninja -C _build-gtk4
 
-# GTK 4 port (ported parts only) and its checks, in a headless weston
-cmake -S . -B _build-gtk4 -G Ninja -DWITH_GTK4=ON
+# The port's checks, in a headless weston
 doxmail/run-tests.sh _build-gtk4
 
-# How much GTK 3-only API is left
-doxmail/gtk4-audit.sh --dirs
+# Install into _inst-gtk4 and run it in a headless weston, isolated from
+# your data (SHOT=file.png takes a screenshot)
+doxmail/port/run-evolution.sh 25
+
+# Or on your desktop, with its own home and D-Bus session
+doxmail/port/run-on-desktop.sh
 ```
 
+`DOXMAIL_ACTIVATE=action[,...]` reaches dialogs in headless runs (for
+example `DOXMAIL_ACTIVATE=contact-new doxmail/port/run-evolution.sh 18 -c
+contacts`); see the porting notes for `@click:`, `@entry:` and `@sizes`.
+
 All credit for Evolution goes to the Evolution team and its contributors;
-DoxMail keeps its license (LGPLv2 or LGPLv3, see COPYING) and its names
-in the code, so upstream changes keep merging.
+DoxMail keeps its license (LGPLv2 or LGPLv3, see COPYING) and Evolution's
+names inside the code, so upstream changes keep merging.
 
 ps: Vibe Coding learning to port an app.
 

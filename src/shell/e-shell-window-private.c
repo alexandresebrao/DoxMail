@@ -44,7 +44,7 @@ e_shell_window_private_init (EShellWindow *shell_window)
 	 *     of specific shell views, but we need a sane fallback. */
 	g_warn_if_fail (g_snprintf (priv->active_view, sizeof (priv->active_view), "mail") < sizeof (priv->active_view));
 
-	gtk_window_set_title (GTK_WINDOW (shell_window), _("Evolution"));
+	gtk_window_set_title (GTK_WINDOW (shell_window), DOXMAIL_DISPLAY_NAME);
 }
 
 static gboolean
@@ -410,8 +410,8 @@ e_shell_window_update_title (EShellWindow *shell_window)
 	} else {
 		gchar *window_title;
 
-		/* Translators: This is used for the main window title. */
-		window_title = g_strdup_printf (_("%s — Evolution"), view_title);
+		/* DoxMail: its own name, not translated */
+		window_title = g_strdup_printf ("%s — %s", view_title, DOXMAIL_DISPLAY_NAME);
 		gtk_window_set_title (GTK_WINDOW (shell_window), window_title);
 		g_free (window_title);
 	}

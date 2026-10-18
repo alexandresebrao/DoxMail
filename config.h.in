@@ -3,6 +3,19 @@
 /* Defined, when configured to override application ID (usable only for the Flatpak) */
 #cmakedefine OVERRIDE_APPLICATION_ID "@OVERRIDE_APPLICATION_ID@"
 
+/* DoxMail: the application ID (also the .desktop file and icon name), the
+ * binary and the name shown to users */
+#ifdef OVERRIDE_APPLICATION_ID
+#define E_APPLICATION_ID OVERRIDE_APPLICATION_ID
+#else
+#define E_APPLICATION_ID "org.gnome.Evolution"
+#endif
+#define DOXMAIL_BINARY "@DOXMAIL_BINARY@"
+#define DOXMAIL_DISPLAY_NAME "@DOXMAIL_DISPLAY_NAME@"
+
+/* the real Evolution, not to run next to DoxMail on the same data */
+#define EVOLUTION_APPLICATION_ID "org.gnome.Evolution"
+
 /* Name of the package */
 #define PACKAGE "@PROJECT_NAME@"
 

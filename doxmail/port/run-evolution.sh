@@ -15,6 +15,7 @@ if [ "${FIRST_RUN:-}" != 1 ]; then
 		gsettings set org.gnome.evolution.mail prompt-check-if-default-mailer false; ${PRE:-}"
 	export PRE
 fi
+XDG_DATA_DIRS=$PWD/_inst-gtk4/share:/usr/local/share:/usr/share \
 GSETTINGS_SCHEMA_DIR=$PWD/_inst-gtk4/share/glib-2.0/schemas \
-	eval sh doxmail/port/run-isolated.sh "${1:-25}" $gdb _inst-gtk4/bin/evolution '"${@:2}"' 2>&1 |
+	eval sh doxmail/port/run-isolated.sh "${1:-25}" $gdb _inst-gtk4/bin/doxmail '"${@:2}"' 2>&1 |
 	grep -v '^\[New Thread\|^\[Thread\|^\[Detaching\|xdg-desktop-portal\|a11y\|AT-SPI\|MESA\|PipeWire\|^rm: \|^$'
