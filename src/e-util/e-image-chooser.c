@@ -151,6 +151,9 @@ set_image_from_data (EImageChooser *chooser,
 		g_object_unref (composite);
 	}
 
+	/* GTK 4 draws images at the icon size otherwise */
+	gtk_image_set_pixel_size (GTK_IMAGE (chooser->priv->image), chooser->priv->pixel_size);
+
 	g_object_unref (pixbuf);
 
 	g_free (chooser->priv->image_buf);

@@ -40,6 +40,7 @@
 #include "e-shell-enumtypes.h"
 #include "e-shell-migrate.h"
 #include "e-shell-window.h"
+#include "e-shell-view.h"
 #include "e-shell-utils.h"
 
 #define SET_ONLINE_TIMEOUT_SECONDS 5
@@ -2897,6 +2898,100 @@ e_shell_allow_auth_prompt_for (EShell *shell,
 	}
 }
 
+/* DoxMail: DOXMAIL_ACTIVATE=action[,action...] activates actions of the
+ * first window or its active view, in order, each once it is enabled, to
+ * reach dialogs and editors where there is no pointer (headless test runs);
+ * "@sizes" prints the widgets keeping the window wide */
+typedef struct _DevActivate {
+	GWeakRef window;
+	gchar **names;
+	guint index;
+	guint tries;
+} DevActivate;
+
+static void
+dev_activate_free (gpointer ptr)
+{
+	DevActivate *da = ptr;
+
+	g_weak_ref_clear (&da->window);
+	g_strfreev (da->names);
+	g_free (da);
+}
+
+/* "@sizes": widgets at least 400 px wide at their minimum */
+static void
+dev_dump_sizes (GtkWidget *widget,
+		gint depth)
+{
+	GtkWidget *child;
+	gint min = 0, nat = 0;
+
+	gtk_widget_measure (widget, GTK_ORIENTATION_HORIZONTAL, -1, &min, &nat, NULL, NULL);
+	if (min < 400)
+		return;
+
+	g_printerr ("%*s%s%s%s min %d nat %d alloc %d\n", depth * 2, "",
+		G_OBJECT_TYPE_NAME (widget),
+		gtk_widget_get_name (widget) && g_strcmp0 (gtk_widget_get_name (widget), G_OBJECT_TYPE_NAME (widget)) != 0 ? " #" : "",
+		g_strcmp0 (gtk_widget_get_name (widget), G_OBJECT_TYPE_NAME (widget)) != 0 ? gtk_widget_get_name (widget) : "",
+		min, nat, gtk_widget_get_width (widget));
+
+	for (child = gtk_widget_get_first_child (widget); child; child = gtk_widget_get_next_sibling (child))
+		dev_dump_sizes (child, depth + 1);
+}
+
+static gboolean
+shell_dev_activate_cb (gpointer user_data)
+{
+	DevActivate *da = user_data;
+	EShellWindow *shell_window;
+	EShellView *shell_view;
+	EUIAction *action;
+	const gchar *name;
+
+	shell_window = g_weak_ref_get (&da->window);
+	if (!shell_window)
+		return G_SOURCE_REMOVE;
+
+	name = da->names[da->index];
+
+	if (g_strcmp0 (name, "@sizes") == 0) {
+		dev_dump_sizes (GTK_WIDGET (shell_window), 0);
+		da->index++;
+		g_object_unref (shell_window);
+
+		return da->names[da->index] ? G_SOURCE_CONTINUE : G_SOURCE_REMOVE;
+	}
+	action = e_shell_window_get_ui_action (shell_window, name);
+	shell_view = e_shell_window_peek_shell_view (shell_window,
+		e_shell_window_get_active_view (shell_window));
+	if (!action && shell_view)
+		action = e_shell_view_get_action (shell_view, name);
+
+	/* as when a menu opens */
+	if (shell_view && e_shell_view_is_active (shell_view))
+		e_shell_view_update_actions (shell_view);
+
+	if (action && g_action_get_enabled (G_ACTION (action)) && e_ui_action_is_visible (action)) {
+		g_action_activate (G_ACTION (action), NULL);
+		da->index++;
+		da->tries = 0;
+	} else if (++da->tries >= 15) {
+		if (action)
+			g_warning ("DOXMAIL_ACTIVATE: action '%s' stayed %s", name,
+				g_action_get_enabled (G_ACTION (action)) ? "hidden" : "disabled");
+		else
+			g_warning ("DOXMAIL_ACTIVATE: action '%s' not found", name);
+		da->index++;
+		da->tries = 0;
+	}
+
+	g_object_unref (shell_window);
+
+	return da->names[da->index] ? G_SOURCE_CONTINUE : G_SOURCE_REMOVE;
+}
+
 /**
  * e_shell_create_shell_window:
  * @shell: an #EShell
@@ -2979,6 +3074,15 @@ e_shell_create_shell_window (EShell *shell,
 
 		/* Also check alerts for failed authentications */
 		shell_process_failed_authentications (shell);
+
+		if (g_getenv ("DOXMAIL_ACTIVATE") && *g_getenv ("DOXMAIL_ACTIVATE")) {
+			DevActivate *da = g_new0 (DevActivate, 1);
+
+			g_weak_ref_init (&da->window, shell_window);
+			da->names = g_strsplit (g_getenv ("DOXMAIL_ACTIVATE"), ",", -1);
+			e_named_timeout_add_seconds_full (G_PRIORITY_DEFAULT, 1,
+				shell_dev_activate_cb, da, dev_activate_free);
+		}
 	}
 
 	return shell_window;

@@ -4337,27 +4337,30 @@ eve_section_add_item_cb (GtkWidget *button,
 	eve_focus_added_item (item);
 }
 
-static void
-eve_event_after_cb (EVCardEditor *self,
-		    GdkEvent *event,
-		    gpointer user_data)
+/* GTK 3 watched "event-after"; F10 opens the Add menu */
+static gboolean
+eve_key_pressed_cb (GtkEventControllerKey *controller,
+		    guint keyval,
+		    guint keycode,
+		    GdkModifierType state,
+		    EVCardEditor *self)
 {
-	if (e_gdk_event_type (event) == GDK_KEY_PRESS) {
-		GdkEvent *key_event;
-		gboolean has_modifier_pressed;
+	gboolean has_modifier_pressed;
 
-		key_event = (GdkEvent *) event;
-		has_modifier_pressed = (e_gdk_event_state (key_event) & (GDK_SHIFT_MASK | GDK_CONTROL_MASK |
-					GDK_SUPER_MASK | GDK_HYPER_MASK |
-					GDK_META_MASK)) != 0;
+	has_modifier_pressed = (state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK |
+				GDK_SUPER_MASK | GDK_HYPER_MASK |
+				GDK_META_MASK)) != 0;
 
-		if (e_gdk_event_keyval (key_event) == GDK_KEY_F10 && !has_modifier_pressed && self->add_menu_button) {
-			if (self->add_menu_needs_update)
-				eve_update_add_menu (self);
+	if (keyval == GDK_KEY_F10 && !has_modifier_pressed && self->add_menu_button) {
+		if (self->add_menu_needs_update)
+			eve_update_add_menu (self);
 
-			g_signal_emit_by_name (self->add_menu_button, "clicked");
-		}
+		gtk_menu_button_popup (GTK_MENU_BUTTON (self->add_menu_button));
+
+		return TRUE;
 	}
+
+	return FALSE;
 }
 
 static gboolean
@@ -4926,8 +4929,13 @@ e_vcard_editor_constructed (GObject *object)
 
 	eve_fill_widgets (self);
 
-	g_signal_connect_object (self, "event-after",
-		G_CALLBACK (eve_event_after_cb), NULL, G_CONNECT_AFTER);
+	{
+		GtkEventController *controller = gtk_event_controller_key_new ();
+
+		g_signal_connect_object (controller, "key-pressed",
+			G_CALLBACK (eve_key_pressed_cb), self, 0);
+		gtk_widget_add_controller (GTK_WIDGET (self), controller);
+	}
 
 	e_restore_window (
 		GTK_WINDOW (self), "/org/gnome/evolution/addressbook/vcard-editor-window/",

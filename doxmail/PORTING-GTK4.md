@@ -282,9 +282,19 @@ draw-indicator, no-show-all, border-width) is fixed too.
 
 ## Next
 
-Runtime: dialogs and editors (contact/event editors, preferences), the
+Runtime: dialogs and editors (event/task/memo editors, preferences), the
 account assistant pages, real mouse/keyboard use; then the DoxIA items
-below. The composer opens clean (`mailto:`).
+below. The composer (`mailto:`) and the contact editor open clean.
+Toolbars that were GtkToolbar are boxes now and never shrink (no overflow
+menu): the mail view is at least 931 px wide because of the preview
+toolbar — needs an overflow menu or a shrinkable container.
+
+Headless runs reach dialogs through `DOXMAIL_ACTIVATE=action[,action...]`
+(e-shell.c: activates actions of the first window or its active view once
+they are enabled; `@sizes` prints the widgets at least 400 px wide), e.g.
+`DOXMAIL_ACTIVATE=contact-new SHOT=x.png doxmail/port/run-evolution.sh 18
+-c contacts`. `run-evolution.sh` turns off the startup wizard and the
+default mailer prompt (`FIRST_RUN=1` keeps them).
 
  → modules (they give the shell its views) → plugins;
 then the `.ui` files and `data/` (schemas, icons) in the GTK 4 build.

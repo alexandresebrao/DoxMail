@@ -120,7 +120,6 @@ e_alphabet_box_constructed (GObject *object)
 		"   border-radius:0px;"
 		"   border-top-left-radius:8px;"
 		"   border-bottom-left-radius:8px;"
-		"}"
 		"}");
 
 	/* for the rows, which are children of the wrapped list box */

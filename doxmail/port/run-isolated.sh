@@ -1,7 +1,9 @@
 #!/bin/sh
 # run-isolated.sh SECONDS CMD...: runs a GTK 4 program in a headless weston
 # with its own HOME and D-Bus session, so it never touches the user's data;
-# SHOT=FILE.png [SHOT_AFTER=seconds] saves a screenshot of the session
+# SHOT=FILE.png [SHOT_AFTER=seconds] saves a screenshot of the session;
+# DOXMAIL_ACTIVATE=action[,action...] is passed on (see e-shell.c); PRE=CMDS
+# runs in the session before the program (like gsettings set ...)
 cd "$(dirname "$0")/../.." || exit 1
 secs=$1; shift
 tmp=$(mktemp -d)
@@ -18,8 +20,8 @@ if [ -n "${SHOT:-}" ]; then
 fi
 env -i PATH="$PATH" HOME="$tmp/home" XDG_RUNTIME_DIR="$tmp/run" \
 	WAYLAND_DISPLAY=wayland-iso GDK_BACKEND=wayland GSK_RENDERER=cairo \
-	GSETTINGS_SCHEMA_DIR="${GSETTINGS_SCHEMA_DIR:-}" GTK_A11Y=none G_DEBUG="${G_DEBUG:-}" \
-	dbus-run-session -- timeout "$secs" "$@"
+	GSETTINGS_SCHEMA_DIR="${GSETTINGS_SCHEMA_DIR:-}" DOXMAIL_ACTIVATE="${DOXMAIL_ACTIVATE:-}" GTK_A11Y=none G_DEBUG="${G_DEBUG:-}" \
+	PRE="${PRE:-}" dbus-run-session -- sh -c 'eval "$PRE"; exec timeout -k 5 "$@"' sh "$secs" "$@"
 echo "exit: $?"
 kill $weston
 rm -rf "$tmp"

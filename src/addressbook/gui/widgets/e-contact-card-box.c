@@ -1551,11 +1551,14 @@ e_contact_card_box_constructed (GObject *object)
 		"halign", GTK_ALIGN_FILL,
 		"vexpand", TRUE,
 		"valign", GTK_ALIGN_FILL,
+		"can-focus", FALSE,
+		NULL);
+
+	g_object_set (self->priv->scrolled_window,
 		"hscrollbar-policy", GTK_POLICY_AUTOMATIC,
 		"vscrollbar-policy", GTK_POLICY_AUTOMATIC,
 		"min-content-width", 150,
 		"min-content-height", 150,
-		"can-focus", FALSE,
 		NULL);
 
 	g_signal_connect_swapped (gtk_scrolled_window_get_hadjustment (GTK_SCROLLED_WINDOW (self->priv->scrolled_window)), "notify::value",
