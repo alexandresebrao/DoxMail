@@ -141,10 +141,10 @@ static void
 mail_config_local_backend_file_set_cb (EGtkFileChooserButton *file_chooser_button,
                                        CamelLocalSettings *local_settings)
 {
-	GtkFileChooser *file_chooser;
+	gpointer file_chooser;
 	gchar *path;
 
-	file_chooser = GTK_FILE_CHOOSER (file_chooser_button);
+	file_chooser = file_chooser_button;
 
 	path = e_gtk_file_chooser_get_filename (file_chooser);
 	camel_local_settings_set_path (local_settings, path);

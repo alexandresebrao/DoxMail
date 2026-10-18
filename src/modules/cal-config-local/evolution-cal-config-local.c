@@ -81,10 +81,10 @@ cal_config_local_active_to_custom_file (GBinding *binding,
                                         gpointer user_data)
 {
 	Context *context = user_data;
-	GtkFileChooser *file_chooser;
+	gpointer file_chooser;
 	GFile *file = NULL;
 
-	file_chooser = GTK_FILE_CHOOSER (context->custom_file_chooser);
+	file_chooser = context->custom_file_chooser;
 
 	if (g_value_get_boolean (source_value))
 		file = e_gtk_file_chooser_get_file (file_chooser);
@@ -101,11 +101,11 @@ cal_config_local_custom_file_to_active (GBinding *binding,
                                         gpointer user_data)
 {
 	Context *context = user_data;
-	GtkFileChooser *file_chooser;
+	gpointer file_chooser;
 	GFile *file;
 	gboolean success;
 
-	file_chooser = GTK_FILE_CHOOSER (context->custom_file_chooser);
+	file_chooser = context->custom_file_chooser;
 
 	file = g_value_get_object (source_value);
 

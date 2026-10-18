@@ -636,7 +636,7 @@ void
 e_mail_signature_script_dialog_set_symlink_target (EMailSignatureScriptDialog *dialog,
                                                    const gchar *symlink_target)
 {
-	GtkFileChooser *file_chooser;
+	gpointer file_chooser;
 
 	g_return_if_fail (E_IS_MAIL_SIGNATURE_SCRIPT_DIALOG (dialog));
 	g_return_if_fail (symlink_target != NULL);
@@ -644,7 +644,7 @@ e_mail_signature_script_dialog_set_symlink_target (EMailSignatureScriptDialog *d
 	g_free (dialog->priv->symlink_target);
 	dialog->priv->symlink_target = g_strdup (symlink_target);
 
-	file_chooser = GTK_FILE_CHOOSER (dialog->priv->file_chooser);
+	file_chooser = dialog->priv->file_chooser;
 	e_gtk_file_chooser_set_filename (file_chooser, symlink_target);
 
 	g_object_notify (G_OBJECT (dialog), "symlink-target");

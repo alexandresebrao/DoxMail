@@ -274,12 +274,12 @@ const gchar *
 e_category_editor_create_category (ECategoryEditor *editor)
 {
 	GtkEntry *entry;
-	GtkFileChooser *file_chooser;
+	gpointer file_chooser;
 
 	g_return_val_if_fail (E_IS_CATEGORY_EDITOR (editor), NULL);
 
 	entry = GTK_ENTRY (editor->priv->category_name);
-	file_chooser = GTK_FILE_CHOOSER (editor->priv->category_icon);
+	file_chooser = editor->priv->category_icon;
 
 	do {
 		const gchar *category_name;
@@ -331,13 +331,13 @@ gboolean
 e_category_editor_edit_category (ECategoryEditor *editor,
                                  const gchar *category)
 {
-	GtkFileChooser *file_chooser;
+	gpointer file_chooser;
 	gchar *icon_file;
 
 	g_return_val_if_fail (E_IS_CATEGORY_EDITOR (editor), FALSE);
 	g_return_val_if_fail (category != NULL, FALSE);
 
-	file_chooser = GTK_FILE_CHOOSER (editor->priv->category_icon);
+	file_chooser = editor->priv->category_icon;
 
 	gtk_editable_set_text (GTK_EDITABLE (editor->priv->category_name), category);
 	gtk_widget_set_sensitive (editor->priv->category_name, FALSE);

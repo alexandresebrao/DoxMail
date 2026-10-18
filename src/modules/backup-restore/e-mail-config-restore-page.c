@@ -56,11 +56,11 @@ static void
 mail_config_restore_page_update_filename (EMailConfigRestorePage *page)
 {
 	GtkToggleButton *toggle_button;
-	GtkFileChooser *file_chooser;
+	gpointer file_chooser;
 	gchar *filename = NULL;
 	GError *local_error = NULL;
 
-	file_chooser = GTK_FILE_CHOOSER (page->priv->file_chooser);
+	file_chooser = page->priv->file_chooser;
 	toggle_button = GTK_TOGGLE_BUTTON (page->priv->toggle_button);
 
 	e_alert_bar_clear (E_ALERT_BAR (page->priv->alert_bar));
