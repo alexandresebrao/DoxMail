@@ -903,7 +903,10 @@ e_bulk_edit_contacts_fill_content (EBulkEditContacts *self)
 	grid = GTK_GRID (self->priv->items_grid);
 
 	g_object_set (grid,
-		"margin", 12,
+		"margin-start", 12,
+		"margin-end", 12,
+		"margin-top", 12,
+		"margin-bottom", 12,
 		"column-spacing", 4,
 		"row-spacing", 4,
 		NULL);

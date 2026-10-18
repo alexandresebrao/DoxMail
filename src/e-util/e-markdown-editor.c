@@ -2445,7 +2445,10 @@ e_markdown_editor_constructed (GObject *object)
 		"valign", GTK_ALIGN_FILL,
 		"vexpand", TRUE,
 		"visible", TRUE,
-		"margin", 4,
+		"margin-start", 4,
+		"margin-end", 4,
+		"margin-top", 4,
+		"margin-bottom", 4,
 		"monospace", TRUE,
 		"wrap-mode", GTK_WRAP_WORD_CHAR,
 		NULL);
@@ -2484,7 +2487,10 @@ e_markdown_editor_constructed (GObject *object)
 		"valign", GTK_ALIGN_FILL,
 		"vexpand", TRUE,
 		"visible", TRUE,
-		"margin", 4,
+		"margin-start", 4,
+		"margin-end", 4,
+		"margin-top", 4,
+		"margin-bottom", 4,
 		NULL);
 
 	e_gtk_container_add (scrolled_window, widget);

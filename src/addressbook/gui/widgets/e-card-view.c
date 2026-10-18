@@ -545,7 +545,10 @@ e_card_view_constructed (GObject *object)
 		"hexpand", TRUE,
 		"valign", GTK_ALIGN_CENTER,
 		"vexpand", TRUE,
-		"margin", 24,
+		"margin-start", 24,
+		"margin-end", 24,
+		"margin-top", 24,
+		"margin-bottom", 24,
 		NULL);
 	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
 

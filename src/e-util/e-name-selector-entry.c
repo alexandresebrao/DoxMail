@@ -3376,7 +3376,7 @@ copy_or_cut_clipboard (ENameSelectorEntry *name_selector_entry,
 }
 
 static void
-copy_clipboard (GtkEntry *entry,
+copy_clipboard (GtkWidget *entry,
                 ENameSelectorEntry *name_selector_entry)
 {
 	copy_or_cut_clipboard (name_selector_entry, FALSE);
@@ -3384,7 +3384,7 @@ copy_clipboard (GtkEntry *entry,
 }
 
 static void
-cut_clipboard (GtkEntry *entry,
+cut_clipboard (GtkWidget *entry,
                ENameSelectorEntry *name_selector_entry)
 {
 	copy_or_cut_clipboard (name_selector_entry, TRUE);
@@ -3444,12 +3444,12 @@ e_name_selector_entry_init (ENameSelectorEntry *name_selector_entry)
 		gtk_widget_add_controller (GTK_WIDGET (name_selector_entry), GTK_EVENT_CONTROLLER (gesture));
 	}
 
-	/* Clipboard signals */
+	/* Clipboard signals; GTK 4 entries delegate them to their GtkText */
 	g_signal_connect (
-		name_selector_entry, "copy-clipboard",
+		gtk_editable_get_delegate (GTK_EDITABLE (name_selector_entry)), "copy-clipboard",
 		G_CALLBACK (copy_clipboard), name_selector_entry);
 	g_signal_connect (
-		name_selector_entry, "cut-clipboard",
+		gtk_editable_get_delegate (GTK_EDITABLE (name_selector_entry)), "cut-clipboard",
 		G_CALLBACK (cut_clipboard), name_selector_entry);
 
 	/* Completion */

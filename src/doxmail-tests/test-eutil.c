@@ -440,6 +440,33 @@ size_allocate_signal_cb (GtkWidget *widget,
 	*out_width = allocation->width;
 }
 
+/* overrides size_allocate only: its measure stays the layout manager's */
+typedef GtkBox TestAllocBox;
+typedef GtkBoxClass TestAllocBoxClass;
+
+G_DEFINE_TYPE (TestAllocBox, test_alloc_box, GTK_TYPE_BOX)
+
+static void
+test_alloc_box_size_allocate (GtkWidget *widget,
+			      gint width,
+			      gint height,
+			      gint baseline)
+{
+	GTK_WIDGET_CLASS (test_alloc_box_parent_class)->size_allocate (widget, width, height, baseline);
+}
+
+static void
+test_alloc_box_class_init (TestAllocBoxClass *klass)
+{
+	GTK_WIDGET_CLASS (klass)->size_allocate = test_alloc_box_size_allocate;
+	e_gtk_widget_class_layout_methods (GTK_WIDGET_CLASS (klass));
+}
+
+static void
+test_alloc_box_init (TestAllocBox *self)
+{
+}
+
 static void
 test_layout_methods (void)
 {
@@ -449,6 +476,21 @@ test_layout_methods (void)
 	box = g_object_new (test_layout_box_get_type (), NULL);
 	label = gtk_label_new ("child");
 	gtk_box_append (GTK_BOX (box), label);
+
+	/* a class overriding only size_allocate is measured by the layout manager */
+	{
+		GtkWidget *alloc_box = g_object_ref_sink (g_object_new (test_alloc_box_get_type (), NULL));
+		GtkWidget *child = gtk_label_new ("child");
+		gint min_height = 0, plain_height = 0;
+
+		gtk_widget_set_size_request (child, -1, 40);
+		gtk_box_append (GTK_BOX (alloc_box), child);
+		gtk_widget_measure (alloc_box, GTK_ORIENTATION_VERTICAL, -1, &min_height, NULL, NULL, NULL);
+		gtk_widget_measure (child, GTK_ORIENTATION_VERTICAL, -1, &plain_height, NULL, NULL, NULL);
+		g_assert_cmpint (min_height, ==, plain_height);
+		g_assert_cmpint (min_height, >=, 40);
+		g_object_unref (alloc_box);
+	}
 
 	/* the measure override runs, its chain-up measures the children */
 	gtk_widget_measure (box, GTK_ORIENTATION_HORIZONTAL, -1, &minimum, NULL, NULL, NULL);

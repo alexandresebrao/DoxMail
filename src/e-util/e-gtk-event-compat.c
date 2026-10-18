@@ -571,6 +571,30 @@ widget_uses_layout_methods (GtkWidget *widget)
 	return FALSE;
 }
 
+static void layout_chain_measure (GtkWidget *widget, GtkOrientation orientation, gint for_size,
+				  gint *minimum, gint *natural, gint *minimum_baseline, gint *natural_baseline);
+static void layout_chain_size_allocate (GtkWidget *widget, gint width, gint height, gint baseline);
+
+/* a class can override only one of the methods; the other one is then the
+ * GtkWidget one, which knows nothing of the layout manager */
+static gboolean
+class_overrides_measure (GtkWidgetClass *klass)
+{
+	GtkWidgetClass *base_class = g_type_class_peek (GTK_TYPE_WIDGET);
+
+	return klass->measure && klass->measure != base_class->measure &&
+		klass->measure != layout_chain_measure;
+}
+
+static gboolean
+class_overrides_size_allocate (GtkWidgetClass *klass)
+{
+	GtkWidgetClass *base_class = g_type_class_peek (GTK_TYPE_WIDGET);
+
+	return klass->size_allocate && klass->size_allocate != base_class->size_allocate &&
+		klass->size_allocate != layout_chain_size_allocate;
+}
+
 static void
 layout_measure_wrapper (GtkLayoutManager *manager,
 			GtkWidget *widget,
@@ -581,7 +605,7 @@ layout_measure_wrapper (GtkLayoutManager *manager,
 			gint *minimum_baseline,
 			gint *natural_baseline)
 {
-	if (widget_uses_layout_methods (widget)) {
+	if (widget_uses_layout_methods (widget) && class_overrides_measure (GTK_WIDGET_GET_CLASS (widget))) {
 		GTK_WIDGET_GET_CLASS (widget)->measure (widget, orientation, for_size,
 			minimum, natural, minimum_baseline, natural_baseline);
 	} else {
@@ -597,7 +621,7 @@ layout_allocate_wrapper (GtkLayoutManager *manager,
 			 gint height,
 			 gint baseline)
 {
-	if (widget_uses_layout_methods (widget))
+	if (widget_uses_layout_methods (widget) && class_overrides_size_allocate (GTK_WIDGET_GET_CLASS (widget)))
 		GTK_WIDGET_GET_CLASS (widget)->size_allocate (widget, width, height, baseline);
 	else
 		layout_originals_for (manager)->allocate (manager, widget, width, height, baseline);

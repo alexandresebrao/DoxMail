@@ -907,7 +907,10 @@ create_duplicate_contact_detected_dialog (EContact *old_contact,
 		"halign", GTK_ALIGN_FILL,
 		"vexpand", TRUE,
 		"valign", GTK_ALIGN_FILL,
-		"margin", 12,
+		"margin-start", 12,
+		"margin-end", 12,
+		"margin-top", 12,
+		"margin-bottom", 12,
 		NULL);
 
 	e_gtk_container_add (container, widget);

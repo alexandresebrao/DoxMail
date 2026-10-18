@@ -245,7 +245,10 @@ em_account_prefs_new (EPreferencesWindow *window)
 		EM_TYPE_ACCOUNT_PREFS,
 		"store", account_store,
 		"backend", backend,
-		"margin", 12, NULL);
+		"margin-start", 12,
+		"margin-end", 12,
+		"margin-top", 12,
+		"margin-bottom", 12, NULL);
 }
 
 EMailBackend *

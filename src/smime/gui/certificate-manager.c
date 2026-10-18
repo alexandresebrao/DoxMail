@@ -1315,7 +1315,10 @@ mail_cert_edit_trust (GtkWidget *parent,
 		"valign", GTK_ALIGN_START,
 		"hexpand", TRUE,
 		"vexpand", FALSE,
-		"margin", 6,
+		"margin-start", 6,
+		"margin-end", 6,
+		"margin-top", 6,
+		"margin-bottom", 6,
 		NULL);
 	e_gtk_container_add (expander, certificate_widget);
 	gtk_grid_attach (grid, expander, 0, row, 1, 1);
@@ -1511,7 +1514,10 @@ cm_add_mail_certificate_page (ECertManagerConfig *ecmc,
 		"vexpand", TRUE,
 		"halign", GTK_ALIGN_FILL,
 		"valign", GTK_ALIGN_FILL,
-		"margin", 2,
+		"margin-start", 2,
+		"margin-end", 2,
+		"margin-top", 2,
+		"margin-bottom", 2,
 		NULL);
 
 	label = gtk_label_new (_("You have certificates on file that identify these mail servers:"));
@@ -1520,7 +1526,10 @@ cm_add_mail_certificate_page (ECertManagerConfig *ecmc,
 		"vexpand", FALSE,
 		"halign", GTK_ALIGN_CENTER,
 		"valign", GTK_ALIGN_START,
-		"margin", 4,
+		"margin-start", 4,
+		"margin-end", 4,
+		"margin-top", 4,
+		"margin-bottom", 4,
 		NULL);
 	gtk_grid_attach (grid, label, 0, 0, 2, 1);
 
@@ -1557,7 +1566,10 @@ cm_add_mail_certificate_page (ECertManagerConfig *ecmc,
 		"vexpand", TRUE,
 		"halign", GTK_ALIGN_START,
 		"valign", GTK_ALIGN_START,
-		"margin", 2,
+		"margin-start", 2,
+		"margin-end", 2,
+		"margin-top", 2,
+		"margin-bottom", 2,
 		"spacing", 6,
 		NULL);
 	gtk_grid_attach (grid, button_box, 1, 1, 1, 1);

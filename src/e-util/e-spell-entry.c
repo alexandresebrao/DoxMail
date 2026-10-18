@@ -819,7 +819,9 @@ spell_entry_constructed (GObject *object)
 	/* Chain up to parent's constructed() method. */
 	G_OBJECT_CLASS (e_spell_entry_parent_class)->constructed (object);
 
-	g_signal_connect (spell_entry, "preedit-changed", G_CALLBACK (spell_entry_preedit_changed_cb), NULL);
+	/* GTK 4 entries delegate it to their GtkText */
+	g_signal_connect_swapped (gtk_editable_get_delegate (GTK_EDITABLE (spell_entry)), "preedit-changed",
+		G_CALLBACK (spell_entry_preedit_changed_cb), spell_entry);
 
 	/* Install a default spell checker if there is not one already. */
 	spell_checker = e_spell_entry_get_spell_checker (spell_entry);

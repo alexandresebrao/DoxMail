@@ -248,6 +248,17 @@ full-color `dialog-*` icons (`image-missing` shows instead).
 GNotification of the application (unless libnotify shows the message).
 The contacts view also runs.
 
+Composer fixes from the first desktop run: the layout hook kept calling
+the GtkWidget `measure` of classes overriding only `size_allocate` (the
+header table got no height); GtkHeaderBar does not list packed widgets
+as children, so EUIManager now remembers them (buttons were packed again
+on each change); `margin` became the four margins; entry clipboard and
+preedit signals are on the GtkText delegate; EUIMenu sync aligns items,
+so an item shown or hidden in between does not recreate the rest.
+`doxmail/port/run-on-desktop.sh` runs the build on the desktop with its
+own HOME and D-Bus session, bringing the desktop theme along;
+`doxmail/port/sample-stacks.sh` samples stacks with eu-stack.
+
 ### 7. GtkBuilder files
 
 All 13 `.ui` files are GTK 4 files: `gtk4-builder-tool simplify --3to4

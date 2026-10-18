@@ -266,7 +266,10 @@ e_attachment_popover_constructed (GObject *object)
 		"visible", TRUE,
 		"halign", GTK_ALIGN_FILL,
 		"valign", GTK_ALIGN_FILL,
-		"margin", 12,
+		"margin-start", 12,
+		"margin-end", 12,
+		"margin-top", 12,
+		"margin-bottom", 12,
 		"row-spacing", 4,
 		"column-spacing", 4,
 		NULL);

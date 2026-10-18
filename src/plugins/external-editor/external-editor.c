@@ -585,8 +585,9 @@ e_plugin_ui_init (EUIManager *manager,
 		e_gtk_widget_legacy_events (cnt_editor), "key_press_event",
 		G_CALLBACK (key_press_cb), composer);
 
+	/* closing the composer, not the editor widget, which gets no delete-event */
 	g_signal_connect (
-		e_gtk_window_delete_events (cnt_editor), "delete-event",
+		e_gtk_window_delete_events (composer), "delete-event",
 		G_CALLBACK (delete_cb), composer);
 
 	return TRUE;

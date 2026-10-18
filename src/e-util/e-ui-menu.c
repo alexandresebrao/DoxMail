@@ -539,49 +539,46 @@ e_ui_menu_items_equal (GMenuModel *model1,
  * GtkPopoverMenu does not drop the pages of submenus removed from its
  * model, thus menus rebuilt from scratch got stale submenus ("duplicate
  * child name in GtkStack"). */
+static gboolean
+e_ui_menu_sync_item (GMenu *dest,
+		     gint dest_index,
+		     GMenuModel *src,
+		     gint src_index);
+
 static void
 e_ui_menu_sync (GMenu *dest,
 		GMenuModel *src)
 {
-	gint ii, n_src, n_dest;
+	gint ii, jj, n_src, n_dest;
 
 	n_src = g_menu_model_get_n_items (src);
 
 	for (ii = 0; ii < n_src; ii++) {
-		gboolean keep = FALSE;
-
 		n_dest = g_menu_model_get_n_items (G_MENU_MODEL (dest));
 
-		if (ii < n_dest && e_ui_menu_items_equal (G_MENU_MODEL (dest), ii, src, ii)) {
-			GMenuLinkIter *liter;
-			const gchar *name;
-			GMenuModel *src_link;
-
-			keep = TRUE;
-
-			liter = g_menu_model_iterate_item_links (src, ii);
-			while (keep && g_menu_link_iter_get_next (liter, &name, &src_link)) {
-				GMenuModel *dest_link = g_menu_model_get_item_link (G_MENU_MODEL (dest), ii, name);
-
-				if (dest_link == src_link) {
-					/* the same model, like a dynamic submenu */
-				} else if (G_IS_MENU (dest_link)) {
-					e_ui_menu_sync (G_MENU (dest_link), src_link);
-				} else {
-					keep = FALSE;
-				}
-
-				g_clear_object (&dest_link);
-				g_object_unref (src_link);
-			}
-			g_object_unref (liter);
+		/* items shown or hidden in between shift the others; find the
+		 * same item further on and drop what is before it, instead of
+		 * replacing all the following items */
+		for (jj = ii; jj < n_dest; jj++) {
+			if (e_ui_menu_items_equal (G_MENU_MODEL (dest), jj, src, ii))
+				break;
 		}
 
-		if (!keep) {
+		if (jj < n_dest) {
+			/* keep it only when no item of the source matches better
+			 * the ones skipped, like a removed item */
+			for (; jj > ii; jj--)
+				g_menu_remove (dest, ii);
+
+			if (e_ui_menu_sync_item (dest, ii, src, ii))
+				continue;
+
+			g_menu_remove (dest, ii);
+		}
+
+		{
 			GMenuItem *item = g_menu_item_new_from_model (src, ii);
 
-			if (ii < n_dest)
-				g_menu_remove (dest, ii);
 			g_menu_insert_item (dest, ii, item);
 			g_object_unref (item);
 		}
@@ -589,6 +586,39 @@ e_ui_menu_sync (GMenu *dest,
 
 	for (n_dest = g_menu_model_get_n_items (G_MENU_MODEL (dest)); n_dest > n_src; n_dest--)
 		g_menu_remove (dest, n_dest - 1);
+}
+
+/* syncs the links of an item equal by its attributes; FALSE when the item
+ * cannot be kept */
+static gboolean
+e_ui_menu_sync_item (GMenu *dest,
+		     gint dest_index,
+		     GMenuModel *src,
+		     gint src_index)
+{
+	GMenuLinkIter *liter;
+	const gchar *name;
+	GMenuModel *src_link;
+	gboolean keep = TRUE;
+
+	liter = g_menu_model_iterate_item_links (src, src_index);
+	while (keep && g_menu_link_iter_get_next (liter, &name, &src_link)) {
+		GMenuModel *dest_link = g_menu_model_get_item_link (G_MENU_MODEL (dest), dest_index, name);
+
+		if (dest_link == src_link) {
+			/* the same model, like a dynamic submenu */
+		} else if (G_IS_MENU (dest_link)) {
+			e_ui_menu_sync (G_MENU (dest_link), src_link);
+		} else {
+			keep = FALSE;
+		}
+
+		g_clear_object (&dest_link);
+		g_object_unref (src_link);
+	}
+	g_object_unref (liter);
+
+	return keep;
 }
 
 void

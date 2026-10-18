@@ -1808,6 +1808,33 @@ eum_get_ui_element (EUIManager *self,
 	return elem;
 }
 
+#define EUM_PACKED_KEY "e-ui-manager-packed"
+
+static void
+eum_gtk_header_bar_pack (GtkHeaderBar *header_bar,
+			 GtkWidget *widget,
+			 gboolean add_to_start)
+{
+	GPtrArray *packed;
+
+	packed = g_object_get_data (G_OBJECT (header_bar), EUM_PACKED_KEY);
+	if (!packed) {
+		packed = g_ptr_array_new_with_free_func (g_object_unref);
+		g_object_set_data_full (G_OBJECT (header_bar), EUM_PACKED_KEY, packed, (GDestroyNotify) g_ptr_array_unref);
+	}
+
+	/* a cached item can still be in the header bar */
+	if (gtk_widget_get_parent (widget))
+		gtk_header_bar_remove (header_bar, widget);
+
+	g_ptr_array_add (packed, g_object_ref (widget));
+
+	if (add_to_start)
+		gtk_header_bar_pack_start (header_bar, widget);
+	else
+		gtk_header_bar_pack_end (header_bar, widget);
+}
+
 static void
 eum_traverse_headerbar_rec (EUIManager *self,
 			    EHeaderBar *eheaderbar,
@@ -1850,10 +1877,7 @@ eum_traverse_headerbar_rec (EUIManager *self,
 							else
 								e_header_bar_pack_end (eheaderbar, separator, 0);
 						} else {
-							if (add_to_start)
-								gtk_header_bar_pack_start (gtkheaderbar, separator);
-							else
-								gtk_header_bar_pack_end (gtkheaderbar, separator);
+							eum_gtk_header_bar_pack (gtkheaderbar, separator, add_to_start);
 						}
 					}
 
@@ -1866,10 +1890,7 @@ eum_traverse_headerbar_rec (EUIManager *self,
 						else
 							e_header_bar_pack_end (eheaderbar, GTK_WIDGET (item), e_ui_element_item_get_label_priority (elem));
 					} else {
-						if (add_to_start)
-							gtk_header_bar_pack_start (gtkheaderbar, GTK_WIDGET (item));
-						else
-							gtk_header_bar_pack_end (gtkheaderbar, GTK_WIDGET (item));
+						eum_gtk_header_bar_pack (gtkheaderbar, GTK_WIDGET (item), add_to_start);
 					}
 				}
 			} else if (!is_customized) {
@@ -1945,19 +1966,21 @@ eum_headerbar_handle_changed_cb (EUIManager *self,
 	if (eheaderbar) {
 		e_header_bar_remove_all (eheaderbar);
 	} else {
-		GList *children, *link;
+		GPtrArray *packed;
+		guint ii;
 
-		children = e_gtk_widget_get_children (gtkheaderbar);
-		for (link = children; link; link = g_list_next (link)) {
-			GtkWidget *child = link->data;
+		/* GTK 4 header bars do not list the packed widgets as their
+		 * children, thus they are remembered when packed */
+		packed = g_object_get_data (G_OBJECT (gtkheaderbar), EUM_PACKED_KEY);
+		for (ii = 0; packed && ii < packed->len; ii++) {
+			GtkWidget *child = g_ptr_array_index (packed, ii);
 
-			/* the title widget and the window buttons stay */
-			if (child != gtk_header_bar_get_title_widget (gtkheaderbar) &&
-			    !GTK_IS_WINDOW_CONTROLS (child))
+			if (gtk_widget_get_parent (child))
 				gtk_header_bar_remove (gtkheaderbar, child);
 		}
 
-		g_list_free (children);
+		if (packed)
+			g_ptr_array_set_size (packed, 0);
 	}
 
 	id = gtk_widget_get_name (widget);
