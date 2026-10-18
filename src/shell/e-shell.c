@@ -2927,15 +2927,30 @@ dev_dump_sizes (GtkWidget *widget,
 	GtkWidget *child;
 	gint min = 0, nat = 0;
 
-	gtk_widget_measure (widget, GTK_ORIENTATION_HORIZONTAL, -1, &min, &nat, NULL, NULL);
-	if (min < 400)
+	/* hidden internals, like the header of a tab-less notebook, complain */
+	if (!gtk_widget_get_visible (widget))
 		return;
 
-	g_printerr ("%*s%s%s%s min %d nat %d alloc %d\n", depth * 2, "",
-		G_OBJECT_TYPE_NAME (widget),
-		gtk_widget_get_name (widget) && g_strcmp0 (gtk_widget_get_name (widget), G_OBJECT_TYPE_NAME (widget)) != 0 ? " #" : "",
-		g_strcmp0 (gtk_widget_get_name (widget), G_OBJECT_TYPE_NAME (widget)) != 0 ? gtk_widget_get_name (widget) : "",
-		min, nat, gtk_widget_get_width (widget));
+	gtk_widget_measure (widget, GTK_ORIENTATION_HORIZONTAL, -1, &min, &nat, NULL, NULL);
+	if (min < (g_getenv ("DOXMAIL_SIZES_MIN") ? atoi (g_getenv ("DOXMAIL_SIZES_MIN")) : 400))
+		return;
+
+	{
+		graphene_rect_t bounds = { 0, };
+		GtkWidget *parent = gtk_widget_get_parent (widget);
+
+		if (parent && !gtk_widget_compute_bounds (widget, parent, &bounds))
+			graphene_rect_init (&bounds, 0, 0, 0, 0);
+
+		g_printerr ("%*s%s%s%s min %d nat %d alloc %d x %.0f halign %d hexpand %d%s margins %d/%d\n", depth * 2, "",
+			G_OBJECT_TYPE_NAME (widget),
+			gtk_widget_get_name (widget) && g_strcmp0 (gtk_widget_get_name (widget), G_OBJECT_TYPE_NAME (widget)) != 0 ? " #" : "",
+			g_strcmp0 (gtk_widget_get_name (widget), G_OBJECT_TYPE_NAME (widget)) != 0 ? gtk_widget_get_name (widget) : "",
+			min, nat, gtk_widget_get_width (widget), bounds.origin.x,
+			gtk_widget_get_halign (widget), gtk_widget_compute_expand (widget, GTK_ORIENTATION_HORIZONTAL),
+			GTK_IS_ORIENTABLE (widget) ? (gtk_orientable_get_orientation (GTK_ORIENTABLE (widget)) == GTK_ORIENTATION_VERTICAL ? " vertical" : " horizontal") : "",
+			gtk_widget_get_margin_start (widget), gtk_widget_get_margin_end (widget));
+	}
 
 	for (child = gtk_widget_get_first_child (widget); child; child = gtk_widget_get_next_sibling (child))
 		dev_dump_sizes (child, depth + 1);

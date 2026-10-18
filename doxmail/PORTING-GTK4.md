@@ -287,8 +287,11 @@ mouse/keyboard use; then the DoxIA items below. The composer (`mailto:`),
 the contact, event, task and memo editors, the preferences, the accounts
 window and the account assistants open clean.
 GTK 4 GtkCheckButton is no GtkButton: `gtk_check_button_set_label()`;
-GtkFontButton binds `font`, not `font-name`. The message list leaves a
-blank strip before the To Do pane (ETable narrower than its area).
+GtkFontButton binds `font`, not `font-name`. `e_gtk_box_pack_start/end()`
+apply expand/fill/padding along the orientation of the box layout manager
+(EMailView's own "orientation" property is the preview orientation, the
+message list stayed at its minimum width) and move them when it changes
+(`/eutil/box-pack-orientation`).
 Toolbars that were GtkToolbar are boxes now and never shrink (no overflow
 menu): the mail view is at least 931 px wide because of the preview
 toolbar — needs an overflow menu or a shrinkable container.

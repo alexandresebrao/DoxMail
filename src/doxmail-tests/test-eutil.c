@@ -524,6 +524,37 @@ test_layout_methods (void)
 	spin (50);
 }
 
+/* GTK 3 expanded packed children along the current orientation of the box */
+static void
+test_box_pack_orientation (void)
+{
+	GtkWidget *box, *child, *end_child;
+
+	box = g_object_ref_sink (gtk_box_new (GTK_ORIENTATION_VERTICAL, 0));
+	child = gtk_label_new ("start");
+	end_child = gtk_label_new ("end");
+	e_gtk_box_pack_start (GTK_BOX (box), child, TRUE, TRUE, 3);
+	e_gtk_box_pack_end (GTK_BOX (box), end_child, TRUE, FALSE, 0);
+
+	g_assert_true (gtk_widget_get_vexpand (child));
+	g_assert_false (gtk_widget_get_hexpand (child));
+	g_assert_cmpint (gtk_widget_get_margin_top (child), ==, 3);
+	g_assert_cmpint (gtk_widget_get_valign (end_child), ==, GTK_ALIGN_CENTER);
+
+	gtk_orientable_set_orientation (GTK_ORIENTABLE (box), GTK_ORIENTATION_HORIZONTAL);
+
+	g_assert_true (gtk_widget_get_hexpand (child));
+	g_assert_false (gtk_widget_get_vexpand (child));
+	g_assert_cmpint (gtk_widget_get_margin_top (child), ==, 0);
+	g_assert_cmpint (gtk_widget_get_margin_start (child), ==, 3);
+	g_assert_true (gtk_widget_get_hexpand (end_child));
+	g_assert_cmpint (gtk_widget_get_valign (end_child), ==, GTK_ALIGN_FILL);
+	g_assert_cmpint (gtk_widget_get_halign (end_child), ==, GTK_ALIGN_CENTER);
+	g_assert_cmpint (gtk_orientable_get_orientation (GTK_ORIENTABLE (gtk_widget_get_parent (end_child))), ==, GTK_ORIENTATION_HORIZONTAL);
+
+	g_object_unref (box);
+}
+
 /* GtkPopoverMenu names submenu pages by label and keeps the pages of nested
  * submenus of removed items: hiding items must not leave two submenus with
  * the same label (warnings are fatal here) */
@@ -626,6 +657,7 @@ main (gint argc,
 	g_test_add_func ("/eutil/picture-gallery", test_picture_gallery);
 	g_test_add_func ("/eutil/layout-methods", test_layout_methods);
 	g_test_add_func ("/eutil/menu-sync", test_menu_sync);
+	g_test_add_func ("/eutil/box-pack-orientation", test_box_pack_orientation);
 
 	return g_test_run ();
 }

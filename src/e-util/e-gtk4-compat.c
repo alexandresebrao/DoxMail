@@ -22,6 +22,7 @@
 #define BORDER_WIDTH_KEY "e-gtk-border-width"
 #define INNER_PANED_KEY "e-gtk-inner-paned"
 #define END_BOX_KEY "e-gtk-box-end-box"
+#define BOX_PACK_KEY "e-gtk-box-pack"
 
 /* The single child of the "bin" widgets, i.e. those with get/set_child() */
 static gboolean
@@ -158,6 +159,9 @@ e_gtk_container_remove (gpointer container,
 	if (E_GTK_IS_BIN (widget)) {
 		E_GTK_BIN_GET_CLASS (widget)->remove (widget, child);
 	} else if (GTK_IS_BOX (widget)) {
+		/* before the removal, which can free the child */
+		g_object_set_data (G_OBJECT (child), BOX_PACK_KEY, NULL);
+
 		/* children packed with e_gtk_box_pack_end() sit in an inner box */
 		if (parent && parent != widget &&
 		    parent == g_object_get_data (G_OBJECT (widget), END_BOX_KEY))
@@ -299,6 +303,106 @@ e_gtk_bin_get_child (gpointer bin)
 	return child;
 }
 
+/* GTK 3 applied expand/fill/padding along the current orientation of
+ * the box; they are kept on the child and moved when it changes */
+#define BOX_PACK_WATCH_KEY "e-gtk-box-pack-watch"
+
+#define BOX_PACK_EXPAND (1 << 0)
+#define BOX_PACK_FILL (1 << 1)
+#define BOX_PACK_VERTICAL (1 << 2)
+#define BOX_PACK_PADDING_SHIFT 3
+
+/* the orientation the box lays out with; subclasses like EMailView have an
+ * "orientation" property of their own, meaning something else */
+static GtkOrientation
+box_get_orientation (GtkBox *box)
+{
+	GtkLayoutManager *layout = gtk_widget_get_layout_manager (GTK_WIDGET (box));
+
+	if (GTK_IS_ORIENTABLE (layout))
+		return gtk_orientable_get_orientation (GTK_ORIENTABLE (layout));
+
+	return gtk_orientable_get_orientation (GTK_ORIENTABLE (box));
+}
+
+static void
+box_pack_apply (GtkWidget *child,
+		guint flags,
+		gboolean revert)
+{
+	gboolean expand = (flags & BOX_PACK_EXPAND) != 0;
+	gboolean fill = (flags & BOX_PACK_FILL) != 0;
+	gint padding = flags >> BOX_PACK_PADDING_SHIFT;
+
+	if (revert)
+		padding = -padding;
+
+	if (!(flags & BOX_PACK_VERTICAL)) {
+		if (expand) {
+			gtk_widget_set_hexpand (child, !revert);
+			if (!fill)
+				gtk_widget_set_halign (child, revert ? GTK_ALIGN_FILL : GTK_ALIGN_CENTER);
+		}
+		if (padding) {
+			gtk_widget_set_margin_start (child, MAX (0, gtk_widget_get_margin_start (child) + padding));
+			gtk_widget_set_margin_end (child, MAX (0, gtk_widget_get_margin_end (child) + padding));
+		}
+	} else {
+		if (expand) {
+			gtk_widget_set_vexpand (child, !revert);
+			if (!fill)
+				gtk_widget_set_valign (child, revert ? GTK_ALIGN_FILL : GTK_ALIGN_CENTER);
+		}
+		if (padding) {
+			gtk_widget_set_margin_top (child, MAX (0, gtk_widget_get_margin_top (child) + padding));
+			gtk_widget_set_margin_bottom (child, MAX (0, gtk_widget_get_margin_bottom (child) + padding));
+		}
+	}
+}
+
+static void update_end_box_expand (GtkBox *box);
+
+static void
+box_pack_move_children (GtkWidget *box,
+			gboolean vertical)
+{
+	GtkWidget *child;
+
+	for (child = gtk_widget_get_first_child (box); child; child = gtk_widget_get_next_sibling (child)) {
+		guint flags = GPOINTER_TO_UINT (g_object_get_data (G_OBJECT (child), BOX_PACK_KEY));
+
+		if (!flags || ((flags & BOX_PACK_VERTICAL) != 0) == vertical)
+			continue;
+
+		box_pack_apply (child, flags, TRUE);
+		flags ^= BOX_PACK_VERTICAL;
+		box_pack_apply (child, flags, FALSE);
+		g_object_set_data (G_OBJECT (child), BOX_PACK_KEY, GUINT_TO_POINTER (flags));
+	}
+}
+
+static void
+box_pack_orientation_cb (GtkLayoutManager *layout,
+			 GParamSpec *param,
+			 GtkBox *box)
+{
+	GtkOrientation orientation;
+	GtkWidget *end_box;
+
+	orientation = box_get_orientation (box);
+
+	box_pack_move_children (GTK_WIDGET (box), orientation == GTK_ORIENTATION_VERTICAL);
+
+	end_box = g_object_get_data (G_OBJECT (box), END_BOX_KEY);
+	if (end_box) {
+		gtk_orientable_set_orientation (GTK_ORIENTABLE (end_box), orientation);
+		gtk_widget_set_halign (end_box, orientation == GTK_ORIENTATION_HORIZONTAL ? GTK_ALIGN_END : GTK_ALIGN_FILL);
+		gtk_widget_set_valign (end_box, orientation == GTK_ORIENTATION_VERTICAL ? GTK_ALIGN_END : GTK_ALIGN_FILL);
+		box_pack_move_children (end_box, orientation == GTK_ORIENTATION_VERTICAL);
+		update_end_box_expand (box);
+	}
+}
+
 static void
 box_pack (GtkBox *box,
           GtkWidget *child,
@@ -306,26 +410,34 @@ box_pack (GtkBox *box,
           gboolean fill,
           guint padding)
 {
-	if (gtk_orientable_get_orientation (GTK_ORIENTABLE (box)) == GTK_ORIENTATION_HORIZONTAL) {
-		if (expand) {
-			gtk_widget_set_hexpand (child, TRUE);
-			if (!fill)
-				gtk_widget_set_halign (child, GTK_ALIGN_CENTER);
-		}
-		if (padding) {
-			gtk_widget_set_margin_start (child, gtk_widget_get_margin_start (child) + padding);
-			gtk_widget_set_margin_end (child, gtk_widget_get_margin_end (child) + padding);
-		}
-	} else {
-		if (expand) {
-			gtk_widget_set_vexpand (child, TRUE);
-			if (!fill)
-				gtk_widget_set_valign (child, GTK_ALIGN_CENTER);
-		}
-		if (padding) {
-			gtk_widget_set_margin_top (child, gtk_widget_get_margin_top (child) + padding);
-			gtk_widget_set_margin_bottom (child, gtk_widget_get_margin_bottom (child) + padding);
-		}
+	guint flags;
+
+	flags = (expand ? BOX_PACK_EXPAND : 0) |
+		(fill ? BOX_PACK_FILL : 0) |
+		(padding << BOX_PACK_PADDING_SHIFT);
+
+	if (box_get_orientation (box) == GTK_ORIENTATION_VERTICAL)
+		flags |= BOX_PACK_VERTICAL;
+
+	box_pack_apply (child, flags, FALSE);
+
+	/* nothing to move with the orientation */
+	if (!expand && !padding)
+		return;
+
+	g_object_set_data (G_OBJECT (child), BOX_PACK_KEY, GUINT_TO_POINTER (flags));
+
+	if (!g_object_get_data (G_OBJECT (box), BOX_PACK_WATCH_KEY)) {
+		GObject *layout = G_OBJECT (gtk_widget_get_layout_manager (GTK_WIDGET (box)));
+
+		g_object_set_data (G_OBJECT (box), BOX_PACK_WATCH_KEY, GINT_TO_POINTER (1));
+
+		/* the layout manager has the real orientation (see box_get_orientation()) */
+		if (!GTK_IS_ORIENTABLE (layout))
+			layout = G_OBJECT (box);
+
+		g_signal_connect_object (layout, "notify::orientation",
+			G_CALLBACK (box_pack_orientation_cb), box, 0);
 	}
 }
 
@@ -341,7 +453,7 @@ update_end_box_expand (GtkBox *box)
 	if (!end_box)
 		return;
 
-	horizontal = gtk_orientable_get_orientation (GTK_ORIENTABLE (box)) == GTK_ORIENTATION_HORIZONTAL;
+	horizontal = box_get_orientation (box) == GTK_ORIENTATION_HORIZONTAL;
 
 	for (child = gtk_widget_get_first_child (GTK_WIDGET (box)); child; child = gtk_widget_get_next_sibling (child)) {
 		if (child != end_box && (horizontal ? gtk_widget_get_hexpand (child) : gtk_widget_get_vexpand (child))) {
@@ -395,7 +507,7 @@ e_gtk_box_pack_end (GtkBox *box,
 	if (!end_box) {
 		GtkOrientation orientation;
 
-		orientation = gtk_orientable_get_orientation (GTK_ORIENTABLE (box));
+		orientation = box_get_orientation (box);
 		end_box = gtk_box_new (orientation, gtk_box_get_spacing (box));
 		if (orientation == GTK_ORIENTATION_HORIZONTAL)
 			gtk_widget_set_halign (end_box, GTK_ALIGN_END);
