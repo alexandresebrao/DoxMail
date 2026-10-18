@@ -7,6 +7,8 @@
 
 #include "e-gtk-event-compat.h"
 
+#include <adwaita.h>
+
 enum {
 	EVENT,
 	KEY_PRESS_EVENT,
@@ -807,6 +809,14 @@ e_gtk_widget_style_updates (gpointer widget)
 	settings = gtk_settings_get_default ();
 	for (ii = 0; settings && ii < G_N_ELEMENTS (properties); ii++) {
 		g_signal_connect_object (settings, properties[ii],
+			G_CALLBACK (style_settings_notify_cb), widget, 0);
+	}
+
+	/* libadwaita: the light/dark style and the accent color */
+	if (adw_is_initialized ()) {
+		g_signal_connect_object (adw_style_manager_get_default (), "notify::dark",
+			G_CALLBACK (style_settings_notify_cb), widget, 0);
+		g_signal_connect_object (adw_style_manager_get_default (), "notify::accent-color-rgba",
 			G_CALLBACK (style_settings_notify_cb), widget, 0);
 	}
 

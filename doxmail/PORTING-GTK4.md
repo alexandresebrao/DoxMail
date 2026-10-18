@@ -354,7 +354,14 @@ source strings still say Evolution.
   schema and the gresource prefix stay, so
   Evolution users keep their data; DoxMail refuses to start while
   `org.gnome.Evolution` is on the session bus (`src/shell/main.c`);
-- DoxIA theme and look (doxia-theme colors, maybe libadwaita);
+- done: DoxIA theme. `adw_init()` in `shell_startup()` loads the
+  libadwaita stylesheet (no Adw widgets): the DoxIA colors, which omarchy
+  writes as libadwaita named colors into `~/.config/gtk-4.0/gtk.css`, and
+  the system light/dark preference apply as in the other GNOME apps.
+  AdwStyleManager follows the portal color scheme, so EColorSchemeWatcher
+  is not created and appearance-settings does not watch the portal
+  (gtk-application-prefer-dark-theme is unsupported with libadwaita);
+  "style-updated" is also emitted on AdwStyleManager dark/accent changes;
 - packaging in the DoxIA image.
 
 ## Keeping up with upstream

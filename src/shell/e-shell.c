@@ -31,6 +31,7 @@
 #include <errno.h>
 #include <glib/gi18n.h>
 #include <glib/gstdio.h>
+#include <adwaita.h>
 #include <libebackend/libebackend.h>
 #include <libedataserver/libedataserver.h>
 
@@ -1893,6 +1894,11 @@ shell_startup (GApplication *application)
 
 	/* Chain up to parent's startup() method. */
 	G_APPLICATION_CLASS (e_shell_parent_class)->startup (application);
+
+	/* DoxMail: the libadwaita stylesheet, so the DoxIA theme (libadwaita
+	 * named colors in ~/.config/gtk-4.0/gtk.css) and the system light/dark
+	 * preference apply as in the other GNOME apps; the widgets stay GTK */
+	adw_init ();
 }
 
 static void
@@ -1907,7 +1913,7 @@ shell_activate (GApplication *application)
 		GtkIconTheme *icon_theme;
 
 		shell->priv->preferences_window = e_preferences_window_new (shell);
-		shell->priv->color_scheme_watcher = e_color_scheme_watcher_new ();
+		/* DoxMail: AdwStyleManager follows the color scheme instead */
 
 		/* Add our icon directory to the theme's search path
 		 * here instead of in main() so Anjal picks it up. */

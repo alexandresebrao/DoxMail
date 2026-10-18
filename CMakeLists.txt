@@ -293,6 +293,7 @@ pkg_check_modules(GNOME_PLATFORM REQUIRED
 	gmodule-2.0>=${glib_minimum_version}
 	gsettings-desktop-schemas>=${gsettings_desktop_schemas_minimum_version}
 	gtk4>=${gtk4_minimum_version}
+	libadwaita-1>=1.4
 	libxml-2.0>=${libxml_minimum_version}
 	shared-mime-info>=${shared_mime_info_minimum_version}
 	webkitgtk-6.0>=${webkit2gtk_minimum_version}

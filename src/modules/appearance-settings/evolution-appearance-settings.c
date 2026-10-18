@@ -16,6 +16,7 @@
 #include "evolution-config.h"
 
 #include <glib/gi18n-lib.h>
+#include <adwaita.h>
 
 #include "e-util/e-util.h"
 #include "e-util/e-util-private.h"
@@ -748,14 +749,17 @@ appearance_settings_constructed (GObject *object)
 		e_appearance_settings_page_new,
 		950);
 
-	extension->watch_handle = g_bus_watch_name (
-		G_BUS_TYPE_SESSION,
-		"org.freedesktop.portal.Desktop",
-		G_BUS_NAME_WATCHER_FLAGS_NONE,
-		on_desktop_portal_appeared_cb,
-		on_desktop_portal_vanished_cb,
-		extension,
-		NULL);
+	/* DoxMail: AdwStyleManager follows the portal color scheme; setting
+	 * gtk-application-prefer-dark-theme is unsupported with libadwaita */
+	if (!adw_is_initialized ())
+		extension->watch_handle = g_bus_watch_name (
+			G_BUS_TYPE_SESSION,
+			"org.freedesktop.portal.Desktop",
+			G_BUS_NAME_WATCHER_FLAGS_NONE,
+			on_desktop_portal_appeared_cb,
+			on_desktop_portal_vanished_cb,
+			extension,
+			NULL);
 
 	/* Chain up to parent's method. */
 	G_OBJECT_CLASS (e_appearance_settings_parent_class)->constructed (object);
