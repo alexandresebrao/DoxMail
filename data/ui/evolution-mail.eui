@@ -3,11 +3,8 @@
     <start>
       <item action='EMailShellView::mail-send-receive' label_priority='999999'/>
     </start>
-    <end>
-      <item action='mail-reply-sender'/>
-      <item action='EMailReader::mail-reply-group'/>
-      <item action='EMailReader::mail-forward-as-group'/>
-    </end>
+    <!-- DoxMail: reply and forward are on the message toolbar, as in
+         Thunderbird; the header bar keeps the folder actions -->
   </headerbar>
   <menu id='main-menu'>
     <submenu action='file-menu'>

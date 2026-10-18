@@ -1879,6 +1879,43 @@ shell_constructed (GObject *object)
 		G_CALLBACK (shell_window_removed_cb), NULL);
 }
 
+/* DoxMail: the GTK 3 theme color names the code looks up (canvas, mail
+ * display, folder tree) as the libadwaita ones, which the DoxIA theme
+ * sets; button labels at the normal weight, as in Thunderbird */
+static const gchar doxmail_css[] =
+	"@define-color theme_bg_color @window_bg_color;\n"
+	"@define-color theme_fg_color @window_fg_color;\n"
+	"@define-color theme_base_color @view_bg_color;\n"
+	"@define-color theme_text_color @view_fg_color;\n"
+	"@define-color theme_selected_bg_color @accent_bg_color;\n"
+	"@define-color theme_selected_fg_color @accent_fg_color;\n"
+	"@define-color theme_unfocused_bg_color @window_bg_color;\n"
+	"@define-color theme_unfocused_fg_color @window_fg_color;\n"
+	"@define-color theme_unfocused_base_color @view_bg_color;\n"
+	"@define-color theme_unfocused_text_color @view_fg_color;\n"
+	"@define-color theme_unfocused_selected_bg_color alpha(@accent_bg_color, 0.6);\n"
+	"@define-color theme_unfocused_selected_fg_color @accent_fg_color;\n"
+	"@define-color insensitive_fg_color alpha(@window_fg_color, 0.5);\n"
+	"@define-color borders alpha(@window_fg_color, 0.15);\n"
+	"button, button label { font-weight: normal; }\n";
+
+static void
+shell_load_doxmail_css (void)
+{
+	GtkCssProvider *provider;
+	GdkDisplay *display;
+
+	display = gdk_display_get_default ();
+	if (!display)
+		return;
+
+	provider = gtk_css_provider_new ();
+	gtk_css_provider_load_from_string (provider, doxmail_css);
+	gtk_style_context_add_provider_for_display (display,
+		GTK_STYLE_PROVIDER (provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+	g_object_unref (provider);
+}
+
 static void
 shell_startup (GApplication *application)
 {
@@ -1899,6 +1936,8 @@ shell_startup (GApplication *application)
 	 * named colors in ~/.config/gtk-4.0/gtk.css) and the system light/dark
 	 * preference apply as in the other GNOME apps; the widgets stay GTK */
 	adw_init ();
+
+	shell_load_doxmail_css ();
 }
 
 static void

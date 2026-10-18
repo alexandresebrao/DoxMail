@@ -365,6 +365,16 @@ source strings still say Evolution.
   is not created and appearance-settings does not watch the portal
   (gtk-application-prefer-dark-theme is unsupported with libadwaita);
   "style-updated" is also emitted on AdwStyleManager dark/accent changes;
+- done: a simpler main window, closer to Thunderbird. The mail header bar
+  keeps New and Send/Receive (reply/forward are on the message toolbar);
+  `data/org.doxia.DoxMail.gschema.override` hides the actions toolbar and
+  the to-do bar, makes the view switcher a row of icons and the folder
+  pane 240 px; no sidebar header (view name, counts); no "Show:",
+  "Search:", "in" labels in the search bar; a DoxMail CSS
+  (`shell_load_doxmail_css()` in e-shell.c) maps the GTK 3 theme color
+  names the code looks up to the libadwaita ones and keeps button labels
+  at the normal weight. The override applies to Evolution's schemas, so
+  it also changes Evolution where both are installed;
 - packaging in the DoxIA image.
 
 ## Keeping up with upstream

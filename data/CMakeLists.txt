@@ -109,6 +109,11 @@ add_custom_target(data-files ALL
 
 add_gsettings_schemas(data-files ${BUILT_SCHEMAS})
 
+# DoxMail: its defaults over Evolution's schemas
+install(FILES org.doxia.DoxMail.gschema.override
+	DESTINATION ${GSETTINGS_SCHEMAS_DIR}
+)
+
 install(FILES evolution.convert
 	DESTINATION ${SHARE_INSTALL_PREFIX}/GConf/gsettings
 )

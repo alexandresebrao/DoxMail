@@ -898,7 +898,8 @@ e_shell_searchbar_init (EShellSearchbar *searchbar)
 	 * "Important Messages", or "Active Appointments". */
 	widget = gtk_label_new_with_mnemonic (_("Sho_w:"));
 	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
-	gtk_widget_show (widget);
+	/* DoxMail: the combo boxes and the entry speak for themselves */
+	gtk_widget_hide (widget);
 
 	label = GTK_LABEL (widget);
 
@@ -924,7 +925,8 @@ e_shell_searchbar_init (EShellSearchbar *searchbar)
 	 * example: Search: [_______________] in [ Current Folder ] */
 	widget = gtk_label_new_with_mnemonic (_("Sear_ch:"));
 	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
-	gtk_widget_show (widget);
+	/* DoxMail: the combo boxes and the entry speak for themselves */
+	gtk_widget_hide (widget);
 
 	label = GTK_LABEL (widget);
 
@@ -992,7 +994,8 @@ e_shell_searchbar_init (EShellSearchbar *searchbar)
 	 * example: Search: [_______________] in [ Current Folder ] */
 	widget = gtk_label_new_with_mnemonic (_("i_n"));
 	e_gtk_box_pack_start (box, widget, FALSE, FALSE, 0);
-	gtk_widget_show (widget);
+	/* DoxMail: the combo boxes and the entry speak for themselves */
+	gtk_widget_hide (widget);
 
 	label = GTK_LABEL (widget);
 

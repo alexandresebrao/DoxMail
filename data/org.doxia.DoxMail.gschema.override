@@ -1,0 +1,14 @@
+# DoxMail defaults: a simpler main window, closer to Thunderbird. The
+# schemas are Evolution's (DoxMail shares its settings), so these apply
+# where DoxMail is installed instead of Evolution.
+
+[org.gnome.evolution.shell]
+# the actions row under the header bar repeats the message toolbar
+toolbar-visible=false
+# Mail, Contacts, Calendar... as one row of icons under the folders
+buttons-style='icons'
+folder-bar-width=240
+
+[org.gnome.evolution.mail]
+# the appointments and tasks pane stays closed, as Thunderbird's Today pane
+show-to-do-bar=false
