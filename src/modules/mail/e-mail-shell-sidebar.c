@@ -132,7 +132,7 @@ mail_shell_sidebar_tree_view_key_press_cb (GtkWidget *widget,
 
 	if ((e_gdk_event_state (key_event) & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_ALT_MASK)) == 0 &&
 	    (e_gdk_event_keyval (key_event) == GDK_KEY_Return || e_gdk_event_keyval (key_event) == GDK_KEY_KP_Enter) &&
-	    gtk_widget_has_focus (widget)) {
+	    e_gtk_widget_has_focus (widget)) {
 		EShellView *shell_view;
 		EShellContent *shell_content;
 		EMailView *mail_view;

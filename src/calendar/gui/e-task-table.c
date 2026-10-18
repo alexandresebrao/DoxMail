@@ -790,7 +790,7 @@ task_table_white_space_event (ETable *table,
 
 		table_canvas = GTK_WIDGET (table->table_canvas);
 
-		if (!gtk_widget_has_focus (table_canvas))
+		if (!e_gtk_widget_has_focus (table_canvas))
 			gtk_widget_grab_focus (table_canvas);
 
 		task_table_emit_popup_event (E_TASK_TABLE (table), event);
@@ -969,7 +969,7 @@ task_table_paste_clipboard (ESelectable *selectable)
 
 	/* Paste text into a cell being edited. */
 	if (e_gtk_clipboard_wait_is_text_available (clipboard) &&
-		gtk_widget_has_focus (GTK_WIDGET (table_canvas)) &&
+		e_gtk_widget_has_focus (GTK_WIDGET (table_canvas)) &&
 		E_IS_TABLE_ITEM (item) &&
 		E_TABLE_ITEM (item)->editing_col >= 0 &&
 		E_TABLE_ITEM (item)->editing_row >= 0) {

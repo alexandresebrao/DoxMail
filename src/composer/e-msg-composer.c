@@ -3085,7 +3085,7 @@ msg_composer_key_press_event (GtkWidget *widget,
 		e_msg_composer_get_header_table (composer),
 		E_COMPOSER_HEADER_SUBJECT)->input_widget;
 
-	if (e_gdk_event_keyval (event) == GDK_KEY_Tab && gtk_widget_is_focus (input_widget)) {
+	if (e_gdk_event_keyval (event) == GDK_KEY_Tab && e_gtk_widget_is_focus (input_widget)) {
 		e_content_editor_grab_focus (cnt_editor);
 		return TRUE;
 	}

@@ -6804,7 +6804,7 @@ e_mail_reader_ignore_accel (EMailReader *reader)
 	if (!mail_display)
 		return FALSE;
 
-	if (gtk_widget_has_focus (GTK_WIDGET (mail_display)) &&
+	if (e_gtk_widget_has_focus (GTK_WIDGET (mail_display)) &&
 	    e_web_view_get_need_input (E_WEB_VIEW (mail_display)))
 		return TRUE;
 

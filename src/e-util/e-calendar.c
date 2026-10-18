@@ -879,8 +879,8 @@ e_calendar_button_has_focus (ECalendar *cal)
 
 	prev_widget = GNOME_CANVAS_WIDGET (cal->priv->prev_item)->widget;
 	next_widget = GNOME_CANVAS_WIDGET (cal->priv->next_item)->widget;
-	ret_val = gtk_widget_has_focus (prev_widget) ||
-		gtk_widget_has_focus (next_widget);
+	ret_val = e_gtk_widget_has_focus (prev_widget) ||
+		e_gtk_widget_has_focus (next_widget);
 	return ret_val;
 }
 
@@ -910,7 +910,7 @@ e_calendar_focus (GtkWidget *widget,
 	children[4] = cal->priv->next_item_year;
 
 	/* get current focused item, if e-calendar has had focus */
-	if (gtk_widget_has_focus (widget) || e_calendar_button_has_focus (cal))
+	if (e_gtk_widget_has_focus (widget) || e_calendar_button_has_focus (cal))
 		for (index = 0; index < E_CALENDAR_FOCUS_CHILDREN_NUM; ++index) {
 			if (canvas->focused_item == NULL)
 				break;

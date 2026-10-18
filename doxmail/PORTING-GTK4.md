@@ -293,7 +293,10 @@ Typing reaches the GtkText delegate of a GtkEntry, which alone emits
 ran (the To field lost its address on focus-out, the widget undo recorded
 nothing). ENameSelectorEntry (`NSE_EDIT_SIGNALS`), EWidgetUndo and the
 event summary connect to the delegate (`/eutil/entry-undo`); grep for
-these signals on new GTK 4 code.
+these signals on new GTK 4 code. The delegate also has the focus, so
+`gtk_widget_has_focus/is_focus (entry)` were FALSE while typing (the To
+field closed each typed letter as an address): all the checks go through
+`e_gtk_widget_has_focus/is_focus()`, which count the delegate.
 GTK 4 GtkCheckButton is no GtkButton: `gtk_check_button_set_label()`;
 GtkFontButton binds `font`, not `font-name`. `e_gtk_box_pack_start/end()`
 apply expand/fill/padding along the orientation of the box layout manager

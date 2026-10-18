@@ -1291,7 +1291,7 @@ et_eti_leave_edit (ETable *et)
 {
 	GnomeCanvas *canvas = et->table_canvas;
 
-	if (gtk_widget_has_focus (GTK_WIDGET (canvas))) {
+	if (e_gtk_widget_has_focus (GTK_WIDGET (canvas))) {
 		GnomeCanvasItem *item = GNOME_CANVAS (canvas)->focused_item;
 
 		if (E_IS_TABLE_ITEM (item)) {
@@ -1338,7 +1338,7 @@ table_canvas_focus_event_cb (GtkWidget *widget,
 	ecanvas = E_CANVAS (widget);
 
 	/* the event can be NULL with GTK 4; the focus tells in or out */
-	if (!gtk_widget_has_focus (widget)) {
+	if (!e_gtk_widget_has_focus (widget)) {
 		gtk_im_context_focus_out (ecanvas->im_context);
 		return FALSE;
 	} else {

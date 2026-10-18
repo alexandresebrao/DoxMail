@@ -5145,7 +5145,7 @@ webkit_editor_paste_clipboard_targets_cb (GdkClipboard *clipboard,
 		return;
 
 	/* If view doesn't have focus, focus it */
-	if (!gtk_widget_has_focus (GTK_WIDGET (wk_editor)))
+	if (!e_gtk_widget_has_focus (GTK_WIDGET (wk_editor)))
 		gtk_widget_grab_focus (GTK_WIDGET (wk_editor));
 
 	/* Save the text content before we try to insert the image as it could

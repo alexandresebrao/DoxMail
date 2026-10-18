@@ -918,7 +918,7 @@ e_day_view_time_item_on_button_press (EDayViewTimeItem *time_item,
 	if (row == -1)
 		return;
 
-	if (!gtk_widget_has_focus (GTK_WIDGET (day_view)))
+	if (!e_gtk_widget_has_focus (GTK_WIDGET (day_view)))
 		gtk_widget_grab_focus (GTK_WIDGET (day_view));
 
 	event_device = gnome_canvas_event_get_device (event);

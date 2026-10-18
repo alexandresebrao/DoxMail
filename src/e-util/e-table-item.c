@@ -346,7 +346,7 @@ eti_get_cell_background_color (ETableItem *eti,
 
 	if (!was_set) {
 		if (selected) {
-			if (gtk_widget_has_focus (canvas))
+			if (e_gtk_widget_has_focus (canvas))
 				e_utils_get_theme_color (canvas, "theme_selected_bg_color", E_UTILS_DEFAULT_THEME_SELECTED_BG_COLOR, background);
 			else
 				e_utils_get_theme_color (canvas, "theme_unfocused_selected_bg_color,theme_selected_bg_color", E_UTILS_DEFAULT_THEME_UNFOCUSED_SELECTED_BG_COLOR, background);
@@ -2110,7 +2110,7 @@ eti_draw (GnomeCanvasItem *item,
 			cairo_restore (cr);
 
 			flags = col_selected ? E_CELL_SELECTED : 0;
-			flags |= gtk_widget_has_focus (canvas) ? E_CELL_FOCUSED : 0;
+			flags |= e_gtk_widget_has_focus (canvas) ? E_CELL_FOCUSED : 0;
 			flags |= cursor ? E_CELL_CURSOR : 0;
 
 			switch (ecol->justification) {

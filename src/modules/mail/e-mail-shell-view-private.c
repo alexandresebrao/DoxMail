@@ -235,16 +235,37 @@ mail_shell_view_match_folder_tree_and_message_list_folder (EMailShellView *mail_
 	g_free (tree_uri);
 }
 
-static void
-mail_shell_view_folder_tree_selection_done_cb (EMailShellView *mail_shell_view,
-                                               GtkWidget *menu)
+static gboolean
+mail_shell_view_folder_tree_selection_done_idle_cb (gpointer user_data)
 {
+	GWeakRef *weak_ref = user_data;
+	EMailShellView *mail_shell_view;
+
+	mail_shell_view = g_weak_ref_get (weak_ref);
+	if (!mail_shell_view)
+		return G_SOURCE_REMOVE;
+
 	if (!mail_shell_view->priv->ignore_folder_popup_selection_done)
 		mail_shell_view_match_folder_tree_and_message_list_folder (mail_shell_view);
 
 	mail_shell_view->priv->ignore_folder_popup_selection_done = FALSE;
 
-	/* Disconnect from the "selection-done" signal. */
+	g_object_unref (mail_shell_view);
+
+	return G_SOURCE_REMOVE;
+}
+
+/* GTK 3 menus had "selection-done" after an item ran or the menu was
+ * dismissed; a GtkPopoverMenu is "closed" before the chosen action runs */
+static void
+mail_shell_view_folder_tree_selection_done_cb (EMailShellView *mail_shell_view,
+                                               GtkWidget *menu)
+{
+	g_idle_add_full (G_PRIORITY_DEFAULT_IDLE,
+		mail_shell_view_folder_tree_selection_done_idle_cb,
+		e_weak_ref_new (mail_shell_view), (GDestroyNotify) e_weak_ref_free);
+
+	/* Disconnect from the "closed" signal. */
 	g_signal_handlers_disconnect_by_func (
 		menu, mail_shell_view_folder_tree_selection_done_cb,
 		mail_shell_view);
@@ -263,7 +284,7 @@ mail_shell_view_folder_tree_popup_event_cb (EShellView *shell_view,
 	menu = e_shell_view_show_popup_menu (shell_view, "mail-folder-popup", button_event);
 
 	g_signal_connect_object (
-		menu, "selection-done",
+		menu, "closed",
 		G_CALLBACK (mail_shell_view_folder_tree_selection_done_cb),
 		shell_view, G_CONNECT_SWAPPED);
 }

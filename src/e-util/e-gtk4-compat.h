@@ -89,6 +89,8 @@ void		e_gtk_paned_set_position	(gpointer paned,
 /* Widgets and windows */
 void		e_gtk_widget_destroy		(gpointer widget);
 GtkWidget *	e_gtk_widget_get_toplevel	(gpointer widget);
+gboolean	e_gtk_widget_has_focus		(gpointer widget);
+gboolean	e_gtk_widget_is_focus		(gpointer widget);
 gboolean	e_gtk_widget_is_toplevel	(gpointer widget);
 void		e_gtk_widget_grab_default	(GtkWidget *widget);
 void		e_gtk_widget_get_preferred_width

@@ -225,7 +225,7 @@ week_view_event_item_button_press (EWeekViewEventItem *event_item,
 		return TRUE;
 
 	} else if (event_button == 3) {
-		if (!gtk_widget_has_focus (GTK_WIDGET (week_view))) {
+		if (!e_gtk_widget_has_focus (GTK_WIDGET (week_view))) {
 			gtk_widget_grab_focus (GTK_WIDGET (week_view));
 			if (week_view->event_destroyed) {
 				week_view->event_destroyed = FALSE;

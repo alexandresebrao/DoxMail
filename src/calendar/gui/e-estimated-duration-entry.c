@@ -346,9 +346,9 @@ estimated_duration_entry_focus (GtkWidget *widget,
 	EEstimatedDurationEntry *self = E_ESTIMATED_DURATION_ENTRY (widget);
 
 	if (direction == GTK_DIR_TAB_FORWARD) {
-		if (gtk_widget_has_focus (self->priv->entry))
+		if (e_gtk_widget_has_focus (self->priv->entry))
 			gtk_widget_grab_focus (self->priv->button);
-		else if (gtk_widget_has_focus (self->priv->button))
+		else if (e_gtk_widget_has_focus (self->priv->button))
 			return FALSE;
 		else if (gtk_widget_get_visible (self->priv->entry))
 			gtk_widget_grab_focus (self->priv->entry);
@@ -356,9 +356,9 @@ estimated_duration_entry_focus (GtkWidget *widget,
 			gtk_widget_grab_focus (self->priv->button);
 
 	} else if (direction == GTK_DIR_TAB_BACKWARD) {
-		if (gtk_widget_has_focus (self->priv->entry))
+		if (e_gtk_widget_has_focus (self->priv->entry))
 			return FALSE;
-		else if (gtk_widget_has_focus (self->priv->button)) {
+		else if (e_gtk_widget_has_focus (self->priv->button)) {
 			if (gtk_widget_get_visible (self->priv->entry))
 				gtk_widget_grab_focus (self->priv->entry);
 			else

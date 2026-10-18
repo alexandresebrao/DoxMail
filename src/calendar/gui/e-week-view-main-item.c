@@ -146,7 +146,7 @@ week_view_main_item_draw_day (EWeekViewMainItem *main_item,
 	    || week_view->selection_end_day < day)
 		selected = FALSE;
 	if (selected) {
-		if (gtk_widget_has_focus (GTK_WIDGET (week_view))) {
+		if (e_gtk_widget_has_focus (GTK_WIDGET (week_view))) {
 			gdk_cairo_set_source_rgba (
 				cr, &week_view->colors[E_WEEK_VIEW_COLOR_SELECTED]);
 		} else {

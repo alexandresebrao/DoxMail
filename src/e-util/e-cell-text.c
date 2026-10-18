@@ -853,7 +853,7 @@ ect_draw (ECellView *ecell_view,
 	}
 
 	if (!color_overwritten && selected) {
-		if (gtk_widget_has_focus (canvas))
+		if (e_gtk_widget_has_focus (canvas))
 			e_utils_get_theme_color (canvas, "theme_selected_fg_color", E_UTILS_DEFAULT_THEME_SELECTED_FG_COLOR, &fg_rgba);
 		else
 			e_utils_get_theme_color (canvas, "theme_unfocused_selected_fg_color,theme_selected_fg_color", E_UTILS_DEFAULT_THEME_UNFOCUSED_SELECTED_FG_COLOR, &fg_rgba);
@@ -888,7 +888,7 @@ ect_draw (ECellView *ecell_view,
 			gint indices[2];
 
 			if (edit->has_selection) {
-				if (gtk_widget_has_focus (canvas)) {
+				if (e_gtk_widget_has_focus (canvas)) {
 					e_utils_get_theme_color (canvas, "theme_unfocused_selected_bg_color,theme_selected_bg_color", E_UTILS_DEFAULT_THEME_UNFOCUSED_SELECTED_BG_COLOR, &bg_rgba);
 					e_utils_get_theme_color (canvas, "theme_unfocused_selected_fg_color,theme_selected_fg_color", E_UTILS_DEFAULT_THEME_UNFOCUSED_SELECTED_FG_COLOR, &fg_rgba);
 				} else {

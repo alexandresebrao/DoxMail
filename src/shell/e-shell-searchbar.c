@@ -308,7 +308,7 @@ shell_searchbar_execute_search_cb (EShellView *shell_view,
 	/* Direct the focus away from the search entry, so that a
 	 * focus-in event is required before the text can be changed.
 	 * This will reset the entry to the appropriate visual state. */
-	if (gtk_widget_is_focus (searchbar->priv->search_entry)) {
+	if (e_gtk_widget_is_focus (searchbar->priv->search_entry)) {
 		shell_content = e_shell_view_get_shell_content (shell_view);
 		e_shell_content_focus_search_results (shell_content);
 	}
@@ -1472,5 +1472,5 @@ e_shell_searchbar_search_entry_has_focus (EShellSearchbar *searchbar)
 	g_return_val_if_fail (E_IS_SHELL_SEARCHBAR (searchbar), FALSE);
 	g_return_val_if_fail (searchbar->priv->search_entry, FALSE);
 
-	return gtk_widget_has_focus (searchbar->priv->search_entry);
+	return e_gtk_widget_has_focus (searchbar->priv->search_entry);
 }

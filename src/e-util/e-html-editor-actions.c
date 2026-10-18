@@ -43,7 +43,7 @@ e_html_editor_action_can_run (GtkWidget *widget)
 	g_return_val_if_fail (GTK_IS_WIDGET (widget), FALSE);
 
 	/* The action can be run if the widget is focused... */
-	if (gtk_widget_has_focus (widget))
+	if (e_gtk_widget_has_focus (widget))
 		return TRUE;
 
 	toplevel = e_gtk_widget_get_toplevel (widget);
@@ -833,7 +833,7 @@ action_paste_as_text_cb (EUIAction *action,
 	GdkClipboard *clipboard;
 
 	cnt_editor = e_html_editor_get_content_editor (editor);
-	if (!gtk_widget_has_focus (GTK_WIDGET (cnt_editor)))
+	if (!e_gtk_widget_has_focus (GTK_WIDGET (cnt_editor)))
 		gtk_widget_grab_focus (GTK_WIDGET (cnt_editor));
 
 	clipboard = e_gtk_clipboard_get_for_display (
@@ -901,7 +901,7 @@ action_paste_quote_cb (EUIAction *action,
 	GdkClipboard *clipboard;
 
 	cnt_editor = e_html_editor_get_content_editor (editor);
-	if (!gtk_widget_has_focus (GTK_WIDGET (cnt_editor)))
+	if (!e_gtk_widget_has_focus (GTK_WIDGET (cnt_editor)))
 		gtk_widget_grab_focus (GTK_WIDGET (cnt_editor));
 
 	clipboard = e_gtk_clipboard_get_for_display (

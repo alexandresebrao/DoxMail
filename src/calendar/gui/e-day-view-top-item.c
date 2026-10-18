@@ -637,7 +637,7 @@ day_view_top_item_draw (GnomeCanvasItem *canvas_item,
 		cairo_restore (cr);
 
 		/* Draw the selection background. */
-		if (gtk_widget_has_focus (GTK_WIDGET (day_view))
+		if (e_gtk_widget_has_focus (GTK_WIDGET (day_view))
 			&& day_view->selection_start_day != -1) {
 			gint start_col, end_col, rect_x, rect_y, rect_w, rect_h;
 

@@ -522,7 +522,7 @@ e_cal_list_view_on_table_white_space_event (ETable *table,
 
 		table_canvas = GTK_WIDGET (table->table_canvas);
 
-		if (!gtk_widget_has_focus (table_canvas))
+		if (!e_gtk_widget_has_focus (table_canvas))
 			gtk_widget_grab_focus (table_canvas);
 
 		e_cal_list_view_show_popup_menu (cal_list_view, event);

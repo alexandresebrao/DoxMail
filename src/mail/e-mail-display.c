@@ -1474,7 +1474,7 @@ mail_display_content_loaded_cb (EWebView *web_view,
 
 	/* Re-grab the focus, which is needed for the caret mode to show the cursor */
 	if (e_web_view_get_caret_mode (web_view) &&
-	    gtk_widget_has_focus (GTK_WIDGET (web_view))) {
+	    e_gtk_widget_has_focus (GTK_WIDGET (web_view))) {
 		GtkWidget *toplevel, *widget = GTK_WIDGET (web_view);
 
 		toplevel = e_gtk_widget_get_toplevel (widget);

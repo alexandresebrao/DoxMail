@@ -200,7 +200,7 @@ e_markdown_editor_is_focus (EContentEditor *cnt_editor)
 {
 	EMarkdownEditor *self = E_MARKDOWN_EDITOR (cnt_editor);
 
-	return gtk_widget_is_focus (GTK_WIDGET (self->priv->text_view));
+	return e_gtk_widget_is_focus (GTK_WIDGET (self->priv->text_view));
 }
 
 typedef struct _InitAsyncData {

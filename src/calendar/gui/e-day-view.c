@@ -4461,7 +4461,7 @@ e_day_view_on_top_canvas_button_press (GtkWidget *widget,
 			return TRUE;
 		}
 
-		if (!gtk_widget_has_focus (GTK_WIDGET (day_view)))
+		if (!e_gtk_widget_has_focus (GTK_WIDGET (day_view)))
 			gtk_widget_grab_focus (GTK_WIDGET (day_view));
 
 		/* GTK 4 grabs the pointer for the pressed widget implicitly */
@@ -4480,7 +4480,7 @@ e_day_view_on_top_canvas_button_press (GtkWidget *widget,
 			e_day_view_start_selection (day_view, day, -1);
 		}
 	} else if (event_button == 3) {
-		if (!gtk_widget_has_focus (GTK_WIDGET (day_view)))
+		if (!e_gtk_widget_has_focus (GTK_WIDGET (day_view)))
 			gtk_widget_grab_focus (GTK_WIDGET (day_view));
 
 		if (day < day_view->selection_start_day || day > day_view->selection_end_day) {
@@ -4587,7 +4587,7 @@ e_day_view_on_main_canvas_button_press (GtkWidget *widget,
 			return TRUE;
 		}
 
-		if (!gtk_widget_has_focus (GTK_WIDGET (day_view)) && !gtk_widget_has_focus (GTK_WIDGET (day_view->main_canvas)))
+		if (!e_gtk_widget_has_focus (GTK_WIDGET (day_view)) && !e_gtk_widget_has_focus (GTK_WIDGET (day_view->main_canvas)))
 			gtk_widget_grab_focus (GTK_WIDGET (day_view));
 
 		/* GTK 4 grabs the pointer for the pressed widget implicitly */
@@ -4607,7 +4607,7 @@ e_day_view_on_main_canvas_button_press (GtkWidget *widget,
 			g_signal_emit_by_name (day_view, "selected_time_changed");
 		}
 	} else if (event_button == 3) {
-		if (!gtk_widget_has_focus (GTK_WIDGET (day_view)))
+		if (!e_gtk_widget_has_focus (GTK_WIDGET (day_view)))
 			gtk_widget_grab_focus (GTK_WIDGET (day_view));
 
 		if ((day < day_view->selection_start_day || day > day_view->selection_end_day)
@@ -4844,7 +4844,7 @@ e_day_view_on_long_event_click (EDayView *day_view,
 
 		/* Grab the keyboard focus, so the event being edited is saved
 		 * and we can use the Escape key to abort the resize. */
-		if (!gtk_widget_has_focus (GTK_WIDGET (day_view)))
+		if (!e_gtk_widget_has_focus (GTK_WIDGET (day_view)))
 			gtk_widget_grab_focus (GTK_WIDGET (day_view));
 
 
@@ -4942,7 +4942,7 @@ e_day_view_on_event_click (EDayView *day_view,
 
 		/* Grab the keyboard focus, so the event being edited is saved
 		 * and we can use the Escape key to abort the resize. */
-		if (!gtk_widget_has_focus (GTK_WIDGET (day_view)))
+		if (!e_gtk_widget_has_focus (GTK_WIDGET (day_view)))
 			gtk_widget_grab_focus (GTK_WIDGET (day_view));
 
 

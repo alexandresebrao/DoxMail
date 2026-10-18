@@ -1689,7 +1689,7 @@ e_mail_viewer_ui_manager_ignore_accel_cb (EUIManager *ui_amanger,
 	g_return_val_if_fail (E_IS_MAIL_VIEWER (self), FALSE);
 
 	if (self->priv->mail_display &&
-	    gtk_widget_has_focus (GTK_WIDGET (self->priv->mail_display)) &&
+	    e_gtk_widget_has_focus (GTK_WIDGET (self->priv->mail_display)) &&
 	    e_web_view_get_need_input (E_WEB_VIEW (self->priv->mail_display)))
 		return TRUE;
 

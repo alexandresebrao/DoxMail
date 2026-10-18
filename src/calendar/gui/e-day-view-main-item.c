@@ -264,7 +264,7 @@ day_view_main_item_draw_day_event (EDayViewMainItem *main_item,
 		g_object_get (event->canvas_item, "x_offset", &text_x_offset, NULL);
 
 	/* Draw shadow around the event when selected */
-	if (!draw_flat_events && is_editing && (gtk_widget_has_focus (day_view->main_canvas))) {
+	if (!draw_flat_events && is_editing && (e_gtk_widget_has_focus (day_view->main_canvas))) {
 		/* For embossing Item selection */
 		item_x -= 1;
 		item_y -= 2;

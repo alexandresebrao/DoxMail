@@ -686,7 +686,7 @@ e_map_pressed_cb (GtkGestureClick *gesture,
 		  gdouble y,
 		  GtkWidget *widget)
 {
-	if (!gtk_widget_has_focus (widget))
+	if (!e_gtk_widget_has_focus (widget))
 		gtk_widget_grab_focus (widget);
 }
 

@@ -715,7 +715,7 @@ e_content_editor_is_focus (EContentEditor *editor)
 	if (iface->is_focus)
 		return iface->is_focus (editor);
 	else
-		return gtk_widget_is_focus (GTK_WIDGET (editor));
+		return e_gtk_widget_is_focus (GTK_WIDGET (editor));
 }
 
 ESpellChecker *

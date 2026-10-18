@@ -150,7 +150,7 @@ delayed_hide_cb (gpointer user_data)
 	if (!self->priv->visible && widget &&
 	    !self->priv->delayed_show_id) {
 		if (gtk_widget_get_visible (widget) &&
-		    !gtk_widget_has_focus (widget) &&
+		    !e_gtk_widget_has_focus (widget) &&
 		    !gtk_widget_get_focus_child (widget))
 			gtk_widget_set_visible (widget, FALSE);
 	}

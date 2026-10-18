@@ -2442,14 +2442,14 @@ e_date_edit_has_focus (EDateEdit *dedit)
 {
 	g_return_val_if_fail (E_IS_DATE_EDIT (dedit), FALSE);
 
-	if (gtk_widget_has_focus (GTK_WIDGET (dedit)) ||
-	    (dedit->priv->date_entry && gtk_widget_has_focus (dedit->priv->date_entry)))
+	if (e_gtk_widget_has_focus (GTK_WIDGET (dedit)) ||
+	    (dedit->priv->date_entry && e_gtk_widget_has_focus (dedit->priv->date_entry)))
 		return TRUE;
 
 	return e_date_edit_get_show_time (dedit) &&
 	       dedit->priv->time_combo && (
-		(gtk_widget_has_focus (dedit->priv->time_combo) ||
-		 gtk_widget_has_focus (e_gtk_bin_get_child (dedit->priv->time_combo))));
+		(e_gtk_widget_has_focus (dedit->priv->time_combo) ||
+		 e_gtk_widget_has_focus (e_gtk_bin_get_child (dedit->priv->time_combo))));
 }
 
 gint

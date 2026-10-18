@@ -1230,7 +1230,7 @@ et_canvas_root_event (GnomeCanvasItem *root,
 	case GNOME_CANVAS_2BUTTON_PRESS:
 	case GNOME_CANVAS_BUTTON_RELEASE:
 		if (event->button.button != 4 && event->button.button != 5) {
-			if (gtk_widget_has_focus (GTK_WIDGET (root->canvas))) {
+			if (e_gtk_widget_has_focus (GTK_WIDGET (root->canvas))) {
 				GnomeCanvasItem *item = GNOME_CANVAS (root->canvas)->focused_item;
 
 				if (E_IS_TABLE_ITEM (item)) {
@@ -1261,7 +1261,7 @@ table_canvas_focus_event_cb (GtkWidget *widget,
 	gtk_widget_queue_draw (widget);
 
 	/* the event can be NULL with GTK 4; the focus tells in or out */
-	if (!gtk_widget_has_focus (widget))
+	if (!e_gtk_widget_has_focus (widget))
 		return TRUE;
 
 	canvas = GNOME_CANVAS (widget);

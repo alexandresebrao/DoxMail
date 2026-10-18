@@ -536,6 +536,14 @@ e_gtk_box_reorder_child (GtkBox *box,
 	g_return_if_fail (GTK_IS_BOX (box));
 	g_return_if_fail (GTK_IS_WIDGET (child));
 
+	/* children packed with e_gtk_box_pack_end() sit in an inner box;
+	 * they move among themselves */
+	if (gtk_widget_get_parent (child) != GTK_WIDGET (box) &&
+	    gtk_widget_get_parent (child) == g_object_get_data (G_OBJECT (box), END_BOX_KEY))
+		box = GTK_BOX (gtk_widget_get_parent (child));
+
+	g_return_if_fail (gtk_widget_get_parent (child) == GTK_WIDGET (box));
+
 	if (position < 0) {
 		for (iter = gtk_widget_get_last_child (GTK_WIDGET (box)); iter == child; iter = gtk_widget_get_prev_sibling (iter))
 			;
@@ -2831,4 +2839,49 @@ void
 e_gtk_container_set_focus_chain (gpointer container,
 				 GList *focusable_widgets)
 {
+}
+
+/* GTK 4: the GtkText delegate of an entry (spin button, ...) has the focus
+ * while the user types in it, not the entry */
+static GtkWidget *
+editable_focus_delegate (gpointer widget)
+{
+	GtkEditable *delegate;
+
+	if (!GTK_IS_EDITABLE (widget))
+		return NULL;
+
+	delegate = gtk_editable_get_delegate (GTK_EDITABLE (widget));
+
+	return delegate && GTK_WIDGET (delegate) != widget ? GTK_WIDGET (delegate) : NULL;
+}
+
+gboolean
+e_gtk_widget_has_focus (gpointer widget)
+{
+	GtkWidget *delegate;
+
+	g_return_val_if_fail (GTK_IS_WIDGET (widget), FALSE);
+
+	if (gtk_widget_has_focus (widget))
+		return TRUE;
+
+	delegate = editable_focus_delegate (widget);
+
+	return delegate && gtk_widget_has_focus (delegate);
+}
+
+gboolean
+e_gtk_widget_is_focus (gpointer widget)
+{
+	GtkWidget *delegate;
+
+	g_return_val_if_fail (GTK_IS_WIDGET (widget), FALSE);
+
+	if (gtk_widget_is_focus (widget))
+		return TRUE;
+
+	delegate = editable_focus_delegate (widget);
+
+	return delegate && gtk_widget_is_focus (delegate);
 }

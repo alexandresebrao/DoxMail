@@ -400,7 +400,7 @@ e_canvas_item_grab_focus (GnomeCanvasItem *item,
 
 	item->canvas->focused_item = item;
 
-	if (widget_too && !gtk_widget_has_focus (GTK_WIDGET (item->canvas))) {
+	if (widget_too && !e_gtk_widget_has_focus (GTK_WIDGET (item->canvas))) {
 		gtk_widget_grab_focus (GTK_WIDGET (item->canvas));
 	}
 

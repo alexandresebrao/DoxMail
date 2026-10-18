@@ -179,7 +179,7 @@ e_contact_card_container_item_grab_focus (EContactCardContainer *self,
 
 	card = e_contact_card_container_get_card (self, item_index);
 	if (card) {
-		had_focus = gtk_widget_has_focus (card);
+		had_focus = e_gtk_widget_has_focus (card);
 		if (!had_focus)
 			gtk_widget_grab_focus (card);
 	}
@@ -1428,7 +1428,7 @@ e_contact_card_box_card_event_cb (GtkWidget *container,
 
 			if (item_index != self->priv->container->focused_index)
 				e_contact_card_box_update_cursor (self, item_index);
-		} else if (!gtk_widget_has_focus (GTK_WIDGET (self->priv->container))) {
+		} else if (!e_gtk_widget_has_focus (GTK_WIDGET (self->priv->container))) {
 			gtk_widget_grab_focus (GTK_WIDGET (self->priv->container));
 		}
 	}

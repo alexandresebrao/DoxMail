@@ -72,7 +72,7 @@ e_vcard_editor_address_focus (GtkWidget *widget,
 	order[6] = self->country_entry;
 
 	for (ii = 0; ii < G_N_ELEMENTS (order); ii++) {
-		if (order[ii] && (focused == (GtkWidget *) order[ii] || gtk_widget_is_focus (order[ii])))
+		if (order[ii] && (focused == (GtkWidget *) order[ii] || e_gtk_widget_is_focus (order[ii])))
 			break;
 	}
 

@@ -1652,7 +1652,8 @@ user_insert_text (ENameSelectorEntry *name_selector_entry,
 		(g_utf8_strchr (text, text_length, '\t') == NULL) &&
 		(g_utf8_strchr (text, text_length, '\n') == NULL);
 
-	has_focus = gtk_widget_has_focus (GTK_WIDGET (name_selector_entry));
+	/* the focus widget of its window, typed into through the delegate */
+	has_focus = e_gtk_widget_is_focus (GTK_WIDGET (name_selector_entry));
 
 	if (!has_focus && *position && *position == gtk_entry_get_text_length (GTK_ENTRY (name_selector_entry))) {
 		gtk_editable_insert_text (GTK_EDITABLE (name_selector_entry), ", ", 2, position);
