@@ -332,6 +332,16 @@ Translations: the GTK 4 build compiles and installs `po/` too (it was left
 out, so DoxMail always ran in English). Strings new in the port get their
 pt_BR translations in a "DoxMail" block of `po/pt_BR.po`, before the
 obsolete entries, and their files are listed in `po/POTFILES.in`.
+The app names itself DoxMail in every language without touching po/: at
+configure time `doxmail/po-rebrand.py` copies `po/*.po` to
+`_build/po-doxmail/` with "Evolution" as "DoxMail" in the translations
+(untranslated and fuzzy ones get the renamed English), adds an entry for
+the renamed English text of each (so sources may say DoxMail, like the
+metainfo description) and writes `en.po` for English locales; msgfmt and
+intltool-merge use that directory (`GETTEXT_PO_BUILD_DIR`). Kept as
+Evolution: Evolution-Data-Server, the team credits, "Evolution 2" and the
+"Evolution is running" message (`KEEP` in the script). Under LANG=C the
+source strings still say Evolution.
 
 ### DoxIA
 
@@ -339,8 +349,9 @@ obsolete entries, and their files are listed in `po/POTFILES.in`.
   `.desktop`/metainfo files generated from Evolution's in `data/CMakeLists.txt`,
   the icon also installed under the ID, "DoxMail" in window titles and About
   (CMake `DOXMAIL_APPLICATION_ID`/`DOXMAIL_BINARY`/`DOXMAIL_DISPLAY_NAME`,
-  `E_APPLICATION_ID` in the config header). Data, settings, the keyring
-  schema, the gresource prefix and the texts that say "Evolution" stay, so
+  `E_APPLICATION_ID` in the config header); the texts say DoxMail through
+  the filtered translations (see Translations). Data, settings, the keyring
+  schema and the gresource prefix stay, so
   Evolution users keep their data; DoxMail refuses to start while
   `org.gnome.Evolution` is on the session bus (`src/shell/main.c`);
 - DoxIA theme and look (doxia-theme colors, maybe libadwaita);

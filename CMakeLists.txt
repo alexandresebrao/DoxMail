@@ -901,6 +901,19 @@ add_pkgconfig_file(evolution-mail.pc.in evolution-mail-${INTERFACE_VERSION}.pc)
 add_pkgconfig_file(evolution-shell.pc.in evolution-shell-${INTERFACE_VERSION}.pc)
 
 if(WITH_GTK4)
+	# DoxMail: the translations name the app DoxMail; po/ stays Evolution's
+	find_package(Python3 REQUIRED COMPONENTS Interpreter)
+	set(GETTEXT_PO_BUILD_DIR ${CMAKE_BINARY_DIR}/po-doxmail)
+	execute_process(
+		COMMAND ${Python3_EXECUTABLE} -I ${CMAKE_SOURCE_DIR}/doxmail/po-rebrand.py ${GETTEXT_PO_DIR} ${GETTEXT_PO_BUILD_DIR}
+		RESULT_VARIABLE _rebrand_result)
+	if(NOT _rebrand_result EQUAL 0)
+		message(FATAL_ERROR "doxmail/po-rebrand.py failed")
+	endif(NOT _rebrand_result EQUAL 0)
+	file(GLOB _po_sources ${GETTEXT_PO_DIR}/*.po)
+	set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+		${_po_sources} ${CMAKE_SOURCE_DIR}/doxmail/po-rebrand.py)
+
 	add_subdirectory(data)
 	add_subdirectory(po)
 	add_subdirectory(src)

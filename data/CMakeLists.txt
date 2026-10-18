@@ -62,6 +62,9 @@ configure_file(org.gnome.Evolution.metainfo.xml.in.in
 file(READ ${CMAKE_CURRENT_BINARY_DIR}/org.gnome.Evolution.metainfo.xml.in _doxmail_metainfo)
 string(REPLACE "org.gnome.Evolution.desktop" "${OVERRIDE_APPLICATION_ID}.desktop" _doxmail_metainfo "${_doxmail_metainfo}")
 string(REGEX REPLACE "<_?name>Evolution</_?name>" "<name>${DOXMAIL_DISPLAY_NAME}</name>" _doxmail_metainfo "${_doxmail_metainfo}")
+# the description names the app; the translations of the renamed text come
+# from the filtered po files (doxmail/po-rebrand.py), the team stays
+string(REGEX REPLACE "\n( +)Evolution " "\n\\1${DOXMAIL_DISPLAY_NAME} " _doxmail_metainfo "${_doxmail_metainfo}")
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${OVERRIDE_APPLICATION_ID}.metainfo.xml.in "${_doxmail_metainfo}")
 
 add_appdata_file(${CMAKE_CURRENT_BINARY_DIR}/${OVERRIDE_APPLICATION_ID}.metainfo.xml.in ${OVERRIDE_APPLICATION_ID}.metainfo.xml)

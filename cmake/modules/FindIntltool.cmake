@@ -101,7 +101,15 @@ macro(intltool_process_po_files)
 		message(FATAL_ERROR "intltool_process_po_files() can be called only inside GETTEXT_PO_DIR ('${GETTEXT_PO_DIR}'), but it is called inside '${CMAKE_CURRENT_SOURCE_DIR}' instead")
 	endif(NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL GETTEXT_PO_DIR)
 
-	file(GLOB po_files ${GETTEXT_PO_DIR}/*.po)
+	# DoxMail: GETTEXT_PO_BUILD_DIR, when set, holds the .po files to use
+	# (filtered copies of GETTEXT_PO_DIR ones, see doxmail/po-rebrand.py)
+	if(GETTEXT_PO_BUILD_DIR)
+		set(_po_dir ${GETTEXT_PO_BUILD_DIR})
+	else(GETTEXT_PO_BUILD_DIR)
+		set(_po_dir ${CMAKE_CURRENT_SOURCE_DIR})
+	endif(GETTEXT_PO_BUILD_DIR)
+
+	file(GLOB po_files ${_po_dir}/*.po)
 
 	set(LINGUAS)
 	set(LINGUAS_GMO)
@@ -112,8 +120,8 @@ macro(intltool_process_po_files)
 		list(APPEND LINGUAS_GMO ${lang}.gmo)
 
 		add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${lang}.gmo
-			COMMAND ${GETTEXT_MSGFMT_EXECUTABLE} -o ${CMAKE_CURRENT_BINARY_DIR}/${lang}.gmo ${CMAKE_CURRENT_SOURCE_DIR}/${lang}.po
-			DEPENDS ${lang}.po
+			COMMAND ${GETTEXT_MSGFMT_EXECUTABLE} -o ${CMAKE_CURRENT_BINARY_DIR}/${lang}.gmo ${_po_dir}/${lang}.po
+			DEPENDS ${_po_dir}/${lang}.po
 		)
 
 		install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${lang}.gmo
@@ -172,9 +180,15 @@ macro(intltool_merge _in_filename _out_filename)
 			DEPENDS ${_in}
 		)
 	else(_has_no_translations)
+		if(GETTEXT_PO_BUILD_DIR)
+			set(_merge_po_dir ${GETTEXT_PO_BUILD_DIR})
+		else(GETTEXT_PO_BUILD_DIR)
+			set(_merge_po_dir ${GETTEXT_PO_DIR})
+		endif(GETTEXT_PO_BUILD_DIR)
+
 		if(NOT TARGET intltool-merge-cache)
 			add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/po/.intltool-merge-cache
-				COMMAND ${INTLTOOL_MERGE} ${_args} --quiet --cache="${CMAKE_BINARY_DIR}/po/.intltool-merge-cache" "${GETTEXT_PO_DIR}" "${_in}" "${_out}"
+				COMMAND ${INTLTOOL_MERGE} ${_args} --quiet --cache="${CMAKE_BINARY_DIR}/po/.intltool-merge-cache" "${_merge_po_dir}" "${_in}" "${_out}"
 				DEPENDS ${_in}
 			)
 			add_custom_target(intltool-merge-cache ALL
@@ -182,7 +196,7 @@ macro(intltool_merge _in_filename _out_filename)
 		endif(NOT TARGET intltool-merge-cache)
 
 		add_custom_command(OUTPUT ${_out}
-			COMMAND ${INTLTOOL_MERGE} ${_args} --quiet --cache="${CMAKE_BINARY_DIR}/po/.intltool-merge-cache" "${GETTEXT_PO_DIR}" "${_in}" "${_out}"
+			COMMAND ${INTLTOOL_MERGE} ${_args} --quiet --cache="${CMAKE_BINARY_DIR}/po/.intltool-merge-cache" "${_merge_po_dir}" "${_in}" "${_out}"
 			DEPENDS ${_in} intltool-merge-cache
 		)
 	endif(_has_no_translations)
