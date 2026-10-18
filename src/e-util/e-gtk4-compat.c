@@ -475,7 +475,7 @@ static void
 update_end_box_expand (GtkBox *box)
 {
 	GtkWidget *end_box, *child;
-	gboolean horizontal, start_expands = FALSE;
+	gboolean horizontal, start_expands = FALSE, end_expands = FALSE;
 
 	end_box = box_peek_end_box (box);
 	if (!end_box)
@@ -490,10 +490,22 @@ update_end_box_expand (GtkBox *box)
 		}
 	}
 
-	if (horizontal)
+	/* an expanding end child takes that space too, from the end box
+	 * filling it instead of sitting at the end */
+	for (child = gtk_widget_get_first_child (end_box); child; child = gtk_widget_get_next_sibling (child)) {
+		if (horizontal ? gtk_widget_get_hexpand (child) : gtk_widget_get_vexpand (child)) {
+			end_expands = TRUE;
+			break;
+		}
+	}
+
+	if (horizontal) {
 		gtk_widget_set_hexpand (end_box, !start_expands);
-	else
+		gtk_widget_set_halign (end_box, end_expands ? GTK_ALIGN_FILL : GTK_ALIGN_END);
+	} else {
 		gtk_widget_set_vexpand (end_box, !start_expands);
+		gtk_widget_set_valign (end_box, end_expands ? GTK_ALIGN_FILL : GTK_ALIGN_END);
+	}
 }
 
 void

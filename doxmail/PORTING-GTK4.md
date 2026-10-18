@@ -302,7 +302,12 @@ GtkFontButton binds `font`, not `font-name`. `e_gtk_box_pack_start/end()`
 apply expand/fill/padding along the orientation of the box layout manager
 (EMailView's own "orientation" property is the preview orientation, the
 message list stayed at its minimum width) and move them when it changes
-(`/eutil/box-pack-orientation`).
+(`/eutil/box-pack-orientation`); an expanding `pack_end()` child fills
+the free space, the end box no longer sits at its natural size at the end
+(the "Go to Folder" tree was under an empty gap, `/eutil/box-pack-end-expand`).
+The other dialogs of the five views (folder, source, filter, search folder,
+category, label, import, collection account, page setup, purge, jump-to,
+manage groups, new/properties of each source) open without warnings.
 Toolbars (EUIManager boxes) get an EToolbarLayout (src/e-util/
 e-toolbar-layout.c, private): items at their natural width while they
 fit, the rest hidden behind an overflow button whose menu, built when it
@@ -314,7 +319,9 @@ Headless runs reach dialogs through `DOXMAIL_ACTIVATE=action[,action...]`
 they are enabled; `@sizes` prints the widgets at least `DOXMAIL_SIZES_MIN`
 (400) px wide, `@click:Label` clicks a button, `@entry:Label:=text` fills
 the entry of a mnemonic label, `@type:text` types into the focus through
-its delegate, `@tab` moves the focus, in any window), e.g.
+its delegate, `@tab` moves the focus, in any window, `@popup:Name` opens
+the context menu of the sidebar row with that name as Shift+F10 does, which
+enables the actions of the clicked source or folder), e.g.
 `DOXMAIL_ACTIVATE=contact-new SHOT=x.png doxmail/port/run-evolution.sh 18
 -c contacts`. `run-evolution.sh` turns off the startup wizard and the
 default mailer prompt (`FIRST_RUN=1` keeps them).

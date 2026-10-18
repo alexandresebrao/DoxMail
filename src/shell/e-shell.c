@@ -2903,7 +2903,8 @@ e_shell_allow_auth_prompt_for (EShell *shell,
  * reach dialogs and editors where there is no pointer (headless test runs);
  * "@sizes" prints the widgets keeping the window wide, "@click:Label"
  * clicks a button, "@entry:Label:=text" fills the entry of a label,
- * "@type:text" types into the focus, "@tab" moves the focus */
+ * "@type:text" types into the focus, "@tab" moves the focus,
+ * "@popup:Name" opens the context menu of a sidebar row */
 typedef struct _DevActivate {
 	GWeakRef window;
 	gchar **names;
@@ -3132,6 +3133,81 @@ dev_tab (void)
 	return TRUE;
 }
 
+/* "@popup:Name": puts the cursor on the sidebar row (source or folder)
+ * with that name and opens its context menu as Shift+F10 does, so the
+ * actions of the clicked source or folder get enabled */
+typedef struct _DevRowFind {
+	const gchar *name;
+	GtkTreePath *path;
+} DevRowFind;
+
+static gboolean
+dev_row_find_cb (GtkTreeModel *model,
+		 GtkTreePath *path,
+		 GtkTreeIter *iter,
+		 gpointer user_data)
+{
+	DevRowFind *rf = user_data;
+	gint ii, n = gtk_tree_model_get_n_columns (model);
+
+	for (ii = 0; ii < n && !rf->path; ii++) {
+		gchar *text = NULL;
+
+		if (gtk_tree_model_get_column_type (model, ii) != G_TYPE_STRING)
+			continue;
+
+		gtk_tree_model_get (model, iter, ii, &text, -1);
+		if (g_strcmp0 (text, rf->name) == 0)
+			rf->path = gtk_tree_path_copy (path);
+		g_free (text);
+	}
+
+	return rf->path != NULL;
+}
+
+static GtkTreeView *
+dev_find_tree_row (GtkWidget *widget,
+		   DevRowFind *rf)
+{
+	GtkWidget *child;
+	GtkTreeView *found = NULL;
+
+	if (!gtk_widget_get_mapped (widget))
+		return NULL;
+
+	if (GTK_IS_TREE_VIEW (widget) && gtk_tree_view_get_model (GTK_TREE_VIEW (widget))) {
+		gtk_tree_model_foreach (gtk_tree_view_get_model (GTK_TREE_VIEW (widget)), dev_row_find_cb, rf);
+		if (rf->path)
+			return GTK_TREE_VIEW (widget);
+	}
+
+	for (child = gtk_widget_get_first_child (widget); child && !found; child = gtk_widget_get_next_sibling (child))
+		found = dev_find_tree_row (child, rf);
+
+	return found;
+}
+
+static gboolean
+dev_popup (GtkWidget *shell_window,
+	   const gchar *name)
+{
+	DevRowFind rf = { name, NULL };
+	GtkTreeView *tree_view;
+	gboolean res = FALSE;
+
+	tree_view = dev_find_tree_row (shell_window, &rf);
+	if (!tree_view)
+		return FALSE;
+
+	gtk_tree_view_expand_to_path (tree_view, rf.path);
+	gtk_tree_view_set_cursor (tree_view, rf.path, NULL, FALSE);
+	gtk_widget_grab_focus (GTK_WIDGET (tree_view));
+	g_signal_emit_by_name (tree_view, "popup-menu", &res);
+	gtk_tree_path_free (rf.path);
+
+	return TRUE;
+}
+
 static gboolean
 shell_dev_activate_cb (gpointer user_data)
 {
@@ -3156,7 +3232,8 @@ shell_dev_activate_cb (gpointer user_data)
 	}
 
 	if (g_str_has_prefix (name, "@click:") || g_str_has_prefix (name, "@entry:") ||
-	    g_str_has_prefix (name, "@type:") || g_strcmp0 (name, "@tab") == 0) {
+	    g_str_has_prefix (name, "@type:") || g_str_has_prefix (name, "@popup:") ||
+	    g_strcmp0 (name, "@tab") == 0) {
 		gboolean done;
 
 		if (g_str_has_prefix (name, "@click:"))
@@ -3165,6 +3242,8 @@ shell_dev_activate_cb (gpointer user_data)
 			done = dev_entry (name + 7);
 		else if (g_str_has_prefix (name, "@type:"))
 			done = dev_type (name + 6);
+		else if (g_str_has_prefix (name, "@popup:"))
+			done = dev_popup (GTK_WIDGET (shell_window), name + 7);
 		else
 			done = dev_tab ();
 

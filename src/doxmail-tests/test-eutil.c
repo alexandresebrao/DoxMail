@@ -668,6 +668,31 @@ test_box_pack_end_after_clear (void)
 	g_object_unref (box);
 }
 
+/* an expanding pack_end() child takes the free space, as with GTK 3 (the
+ * folder tree of the "Go to Folder" dialog sat under an empty gap) */
+static void
+test_box_pack_end_expand (void)
+{
+	GtkWidget *box, *start, *tree, *window;
+	graphene_rect_t start_bounds, tree_bounds;
+
+	box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
+	start = gtk_label_new ("search");
+	tree = gtk_label_new ("tree");
+	e_gtk_box_pack_start (GTK_BOX (box), start, FALSE, FALSE, 0);
+	e_gtk_box_pack_end (GTK_BOX (box), gtk_label_new ("bar"), FALSE, FALSE, 0);
+	e_gtk_box_pack_end (GTK_BOX (box), tree, TRUE, TRUE, 0);
+
+	window = show_in_window (box);
+
+	g_assert_true (gtk_widget_compute_bounds (start, box, &start_bounds));
+	g_assert_true (gtk_widget_compute_bounds (tree, box, &tree_bounds));
+	g_assert_cmpfloat (tree_bounds.origin.y, ==, start_bounds.origin.y + start_bounds.size.height);
+	g_assert_cmpint (gtk_widget_get_height (tree), >, 200);
+
+	gtk_window_destroy (GTK_WINDOW (window));
+}
+
 /* a drag moves the divider in steps; a later allocation keeps the last */
 static void
 test_paned_drag (void)
@@ -835,6 +860,7 @@ main (gint argc,
 	g_test_add_func ("/eutil/entry-undo", test_entry_undo);
 	g_test_add_func ("/eutil/box-pack-end-after-clear", test_box_pack_end_after_clear);
 	g_test_add_func ("/eutil/paned-drag", test_paned_drag);
+	g_test_add_func ("/eutil/box-pack-end-expand", test_box_pack_end_expand);
 
 	return g_test_run ();
 }
