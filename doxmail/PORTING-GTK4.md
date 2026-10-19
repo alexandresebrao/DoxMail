@@ -305,6 +305,19 @@ message list stayed at its minimum width) and move them when it changes
 (`/eutil/box-pack-orientation`); an expanding `pack_end()` child fills
 the free space, the end box no longer sits at its natural size at the end
 (the "Go to Folder" tree was under an empty gap, `/eutil/box-pack-end-expand`).
+Teardown: GTK 3 gtk_widget_destroy() disposed a window and everything in
+it also when something else held them; GTK 4 only closes and unparents,
+so cycles stayed (the shell views; the calendar views held by their canvas
+items, holding the calendar model, holding the shell: "Shell not
+finalized on exit"). The shell disposes its windows when they close and
+at quit (`shell_destroy_window()`), except a dialog in
+`e_gtk_dialog_run()` (`e_gtk_dialog_is_running()`), whose caller reads it
+afterwards; the window disposes its shell views, ECalShellContent its
+calendar views. `e_gtk_dialog_run()` keeps a dialog closed during the run
+alive until idle. Popovers attached with `e_gtk_popover_new()` or
+`e_gtk_popover_set_relative_to()` leave their widget on its "destroy" (a
+GtkButton was finalized with its popover attached). Handlers may now see
+NULL rows/selections while a widget is disposed.
 GtkTreeView inline editing (renaming a calendar or folder in the sidebar)
 logs "gtk_css_node_insert_after: assertion ... failed" in GTK 4.22 even
 for a plain GtkTreeView; GTK's own, the editing works.

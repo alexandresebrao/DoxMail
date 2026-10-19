@@ -627,7 +627,7 @@ static void
 subscription_editor_menu_popup (GtkWidget *menu,
 				GtkWidget *button)
 {
-	gtk_widget_set_parent (menu, button);
+	e_gtk_popover_set_relative_to (GTK_POPOVER (menu), button);
 	gtk_popover_set_position (GTK_POPOVER (menu), GTK_POS_BOTTOM);
 	gtk_widget_set_halign (menu, GTK_ALIGN_START);
 	gtk_popover_popup (GTK_POPOVER (menu));

@@ -1009,6 +1009,7 @@ e_gtk_button_set_label_and_icon (GtkButton *button,
 typedef struct {
 	GMainLoop *loop;
 	gint response_id;
+	gboolean destroyed;
 } RunInfo;
 
 static void
@@ -1029,12 +1030,28 @@ run_unmap_cb (GtkWidget *dialog,
 		g_main_loop_quit (ri->loop);
 }
 
+static void
+run_destroy_cb (GtkWidget *dialog,
+		RunInfo *ri)
+{
+	ri->destroyed = TRUE;
+	run_unmap_cb (dialog, ri);
+}
+
+static gboolean
+run_unref_idle_cb (gpointer dialog)
+{
+	g_object_unref (dialog);
+
+	return G_SOURCE_REMOVE;
+}
+
 /* gtk_dialog_run() as GTK 3 had it: show modal, spin a main loop until a
  * response.  New code should connect to GtkDialog::response instead. */
 gint
 e_gtk_dialog_run (GtkDialog *dialog)
 {
-	RunInfo ri = { NULL, GTK_RESPONSE_NONE };
+	RunInfo ri = { NULL, GTK_RESPONSE_NONE, FALSE };
 	gulong response_handler, unmap_handler, destroy_handler;
 
 	g_return_val_if_fail (GTK_IS_DIALOG (dialog), GTK_RESPONSE_NONE);
@@ -1045,27 +1062,48 @@ e_gtk_dialog_run (GtkDialog *dialog)
 
 	response_handler = g_signal_connect (dialog, "response", G_CALLBACK (run_response_cb), &ri);
 	unmap_handler = g_signal_connect (dialog, "unmap", G_CALLBACK (run_unmap_cb), &ri);
-	destroy_handler = g_signal_connect (dialog, "destroy", G_CALLBACK (run_unmap_cb), &ri);
+	destroy_handler = g_signal_connect (dialog, "destroy", G_CALLBACK (run_destroy_cb), &ri);
 
 	ri.loop = g_main_loop_new (NULL, FALSE);
 
 	gtk_window_present (GTK_WINDOW (dialog));
+	/* see e_gtk_dialog_is_running () */
+	g_object_set_data (G_OBJECT (dialog), "e-gtk-dialog-running", GINT_TO_POINTER (1));
 	g_main_loop_run (ri.loop);
+	g_object_set_data (G_OBJECT (dialog), "e-gtk-dialog-running", NULL);
 
 	g_signal_handler_disconnect (dialog, response_handler);
 	g_signal_handler_disconnect (dialog, unmap_handler);
 	g_signal_handler_disconnect (dialog, destroy_handler);
 
 	g_main_loop_unref (ri.loop);
-	g_object_unref (dialog);
+
+	/* destroyed while running (its parent window closed, as when the app
+	 * quits; gtk_window_destroy() does not dispose it, so no "destroy"
+	 * then, but the toplevel reference went): the caller still reads and
+	 * destroys it after this returns */
+	if (ri.destroyed || G_OBJECT (dialog)->ref_count == 1)
+		g_idle_add (run_unref_idle_cb, dialog);
+	else
+		g_object_unref (dialog);
 
 	return ri.response_id;
+}
+
+/* whether e_gtk_dialog_run() runs @window now: its caller reads its
+ * widgets once the run returns, so it must not be disposed before */
+gboolean
+e_gtk_dialog_is_running (GtkWindow *window)
+{
+	g_return_val_if_fail (GTK_IS_WINDOW (window), FALSE);
+
+	return g_object_get_data (G_OBJECT (window), "e-gtk-dialog-running") != NULL;
 }
 
 gint
 e_gtk_native_dialog_run (GtkNativeDialog *dialog)
 {
-	RunInfo ri = { NULL, GTK_RESPONSE_NONE };
+	RunInfo ri = { NULL, GTK_RESPONSE_NONE, FALSE };
 	gulong response_handler;
 
 	g_return_val_if_fail (GTK_IS_NATIVE_DIALOG (dialog), GTK_RESPONSE_NONE);
@@ -1381,6 +1419,26 @@ e_gtk_widget_style_get (gpointer widget,
 	va_end (va);
 }
 
+static void
+popover_relative_to_destroy_cb (GtkWidget *relative_to,
+				GtkWidget *popover)
+{
+	if (gtk_widget_get_parent (popover) == relative_to)
+		gtk_widget_unparent (popover);
+}
+
+/* a GTK 4 popover is a child of the widget it points to, which may not
+ * expect foreign children (a GtkButton finalized with it still attached):
+ * it leaves when that widget is disposed */
+static void
+popover_attach (GtkWidget *popover,
+		GtkWidget *relative_to)
+{
+	gtk_widget_set_parent (popover, relative_to);
+	g_signal_connect_object (relative_to, "destroy",
+		G_CALLBACK (popover_relative_to_destroy_cb), popover, 0);
+}
+
 GtkWidget *
 e_gtk_popover_new (GtkWidget *relative_to)
 {
@@ -1389,7 +1447,7 @@ e_gtk_popover_new (GtkWidget *relative_to)
 	popover = gtk_popover_new ();
 
 	if (relative_to)
-		gtk_widget_set_parent (popover, relative_to);
+		popover_attach (popover, relative_to);
 
 	return popover;
 }
@@ -1405,11 +1463,14 @@ e_gtk_popover_set_relative_to (GtkPopover *popover,
 	if (gtk_widget_get_parent (widget) == relative_to)
 		return;
 
-	if (gtk_widget_get_parent (widget))
+	if (gtk_widget_get_parent (widget)) {
+		g_signal_handlers_disconnect_by_func (gtk_widget_get_parent (widget),
+			popover_relative_to_destroy_cb, widget);
 		gtk_widget_unparent (widget);
+	}
 
 	if (relative_to)
-		gtk_widget_set_parent (widget, relative_to);
+		popover_attach (widget, relative_to);
 }
 
 void

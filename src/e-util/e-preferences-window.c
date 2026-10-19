@@ -155,7 +155,9 @@ preferences_window_row_selected (EPreferencesWindow *window,
                                  GtkListBoxRow *row,
                                  GtkListBox *box)
 {
-	g_signal_emit_by_name (row, "activate", NULL);
+	/* NULL as the rows go, like when the window is disposed */
+	if (row)
+		g_signal_emit_by_name (row, "activate", NULL);
 }
 
 static void

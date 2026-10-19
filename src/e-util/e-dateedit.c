@@ -697,7 +697,7 @@ create_children (EDateEdit *dedit)
 	/* a popover hides on Escape and on clicks outside by itself */
 	priv->cal_popup = gtk_popover_new ();
 	gtk_popover_set_position (GTK_POPOVER (priv->cal_popup), GTK_POS_BOTTOM);
-	gtk_widget_set_parent (priv->cal_popup, priv->date_button);
+	e_gtk_popover_set_relative_to (GTK_POPOVER (priv->cal_popup), priv->date_button);
 
 	vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
 	gtk_popover_set_child (GTK_POPOVER (priv->cal_popup), vbox);

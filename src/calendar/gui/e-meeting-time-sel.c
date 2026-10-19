@@ -270,10 +270,10 @@ mts_menu_new (GtkWidget *button)
 	gtk_widget_set_halign (menu, GTK_ALIGN_START);
 	gtk_widget_add_css_class (menu, "menu");
 	gtk_popover_set_child (GTK_POPOVER (menu), gtk_box_new (GTK_ORIENTATION_VERTICAL, 0));
-	gtk_widget_set_parent (menu, button);
-
-	/* the button's dispose does not unparent it */
-	g_object_set_data_full (G_OBJECT (button), "mts-menu", menu, (GDestroyNotify) gtk_widget_unparent);
+	/* leaves the button when it is disposed: GtkButton does not unparent
+	 * it, and qdata goes only after GTK checked for leftover children */
+	e_gtk_popover_set_relative_to (GTK_POPOVER (menu), button);
+	g_object_set_data (G_OBJECT (button), "mts-menu", menu);
 
 	return menu;
 }

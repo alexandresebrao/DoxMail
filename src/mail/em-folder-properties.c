@@ -1524,11 +1524,17 @@ emfp_dialog_run (AsyncContext *context)
 	/* We do 'apply on ok', since instant apply may start some
 	 * very long running tasks. */
 
+	/* the config goes with its widget, which a quit can destroy while
+	 * the dialog runs */
+	g_object_ref (ec);
+
 	if (e_gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
 		e_config_commit ((EConfig *) ec);
 		camel_folder_save_state (context->folder);
 	} else
 		e_config_abort ((EConfig *) ec);
+
+	g_object_unref (ec);
 
 	e_gtk_widget_destroy (dialog);
 }

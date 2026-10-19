@@ -3743,6 +3743,9 @@ process_move_button (GtkButton *button,
 	g_return_if_fail (tree != NULL);
 
 	selection = gtk_tree_view_get_selection (tree);
+	/* the tree view emits "cursor-changed" as it is disposed */
+	if (!selection)
+		return;
 
 	if (gtk_tree_selection_get_selected (selection, &model, &iter)) {
 		gpointer ptr = NULL, ptr2;
@@ -3835,6 +3838,9 @@ show_hide_cursor_changed (GtkTreeView *tree,
 	g_return_if_fail (tree != NULL);
 
 	selection = gtk_tree_view_get_selection (tree);
+	/* the tree view emits "cursor-changed" as it is disposed */
+	if (!selection)
+		return;
 
 	if (gtk_tree_selection_get_selected (selection, &model, &iter)) {
 		gboolean shown = FALSE;
@@ -3857,6 +3863,9 @@ show_hide_clicked (GtkButton *button,
 	g_return_if_fail (tree != NULL);
 
 	selection = gtk_tree_view_get_selection (tree);
+	/* the tree view emits "cursor-changed" as it is disposed */
+	if (!selection)
+		return;
 
 	if (gtk_tree_selection_get_selected (selection, &model, &iter)) {
 		gboolean shown = TRUE;

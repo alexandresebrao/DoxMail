@@ -297,6 +297,31 @@ e_shell_window_private_dispose (EShellWindow *shell_window)
 
 	g_clear_object (&priv->focus_tracker);
 
+	/* DoxMail: GTK 3 destroyed the views with the window, disposing them
+	 * also when their content, sidebar or closures still held them; GTK 4
+	 * only unparents them, and a view that stayed kept its content alive
+	 * (the calendar models, which hold the shell) */
+	if (priv->loaded_views) {
+		GHashTableIter iter;
+		gpointer value;
+
+		g_hash_table_iter_init (&iter, priv->loaded_views);
+		while (g_hash_table_iter_next (&iter, NULL, &value)) {
+			GtkWidget *view = value;
+			GtkWidget *parent = gtk_widget_get_parent (view);
+
+			if (parent && GTK_IS_NOTEBOOK (gtk_widget_get_ancestor (parent, GTK_TYPE_NOTEBOOK))) {
+				GtkNotebook *notebook = GTK_NOTEBOOK (gtk_widget_get_ancestor (parent, GTK_TYPE_NOTEBOOK));
+				gint page_num = gtk_notebook_page_num (notebook, view);
+
+				if (page_num >= 0)
+					gtk_notebook_remove_page (notebook, page_num);
+			}
+
+			g_object_run_dispose (G_OBJECT (view));
+		}
+	}
+
 	g_hash_table_remove_all (priv->loaded_views);
 	g_hash_table_remove_all (priv->action_groups);
 

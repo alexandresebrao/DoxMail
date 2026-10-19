@@ -118,6 +118,7 @@ void		e_gtk_button_set_label_and_icon	(GtkButton *button,
 
 /* Dialogs: GTK 4 dropped the nested main loop of gtk_dialog_run() */
 gint		e_gtk_dialog_run		(GtkDialog *dialog);
+gboolean	e_gtk_dialog_is_running		(GtkWindow *window);
 gint		e_gtk_native_dialog_run		(GtkNativeDialog *dialog);
 GtkWidget *	e_gtk_dialog_get_action_area	(GtkDialog *dialog);
 

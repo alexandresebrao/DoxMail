@@ -1854,6 +1854,22 @@ cal_shell_content_dispose (GObject *object)
 	}
 
 	for (ii = 0; ii < E_CAL_VIEW_KIND_LAST; ii++) {
+		GtkWidget *view = GTK_WIDGET (cal_shell_content->priv->views[ii]);
+
+		/* DoxMail: GTK 3 destroyed the views with the window; their
+		 * canvas items hold them, a cycle GTK 4 does not break, which
+		 * also kept the calendar model and through it the shell */
+		if (view && GTK_IS_NOTEBOOK (cal_shell_content->priv->calendar_notebook)) {
+			GtkNotebook *notebook = GTK_NOTEBOOK (cal_shell_content->priv->calendar_notebook);
+			gint page_num = gtk_notebook_page_num (notebook, view);
+
+			if (page_num >= 0)
+				gtk_notebook_remove_page (notebook, page_num);
+		}
+
+		if (view)
+			g_object_run_dispose (G_OBJECT (view));
+
 		g_clear_object (&(cal_shell_content->priv->views[ii]));
 	}
 

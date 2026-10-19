@@ -158,14 +158,35 @@ shell_window_removed_cb (EShell *shell)
 		e_shell_quit (shell, E_SHELL_QUIT_LAST_WINDOW);
 }
 
+/* DoxMail: GTK 3 disposed a destroyed window also when something else
+ * held it; GTK 4 only closes it, and a window that stayed kept what it
+ * holds (the shell views, the editors; the calendar ones held the shell
+ * through their models), so the windows are disposed here; a dialog in
+ * e_gtk_dialog_run() only closes, its caller reads it afterwards */
+static void
+shell_destroy_window (GtkWidget *window)
+{
+	if (!GTK_IS_WINDOW (window) || e_gtk_dialog_is_running (GTK_WINDOW (window))) {
+		e_gtk_widget_destroy (window);
+		return;
+	}
+
+	g_object_ref (window);
+	e_gtk_widget_destroy (window);
+	g_object_run_dispose (G_OBJECT (window));
+	g_object_unref (window);
+}
+
 static gboolean
 shell_window_delete_event_cb (GtkWindow *window,
                               GdkEvent *event,
                               GtkApplication *application)
 {
 	/* If other windows are open we can safely close this one. */
-	if (g_list_length (gtk_application_get_windows (application)) > 1)
-		return FALSE;
+	if (g_list_length (gtk_application_get_windows (application)) > 1) {
+		shell_destroy_window (GTK_WIDGET (window));
+		return TRUE;
+	}
 
 	/* Otherwise we initiate application quit. */
 	e_shell_quit (E_SHELL (application), E_SHELL_QUIT_LAST_WINDOW);
@@ -500,7 +521,7 @@ shell_ready_for_quit (EShell *shell,
 	 * watched window will modify the watched windows list, which
 	 * would derail the iteration. */
 	list = g_list_copy (gtk_application_get_windows (application));
-	g_list_foreach (list, (GFunc) e_gtk_widget_destroy, NULL);
+	g_list_foreach (list, (GFunc) shell_destroy_window, NULL);
 	g_list_free (list);
 }
 
