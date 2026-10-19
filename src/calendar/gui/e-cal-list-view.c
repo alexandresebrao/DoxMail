@@ -67,10 +67,10 @@ static gboolean  e_cal_list_view_popup_menu             (GtkWidget *widget);
 static gboolean  e_cal_list_view_on_table_double_click   (GtkWidget *table, gint row, gint col,
 							 GdkEvent *event, gpointer data);
 static gboolean  e_cal_list_view_on_table_right_click   (GtkWidget *table, gint row, gint col,
-							 GdkEvent *event, gpointer data);
+							 GnomeCanvasEvent *event, gpointer data);
 static gboolean e_cal_list_view_on_table_key_press	(ETable *table, gint row, gint col,
-							 GdkEvent *event, gpointer data);
-static gboolean  e_cal_list_view_on_table_white_space_event (ETable *table, GdkEvent *event, gpointer data);
+							 GnomeCanvasEvent *event, gpointer data);
+static gboolean  e_cal_list_view_on_table_white_space_event (ETable *table, GnomeCanvasEvent *event, gpointer data);
 static void e_cal_list_view_cursor_change_cb (ETable *etable, gint row, gpointer data);
 
 G_DEFINE_TYPE_WITH_PRIVATE (ECalListView, e_cal_list_view, E_TYPE_CALENDAR_VIEW)
@@ -476,12 +476,12 @@ static gboolean
 e_cal_list_view_on_table_right_click (GtkWidget *table,
                                       gint row,
                                       gint col,
-                                      GdkEvent *event,
+                                      GnomeCanvasEvent *event,
                                       gpointer data)
 {
 	ECalListView *cal_list_view = E_CAL_LIST_VIEW (data);
 
-	e_cal_list_view_show_popup_menu (cal_list_view, event);
+	e_cal_list_view_show_popup_menu (cal_list_view, event ? gnome_canvas_event_get_gdk_event (event) : NULL);
 
 	return TRUE;
 }
@@ -490,12 +490,12 @@ static gboolean
 e_cal_list_view_on_table_key_press (ETable *table,
 				    gint row,
 				    gint col,
-				    GdkEvent *event,
+				    GnomeCanvasEvent *event,
 				    gpointer data)
 {
-	if (event && e_gdk_event_type (event) == GDK_KEY_PRESS &&
-	    (e_gdk_event_keyval (event) == GDK_KEY_Return || e_gdk_event_keyval (event) == GDK_KEY_KP_Enter) &&
-	    (e_gdk_event_state (event) & (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_ALT_MASK)) == 0 &&
+	if (event && event->type == GNOME_CANVAS_KEY_PRESS &&
+	    (event->key.keyval == GDK_KEY_Return || event->key.keyval == GDK_KEY_KP_Enter) &&
+	    (event->key.state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_ALT_MASK)) == 0 &&
 	    !e_table_is_editing (table)) {
 		e_cal_list_view_open_at_row (data, row);
 		return TRUE;
@@ -506,7 +506,7 @@ e_cal_list_view_on_table_key_press (ETable *table,
 
 static gboolean
 e_cal_list_view_on_table_white_space_event (ETable *table,
-					    GdkEvent *event,
+					    GnomeCanvasEvent *event,
 					    gpointer user_data)
 {
 	ECalListView *cal_list_view = user_data;
@@ -515,8 +515,8 @@ e_cal_list_view_on_table_white_space_event (ETable *table,
 	g_return_val_if_fail (E_IS_CAL_LIST_VIEW (cal_list_view), FALSE);
 	g_return_val_if_fail (event != NULL, FALSE);
 
-	if (e_gdk_event_type (event) == GDK_BUTTON_PRESS &&
-	    e_gdk_event_get_button (event, &event_button) &&
+	if (event->type == GNOME_CANVAS_BUTTON_PRESS &&
+	    gnome_canvas_event_get_button (event, &event_button) &&
 	    event_button == 3) {
 		GtkWidget *table_canvas;
 
@@ -525,7 +525,7 @@ e_cal_list_view_on_table_white_space_event (ETable *table,
 		if (!e_gtk_widget_has_focus (table_canvas))
 			gtk_widget_grab_focus (table_canvas);
 
-		e_cal_list_view_show_popup_menu (cal_list_view, event);
+		e_cal_list_view_show_popup_menu (cal_list_view, gnome_canvas_event_get_gdk_event (event));
 
 		return TRUE;
 	}

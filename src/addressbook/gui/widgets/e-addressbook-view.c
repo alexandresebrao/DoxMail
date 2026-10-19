@@ -395,10 +395,10 @@ static gint
 table_right_click (ETable *table,
                    gint row,
                    gint col,
-                   GdkEvent *event,
+                   GnomeCanvasEvent *event,
                    EAddressbookView *view)
 {
-	addressbook_view_emit_popup_event (view, event);
+	addressbook_view_emit_popup_event (view, event ? gnome_canvas_event_get_gdk_event (event) : NULL);
 
 	return TRUE;
 }
@@ -414,15 +414,15 @@ addressbook_view_popup_menu_cb (GtkWidget *widget,
 
 static gint
 table_white_space_event (ETable *table,
-                         GdkEvent *event,
+                         GnomeCanvasEvent *event,
                          EAddressbookView *view)
 {
 	guint event_button = 0;
 
-	e_gdk_event_get_button (event, &event_button);
+	gnome_canvas_event_get_button (event, &event_button);
 
-	if (e_gdk_event_type (event) == GDK_BUTTON_PRESS && event_button == 3) {
-		addressbook_view_emit_popup_event (view, event);
+	if (event->type == GNOME_CANVAS_BUTTON_PRESS && event_button == 3) {
+		addressbook_view_emit_popup_event (view, gnome_canvas_event_get_gdk_event (event));
 		return TRUE;
 	}
 

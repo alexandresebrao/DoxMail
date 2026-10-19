@@ -302,9 +302,10 @@ mail_shell_view_message_list_right_click_cb (EShellView *shell_view,
                                              gint row,
                                              ETreePath path,
                                              gint col,
-                                             GdkEvent *button_event)
+                                             GnomeCanvasEvent *button_event)
 {
-	e_shell_view_show_popup_menu (shell_view, "mail-message-popup", button_event);
+	e_shell_view_show_popup_menu (shell_view, "mail-message-popup",
+		button_event ? gnome_canvas_event_get_gdk_event (button_event) : NULL);
 
 	return TRUE;
 }
