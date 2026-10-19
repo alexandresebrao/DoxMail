@@ -394,7 +394,15 @@ source strings still say Evolution.
   background 3 s after the first window shows, the next
   e_html_editor_new() hands it out and prepares the following one. New
   now maps in about 0.15 s; one idle WebKit editor is kept meanwhile;
-- packaging in the DoxIA image.
+- packaging: `doxmail/package` builds the RPM from git HEAD
+  (`doxmail/packaging/doxmail.spec`, release 0.<date>git<commit>) into
+  dist/; the DoxIA repository ships it as a release asset, installed by
+  its `fedora/doxia/install-doxmail` (install-system.sh, update.sh), which
+  also replaces the Evolution Flatpak (`migrate-evolution-flatpak` copies
+  its mail, accounts and settings once). The package conflicts with the
+  evolution RPM, needs evolution-data-server 3.60.x and leaves out the
+  alarm notify module (the system GTK 3 evolution-alarm-notify loads it)
+  and the development files.
 
 ## Keeping up with upstream
 

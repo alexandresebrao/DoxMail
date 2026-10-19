@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# Builds the DoxMail RPM from the committed tree (git HEAD) for a release
+# of the DoxIA repository: dist/doxmail-<version>-<release>.<dist>.<arch>.rpm,
+# which fedora/doxia/install-doxmail there installs. Prints the RPM and its
+# sha256. The release is 0.<date>git<commit>, so each build sorts newer.
+
+set -euo pipefail
+
+cd "$(dirname "$(readlink -f "$0")")/.."
+spec=doxmail/packaging/doxmail.spec
+version=$(sed -n 's/^Version: *//p' "$spec")
+commit=$(git rev-parse --short=10 HEAD)
+release="0.$(git log -1 --format=%cd --date=format:%Y%m%d)git$commit"
+
+if [[ -n $(git status --porcelain --untracked-files=no) ]]; then
+  echo "Uncommitted changes are not packaged (git HEAD is): $(git status --porcelain --untracked-files=no | wc -l) files" >&2
+fi
+
+top=$PWD/dist/rpmbuild
+rm -rf "$top"
+mkdir -p "$top"/{SOURCES,SPECS,BUILD,RPMS,SRPMS}
+git archive --format=tar.gz --prefix="doxmail-$version/" -o "$top/SOURCES/doxmail-$version.tar.gz" HEAD
+cp "$spec" "$top/SPECS/"
+
+rpmbuild -bb \
+	--define "_topdir $top" \
+	--define "doxmail_release $release" \
+	"$top/SPECS/doxmail.spec"
+
+rpm_file=$(find "$top/RPMS" -name "doxmail-$version-$release.*.rpm" ! -name '*debug*' | head -1)
+cp "$rpm_file" dist/
+echo "dist/$(basename "$rpm_file")"
+sha256sum "dist/$(basename "$rpm_file")" | cut -d' ' -f1
