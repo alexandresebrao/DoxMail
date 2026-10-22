@@ -669,6 +669,28 @@ mail_config_assistant_prefill_user (ESource *on_source)
 	}
 }
 
+/* DoxMail keeps the mail of a new account on the computer, so a message
+ * opens without waiting for its download; mail older than a year stays
+ * on the server only. The Receiving Options page shows both. */
+static void
+mail_config_assistant_prefill_offline (EMailConfigServiceBackend *backend)
+{
+	CamelSettings *settings;
+	CamelOfflineSettings *offline_settings;
+
+	settings = e_mail_config_service_backend_get_settings (backend);
+
+	if (!CAMEL_IS_OFFLINE_SETTINGS (settings))
+		return;
+
+	offline_settings = CAMEL_OFFLINE_SETTINGS (settings);
+
+	camel_offline_settings_set_stay_synchronized (offline_settings, TRUE);
+	camel_offline_settings_set_limit_by_age (offline_settings, TRUE);
+	camel_offline_settings_set_limit_unit (offline_settings, CAMEL_TIME_UNIT_YEARS);
+	camel_offline_settings_set_limit_value (offline_settings, 1);
+}
+
 static void
 mail_config_assistant_constructed (GObject *object)
 {
@@ -826,6 +848,7 @@ mail_config_assistant_constructed (GObject *object)
 			assistant->priv->receiving_page, scratch_source, NULL);
 
 		mail_config_assistant_prefill_user (scratch_source);
+		mail_config_assistant_prefill_offline (backend);
 
 		g_object_unref (scratch_source);
 
