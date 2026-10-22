@@ -320,12 +320,28 @@ mail_display_update_formatter_colors (EMailDisplay *display)
 {
 	EMailFormatter *formatter;
 	GtkStateFlags state_flags;
+	GdkRGBA rgba;
 
 	formatter = display->priv->formatter;
 	state_flags = gtk_widget_get_state_flags (GTK_WIDGET (display));
 
-	if (formatter != NULL)
-		e_mail_formatter_update_style (formatter, state_flags);
+	if (formatter == NULL)
+		return;
+
+	e_mail_formatter_update_style (formatter, state_flags);
+
+	/* The formatter has no widget, so it took fixed gray colors; the
+	 * message takes the view colors of the theme instead, and the frame
+	 * around the headers and the parts gets the background color, so it
+	 * does not show */
+	e_utils_get_theme_color (GTK_WIDGET (display), "theme_base_color", E_UTILS_DEFAULT_THEME_BASE_COLOR, &rgba);
+	e_mail_formatter_set_color (formatter, E_MAIL_FORMATTER_COLOR_BODY, &rgba);
+	e_mail_formatter_set_color (formatter, E_MAIL_FORMATTER_COLOR_CONTENT, &rgba);
+	e_mail_formatter_set_color (formatter, E_MAIL_FORMATTER_COLOR_FRAME, &rgba);
+
+	e_utils_get_theme_color (GTK_WIDGET (display), "theme_text_color", E_UTILS_DEFAULT_THEME_TEXT_COLOR, &rgba);
+	e_mail_formatter_set_color (formatter, E_MAIL_FORMATTER_COLOR_HEADER, &rgba);
+	e_mail_formatter_set_color (formatter, E_MAIL_FORMATTER_COLOR_TEXT, &rgba);
 }
 
 static gboolean
