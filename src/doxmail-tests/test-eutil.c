@@ -747,6 +747,50 @@ test_paned_drag (void)
 	gtk_window_destroy (GTK_WINDOW (window));
 }
 
+/* the saved proportion, set before the window shows, places the divider
+ * and outlives the first allocations; a drag gives the one to save */
+static void
+test_paned_restore_proportion (void)
+{
+	GtkWidget *paned, *window;
+	gdouble proportion;
+	gint pos, width;
+
+	paned = e_paned_new (GTK_ORIENTATION_VERTICAL);
+	e_paned_set_fixed_resize (E_PANED (paned), FALSE);
+	e_gtk_paned_pack1 (paned, gtk_label_new ("list"), TRUE, FALSE);
+	e_gtk_paned_pack2 (paned, gtk_label_new ("preview"), FALSE, FALSE);
+
+	/* like EMailPanedView: the layout, then the saved setting */
+	gtk_orientable_set_orientation (GTK_ORIENTABLE (paned), GTK_ORIENTATION_HORIZONTAL);
+	e_paned_set_proportion (E_PANED (paned), 0.75);
+
+	window = show_in_window (paned);
+	spin (200);
+
+	width = gtk_widget_get_width (paned);
+	g_object_get (paned, "position", &pos, "proportion", &proportion, NULL);
+	g_assert_cmpfloat_with_epsilon (proportion, 0.75, 0.01);
+	g_assert_cmpint (ABS (pos - width / 4), <=, 2);
+
+	/* a bigger window keeps the proportion that was saved */
+	gtk_window_set_default_size (GTK_WINDOW (window), 800, 300);
+	spin (300);
+
+	width = gtk_widget_get_width (paned);
+	g_object_get (paned, "position", &pos, "proportion", &proportion, NULL);
+	g_assert_cmpfloat_with_epsilon (proportion, 0.75, 0.01);
+	g_assert_cmpint (ABS (pos - width / 4), <=, 2);
+
+	g_object_set (paned, "position", gtk_widget_get_width (paned) / 2, NULL);
+	spin (200);
+
+	g_object_get (paned, "proportion", &proportion, NULL);
+	g_assert_cmpfloat_with_epsilon (proportion, 0.5, 0.01);
+
+	gtk_window_destroy (GTK_WINDOW (window));
+}
+
 /* GTK 3 expanded packed children along the current orientation of the box */
 static void
 test_box_pack_orientation (void)
@@ -885,6 +929,7 @@ main (gint argc,
 	g_test_add_func ("/eutil/entry-undo", test_entry_undo);
 	g_test_add_func ("/eutil/box-pack-end-after-clear", test_box_pack_end_after_clear);
 	g_test_add_func ("/eutil/paned-drag", test_paned_drag);
+	g_test_add_func ("/eutil/paned-restore-proportion", test_paned_restore_proportion);
 	g_test_add_func ("/eutil/box-pack-end-expand", test_box_pack_end_expand);
 	g_test_add_func ("/eutil/dialog-action-area-order", test_dialog_action_area_order);
 

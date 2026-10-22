@@ -45,6 +45,9 @@ struct _EPanedPrivate {
 	guint fixed_resize : 1;
 	guint sync_request : 2;
 	guint toplevel_ready : 1;
+
+	/* the size along the orientation of the last allocation */
+	gint allocated;
 };
 
 enum {
@@ -277,9 +280,22 @@ paned_size_allocate (GtkWidget *widget,
 	gint allocated;
 	gint position, real_position;
 	gboolean notify_proportion_change = FALSE;
+	gboolean resized = FALSE;
 
 	orientation = gtk_orientable_get_orientation (GTK_ORIENTABLE (paned));
 	allocated = orientation == GTK_ORIENTATION_HORIZONTAL ? width : height;
+
+	/* GtkPaned keeps the pixel width of the end child when the window is
+	 * resized, which changed the saved proportion; the proportion stays */
+	if (paned->priv->toplevel_ready && paned->priv->sync_request == SYNC_REQUEST_NONE &&
+	    !e_paned_get_fixed_resize (paned) && paned->priv->allocated > 0 && allocated > 0 &&
+	    allocated != paned->priv->allocated) {
+		paned->priv->sync_request = SYNC_REQUEST_PROPORTION;
+		resized = TRUE;
+	}
+
+	if (allocated > 0)
+		paned->priv->allocated = allocated;
 
 	/* Set the position before the inner paned allocates its children,
 	 * which also clamps it to the children's minimum sizes. */
@@ -308,6 +324,17 @@ paned_size_allocate (GtkWidget *widget,
 	gtk_widget_size_allocate (paned->priv->paned,
 		&(GtkAllocation) { 0, 0, width, height }, baseline);
 
+	/* On a new size GtkPaned adds the size difference to the position
+	 * set above, for the child that resizes; set it again on that size */
+	if (resized && gtk_paned_get_position (inner) != position) {
+		g_signal_handlers_block_by_func (inner, paned_notify_position_cb, paned);
+		gtk_paned_set_position (inner, position);
+		g_signal_handlers_unblock_by_func (inner, paned_notify_position_cb, paned);
+
+		gtk_widget_size_allocate (paned->priv->paned,
+			&(GtkAllocation) { 0, 0, width, height }, baseline);
+	}
+
 	if (!paned->priv->toplevel_ready || allocated <= 0)
 		return;
 
@@ -323,8 +350,9 @@ paned_size_allocate (GtkWidget *widget,
 		notify_proportion_change = TRUE;
 	}
 
-	/* the inner paned did not allow the requested position */
-	if (real_position != position) {
+	/* the inner paned did not allow the requested position; a window too
+	 * small for it keeps the proportion for when it grows again */
+	if (real_position != position && !resized) {
 		paned->priv->proportion = 1.0 - ((gdouble) real_position / allocated);
 		notify_proportion_change = TRUE;
 
