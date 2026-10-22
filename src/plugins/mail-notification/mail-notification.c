@@ -635,7 +635,8 @@ new_notify_status (EMEventTargetFolder *t)
 		notify_notification_update (
 			notify, summary, escaped_text, icon_name);
 	} else {
-		if (!notify_init ("evolution-mail-notification"))
+		/* The app name notification servers list it under */
+		if (!notify_init ("DoxMail"))
 			fprintf (stderr,"notify init error");
 
 		notify = notify_notification_new (
