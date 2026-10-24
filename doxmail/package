@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Builds the DoxMail RPM from the committed tree (git HEAD) for a release
-# of the DoxIA repository: dist/doxmail-<version>-<release>.<dist>.<arch>.rpm,
-# which fedora/doxia/install-doxmail there installs. Prints the RPM and its
-# sha256. The release is 0.<date>git<commit>, so each build sorts newer.
+# Builds the DoxMail RPM from the committed tree (git HEAD):
+# dist/doxmail-<version>-<release>.<dist>.<arch>.rpm. Its last two lines of
+# output are the RPM and its sha256. The release is 0.<date>git<commit>, so
+# each build sorts newer. doxmail/release publishes it for DoxIA's image.
 
 set -euo pipefail
 

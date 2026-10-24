@@ -371,7 +371,7 @@ source strings still say Evolution.
   Evolution users keep their data; DoxMail refuses to start while
   `org.gnome.Evolution` is on the session bus (`src/shell/main.c`);
 - done: DoxIA theme. `adw_init()` in `shell_startup()` loads the
-  libadwaita stylesheet (no Adw widgets): the DoxIA colors, which omarchy
+  libadwaita stylesheet (no Adw widgets): the DoxIA colors, which DoxIA's theme
   writes as libadwaita named colors into `~/.config/gtk-4.0/gtk.css`, and
   the system light/dark preference apply as in the other GNOME apps.
   AdwStyleManager follows the portal color scheme, so EColorSchemeWatcher
@@ -396,13 +396,17 @@ source strings still say Evolution.
   now maps in about 0.15 s; one idle WebKit editor is kept meanwhile;
 - packaging: `doxmail/package` builds the RPM from git HEAD
   (`doxmail/packaging/doxmail.spec`, release 0.<date>git<commit>) into
-  dist/; the DoxIA repository ships it as a release asset, installed by
-  its `fedora/doxia/install-doxmail` (install-system.sh, update.sh), which
-  also replaces the Evolution Flatpak (`migrate-evolution-flatpak` copies
-  its mail, accounts and settings once). The package conflicts with the
-  evolution RPM, needs evolution-data-server 3.60.x and leaves out the
-  alarm notify module (the system GTK 3 evolution-alarm-notify loads it)
-  and the development files.
+  dist/; `doxmail/release [--lock <rpms.lock>]` publishes it as a release
+  of this repository and gives the line for `build/rpms.lock` of
+  [doxia-atomic](https://github.com/alexandresebrao/doxia-atomic) (DoxIA 2,
+  a bootc image), whose build installs and version-locks it. DoxIA 1 (the
+  DoxIA repository) installed it with `fedora/doxia/install-doxmail`. The
+  package conflicts with the evolution RPM, needs evolution-data-server
+  3.60.x and leaves out the alarm notify module (the system GTK 3
+  evolution-alarm-notify loads it) and the development files. Later: a
+  Flatpak bundling its own evolution-data-server, as Evolution's does, so
+  DoxMail and the image update apart (needed by Fedora 45 at the latest,
+  whose EDS the 3.60 port cannot use);
 
 ## Keeping up with upstream
 

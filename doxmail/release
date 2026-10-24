@@ -1,0 +1,52 @@
+#!/bin/bash
+
+# Publishes DoxMail for DoxIA: builds the RPM (doxmail/package), puts it in a
+# release of this repository (tag doxmail-<version>-<release>) and prints the
+# line for build/rpms.lock in doxia-atomic, which bakes it into the image.
+# With --lock <file> it also replaces the DoxMail line in that file.
+#
+#   doxmail/release [--lock ~/doxia/build/rpms.lock]
+#
+# HEAD must be pushed: the release's tag points at it.
+
+set -euo pipefail
+
+cd "$(dirname "$(readlink -f "$0")")/.."
+repo=alexandresebrao/DoxMail
+
+lock=
+if [[ ${1:-} == --lock ]]; then
+  lock=${2:?usage: doxmail/release [--lock <rpms.lock>]}
+  [[ -f $lock ]] || { echo "No such file: $lock" >&2; exit 1; }
+fi
+
+head=$(git rev-parse HEAD)
+if ! git branch -r --contains "$head" | grep -q "origin/"; then
+  echo "HEAD ($(git rev-parse --short=10 HEAD)) is not on origin yet: push it first." >&2
+  exit 1
+fi
+
+out=$(doxmail/package | tail -2)
+rpm=$(sed -n 1p <<<"$out")
+sha256=$(sed -n 2p <<<"$out")
+# doxmail-3.60.2-0.20261022gite6280e278a, without the dist and arch
+tag=$(rpm -qp --qf '%{NAME}-%{VERSION}-%{RELEASE}' "$rpm" | sed 's/\.fc[0-9]*$//')
+
+if gh release view "$tag" -R "$repo" >/dev/null 2>&1; then
+  echo "Release $tag exists; using its RPM only if it is the same build." >&2
+else
+  gh release create "$tag" "$rpm" -R "$repo" --target "$head" \
+    --title "DoxMail ${tag#doxmail-}" \
+    --notes "DoxMail built from $(git rev-parse --short=10 HEAD), for Fedora $(rpm -E %fedora) (evolution-data-server $(sed -n 's/^%global eds_series *//p' doxmail/packaging/doxmail.spec).x)."
+fi
+
+line="https://github.com/$repo/releases/download/$tag/$(basename "$rpm") $sha256"
+if [[ -n $lock ]]; then
+  if grep -q '/doxmail-[^/ ]*\.rpm ' "$lock"; then
+    sed -i "\\#/doxmail-[^/ ]*\\.rpm #c\\$line" "$lock"
+  else
+    echo "$line" >> "$lock"
+  fi
+  echo "Updated $lock" >&2
+fi
+echo "$line"

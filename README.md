@@ -52,7 +52,7 @@ names inside the code, so upstream changes keep merging.
 ps: Vibe Coding learning to port an app.
 
 [evolution]: https://gitlab.gnome.org/GNOME/evolution
-[doxia]: https://github.com/alexandresebrao/DoxIA
+[doxia]: https://github.com/alexandresebrao/doxia-atomic
 
 ---
 
