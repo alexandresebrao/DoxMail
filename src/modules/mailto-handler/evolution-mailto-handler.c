@@ -126,7 +126,7 @@ mailto_handler_prompt (EMailtoHandler *extension)
 
 	container = widget;
 
-	widget = gtk_image_new_from_icon_name ("dialog-question");
+	widget = gtk_image_new_from_icon_name (e_gtk_icon_name_or_symbolic ("dialog-question"));
 	e_gtk_box_pack_start (GTK_BOX (container), widget, FALSE, FALSE, 0);
 	gtk_widget_show (widget);
 

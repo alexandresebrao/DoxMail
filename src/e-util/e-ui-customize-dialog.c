@@ -650,7 +650,7 @@ customize_shortcuts_check_existing (EUICustomizeDialog *self, /* NULL to _not_ a
 					text = g_strdup_printf (_("Shortcut is used by action “%s”"), nfo->label);
 				}
 
-				gtk_entry_set_icon_from_icon_name (entry, GTK_ENTRY_ICON_SECONDARY, "dialog-warning");
+				gtk_entry_set_icon_from_icon_name (entry, GTK_ENTRY_ICON_SECONDARY, e_gtk_icon_name_or_symbolic ("dialog-warning"));
 				gtk_entry_set_icon_tooltip_text (entry, GTK_ENTRY_ICON_SECONDARY, text);
 
 				if (self) {

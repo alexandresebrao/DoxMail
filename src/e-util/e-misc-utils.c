@@ -3080,7 +3080,7 @@ e_util_set_entry_issue_hint (GtkWidget *entry,
 	eentry = GTK_ENTRY (entry);
 
 	if (hint) {
-		gtk_entry_set_icon_from_icon_name (eentry, GTK_ENTRY_ICON_SECONDARY, "dialog-warning");
+		gtk_entry_set_icon_from_icon_name (eentry, GTK_ENTRY_ICON_SECONDARY, e_gtk_icon_name_or_symbolic ("dialog-warning"));
 		gtk_entry_set_icon_tooltip_text (eentry, GTK_ENTRY_ICON_SECONDARY, hint);
 	} else {
 		gtk_entry_set_icon_from_icon_name (eentry, GTK_ENTRY_ICON_SECONDARY, NULL);

@@ -657,7 +657,7 @@ book_config_ldap_insert_widgets (ESourceConfigBackend *backend,
 	context->port_combo = g_object_ref (widget);
 	gtk_widget_show (widget);
 
-	widget = gtk_image_new_from_icon_name ("dialog-warning");
+	widget = gtk_image_new_from_icon_name (e_gtk_icon_name_or_symbolic ("dialog-warning"));
 	g_object_set (G_OBJECT (widget),
 		"visible", FALSE,
 		"has-tooltip", TRUE,

@@ -383,7 +383,7 @@ e_mail_remote_content_popover_run (EMailReader *reader,
 	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 4);
 	e_gtk_container_add (popover, hbox);
 
-	widget = gtk_image_new_from_icon_name ("dialog-information");
+	widget = gtk_image_new_from_icon_name (e_gtk_icon_name_or_symbolic ("dialog-information"));
 	g_object_set (G_OBJECT (widget),
 		"valign", GTK_ALIGN_START,
 		"vexpand", FALSE,

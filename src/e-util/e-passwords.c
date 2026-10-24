@@ -512,7 +512,7 @@ ep_ask_password (EPassMsg *msg)
 	e_gtk_box_pack_start (GTK_BOX (content_area), container, FALSE, TRUE, 0);
 
 	/* Password Image */
-	widget = gtk_image_new_from_icon_name ("dialog-password");
+	widget = gtk_image_new_from_icon_name (e_gtk_icon_name_or_symbolic ("dialog-password"));
 	g_object_set (
 		G_OBJECT (widget),
 		"halign", GTK_ALIGN_START,

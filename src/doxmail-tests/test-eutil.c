@@ -887,6 +887,56 @@ test_menu_sync (void)
 	g_object_unref (manager);
 }
 
+/* A theme with only the symbolic dialog icons, as Adwaita without
+ * AdwaitaLegacy (the GNOME Flatpak runtime): the full-color names fall back
+ * to the symbolic ones instead of image-missing. */
+static void
+test_icon_symbolic_fallback (void)
+{
+	GtkIconTheme *icon_theme = e_gtk_icon_theme_get_default ();
+	gchar *dir, *theme_dir, *status_dir, *old_name;
+	gchar **old_path;
+	EGtkIconInfo *icon_info;
+
+	dir = g_dir_make_tmp ("doxmail-icons-XXXXXX", NULL);
+	g_assert_nonnull (dir);
+	theme_dir = g_build_filename (dir, "SymbolicOnly", NULL);
+	status_dir = g_build_filename (theme_dir, "scalable", "status", NULL);
+	g_assert_cmpint (g_mkdir_with_parents (status_dir, 0700), ==, 0);
+	g_assert_true (g_file_set_contents (g_build_filename (theme_dir, "index.theme", NULL),
+		"[Icon Theme]\nName=SymbolicOnly\nInherits=hicolor\nDirectories=scalable/status\n\n"
+		"[scalable/status]\nSize=16\nMinSize=8\nMaxSize=512\nType=Scalable\n", -1, NULL));
+	g_assert_true (g_file_set_contents (g_build_filename (status_dir, "dialog-warning-symbolic.svg", NULL),
+		"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><rect width=\"16\" height=\"16\"/></svg>", -1, NULL));
+
+	/* the display's theme follows the settings, its name cannot be set */
+	old_path = gtk_icon_theme_get_search_path (icon_theme);
+	g_object_get (gtk_settings_get_default (), "gtk-icon-theme-name", &old_name, NULL);
+	gtk_icon_theme_set_search_path (icon_theme, (const gchar * const []) { dir, NULL });
+	g_object_set (gtk_settings_get_default (), "gtk-icon-theme-name", "SymbolicOnly", NULL);
+
+	g_assert_cmpstr (e_gtk_icon_name_or_symbolic ("dialog-warning"), ==, "dialog-warning-symbolic");
+	/* neither variant: the name stays, GTK shows image-missing as before
+	 * (GTK's own resources have some symbolic icons, dialog-error-symbolic too) */
+	g_assert_cmpstr (e_gtk_icon_name_or_symbolic ("doxmail-test-none"), ==, "doxmail-test-none");
+	g_assert_cmpstr (e_gtk_icon_name_or_symbolic ("dialog-warning-symbolic"), ==, "dialog-warning-symbolic");
+	g_assert_null (e_gtk_icon_name_or_symbolic (NULL));
+
+	icon_info = e_gtk_icon_theme_lookup_icon (NULL, "dialog-warning", 48, 0);
+	g_assert_nonnull (icon_info);
+	g_assert_true (g_str_has_suffix (e_gtk_icon_info_get_filename (icon_info), "dialog-warning-symbolic.svg"));
+	g_object_unref (icon_info);
+	g_assert_null (e_gtk_icon_theme_lookup_icon (NULL, "doxmail-test-none", 48, 0));
+
+	gtk_icon_theme_set_search_path (icon_theme, (const gchar * const *) old_path);
+	g_object_set (gtk_settings_get_default (), "gtk-icon-theme-name", old_name, NULL);
+	g_strfreev (old_path);
+	g_free (old_name);
+	g_free (status_dir);
+	g_free (theme_dir);
+	g_free (dir);
+}
+
 gint
 main (gint argc,
       gchar **argv)
@@ -932,6 +982,7 @@ main (gint argc,
 	g_test_add_func ("/eutil/paned-restore-proportion", test_paned_restore_proportion);
 	g_test_add_func ("/eutil/box-pack-end-expand", test_box_pack_end_expand);
 	g_test_add_func ("/eutil/dialog-action-area-order", test_dialog_action_area_order);
+	g_test_add_func ("/eutil/icon-symbolic-fallback", test_icon_symbolic_fallback);
 
 	return g_test_run ();
 }

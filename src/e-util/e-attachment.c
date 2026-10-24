@@ -547,7 +547,7 @@ attachment_update_icon_column_idle_cb (gpointer weak_ref)
 		GIcon *emblemed_icon;
 		GEmblem *emblem;
 
-		emblemed_icon = g_themed_icon_new (emblem_name);
+		emblemed_icon = g_themed_icon_new (e_gtk_icon_name_or_symbolic (emblem_name));
 		emblem = g_emblem_new (emblemed_icon);
 		g_object_unref (emblemed_icon);
 

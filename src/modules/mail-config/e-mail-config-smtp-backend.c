@@ -188,7 +188,7 @@ mail_config_smtp_backend_insert_widgets (EMailConfigServiceBackend *backend,
 	self->priv->port_entry = widget;  /* do not reference */
 	gtk_widget_show (widget);
 
-	widget = gtk_image_new_from_icon_name ("dialog-warning");
+	widget = gtk_image_new_from_icon_name (e_gtk_icon_name_or_symbolic ("dialog-warning"));
 	g_object_set (G_OBJECT (widget),
 		"visible", FALSE,
 		"has-tooltip", TRUE,

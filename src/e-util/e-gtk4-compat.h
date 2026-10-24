@@ -134,6 +134,10 @@ gint		e_gtk_icon_size_to_pixels	(gint gtk3_icon_size);
 #define E_GTK_ICON_SIZE_DIALOG		6
 
 GtkIconTheme *	e_gtk_icon_theme_get_default	(void);
+/* The icon, or its symbolic variant when the theme has only that one: GTK 4
+ * themes may lack the full-color icons (Adwaita without AdwaitaLegacy, as in
+ * the GNOME Flatpak runtime), where GTK 3 found them in Adwaita itself. */
+const gchar *	e_gtk_icon_name_or_symbolic	(const gchar *icon_name);
 
 /* GTK 4 has no gtk_get_current_event(); windows that call
  * e_gtk_track_current_event() record the event being dispatched. */

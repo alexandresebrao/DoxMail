@@ -1171,6 +1171,28 @@ e_gtk_icon_theme_get_default (void)
 	return gtk_icon_theme_get_for_display (gdk_display_get_default ());
 }
 
+const gchar *
+e_gtk_icon_name_or_symbolic (const gchar *icon_name)
+{
+	GtkIconTheme *icon_theme;
+	const gchar *found = icon_name;
+	gchar *symbolic;
+
+	if (!icon_name || g_str_has_suffix (icon_name, "-symbolic") || !gdk_display_get_default ())
+		return icon_name;
+
+	icon_theme = e_gtk_icon_theme_get_default ();
+	if (gtk_icon_theme_has_icon (icon_theme, icon_name))
+		return icon_name;
+
+	symbolic = g_strconcat (icon_name, "-symbolic", NULL);
+	if (gtk_icon_theme_has_icon (icon_theme, symbolic))
+		found = g_intern_string (symbolic);
+	g_free (symbolic);
+
+	return found;
+}
+
 static GdkEvent *current_event = NULL;
 
 static gboolean
@@ -1584,8 +1606,18 @@ e_gtk_icon_theme_lookup_icon (GtkIconTheme *icon_theme,
 	if (!icon_theme)
 		icon_theme = e_gtk_icon_theme_get_default ();
 
-	if (!gtk_icon_theme_has_icon (icon_theme, icon_name))
-		return NULL;
+	if (!gtk_icon_theme_has_icon (icon_theme, icon_name)) {
+		gchar *symbolic;
+		EGtkIconInfo *icon_info = NULL;
+
+		/* only the symbolic variant, see e_gtk_icon_name_or_symbolic() */
+		symbolic = g_str_has_suffix (icon_name, "-symbolic") ? NULL : g_strconcat (icon_name, "-symbolic", NULL);
+		if (symbolic && gtk_icon_theme_has_icon (icon_theme, symbolic))
+			icon_info = icon_info_new (gtk_icon_theme_lookup_icon (icon_theme, symbolic, NULL, size, 1, GTK_TEXT_DIR_NONE, flags), size);
+		g_free (symbolic);
+
+		return icon_info;
+	}
 
 	return icon_info_new (gtk_icon_theme_lookup_icon (icon_theme, icon_name, NULL, size, 1, GTK_TEXT_DIR_NONE, flags), size);
 }

@@ -1878,7 +1878,7 @@ on_date_entry_focus_out (GtkEntry *entry,
 	did_change = e_date_edit_check_date_changed (dedit);
 
 	if (!e_date_edit_date_is_valid (dedit)) {
-		gtk_entry_set_icon_from_icon_name (entry, GTK_ENTRY_ICON_SECONDARY, "dialog-warning");
+		gtk_entry_set_icon_from_icon_name (entry, GTK_ENTRY_ICON_SECONDARY, e_gtk_icon_name_or_symbolic ("dialog-warning"));
 		gtk_entry_set_icon_tooltip_text (entry, GTK_ENTRY_ICON_SECONDARY, _("Invalid Date Value"));
 		gtk_entry_grab_focus_without_selecting (entry);
 		success = FALSE;
@@ -1918,7 +1918,7 @@ on_time_entry_focus_out (GtkEntry *entry,
 	did_change = e_date_edit_check_time_changed (dedit);
 
 	if (!e_date_edit_time_is_valid (dedit)) {
-		gtk_entry_set_icon_from_icon_name (entry, GTK_ENTRY_ICON_PRIMARY, "dialog-warning");
+		gtk_entry_set_icon_from_icon_name (entry, GTK_ENTRY_ICON_PRIMARY, e_gtk_icon_name_or_symbolic ("dialog-warning"));
 		gtk_entry_set_icon_tooltip_text (entry, GTK_ENTRY_ICON_PRIMARY, _("Invalid Time Value"));
 		gtk_entry_grab_focus_without_selecting (entry);
 	} else {
@@ -2323,7 +2323,7 @@ e_date_edit_set_date_internal (EDateEdit *dedit,
 			gtk_entry_set_icon_from_icon_name (entry, GTK_ENTRY_ICON_SECONDARY, NULL);
 			gtk_entry_set_icon_tooltip_text (entry, GTK_ENTRY_ICON_SECONDARY, NULL);
 		} else {
-			gtk_entry_set_icon_from_icon_name (entry, GTK_ENTRY_ICON_SECONDARY, "dialog-warning");
+			gtk_entry_set_icon_from_icon_name (entry, GTK_ENTRY_ICON_SECONDARY, e_gtk_icon_name_or_symbolic ("dialog-warning"));
 			gtk_entry_set_icon_tooltip_text (entry, GTK_ENTRY_ICON_SECONDARY, _("Invalid Date Value"));
 		}
 	}
@@ -2380,7 +2380,7 @@ e_date_edit_set_time_internal (EDateEdit *dedit,
 			gtk_entry_set_icon_from_icon_name (entry, GTK_ENTRY_ICON_PRIMARY, NULL);
 			gtk_entry_set_icon_tooltip_text (entry, GTK_ENTRY_ICON_PRIMARY, NULL);
 		} else {
-			gtk_entry_set_icon_from_icon_name (entry, GTK_ENTRY_ICON_PRIMARY, "dialog-warning");
+			gtk_entry_set_icon_from_icon_name (entry, GTK_ENTRY_ICON_PRIMARY, e_gtk_icon_name_or_symbolic ("dialog-warning"));
 			gtk_entry_set_icon_tooltip_text (entry, GTK_ENTRY_ICON_PRIMARY, _("Invalid Time Value"));
 		}
 	}

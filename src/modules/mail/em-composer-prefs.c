@@ -1740,7 +1740,7 @@ em_composer_prefs_construct (EMComposerPrefs *prefs,
 	selection = gtk_tree_view_get_selection (view);
 	gtk_tree_selection_set_mode (selection, GTK_SELECTION_NONE);
 	info_pixmap = e_builder_get_widget (prefs->builder, "pixmapSpellInfo");
-	gtk_image_set_from_icon_name (GTK_IMAGE (info_pixmap), "dialog-information");
+	gtk_image_set_from_icon_name (GTK_IMAGE (info_pixmap), e_gtk_icon_name_or_symbolic ("dialog-information"));
 
 	spell_setup (prefs);
 

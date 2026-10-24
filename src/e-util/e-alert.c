@@ -997,7 +997,7 @@ e_alert_create_image (EAlert *alert,
 
 	icon_name = e_alert_get_icon_name (alert);
 
-	image = gtk_image_new_from_icon_name (icon_name);
+	image = gtk_image_new_from_icon_name (e_gtk_icon_name_or_symbolic (icon_name));
 	gtk_image_set_icon_size (GTK_IMAGE (image), size);
 
 	return image;
