@@ -2748,15 +2748,12 @@ setup_destination_store (ENameSelectorEntry *name_selector_entry)
 
 static gboolean
 prepare_popup_destination (ENameSelectorEntry *name_selector_entry,
-                           gdouble x,
-                           gdouble y)
+                           gint index)
 {
 	EDestination *destination;
-	gint          index;
 
 	g_clear_object (&name_selector_entry->priv->popup_destination);
 
-	index = e_gtk_entry_get_index_at_position (GTK_ENTRY (name_selector_entry), x, y);
 	if (index < 0)
 		return FALSE;
 	destination = find_destination_at_position (name_selector_entry, index);
@@ -3113,7 +3110,7 @@ popup_add_action (GActionMap *actions,
 }
 
 /* GTK 4 takes extra context menu items as a model; it is built for the
- * destination under the pointer when the right button goes down */
+ * destination under the pointer or the cursor before the menu opens */
 static void
 populate_popup (ENameSelectorEntry *name_selector_entry)
 {
@@ -3260,15 +3257,13 @@ populate_popup (ENameSelectorEntry *name_selector_entry)
 }
 
 static void
-popup_pressed_cb (GtkGestureClick *gesture,
-		  gint n_press,
-		  gdouble x,
-		  gdouble y,
+popup_prepare_cb (GtkEntry *entry,
+		  gint index,
 		  gpointer user_data)
 {
-	ENameSelectorEntry *name_selector_entry = user_data;
+	ENameSelectorEntry *name_selector_entry = E_NAME_SELECTOR_ENTRY (entry);
 
-	prepare_popup_destination (name_selector_entry, x, y);
+	prepare_popup_destination (name_selector_entry, index);
 	populate_popup (name_selector_entry);
 }
 
@@ -3441,15 +3436,9 @@ e_name_selector_entry_init (ENameSelectorEntry *name_selector_entry)
 
 	/* Pop-up menu */
 
-	{
-		GtkGesture *gesture = gtk_gesture_click_new ();
-
-		/* before the entry opens its context menu */
-		gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (gesture), GDK_BUTTON_SECONDARY);
-		gtk_event_controller_set_propagation_phase (GTK_EVENT_CONTROLLER (gesture), GTK_PHASE_CAPTURE);
-		g_signal_connect (gesture, "pressed", G_CALLBACK (popup_pressed_cb), name_selector_entry);
-		gtk_widget_add_controller (GTK_WIDGET (name_selector_entry), GTK_EVENT_CONTROLLER (gesture));
-	}
+	/* at the destination under the pointer or, from the keyboard,
+	 * at the cursor */
+	e_gtk_entry_prepare_context_menu (GTK_ENTRY (name_selector_entry), popup_prepare_cb, NULL);
 
 	/* Clipboard signals; GTK 4 entries delegate them to their GtkText */
 	g_signal_connect (

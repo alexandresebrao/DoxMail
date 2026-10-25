@@ -835,18 +835,13 @@ spell_entry_constructed (GObject *object)
 }
 
 static void
-spell_entry_pressed_cb (GtkGestureClick *gesture,
-			gint n_press,
-			gdouble x,
-			gdouble y,
-			gpointer user_data)
+spell_entry_context_menu_cb (GtkEntry *entry,
+			     gint index,
+			     gpointer user_data)
 {
-	ESpellEntry *spell_entry = user_data;
-	gint pos;
+	ESpellEntry *spell_entry = E_SPELL_ENTRY (entry);
 
-	/* before the entry opens its context menu */
-	pos = e_gtk_entry_get_index_at_position (GTK_ENTRY (spell_entry), x, y);
-	spell_entry->priv->mark_character = pos >= 0 ? pos : gtk_editable_get_position (GTK_EDITABLE (spell_entry));
+	spell_entry->priv->mark_character = index >= 0 ? index : gtk_editable_get_position (GTK_EDITABLE (spell_entry));
 
 	spell_entry_populate_popup (spell_entry);
 }
@@ -906,18 +901,14 @@ e_spell_entry_init (ESpellEntry *spell_entry)
 			{ "ignore", spell_entry_action_cb, NULL, NULL, NULL }
 		};
 		GSimpleActionGroup *actions = g_simple_action_group_new ();
-		GtkGesture *gesture = gtk_gesture_click_new ();
 
 		g_action_map_add_action_entries (G_ACTION_MAP (actions), entries, G_N_ELEMENTS (entries), spell_entry);
 		gtk_widget_insert_action_group (GTK_WIDGET (spell_entry), "spell", G_ACTION_GROUP (actions));
 		g_object_unref (actions);
 
-		/* GTK 4 has no populate-popup: the extra menu is set up when
-		 * the right button goes down, at the word under the pointer */
-		gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (gesture), GDK_BUTTON_SECONDARY);
-		gtk_event_controller_set_propagation_phase (GTK_EVENT_CONTROLLER (gesture), GTK_PHASE_CAPTURE);
-		g_signal_connect (gesture, "pressed", G_CALLBACK (spell_entry_pressed_cb), spell_entry);
-		gtk_widget_add_controller (GTK_WIDGET (spell_entry), GTK_EVENT_CONTROLLER (gesture));
+		/* the extra menu is set up for the word under the pointer
+		 * or, from the keyboard, at the cursor */
+		e_gtk_entry_prepare_context_menu (GTK_ENTRY (spell_entry), spell_entry_context_menu_cb, NULL);
 	}
 }
 

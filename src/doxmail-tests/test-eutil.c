@@ -553,6 +553,67 @@ test_entry_undo (void)
 	g_object_unref (entry);
 }
 
+static void
+context_menu_cb (GtkEntry *entry,
+		 gint index,
+		 gpointer user_data)
+{
+	*((gint *) user_data) = index;
+}
+
+static gboolean
+send_context_menu_key (GtkWidget *entry,
+		       guint keyval,
+		       GdkModifierType state)
+{
+	GListModel *controllers;
+	gboolean handled = FALSE;
+	guint ii;
+
+	controllers = gtk_widget_observe_controllers (entry);
+	for (ii = 0; ii < g_list_model_get_n_items (controllers); ii++) {
+		GtkEventController *controller = g_list_model_get_item (controllers, ii);
+
+		if (g_strcmp0 (gtk_event_controller_get_name (controller), "e-entry-context-menu-keys") == 0)
+			g_signal_emit_by_name (controller, "key-pressed", keyval, 0, state, &handled);
+
+		g_object_unref (controller);
+	}
+	g_object_unref (controllers);
+
+	return handled;
+}
+
+/* Shift+F10 and the Menu key prepare the entry context menu at the cursor
+ * (before, only the right button did: no spelling or contact items) */
+static void
+test_entry_context_menu_keys (void)
+{
+	GtkWidget *entry;
+	gint index = -2;
+
+	entry = g_object_ref_sink (gtk_entry_new ());
+	e_gtk_entry_prepare_context_menu (GTK_ENTRY (entry), context_menu_cb, &index);
+	gtk_editable_set_text (GTK_EDITABLE (entry), "some wrod here");
+	gtk_editable_set_position (GTK_EDITABLE (entry), 7);
+
+	/* the GtkText still opens the menu */
+	g_assert_false (send_context_menu_key (entry, GDK_KEY_F10, GDK_SHIFT_MASK));
+	g_assert_cmpint (index, ==, 7);
+
+	index = -2;
+	send_context_menu_key (entry, GDK_KEY_Menu, 0);
+	g_assert_cmpint (index, ==, 7);
+
+	index = -2;
+	send_context_menu_key (entry, GDK_KEY_F10, 0);
+	send_context_menu_key (entry, GDK_KEY_F10, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+	send_context_menu_key (entry, GDK_KEY_a, 0);
+	g_assert_cmpint (index, ==, -2);
+
+	g_object_unref (entry);
+}
+
 /* toolbars shrink to an overflow button whose menu has the hidden actions */
 static void
 test_toolbar_overflow (void)
@@ -977,6 +1038,7 @@ main (gint argc,
 	g_test_add_func ("/eutil/box-pack-orientation", test_box_pack_orientation);
 	g_test_add_func ("/eutil/toolbar-overflow", test_toolbar_overflow);
 	g_test_add_func ("/eutil/entry-undo", test_entry_undo);
+	g_test_add_func ("/eutil/entry-context-menu-keys", test_entry_context_menu_keys);
 	g_test_add_func ("/eutil/box-pack-end-after-clear", test_box_pack_end_after_clear);
 	g_test_add_func ("/eutil/paned-drag", test_paned_drag);
 	g_test_add_func ("/eutil/paned-restore-proportion", test_paned_restore_proportion);

@@ -126,14 +126,14 @@ became wrappers (EPaned, EHeaderBar, EAttachmentIconView, EPictureGallery,
 EColorChooserWidget, ECollectionAccountWizard, EMonthWidget, EAlertBar,
 EActivityBar) or plain instances (EEllipsizedComboBoxText); GtkMenu became
 GMenu + actions + GtkPopoverMenu (context menus of entries go through
-`gtk_entry_set_extra_menu`); popup windows with grabs became popovers
+`gtk_entry_set_extra_menu`, set up by `e_gtk_entry_prepare_context_menu()`
+on the right button at the pointer and on Shift+F10/Menu at the cursor,
+`/eutil/entry-context-menu-keys`); popup windows with grabs became popovers
 (EDateEdit, ECellPopup, ENameSelectorList); toolbars are boxes.
 
 **Known gaps** (to check when the app runs):
 
 - accessibility: the ATK factories (ea-*, gal-a11y-*) are not built;
-- keyboard-opened context menus of ESpellEntry/ENameSelectorEntry miss the
-  extra items (they are built on right-button press);
 - `e_gtk_entry_get_index_at_position()` assumes unscrolled entry text;
 - no window placement (`window-position` dropped);
 - real mouse and keyboard input is not tested automatically.

@@ -2405,6 +2405,76 @@ e_gtk_entry_get_index_at_position (GtkEntry *entry,
 	return index;
 }
 
+typedef struct _ContextMenuData {
+	EGtkEntryContextMenuFunc func;
+	gpointer user_data;
+} ContextMenuData;
+
+static void
+entry_context_menu_pressed_cb (GtkGestureClick *gesture,
+			       gint n_press,
+			       gdouble x,
+			       gdouble y,
+			       gpointer user_data)
+{
+	ContextMenuData *cmd = user_data;
+	GtkEntry *entry = GTK_ENTRY (gtk_event_controller_get_widget (GTK_EVENT_CONTROLLER (gesture)));
+
+	cmd->func (entry, e_gtk_entry_get_index_at_position (entry, x, y), cmd->user_data);
+}
+
+static gboolean
+entry_context_menu_key_pressed_cb (GtkEventControllerKey *controller,
+				   guint keyval,
+				   guint keycode,
+				   GdkModifierType state,
+				   gpointer user_data)
+{
+	ContextMenuData *cmd = user_data;
+	GtkEntry *entry = GTK_ENTRY (gtk_event_controller_get_widget (GTK_EVENT_CONTROLLER (controller)));
+
+	state &= gtk_accelerator_get_default_mod_mask ();
+
+	/* the GtkText bindings of "menu.popup" */
+	if (keyval == GDK_KEY_Menu ||
+	    (keyval == GDK_KEY_F10 && state == GDK_SHIFT_MASK))
+		cmd->func (entry, gtk_editable_get_position (GTK_EDITABLE (entry)), cmd->user_data);
+
+	/* the GtkText opens the menu */
+	return FALSE;
+}
+
+void
+e_gtk_entry_prepare_context_menu (GtkEntry *entry,
+				  EGtkEntryContextMenuFunc func,
+				  gpointer user_data)
+{
+	ContextMenuData *cmd;
+	GtkGesture *gesture;
+	GtkEventController *controller;
+
+	g_return_if_fail (GTK_IS_ENTRY (entry));
+	g_return_if_fail (func != NULL);
+
+	cmd = g_new0 (ContextMenuData, 1);
+	cmd->func = func;
+	cmd->user_data = user_data;
+
+	/* capture phase: before the GtkText opens the menu */
+	gesture = gtk_gesture_click_new ();
+	gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (gesture), GDK_BUTTON_SECONDARY);
+	gtk_event_controller_set_propagation_phase (GTK_EVENT_CONTROLLER (gesture), GTK_PHASE_CAPTURE);
+	g_signal_connect_data (gesture, "pressed", G_CALLBACK (entry_context_menu_pressed_cb),
+		cmd, (GClosureNotify) g_free, 0);
+	gtk_widget_add_controller (GTK_WIDGET (entry), GTK_EVENT_CONTROLLER (gesture));
+
+	controller = gtk_event_controller_key_new ();
+	gtk_event_controller_set_name (controller, "e-entry-context-menu-keys");
+	gtk_event_controller_set_propagation_phase (controller, GTK_PHASE_CAPTURE);
+	g_signal_connect (controller, "key-pressed", G_CALLBACK (entry_context_menu_key_pressed_cb), cmd);
+	gtk_widget_add_controller (GTK_WIDGET (entry), controller);
+}
+
 void
 e_gtk_widget_override_font (GtkWidget *widget,
 			    const PangoFontDescription *font_desc)

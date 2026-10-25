@@ -277,6 +277,18 @@ gint		e_gtk_entry_get_index_at_position
 						 gdouble x,
 						 gdouble y);
 
+/* GTK 4 has no populate-popup: @func runs before the entry opens its
+ * context menu, from the right button (the character offset under the
+ * pointer, or -1) or from Shift+F10 and the Menu key (the cursor offset),
+ * so it can set the extra menu with gtk_entry_set_extra_menu() */
+typedef void	(*EGtkEntryContextMenuFunc)	(GtkEntry *entry,
+						 gint index,
+						 gpointer user_data);
+void		e_gtk_entry_prepare_context_menu
+						(GtkEntry *entry,
+						 EGtkEntryContextMenuFunc func,
+						 gpointer user_data);
+
 /* a font for the widget through its own CSS provider; NULL unsets it */
 void		e_gtk_widget_override_font	(GtkWidget *widget,
 						 const PangoFontDescription *font_desc);
