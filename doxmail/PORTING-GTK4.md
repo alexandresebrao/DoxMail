@@ -134,7 +134,6 @@ on the right button at the pointer and on Shift+F10/Menu at the cursor,
 **Known gaps** (to check when the app runs):
 
 - accessibility: the ATK factories (ea-*, gal-a11y-*) are not built;
-- `e_gtk_entry_get_index_at_position()` assumes unscrolled entry text;
 - no window placement (`window-position` dropped);
 - real mouse and keyboard input is not tested automatically.
 

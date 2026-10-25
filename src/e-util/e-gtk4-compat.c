@@ -2381,13 +2381,17 @@ e_gtk_entry_get_index_at_position (GtkEntry *entry,
 	PangoLayout *layout;
 	graphene_point_t point;
 	const gchar *str;
-	gint index = -1, trailing = 0, height = 0;
+	gint index = -1, trailing = 0, height = 0, scroll_offset = 0;
 
 	g_return_val_if_fail (GTK_IS_ENTRY (entry), -1);
 
 	text = GTK_WIDGET (gtk_editable_get_delegate (GTK_EDITABLE (entry)));
 	if (!text || !gtk_widget_compute_point (GTK_WIDGET (entry), text, &GRAPHENE_POINT_INIT (x, y), &point))
 		return -1;
+
+	/* the GtkText draws its layout scrolled to the left by this */
+	g_object_get (text, "scroll-offset", &scroll_offset, NULL);
+	point.x += scroll_offset;
 
 	str = gtk_editable_get_text (GTK_EDITABLE (entry));
 	layout = gtk_widget_create_pango_layout (text, str);

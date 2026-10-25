@@ -271,7 +271,7 @@ void		e_gtk_container_child_get_property
 						 GValue *value);
 
 /* GTK 4 keeps the entry layout private: the character offset at entry
- * coordinates, or -1; assumes the text is not scrolled */
+ * coordinates, also in scrolled text, or -1 */
 gint		e_gtk_entry_get_index_at_position
 						(GtkEntry *entry,
 						 gdouble x,

@@ -614,6 +614,46 @@ test_entry_context_menu_keys (void)
 	g_object_unref (entry);
 }
 
+/* a long To field scrolled to its end: a right click picks the address
+ * under the pointer, not the one at that place of the unscrolled text */
+static void
+test_entry_index_scrolled (void)
+{
+	const gchar *str = "first@example.com, second@example.com, third@example.com, last@example.com";
+	GtkWidget *entry, *window, *text;
+	graphene_rect_t bounds;
+	gint scroll_offset = 0, len, index;
+
+	entry = gtk_entry_new ();
+	gtk_editable_set_width_chars (GTK_EDITABLE (entry), 12);
+	gtk_editable_set_max_width_chars (GTK_EDITABLE (entry), 12);
+	gtk_editable_set_text (GTK_EDITABLE (entry), str);
+
+	window = show_in_window (entry);
+	gtk_widget_grab_focus (entry);
+	gtk_editable_set_position (GTK_EDITABLE (entry), -1);
+	spin (300);
+
+	text = GTK_WIDGET (gtk_editable_get_delegate (GTK_EDITABLE (entry)));
+	g_object_get (text, "scroll-offset", &scroll_offset, NULL);
+	g_assert_cmpint (scroll_offset, >, 0);
+	g_assert_true (gtk_widget_compute_bounds (text, entry, &bounds));
+
+	len = g_utf8_strlen (str, -1);
+
+	/* the visible end of the text is the end of the string */
+	index = e_gtk_entry_get_index_at_position (GTK_ENTRY (entry),
+		bounds.origin.x + bounds.size.width - 2, bounds.origin.y + bounds.size.height / 2);
+	g_assert_cmpint (index, >=, len - 2);
+
+	/* the visible start is well past the first address */
+	index = e_gtk_entry_get_index_at_position (GTK_ENTRY (entry),
+		bounds.origin.x + 2, bounds.origin.y + bounds.size.height / 2);
+	g_assert_cmpint (index, >, (gint) strlen ("first@example.com, "));
+
+	gtk_window_destroy (GTK_WINDOW (window));
+}
+
 /* toolbars shrink to an overflow button whose menu has the hidden actions */
 static void
 test_toolbar_overflow (void)
@@ -1039,6 +1079,7 @@ main (gint argc,
 	g_test_add_func ("/eutil/toolbar-overflow", test_toolbar_overflow);
 	g_test_add_func ("/eutil/entry-undo", test_entry_undo);
 	g_test_add_func ("/eutil/entry-context-menu-keys", test_entry_context_menu_keys);
+	g_test_add_func ("/eutil/entry-index-scrolled", test_entry_index_scrolled);
 	g_test_add_func ("/eutil/box-pack-end-after-clear", test_box_pack_end_after_clear);
 	g_test_add_func ("/eutil/paned-drag", test_paned_drag);
 	g_test_add_func ("/eutil/paned-restore-proportion", test_paned_restore_proportion);
