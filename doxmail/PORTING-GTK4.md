@@ -402,10 +402,29 @@ source strings still say Evolution.
   DoxIA repository) installed it with `fedora/doxia/install-doxmail`. The
   package conflicts with the evolution RPM, needs evolution-data-server
   3.60.x and leaves out the alarm notify module (the system GTK 3
-  evolution-alarm-notify loads it) and the development files. Later: a
-  Flatpak bundling its own evolution-data-server, as Evolution's does, so
-  DoxMail and the image update apart (needed by Fedora 45 at the latest,
-  whose EDS the 3.60 port cannot use);
+  evolution-alarm-notify loads it) and the development files. Being replaced by
+  the Flatpak below;
+- Flatpak (`doxmail/flatpak/`): `org.doxia.DoxMail.json` on the GNOME 50
+  runtime bundles evolution-data-server 3.60.2 (GTK 4 UI library only, its
+  D-Bus names under the app ID, as the sandbox requires), libical, cmark,
+  bogofilter and DoxMail from the committed `doxmail` branch, so DoxMail
+  and the image update apart (Fedora 45's EDS is too new for the 3.60
+  port). `build.sh [--install]` builds into `_flatpak/` (ccache, a local
+  `doxmail-local` remote). The wrapper (`doxmail-wrapper.sh.in`) starts the
+  bundled EDS services and, on the first run, copies the host's
+  `~/.config|.local/share|.cache/evolution` (read-only in the sandbox; the
+  originals stay) into the app's own directories, rewriting the absolute
+  paths in the `.source` files, and `migrate-settings.py` copies the
+  `org.gnome.evolution*` keys the user changed from the host dconf into the
+  app keyfile (Flatpak's `X-DConf=migrate-path` only takes paths under the
+  app ID); dconf's GIO module is built for that script only. The schema
+  override is recompiled after install (the build compiled the schemas
+  before installing it), and a Flatpak override turns off the default
+  mailer prompt (DoxIA registers DoxMail for `mailto:`). The DoxIA theme
+  comes through `xdg-config/gtk-4.0` and `~/.local/state/doxia/current`
+  (the parent: theme changes replace `current/theme`). Left out for now:
+  online accounts, LDAP, weather, PST/TNEF import, GnuPG, reminders while
+  DoxMail is closed (no evolution-alarm-notify in the sandbox);
 
 ## Keeping up with upstream
 

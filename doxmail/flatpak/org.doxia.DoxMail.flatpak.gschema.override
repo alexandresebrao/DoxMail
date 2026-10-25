@@ -1,0 +1,5 @@
+# DoxMail in Flatpak: making itself the default mail client would only
+# write the sandbox's own mimeapps.list; DoxIA registers it for mailto:.
+
+[org.gnome.evolution.mail]
+prompt-check-if-default-mailer=false

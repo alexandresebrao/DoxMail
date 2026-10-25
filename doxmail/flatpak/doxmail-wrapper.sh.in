@@ -1,0 +1,46 @@
+#!/bin/sh
+# DoxMail in Flatpak: copies the Evolution data of the host once, starts
+# the bundled evolution-data-server services, then DoxMail.
+
+if [ "$1" = "--quit" -o "$1" = "--force-shutdown" ]; then
+	exec /app/bin/doxmail.bin "$@"
+fi
+
+# First run: the host data (read-only in the sandbox) goes to the app's own
+# directories; the originals stay as they are.
+migrate() {
+	host="$HOME/$1/evolution"
+	dest="$2/evolution"
+	[ -d "$host" ] && [ ! -e "$dest" ] || return 0
+	mkdir -p "$2" && cp -a "$host" "$dest.tmp" && mv "$dest.tmp" "$dest"
+}
+
+if [ ! -e "$XDG_CONFIG_HOME/evolution" ] && [ -d "$HOME/.config/evolution" ]; then
+	/app/libexec/doxmail-migrate-settings "$XDG_CONFIG_HOME/glib-2.0/settings/keyfile"
+	migrate .config "$XDG_CONFIG_HOME"
+	migrate .local/share "$XDG_DATA_HOME"
+	migrate .cache "$XDG_CACHE_HOME"
+	# sources keep absolute paths (the local mail folder)
+	find "$XDG_CONFIG_HOME/evolution/sources" -name '*.source' -exec sed -i \
+		-e "s|$HOME/.local/share/evolution|$XDG_DATA_HOME/evolution|g" \
+		-e "s|$HOME/.config/evolution|$XDG_CONFIG_HOME/evolution|g" \
+		-e "s|$HOME/.cache/evolution|$XDG_CACHE_HOME/evolution|g" {} + 2>/dev/null
+fi
+
+export BOGOFILTER_DIR="${XDG_DATA_HOME}/bogofilter/"
+export GIO_USE_NETWORK_MONITOR=base
+gsettings reset org.gnome.evolution-data-server network-monitor-gio-name
+
+start_service() {
+	if ! gdbus call --session --dest org.freedesktop.DBus --object-path /org/freedesktop/DBus \
+		--method org.freedesktop.DBus.NameHasOwner "$2" | grep -q true; then
+		"$1" $3 &
+		gdbus wait --session --timeout=10 "$2"
+	fi
+}
+
+start_service /app/libexec/evolution-source-registry @SOURCES_SERVICE@
+start_service /app/libexec/evolution-addressbook-factory @ADDRESSBOOK_SERVICE@ -r
+start_service /app/libexec/evolution-calendar-factory @CALENDAR_SERVICE@ -r
+
+exec /app/bin/doxmail.bin "$@"
