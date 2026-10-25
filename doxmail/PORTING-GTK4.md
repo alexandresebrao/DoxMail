@@ -395,10 +395,10 @@ source strings still say Evolution.
   now maps in about 0.15 s; one idle WebKit editor is kept meanwhile;
 - packaging: `doxmail/package` builds the RPM from git HEAD
   (`doxmail/packaging/doxmail.spec`, release 0.<date>git<commit>) into
-  dist/; `doxmail/release [--lock <rpms.lock>]` publishes it as a release
-  of this repository and gives the line for `build/rpms.lock` of
+  dist/; until the Flatpak, `doxmail/release` published it as a release of
+  this repository for `build/rpms.lock` of
   [doxia-atomic](https://github.com/alexandresebrao/doxia-atomic) (DoxIA 2,
-  a bootc image), whose build installs and version-locks it. DoxIA 1 (the
+  a bootc image). DoxIA 1 (the
   DoxIA repository) installed it with `fedora/doxia/install-doxmail`. The
   package conflicts with the evolution RPM, needs evolution-data-server
   3.60.x and leaves out the alarm notify module (the system GTK 3
@@ -425,6 +425,13 @@ source strings still say Evolution.
   (the parent: theme changes replace `current/theme`). Left out for now:
   online accounts, LDAP, weather, PST/TNEF import, GnuPG, reminders while
   DoxMail is closed (no evolution-alarm-notify in the sandbox);
+- Flatpak release: `doxmail/release` runs `.github/workflows/doxmail-flatpak.yml`
+  on origin/doxmail, which builds the manifest in the flathub-infra GNOME
+  50 container, signs the repository with the key in the
+  `FLATPAK_GPG_PRIVATE_KEY` secret (public half `doxmail/flatpak/doxmail-repo.gpg`)
+  and deploys it to GitHub Pages: `https://alexandresebrao.github.io/DoxMail/doxmail.flatpakrepo`
+  (remote) and `org.doxia.DoxMail.flatpakref`, `version.txt`. The RPM
+  (`doxmail/package`) still builds for local use;
 
 ## Keeping up with upstream
 
