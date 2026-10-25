@@ -31,7 +31,7 @@ jobs:
       - name: Local doxmail branch
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          git branch -f doxmail HEAD
+          git rev-parse --verify -q refs/heads/doxmail >/dev/null || git branch doxmail HEAD
 
       - uses: actions/cache@v4
         with:
