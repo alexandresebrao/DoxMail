@@ -5,3 +5,4 @@ _build
 *.rej
 /dist/
 /_flatpak/
+/_flatpak.log
