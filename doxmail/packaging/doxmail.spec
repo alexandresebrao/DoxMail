@@ -2,7 +2,11 @@
 # app of DoxIA. Built by doxmail/package from a git archive of this tree;
 # the release comes from it (--define 'doxmail_release ...').
 
-%global eds_series 3.60
+# The EDS series this build is against: Evolution follows the series of
+# evolution-data-server it was built with (3.60 on Fedora 44, 3.62 on 45).
+# Before builddep installs it, the 3.60 floor.
+%global eds_series %(v=$(pkg-config --modversion libedataserver-1.2 2>/dev/null); v=${v:-3.60.0}; echo ${v%%.*})
+%global eds_next %(echo %{eds_series} | awk -F. '{ printf "%%d.%%d", $1, $2 + 1 }')
 
 Name:           doxmail
 Version:        3.60.2
@@ -53,11 +57,12 @@ BuildRequires:  pkgconfig(libical-glib)
 BuildRequires:  libical-devel
 BuildRequires:  libytnef-devel
 BuildRequires:  openldap-devel
+BuildRequires:  highlight
 
 # Evolution's data, settings and accounts are shared, so the same mail goes
 # on; the installed files are Evolution's too (libraries, modules, schemas)
 Requires:       evolution-data-server%{?_isa} >= %{eds_series}
-Requires:       evolution-data-server%{?_isa} < 3.61
+Requires:       evolution-data-server%{?_isa} < %{eds_next}
 Requires:       highlight
 Conflicts:      evolution
 Conflicts:      evolution-langpacks
