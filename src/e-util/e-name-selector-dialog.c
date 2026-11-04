@@ -20,7 +20,7 @@
 #include "evolution-config.h"
 
 #include <string.h>
-#include <gdk/gdkkeysyms.h>
+#include <gdk/gdk.h>
 #include <glib/gi18n-lib.h>
 
 #include <libebook/libebook.h>

@@ -23,7 +23,7 @@
 
 #include <string.h>
 
-#include <gdk/gdkkeysyms.h>
+#include <gdk/gdk.h>
 
 #include "e-text-event-processor-emacs-like.h"
 

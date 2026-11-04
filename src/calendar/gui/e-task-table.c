@@ -34,7 +34,7 @@
 #include <glib/gstdio.h>
 #include <gtk/gtk.h>
 #include <e-util/e-util.h>
-#include <gdk/gdkkeysyms.h>
+#include <gdk/gdk.h>
 
 #include "calendar-config.h"
 #include "comp-util.h"

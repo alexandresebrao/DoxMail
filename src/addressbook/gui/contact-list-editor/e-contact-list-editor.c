@@ -28,7 +28,7 @@
 #include <gtk/gtk.h>
 #include <e-util/e-util.h>
 #include <glib/gi18n.h>
-#include <gdk/gdkkeysyms.h>
+#include <gdk/gdk.h>
 
 #include <camel/camel.h>
 

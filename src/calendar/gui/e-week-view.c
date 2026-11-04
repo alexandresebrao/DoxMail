@@ -29,7 +29,7 @@
 #include "e-week-view.h"
 
 #include <math.h>
-#include <gdk/gdkkeysyms.h>
+#include <gdk/gdk.h>
 #include <glib/gi18n.h>
 #include <libgnomecanvas/libgnomecanvas.h>
 

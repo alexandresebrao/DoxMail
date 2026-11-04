@@ -21,7 +21,7 @@
 #include "evolution-config.h"
 
 #include <glib/gi18n.h>
-#include <gdk/gdkkeysyms.h>
+#include <gdk/gdk.h>
 
 #include "e-dialog-widgets.h"
 #include "e-icon-factory.h"

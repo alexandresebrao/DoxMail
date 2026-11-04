@@ -30,7 +30,7 @@
 
 #include "evolution-config.h"
 
-#include <gdk/gdkkeysyms.h>
+#include <gdk/gdk.h>
 
 
 #include "e-cell-popup.h"

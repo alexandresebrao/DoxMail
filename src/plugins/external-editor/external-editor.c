@@ -31,7 +31,7 @@
 
 #include <glib/gi18n-lib.h>
 #include <glib/gstdio.h>
-#include <gdk/gdkkeysyms.h>
+#include <gdk/gdk.h>
 
 #include <sys/stat.h>
 #ifdef HAVE_SYS_WAIT_H

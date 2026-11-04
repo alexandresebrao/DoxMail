@@ -25,7 +25,7 @@
 
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
-#include <gdk/gdkkeysyms.h>
+#include <gdk/gdk.h>
 
 #include "e-cell-popup.h"
 #include "gal-a11y-e-cell-registry.h"

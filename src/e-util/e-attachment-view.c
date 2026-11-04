@@ -24,7 +24,7 @@
 #include "e-attachment-icon-view.h"
 
 #include <glib/gi18n.h>
-#include <gdk/gdkkeysyms.h>
+#include <gdk/gdk.h>
 
 #include "e-attachment-handler-image.h"
 #include "e-attachment-popover.h"

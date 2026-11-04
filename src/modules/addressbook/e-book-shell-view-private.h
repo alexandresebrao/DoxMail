@@ -25,7 +25,7 @@
 
 #include <string.h>
 #include <glib/gi18n.h>
-#include <gdk/gdkkeysyms.h>
+#include <gdk/gdk.h>
 #include <libebook/libebook.h>
 
 #include "shell/e-shell-content.h"

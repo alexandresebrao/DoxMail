@@ -27,7 +27,7 @@
 #include <e-util/e-util.h>
 #include <glib/gi18n.h>
 #include <glib/gstdio.h>
-#include <gdk/gdkkeysyms.h>
+#include <gdk/gdk.h>
 #include <libebackend/libebackend.h>
 
 #include <shell/e-shell.h>

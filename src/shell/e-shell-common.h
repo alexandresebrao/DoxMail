@@ -23,7 +23,7 @@
 
 #include <gio/gio.h>
 #include <gtk/gtk.h>
-#include <gdk/gdkkeysyms.h>
+#include <gdk/gdk.h>
 #include <e-util/e-util.h>
 
 #endif /* E_SHELL_COMMON_H */

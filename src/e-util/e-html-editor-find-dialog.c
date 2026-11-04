@@ -24,7 +24,7 @@
 #include "e-dialog-widgets.h"
 
 #include <glib/gi18n-lib.h>
-#include <gdk/gdkkeysyms.h>
+#include <gdk/gdk.h>
 
 struct _EHTMLEditorFindDialogPrivate {
 	GtkWidget *entry;

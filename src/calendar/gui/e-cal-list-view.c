@@ -30,7 +30,7 @@
 #include <e-util/e-util.h>
 #include <glib/gi18n.h>
 #include <glib/gstdio.h>
-#include <gdk/gdkkeysyms.h>
+#include <gdk/gdk.h>
 
 #include "e-cal-model-calendar.h"
 #include "e-cell-date-edit-text.h"

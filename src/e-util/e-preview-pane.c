@@ -17,7 +17,7 @@
 
 #include "e-preview-pane.h"
 
-#include <gdk/gdkkeysyms.h>
+#include <gdk/gdk.h>
 
 #include "e-alert-bar.h"
 #include "e-alert-dialog.h"

@@ -27,7 +27,7 @@
 #include <stdlib.h>
 
 #include <glib/gi18n.h>
-#include <gdk/gdkkeysyms.h>
+#include <gdk/gdk.h>
 
 #include <libedataserver/libedataserver.h>
 

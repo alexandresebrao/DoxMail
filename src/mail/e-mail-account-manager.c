@@ -18,7 +18,7 @@
 #include "evolution-config.h"
 
 #include <glib/gi18n-lib.h>
-#include <gdk/gdkkeysyms.h>
+#include <gdk/gdk.h>
 
 #include <e-util/e-util.h>
 #include <libemail-engine/libemail-engine.h>
