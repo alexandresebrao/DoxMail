@@ -1364,6 +1364,7 @@ mail_display_load_changed_cb (WebKitWebView *wk_web_view,
 		e_attachment_bar_clear_possible_attachments (E_ATTACHMENT_BAR (display->priv->attachment_view));
 		g_hash_table_remove_all (display->priv->cid_attachments);
 		display->priv->loaded = FALSE;
+		e_mail_formatter_reset_page_token (display->priv->formatter);
 	} else if (load_event == WEBKIT_LOAD_FINISHED) {
 		display->priv->loaded = TRUE;
 		mail_display_update_remote_content_buttons (display);
@@ -1378,6 +1379,7 @@ mail_display_content_loaded_cb (EWebView *web_view,
 	EMailDisplay *mail_display;
 	GList *attachments, *link;
 	gchar *citation_color = NULL;
+	const gchar *page_token;
 
 	g_return_if_fail (E_IS_MAIL_DISPLAY (web_view));
 
@@ -1432,9 +1434,12 @@ mail_display_content_loaded_cb (EWebView *web_view,
 		}
 	}
 
-	e_web_view_jsc_run_script (WEBKIT_WEB_VIEW (web_view), e_web_view_get_cancellable (web_view),
-		"Evo.MailDisplayBindDOM(%s, %s);", iframe_id, citation_color);
+	page_token = e_mail_formatter_dup_page_token (mail_display->priv->formatter);
 
+	e_web_view_jsc_run_script (WEBKIT_WEB_VIEW (web_view), e_web_view_get_cancellable (web_view),
+		"Evo.MailDisplayBindDOM(%s, %s, %s);", iframe_id, citation_color, page_token);
+
+	g_clear_pointer (&page_token, camel_pstring_free);
 	g_free (citation_color);
 
 	if (mail_display->priv->part_list) {

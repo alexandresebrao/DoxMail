@@ -188,6 +188,12 @@ void		e_mail_formatter_set_default_charset
 						(EMailFormatter *formatter,
 						 const gchar *charset);
 
+const gchar *	e_mail_formatter_ensure_page_token
+						(EMailFormatter *formatter);
+const gchar *	e_mail_formatter_dup_page_token	(EMailFormatter *formatter);
+void		e_mail_formatter_reset_page_token
+						(EMailFormatter *formatter);
+
 G_END_DECLS
 
 #endif /* E_MAIL_FORMATTER_H_ */

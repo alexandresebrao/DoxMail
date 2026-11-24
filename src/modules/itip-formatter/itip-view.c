@@ -47,6 +47,12 @@
 
 #include "itip-view-elements-defines.h"
 
+/* e_cal_util_sanitize_untrusted() is new in EDS 3.62.1; the DoxMail
+ * Flatpak builds its own EDS 3.60, where the components stay as they are. */
+#if !EDS_CHECK_VERSION (3, 62, 1)
+#define e_cal_util_sanitize_untrusted(icomp) G_STMT_START { (void) (icomp); } G_STMT_END
+#endif
+
 #if !ICAL_CHECK_VERSION(3, 99, 99)
 #define i_cal_duration_as_utc_seconds i_cal_duration_as_int
 #endif
@@ -6666,6 +6672,7 @@ extract_itip_data (ItipView *view,
 	GSettings *settings;
 	ICalProperty *prop;
 	ICalComponentKind kind = I_CAL_NO_COMPONENT;
+	ICalComponent *subcomp;
 	ICalComponent *tz_comp;
 	ICalComponent *alarm_comp;
 	ICalCompIter *iter;
@@ -6700,8 +6707,6 @@ extract_itip_data (ItipView *view,
 
 	prop = i_cal_component_get_first_property (view->priv->main_comp, I_CAL_METHOD_PROPERTY);
 	if (prop == NULL) {
-		ICalComponent *subcomp;
-
 		view->priv->method = I_CAL_METHOD_PUBLISH;
 
 		/* Search in sub-components for the METHOD property when not found in the VCALENDAR */
@@ -6726,6 +6731,12 @@ extract_itip_data (ItipView *view,
 	} else {
 		view->priv->method = i_cal_property_get_method (prop);
 		g_clear_object (&prop);
+	}
+
+	for (subcomp = i_cal_component_get_first_component (view->priv->main_comp, I_CAL_ANY_COMPONENT);
+	     subcomp;
+	     g_object_unref (subcomp), subcomp = i_cal_component_get_next_component (view->priv->main_comp, I_CAL_ANY_COMPONENT)) {
+		e_cal_util_sanitize_untrusted (subcomp);
 	}
 
 	iter = i_cal_component_begin_component (view->priv->main_comp, I_CAL_VTIMEZONE_COMPONENT);

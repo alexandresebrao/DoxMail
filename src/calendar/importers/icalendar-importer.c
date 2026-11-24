@@ -42,6 +42,12 @@
 #include "evolution-calendar-importer.h"
 #include "gui/calendar-config-keys.h"
 
+/* e_cal_util_sanitize_untrusted() is new in EDS 3.62.1; the DoxMail
+ * Flatpak builds its own EDS 3.60, where the components stay as they are. */
+#if !EDS_CHECK_VERSION (3, 62, 1)
+#define e_cal_util_sanitize_untrusted(icomp) G_STMT_START { (void) (icomp); } G_STMT_END
+#endif
+
 typedef struct {
 	EImport *import;
 	EImportTarget *target;
@@ -236,16 +242,27 @@ update_objects (ECalClient *cal_client,
 
 	kind = i_cal_component_isa (icomp);
 	if (kind == I_CAL_VTODO_COMPONENT || kind == I_CAL_VEVENT_COMPONENT) {
+		ICalComponent *clone;
 		vcal = e_cal_util_new_top_level ();
 		if (i_cal_component_get_method (icomp) == I_CAL_METHOD_CANCEL)
 			i_cal_component_set_method (vcal, I_CAL_METHOD_CANCEL);
 		else
 			i_cal_component_set_method (vcal, I_CAL_METHOD_PUBLISH);
-		i_cal_component_take_component (vcal, i_cal_component_clone (icomp));
+		clone = i_cal_component_clone (icomp);
+		e_cal_util_sanitize_untrusted (clone);
+		i_cal_component_take_component (vcal, clone);
 	} else if (kind == I_CAL_VCALENDAR_COMPONENT) {
+		ICalComponent *subcomp;
+
 		vcal = i_cal_component_clone (icomp);
 		if (!e_cal_util_component_has_property (vcal, I_CAL_METHOD_PROPERTY))
 			i_cal_component_set_method (vcal, I_CAL_METHOD_PUBLISH);
+
+		for (subcomp = i_cal_component_get_first_component (vcal, I_CAL_ANY_COMPONENT);
+		     subcomp;
+		     g_object_unref (subcomp), subcomp = i_cal_component_get_next_component (vcal, I_CAL_ANY_COMPONENT)) {
+			e_cal_util_sanitize_untrusted (subcomp);
+		}
 	} else {
 		if (done_cb)
 			done_cb (user_data, NULL);
