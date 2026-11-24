@@ -404,12 +404,11 @@ source strings still say Evolution.
   3.60.x and leaves out the alarm notify module (the system GTK 3
   evolution-alarm-notify loads it) and the development files. Being replaced by
   the Flatpak below;
-- Flatpak (`doxmail/flatpak/`): `org.doxia.DoxMail.json` on the GNOME 50
-  runtime bundles evolution-data-server 3.60.2 (GTK 4 UI library only, its
+- Flatpak (`doxmail/flatpak/`): `org.doxia.DoxMail.json` on the GNOME 51
+  runtime bundles evolution-data-server 3.62.1, the series Fedora 45 ships (GTK 4 UI library only, its
   D-Bus names under the app ID, as the sandbox requires), libical, cmark,
   bogofilter and DoxMail from the committed `doxmail` branch, so DoxMail
-  and the image update apart (Fedora 45's EDS is too new for the 3.60
-  port). `build.sh [--install]` builds into `_flatpak/` (ccache, a local
+  and the image update apart. `build.sh [--install]` builds into `_flatpak/` (ccache, a local
   `doxmail-local` remote). The wrapper (`doxmail-wrapper.sh.in`) starts the
   bundled EDS services and, on the first run, copies the host's
   `~/.config|.local/share|.cache/evolution` (read-only in the sandbox; the
@@ -427,7 +426,7 @@ source strings still say Evolution.
   DoxMail is closed (no evolution-alarm-notify in the sandbox);
 - Flatpak release: `doxmail/release` runs `.github/workflows/doxmail-flatpak.yml`
   on origin/doxmail, which builds the manifest in the flathub-infra GNOME
-  50 container, signs the repository with the key in the
+  51 container, signs the repository with the key in the
   `FLATPAK_GPG_PRIVATE_KEY` secret (public half `doxmail/flatpak/doxmail-repo.gpg`)
   and deploys it to GitHub Pages: `https://alexandresebrao.github.io/DoxMail/doxmail.flatpakrepo`
   (remote) and `org.doxia.DoxMail.flatpakref`, `version.txt`. The RPM
